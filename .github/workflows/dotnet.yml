@@ -16,10 +16,8 @@ jobs:
           - "6333:6333"
           - "6334:6334"
           - "6335:6335"
-        # volumes:
-        #   - ./volumes/0/qdrant_storage:/qdrant/storage
-        #   - ./volumes/0/qdrant_snapshots:/qdrant/snapshots
-        #   - ./qdrant-config.yaml:/qdrant/config/production.yaml
+        volumes:
+          - ./qdrant-config.yaml:/qdrant/config/production.yaml
 
     env:
         CI: true
@@ -30,18 +28,6 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 8.0.x
-    # - name: Run Qdrant image
-    #   run: docker compose up -d
-    # - name: Install dependencies
-    #   run: |
-    #     sudo apt-get update
-    #     sudo apt-get install libmemcached-dev memcached
-    # - name: Start memcached daemons
-    #   run: |
-    #     memcached -d -p 11211
-    # - name: Add memcached host to /etc/hosts
-    #   run: |
-    #     echo "127.0.0.1 memcached" | sudo tee -a /etc/hosts
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
