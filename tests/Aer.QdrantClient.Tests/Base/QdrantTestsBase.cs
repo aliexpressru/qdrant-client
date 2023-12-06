@@ -74,9 +74,6 @@ public class QdrantTestsBase
             services.AddQdrantHttpClient(Configuration);
         }
 
-        // gRPC client is not implemented yet
-        //services.AddQdrantGrpcClient(Configuration);
-
         ServiceProvider = services.BuildServiceProvider();
     }
 
@@ -315,7 +312,7 @@ public class QdrantTestsBase
     private void AddTestLogger(ServiceCollection services)
     {
         LogEventLevel minimumEventLevel = IsCiEnvironment
-            ? LogEventLevel.Information
+            ? LogEventLevel.Warning
             : LogEventLevel.Verbose;
 
         Serilog.ILogger logger = new LoggerConfiguration()
@@ -327,7 +324,7 @@ public class QdrantTestsBase
             .CreateLogger<QdrantTestsBase>();
 
         LogLevel minimumMsLoggerLevel = IsCiEnvironment
-            ? LogLevel.Information
+            ? LogLevel.Warning
             : LogLevel.Trace;
 
         services.AddLogging(
