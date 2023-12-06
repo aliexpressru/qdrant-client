@@ -1,4 +1,4 @@
-name: .NET
+name: Build & Test
 
 on:
   push:
@@ -11,14 +11,26 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    services:
+      qdrant:
+        image: qdrant/qdrant:v1.6.1
+        ports:
+          - "6333:6333"
+          - "6334:6334"
+          - "6335:6335"
+        volumes:
+          - ./volumes/0/qdrant_storage:/qdrant/storage
+          - ./volumes/0/qdrant_snapshots:/qdrant/snapshots
+          - ./qdrant-config.yaml:/qdrant/config/production.yaml
+
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 8.0.x
-    - name: Run Qdrant image
-      run: docker compose up -d
+    # - name: Run Qdrant image
+    #   run: docker compose up -d
     # - name: Install dependencies
     #   run: |
     #     sudo apt-get update
@@ -32,6 +44,6 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --configuration Release --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --configuration Release --no-build --verbosity normal
