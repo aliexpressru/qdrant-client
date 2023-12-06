@@ -17,6 +17,8 @@ jobs:
           - "6334:6334"
           - "6335:6335"
         volumes:
+          - ./volumes/0/qdrant_storage:/qdrant/storage
+          - ./volumes/0/qdrant_snapshots:/qdrant/snapshots
           - ${{ github.workspace }}/qdrant-config.yaml:/qdrant/config/production.yaml
 
     env:
