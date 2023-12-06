@@ -21,7 +21,7 @@ jobs:
         volumes:
           - ./volumes/0/qdrant_storage:/qdrant/storage
           - ./volumes/0/qdrant_snapshots:/qdrant/snapshots
-          - ./qdrant-config.yaml:/qdrant/config/production.yaml
+        #   - ./qdrant-config.yaml:/qdrant/config/production.yaml
 
     steps:
     - uses: actions/checkout@v3
