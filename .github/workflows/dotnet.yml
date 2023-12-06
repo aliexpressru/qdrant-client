@@ -18,9 +18,9 @@ jobs:
           - "6333:6333"
           - "6334:6334"
           - "6335:6335"
-        volumes:
-          - ./volumes/0/qdrant_storage:/qdrant/storage
-          - ./volumes/0/qdrant_snapshots:/qdrant/snapshots
+        # volumes:
+        #   - ./volumes/0/qdrant_storage:/qdrant/storage
+        #   - ./volumes/0/qdrant_snapshots:/qdrant/snapshots
         #   - ./qdrant-config.yaml:/qdrant/config/production.yaml
 
     steps:
