@@ -18,7 +18,7 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Run Qdrant image
-      run: docker compose up
+      run: docker compose up -d
     # - name: Install dependencies
     #   run: |
     #     sudo apt-get update
