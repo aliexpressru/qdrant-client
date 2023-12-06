@@ -1,10 +1,6 @@
 name: Build & Test
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+on: push
 
 jobs:
   build_test:
@@ -16,10 +12,6 @@ jobs:
           - "6333:6333"
           - "6334:6334"
           - "6335:6335"
-        volumes:
-          - ./volumes/0/qdrant_storage:/qdrant/storage
-          - ./volumes/0/qdrant_snapshots:/qdrant/snapshots
-          - ${{ github.workspace }}/qdrant-config.yaml:/qdrant/config/production.yaml
 
     env:
         CI: true
