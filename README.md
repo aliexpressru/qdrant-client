@@ -1,5 +1,7 @@
 # .NET SDK for Qdrant vector database
 
+[![NuGet Release][Qdrant-image]][Qdrant-nuget-url]
+
 .NET SDK for [Qdrant vector database](https://qdrant.tech/).
 
 ## Getting started
@@ -361,3 +363,7 @@ In addition to combining filters explicitly, the more terse combination is possi
         ]
     }
     ```
+
+[Qdrant-nuget-url]:https://www.nuget.org/packages/Aerx.QdrantClient.Http/
+[Qdrant-image]:
+https://img.shields.io/nuget/v/Qdrant.Client.svg
