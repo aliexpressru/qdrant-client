@@ -366,4 +366,4 @@ In addition to combining filters explicitly, the more terse combination is possi
 
 [Qdrant-nuget-url]:https://www.nuget.org/packages/Aerx.QdrantClient.Http/
 [Qdrant-image]:
-https://img.shields.io/nuget/v/Qdrant.Client.svg
+https://img.shields.io/nuget/v/Aerx.QdrantClient.Http.svg
