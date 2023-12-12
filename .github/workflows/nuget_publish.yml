@@ -1,4 +1,4 @@
-name: Publish NuGet
+name: Build & Publish NuGet Package
 
 on:
   push:
@@ -11,7 +11,7 @@ env:
 
 jobs:
 
-  publish_nuget:
+  build_publish_nuget:
 
     runs-on: ubuntu-latest
 
