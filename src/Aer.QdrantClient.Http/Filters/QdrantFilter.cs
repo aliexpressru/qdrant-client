@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters.Conditions;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
@@ -16,6 +17,11 @@ namespace Aer.QdrantClient.Http.Filters;
 public class QdrantFilter
 {
     private readonly List<FilterConditionBase> _conditions = new();
+
+    /// <summary>
+    /// Returns an empty filter.
+    /// </summary>
+    public static QdrantFilter Empty { get; } = new();
 
     /// <summary>
     /// This ctor is for preventing builder from being created manually.
@@ -70,7 +76,7 @@ public class QdrantFilter
     /// <param name="conditions">The filter conditions to create filter from.</param>
     public static QdrantFilter Create(List<FilterConditionBase> conditions)
     {
-        if (conditions is null or {Count: 0})
+        if (conditions is null or { Count: 0 })
         {
             throw new ArgumentNullException(nameof(conditions));
         }
@@ -93,12 +99,6 @@ public class QdrantFilter
 
         return filter;
     }
-
-    /// <summary>
-    /// Returns an empty filter string.
-    /// This field is here in case Qdrant ever changes the empty filter syntax.
-    /// </summary>
-    public static QdrantFilter Empty => new();
 
     /// <summary>
     /// Adds the filter condition to this filter.

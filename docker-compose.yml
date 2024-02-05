@@ -3,7 +3,7 @@ version: "3.8"
 services:
   qdrant-0:
     container_name: qdrant-0
-    image: qdrant/qdrant:v1.6.1
+    image: qdrant/qdrant:v1.7.4
     entrypoint: ./entrypoint.sh
     # command: --bootstrap 'http://localhost:6335'
     command: --uri 'http://localhost:6335'

@@ -147,6 +147,15 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             public uint? ShardNumber { set; get; }
 
             /// <summary>
+            /// The sharding method. This field will have value of <see cref="ShardingMethod.Custom"/> if custom sharding is configured.
+            /// </summary>
+            /// <remarks>
+            /// In this mode, the <see cref="ShardNumber"/> means the number of shards per shard key,
+            /// where points will be distributed evenly.
+            /// </remarks>
+            public ShardingMethod? ShardingMethod { set; get; }
+
+            /// <summary>
             /// The replicaton factor.
             /// </summary>
             public uint? ReplicationFactor { set; get; }
@@ -160,6 +169,11 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// Whether the payload is stored on disk or in memory.
             /// </summary>
             public bool OnDiskPayload { set; get; }
+
+            /// <summary>
+            /// Represents sparse vectors configuration.
+            /// </summary>
+            public Dictionary<string, SparseVectorConfiguration> SparseVectors { get; set; }
         }
 
         /// <summary>

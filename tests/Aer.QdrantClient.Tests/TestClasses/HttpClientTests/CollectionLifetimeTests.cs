@@ -68,6 +68,27 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task TestCreateCollection_WithSparseVectors()
+    {
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                SparseVectors = new Dictionary<string, SparseVectorConfiguration>(){
+                    ["test"] = new (onDisk: true, fullScanThreshold: 5000)
+                }
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
+
+        collectionCreationResult.Should().NotBeNull();
+        collectionCreationResult.Result.Should().BeTrue();
+    }
+
+    [Test]
     public async Task TestCreateCollection_SameNamedVectors()
     {
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(

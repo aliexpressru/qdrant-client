@@ -29,7 +29,7 @@ public abstract class VectorSelector
     }
 
     /// <summary>
-    /// Creates an instance of the vecrtor selector that selects all vectors to be returned.
+    /// Creates an instance of the vector selector that selects all vectors to be returned.
     /// </summary>
     public static VectorSelector All { get; } = new AllVectorsSelector(true);
 

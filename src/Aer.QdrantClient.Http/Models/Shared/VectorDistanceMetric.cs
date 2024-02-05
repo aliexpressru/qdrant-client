@@ -10,6 +10,10 @@ public enum VectorDistanceMetric
     /// <summary>
     /// Cosine vector distance metric.
     /// </summary>
+    /// <remarks>
+    /// For search efficiency, Cosine similarity is implemented as dot-product over normalized vectors.
+    /// Vectors are automatically normalized during upload.
+    /// </remarks>
     Cosine,
 
     /// <summary>
@@ -20,5 +24,10 @@ public enum VectorDistanceMetric
     /// <summary>
     /// Eucludean vector distance metric.
     /// </summary>
-    Euclid
+    Euclid,
+
+    /// <summary>
+    /// Manhattan vector distance metric.
+    /// </summary>
+    Manhattan
 }

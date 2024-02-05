@@ -40,6 +40,10 @@ public class CollectionParametersTests : QdrantTestsBase
                 VectorDistanceMetric.Cosine,
                 50,
                 isServeVectorsFromDisk: true),
+            ["Vector_4"] = new VectorConfigurationBase.SingleVectorConfiguration(
+                VectorDistanceMetric.Manhattan,
+                50,
+                isServeVectorsFromDisk: true),
         };
 
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
@@ -76,6 +80,59 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task TestCreateCollection_NamedVectors_SparseVectors()
+    {
+        var sparseVectorName = "Vector_1";
+
+        Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration> namedVectors = new()
+        {
+            [sparseVectorName] = new VectorConfigurationBase.SingleVectorConfiguration(
+                VectorDistanceMetric.Dot,
+                100,
+                isServeVectorsFromDisk: true),
+            ["Vector_2"] = new VectorConfigurationBase.SingleVectorConfiguration(
+                VectorDistanceMetric.Euclid,
+                5,
+                isServeVectorsFromDisk: false),
+        };
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(namedVectors)
+            {
+                OnDiskPayload = true,
+                SparseVectors = new Dictionary<string, SparseVectorConfiguration>(){
+                    [sparseVectorName] = new (onDisk: true, fullScanThreshold: 5000)
+                }
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
+
+        collectionCreationResult.Should().NotBeNull();
+        collectionCreationResult.Result.Should().BeTrue();
+
+        // check sparse vectors config
+
+        var createdCollectionInfo =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        createdCollectionInfo.Status.IsSuccess.Should().BeTrue();
+        createdCollectionInfo.Result.Config.Params.Vectors.IsMultipleVectorsConfiguration.Should().BeTrue();
+
+        var sparseVectorsConfiguration = createdCollectionInfo.Result.Config.Params.SparseVectors;
+
+        sparseVectorsConfiguration.Should().NotBeNull();
+        sparseVectorsConfiguration.Count.Should().Be(1);
+        sparseVectorsConfiguration.Should().ContainKey(sparseVectorName);
+
+        sparseVectorsConfiguration[sparseVectorName].OnDisk.Should().BeTrue();
+        sparseVectorsConfiguration[sparseVectorName].FullScanThreshold.Should().NotBeNull();
+        sparseVectorsConfiguration[sparseVectorName].FullScanThreshold.Should().Be(5000);
+    }
+
+    [Test]
     public async Task TestCreateCollection_ServeVectorsFromDisk()
     {
         var createCollectionRequest = new CreateCollectionRequest(
@@ -103,6 +160,38 @@ public class CollectionParametersTests : QdrantTestsBase
             await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
 
         createdCollectionInfo.Result.Config.Params.Vectors.AsSingleVectorConfiguration().OnDisk.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task TestCreateCollection_CustomShardingMethod()
+    {
+        var createCollectionRequest = new CreateCollectionRequest(
+            VectorDistanceMetric.Dot,
+            100,
+            isServeVectorsFromDisk: true)
+        {
+            OnDiskPayload = true,
+            ShardingMethod = ShardingMethod.Custom
+        };
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            createCollectionRequest,
+            CancellationToken.None);
+
+        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
+
+        collectionCreationResult.Should().NotBeNull();
+        collectionCreationResult.Result.Should().BeTrue();
+
+        // check on custom sharding parameter
+
+        var createdCollectionInfo =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        createdCollectionInfo.Result.Config.Params.ShardingMethod.Should()
+            .Be(ShardingMethod.Custom);
     }
 
     [Test]

@@ -2,6 +2,8 @@
 // ReSharper disable ClassNeverInstantiated.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
+using Aer.QdrantClient.Http.Models.Shared;
+
 namespace Aer.QdrantClient.Http.Models.Requests;
 
 /// <summary>
@@ -90,6 +92,11 @@ public abstract class UpdateCollectionClusteringSetupRequest
         /// Target peer identifier.
         /// </summary>
         public required ulong ToPeerId { init; get; }
+
+        /// <summary>
+        /// The shard transfer method. If not set, <see cref="ShardTransferMethod.StreamRecords"/> will be used.
+        /// </summary>
+        public ShardTransferMethod? Method { set; get; }
     }
 
     #endregion
@@ -100,7 +107,15 @@ public abstract class UpdateCollectionClusteringSetupRequest
     /// <param name="shardId">The identifier of the shard to move.</param>
     /// <param name="fromPeerId">Source peer identifier.</param>
     /// <param name="toPeerId">Target peer identifier.</param>
-    public static UpdateCollectionClusteringSetupRequest CreateMoveShardRequest(uint shardId, ulong fromPeerId, ulong toPeerId)
+    /// <param name="shardTransferMethod">
+    /// The shard transfer method.
+    /// If not set, <see cref="ShardTransferMethod.StreamRecords"/> will be used.
+    /// </param>
+    public static UpdateCollectionClusteringSetupRequest CreateMoveShardRequest(
+        uint shardId,
+        ulong fromPeerId,
+        ulong toPeerId,
+        ShardTransferMethod? shardTransferMethod = null)
     {
         if (fromPeerId == toPeerId)
         {
@@ -114,7 +129,8 @@ public abstract class UpdateCollectionClusteringSetupRequest
             {
                 ShardId = shardId,
                 FromPeerId = fromPeerId,
-                ToPeerId = toPeerId
+                ToPeerId = toPeerId,
+                Method = shardTransferMethod
             }
         };
     }

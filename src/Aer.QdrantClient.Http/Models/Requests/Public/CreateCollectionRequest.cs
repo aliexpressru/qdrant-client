@@ -50,10 +50,25 @@ public sealed class CreateCollectionRequest
     public VectorConfigurationBase Vectors { get; }
 
     /// <summary>
+    /// Gets the sparse vectors configuration.
+    /// </summary>
+    public Dictionary<string, SparseVectorConfiguration> SparseVectors { get; set; }
+
+    /// <summary>
     /// Number of shards in collection. Default is <c>1</c> for standalone,
     /// otherwise equal to the number of nodes. Minimum is <c>1</c>.
     /// </summary>
     public uint? ShardNumber { set; get; }
+
+    /// <summary>
+    /// The sharding method. Set to <see cref="ShardingMethod.Custom"/>
+    /// to configure use cusom sharing configuration.
+    /// </summary>
+    /// <remarks>
+    /// In this mode, the <see cref="ShardNumber"/> means the number of shards per shard key,
+    /// where points will be distributed evenly.
+    /// </remarks>
+    public ShardingMethod? ShardingMethod { set; get; }
 
     /// <summary>
     /// Number of shards replicas. Default is 1 Minimum is 1.
