@@ -28,7 +28,7 @@ public sealed class CreateCollectionRequest
         /// <summary>
         /// Creates a new instance of <see cref="InitFromCollection"/> with specified collection name.
         /// </summary>
-        /// <param name="sourceColelctionName">THe name of the colelction to copy data from.</param>
+        /// <param name="sourceColelctionName">The name of the colelction to copy data from.</param>
         public static InitFromCollection ByName(string sourceColelctionName)
         {
             return new InitFromCollection()

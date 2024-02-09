@@ -4,7 +4,6 @@
 /// Represents the points upsert operation.
 /// </summary>
 internal sealed class UpsertPointsOperation : BatchUpdatePointsOperationBase
-    // where TPayload : class
 {
     /// <summary>
     /// Upsert points request.

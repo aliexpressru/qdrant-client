@@ -97,7 +97,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
                 VectorDistanceMetric.Dot,
                 100,
                 isServeVectorsFromDisk: true,
-                GetVectorNames(3))
+                CreateVectorNames(3))
             {
                 OnDiskPayload = true
             },

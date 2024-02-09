@@ -42,16 +42,22 @@ public sealed class SearchPointsGroupedRequest : SearchPointsRequest
     /// <param name="groupSize">Maximum amount of points to return per group.</param>
     /// <param name="withVector">Whether the vector, all named vectors or only selected named vectors should be returned with the response.</param>
     /// <param name="withPayload">Whether the whole payload or only selected payload properties should be returned with the response.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
     public SearchPointsGroupedRequest(
         SearchVector vector,
         string groupBy,
         uint groupsLimit,
         uint groupSize,
         VectorSelector withVector = null,
-        PayloadPropertiesSelector withPayload = null) : base(vector, groupsLimit, withVector, withPayload)
+        PayloadPropertiesSelector withPayload = null,
+        ShardSelector shardSelector = null) : base(vector, groupsLimit, withVector, withPayload)
     {
         GroupBy = groupBy;
         Limit = groupsLimit;
         GroupSize = groupSize;
+        ShardKey = shardSelector;
     }
 }

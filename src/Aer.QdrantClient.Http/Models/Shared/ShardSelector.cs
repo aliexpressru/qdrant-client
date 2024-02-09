@@ -45,6 +45,8 @@ public abstract class ShardSelector
         }
     }
 
+    #region Factory methods
+
     /// <summary>
     /// Creates a shard key selector using string shard key values.
     /// </summary>
@@ -58,4 +60,61 @@ public abstract class ShardSelector
     /// <param name="shardKeyValues">The shard key values.</param>
     public static ShardSelector Integer(params ulong[] shardKeyValues)
         => new IntegerShardKeyShardSelector(shardKeyValues);
+
+    #endregion
+
+    #region Operators
+
+    /// <summary>
+    /// Performs an implicit conversion from <see cref="ulong"/> to <see cref="ShardSelector"/>.
+    /// </summary>
+    /// <param name="shardKeyValue">The shard key value.</param>
+    public static implicit operator ShardSelector(ulong shardKeyValue)
+    {
+        return Integer(shardKeyValue);
+    }
+
+    /// <summary>
+    /// Performs an implicit conversion from <see cref="ulong"/> array to <see cref="ShardSelector"/>.
+    /// </summary>
+    /// <param name="shardKeyValues">The shard key values.</param>
+    public static implicit operator ShardSelector(ulong[] shardKeyValues)
+    {
+        return Integer(shardKeyValues);
+    }
+
+    /// <summary>
+    /// Performs an implicit conversion from <see cref="int"/> to <see cref="ShardSelector"/>.
+    /// </summary>
+    /// <param name="shardKeyValue">The shard key value.</param>
+    public static implicit operator ShardSelector(int shardKeyValue)
+    {
+        if (shardKeyValue < 0)
+        {
+            throw new InvalidOperationException($"Can't use negative integer {shardKeyValue} as shard key selector value");
+        }
+
+        return Integer(checked((ulong) shardKeyValue));
+    }
+
+    /// <summary>
+    /// Performs an implicit conversion from <see cref="String"/> to <see cref="ShardSelector"/>.
+    /// </summary>
+    /// <param name="shardKeyValue">The shard key value.</param>
+    public static implicit operator ShardSelector(string shardKeyValue)
+    {
+        return String(shardKeyValue);
+    }
+
+    /// <summary>
+    /// Performs an implicit conversion from <see cref="String"/> array to <see cref="ShardSelector"/>.
+    /// </summary>
+    /// <param name="shardKeyValues">The shard key values.</param>
+    public static implicit operator ShardSelector(string[] shardKeyValues)
+    {
+        return String(shardKeyValues);
+    }
+
+    #endregion
+
 }

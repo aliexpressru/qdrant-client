@@ -196,4 +196,50 @@ public class ClusterTests : QdrantTestsBase
         newCollectionClusteringInfo.Result.ShardTransfers[0].To.Should().Be(localPeerId);
         newCollectionClusteringInfo.Result.ShardTransfers[0].Sync.Should().Be(true);
     }
+
+    // [Test]
+    // NOTE: this test will work only when cluster is enabled in qdrant-config_node_0.yaml
+    public async Task TestCollectionShardCreate()
+    {
+        const uint vectorSize = 10;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var createShardKeyResult = await _qdrantHttpClient.CreateShardKey(
+            TestCollectionName,
+            "test",
+            CancellationToken.None,
+            shardsNumber: 1,
+            replicationFactor: 1);
+
+        createShardKeyResult.Status.IsSuccess.Should().BeTrue();
+    }
+
+    // [Test]
+    // NOTE: this test will work only when cluster is enabled in qdrant-config_node_0.yaml
+    public async Task TestCollectionShardDelete()
+    {
+        const uint vectorSize = 10;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var deleteShardKeyResult = await _qdrantHttpClient.DeleteShardKey(
+            TestCollectionName,
+            "test",
+            CancellationToken.None);
+
+        deleteShardKeyResult.Status.IsSuccess.Should().BeTrue();
+    }
 }

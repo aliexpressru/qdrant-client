@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 // ReSharper disable MemberCanBeInternal

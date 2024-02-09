@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
+using Aer.QdrantClient.Http.Models.Shared;
 
 // ReSharper disable MemberCanBeInternal
 // ReSharper disable ClassNeverInstantiated.Global
@@ -59,4 +60,11 @@ public sealed class UpsertPointsRequest<TPayload>
     /// The points to upsert.
     /// </summary>
     public required IEnumerable<UpsertPoint> Points { get; set; }
+
+    /// <summary>
+    /// The shard selector to perform operation only on specified shards.
+    /// If not set - perform operation on all shards.
+    /// </summary>
+    [JsonConverter(typeof(ShardSelectorJsonConverter))]
+    public ShardSelector ShardKey { get; set; }
 }

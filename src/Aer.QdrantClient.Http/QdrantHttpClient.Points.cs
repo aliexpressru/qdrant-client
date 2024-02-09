@@ -14,25 +14,27 @@ namespace Aer.QdrantClient.Http;
 public partial class QdrantHttpClient
 {
     #region Create \ Update \ Delete operations
-
     /// <summary>
     /// Delete points by specified ids.
     /// </summary>
     /// <param name="collectionName">Name of the collection to delete points from.</param>
     /// <param name="pointIds">The point ids to delete.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="shardSelector">The shard selector. If set prefoms operation only on specified shard(s).</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="ordering">The delete operation ordering settings.</param>
     public async Task<PointsOperationResponse> DeletePoints(
         string collectionName,
         IEnumerable<PointId> pointIds,
         CancellationToken cancellationToken,
+        ShardSelector shardSelector = null,
         bool isWaitForResult = true,
         OrderingType? ordering = null)
     {
         var points = new DeletePointsRequest()
         {
-            Points = pointIds
+            Points = pointIds,
+            ShardKey = shardSelector
         };
 
         var orderingValue = (ordering ?? OrderingType.Weak).ToString().ToLowerInvariant();
@@ -332,19 +334,25 @@ public partial class QdrantHttpClient
     /// <param name="withPayload">Whether the whole payload or only selected payload properties should be returned with the response.</param>
     /// <param name="withVector">Whether the vector, all named vectors or only selected named vectors should be returned with the response.</param>
     /// <param name="consistency">The consistency settings.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
     public async Task<GetPointsResponse> GetPoints(
         string collectionName,
         IEnumerable<PointId> pointIds,
         PayloadPropertiesSelector withPayload,
         CancellationToken cancellationToken,
         VectorSelector withVector = null,
-        ReadPointsConsistency consistency = null)
+        ReadPointsConsistency consistency = null,
+        ShardSelector shardSelector = null)
     {
         var points = new GetPointsRequest
         {
             Ids = pointIds,
             WithPayload = withPayload,
-            WithVector = withVector ?? VectorSelector.None
+            WithVector = withVector ?? VectorSelector.None,
+            ShardKey = shardSelector,
         };
 
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
@@ -371,6 +379,10 @@ public partial class QdrantHttpClient
     /// <param name="withPayload">Whether the whole payload or only selected payload properties should be returned with the response.</param>
     /// <param name="withVector">Whether the vector, all named vectors or only selected named vectors should be returned with the response.</param>
     /// <param name="consistency">The consistency settings.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
     public async Task<ScrollPointsResponse> ScrollPoints(
         string collectionName,
         QdrantFilter filter,
@@ -379,7 +391,8 @@ public partial class QdrantHttpClient
         ulong limit = 10,
         PointId offsetPoint = null,
         VectorSelector withVector = null,
-        ReadPointsConsistency consistency = null)
+        ReadPointsConsistency consistency = null,
+        ShardSelector shardSelector = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -389,7 +402,8 @@ public partial class QdrantHttpClient
             Limit = limit,
             Offset = offsetPoint,
             WithPayload = withPayload,
-            WithVector = withVector ?? VectorSelector.None
+            WithVector = withVector ?? VectorSelector.None,
+            ShardKey = shardSelector
         };
 
         string url = $"/collections/{collectionName}/points/scroll?consistency={consistencyValue}";

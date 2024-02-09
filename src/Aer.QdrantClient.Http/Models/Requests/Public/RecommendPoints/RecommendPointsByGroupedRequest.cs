@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Shared;
 
 // ReSharper disable MemberCanBeInternal
 // ReSharper disable ClassNeverInstantiated.Global

@@ -6,6 +6,7 @@
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public;
 
@@ -44,16 +45,22 @@ public class BatchUpdatePointsRequest
     /// Append an upsert points operation to batch.
     /// </summary>
     /// <param name="upsertPoints">Points to upsert.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
     /// <typeparam name="TPayload">The type of the point payload.</typeparam>
     public BatchUpdatePointsRequest UpsertPoints<TPayload>(
-        IEnumerable<UpsertPointsRequest<TPayload>.UpsertPoint> upsertPoints)
+        IEnumerable<UpsertPointsRequest<TPayload>.UpsertPoint> upsertPoints,
+        ShardSelector shardSelector = null)
         where TPayload : class
     {
         var opeartion = new UpsertPointsOperation()
         {
             Upsert = new UpsertPointsRequest<TPayload>()
             {
-                Points = upsertPoints
+                Points = upsertPoints,
+                ShardKey = shardSelector,
             }
         };
 
@@ -66,13 +73,20 @@ public class BatchUpdatePointsRequest
     /// Append a delete points operation to batch.
     /// </summary>
     /// <param name="pointsToDelete">Points to delete.</param>
-    public BatchUpdatePointsRequest DeletePoints(IEnumerable<PointId> pointsToDelete)
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
+    public BatchUpdatePointsRequest DeletePoints(
+        IEnumerable<PointId> pointsToDelete,
+        ShardSelector shardSelector = null)
     {
         var opeartion = new DeletePointsOperation()
         {
             Delete = new DeletePointsRequest()
             {
-                Points = pointsToDelete
+                Points = pointsToDelete,
+                ShardKey = shardSelector
             }
         };
 
@@ -86,15 +100,23 @@ public class BatchUpdatePointsRequest
     /// </summary>
     /// <param name="payload">Payload to set.</param>
     /// <param name="pointsToSetPayloadFor">Point ids to set payload for.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
     /// <typeparam name="TPayload">The type of the point payload.</typeparam>
     public BatchUpdatePointsRequest SetPointsPayload<TPayload>(
         TPayload payload,
-        IEnumerable<PointId> pointsToSetPayloadFor)
+        IEnumerable<PointId> pointsToSetPayloadFor,
+        ShardSelector shardSelector = null)
         where TPayload : class
     {
         var opeartion = new SetPointsPayloadOperation()
         {
             SetPayload = new SetPointsPayloadRequest<TPayload>(payload, pointsToSetPayloadFor)
+            {
+                ShardKey = shardSelector,
+            }
         };
 
         Operations.Add(opeartion);
@@ -107,15 +129,23 @@ public class BatchUpdatePointsRequest
     /// </summary>
     /// <param name="payload">Payload to set.</param>
     /// <param name="pointsFilterToSetPayloadFor">Points filter to set payload for.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
     /// <typeparam name="TPayload">The type of the point payload.</typeparam>
     public BatchUpdatePointsRequest SetPointsPayload<TPayload>(
         TPayload payload,
-        QdrantFilter pointsFilterToSetPayloadFor)
+        QdrantFilter pointsFilterToSetPayloadFor,
+        ShardSelector shardSelector = null)
         where TPayload : class
     {
         var opeartion = new SetPointsPayloadOperation()
         {
             SetPayload = new SetPointsPayloadRequest<TPayload>(payload, pointsFilterToSetPayloadFor)
+            {
+                ShardKey = shardSelector
+            }
         };
 
         Operations.Add(opeartion);
@@ -128,16 +158,24 @@ public class BatchUpdatePointsRequest
     /// </summary>
     /// <param name="payload">Payload to overwrite.</param>
     /// <param name="pointsToOverwritePayloadFor">Point ids to overwrite payload for.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
     /// <typeparam name="TPayload">The type of the point payload.</typeparam>
     public BatchUpdatePointsRequest OverwritePointsPayload<TPayload>(
         TPayload payload,
-        IEnumerable<PointId> pointsToOverwritePayloadFor)
+        IEnumerable<PointId> pointsToOverwritePayloadFor,
+        ShardSelector shardSelector = null)
         where TPayload : class
     {
         var opeartion = new OverwritePointsPayloadOperation()
         {
             OverwritePayload =
                 new OverwritePointsPayloadRequest<TPayload>(payload, pointsToOverwritePayloadFor)
+                {
+                    ShardKey = shardSelector
+                }
         };
 
         Operations.Add(opeartion);
@@ -150,16 +188,24 @@ public class BatchUpdatePointsRequest
     /// </summary>
     /// <param name="payload">Payload to overwrite.</param>
     /// <param name="pointsFilterToOverwritePayloadFor">Points filter to overwrite payload for.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
     /// <typeparam name="TPayload">The type of the point payload.</typeparam>
     public BatchUpdatePointsRequest OverwritePointsPayload<TPayload>(
         TPayload payload,
-        QdrantFilter pointsFilterToOverwritePayloadFor)
+        QdrantFilter pointsFilterToOverwritePayloadFor,
+        ShardSelector shardSelector = null)
         where TPayload : class
     {
         var opeartion = new OverwritePointsPayloadOperation()
         {
             OverwritePayload =
                 new OverwritePointsPayloadRequest<TPayload>(payload, pointsFilterToOverwritePayloadFor)
+                {
+                    ShardKey = shardSelector
+                }
         };
 
         Operations.Add(opeartion);
@@ -172,15 +218,23 @@ public class BatchUpdatePointsRequest
     /// </summary>
     /// <param name="payloadKeysToDelete">Payload keys to delete.</param>
     /// <param name="pointsToDeletePayloadKeysFor">Point ids to delete payload keys for.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
     public BatchUpdatePointsRequest DeletePointsPayloadKeys(
         IEnumerable<string> payloadKeysToDelete,
-        IEnumerable<PointId> pointsToDeletePayloadKeysFor)
+        IEnumerable<PointId> pointsToDeletePayloadKeysFor,
+        ShardSelector shardSelector = null)
     {
         var opeartion = new DeletePointsPayloadKeysOperation()
         {
             DeletePayload = new DeletePointsPayloadKeysRequest(
                 payloadKeysToDelete,
                 pointsToDeletePayloadKeysFor)
+            {
+                ShardKey = shardSelector
+            }
         };
 
         Operations.Add(opeartion);
@@ -193,15 +247,23 @@ public class BatchUpdatePointsRequest
     /// </summary>
     /// <param name="payloadKeysToDelete">Payload keys to delete.</param>
     /// <param name="pointsFilterToDeletePayloadKeysFor">Points filter to delete payload for.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
     public BatchUpdatePointsRequest DeletePointsPayloadKeys(
         IEnumerable<string> payloadKeysToDelete,
-        QdrantFilter pointsFilterToDeletePayloadKeysFor)
+        QdrantFilter pointsFilterToDeletePayloadKeysFor,
+        ShardSelector shardSelector = null)
     {
         var opeartion = new DeletePointsPayloadKeysOperation()
         {
             DeletePayload = new DeletePointsPayloadKeysRequest(
                 payloadKeysToDelete,
                 pointsFilterToDeletePayloadKeysFor)
+            {
+                ShardKey = shardSelector
+            }
         };
 
         Operations.Add(opeartion);
@@ -213,11 +275,21 @@ public class BatchUpdatePointsRequest
     /// Append a clear points payload operation to batch.
     /// </summary>
     /// <param name="pointIdsToClearPayloadFor">Point ids to clear payload for.</param>
-    public BatchUpdatePointsRequest ClearPointsPayload(IEnumerable<PointId> pointIdsToClearPayloadFor)
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
+    public BatchUpdatePointsRequest ClearPointsPayload(
+        IEnumerable<PointId> pointIdsToClearPayloadFor,
+
+        ShardSelector shardSelector = null)
     {
         var opeartion = new ClearPointsPayloadOperation()
         {
             ClearPayload = new ClearPointsPayloadRequest(pointIdsToClearPayloadFor)
+            {
+                ShardKey = shardSelector
+            }
         };
 
         Operations.Add(opeartion);
@@ -229,12 +301,20 @@ public class BatchUpdatePointsRequest
     /// Append a clear points payload operation to batch.
     /// </summary>
     /// <param name="pointsFilterToClearPayloadFor">Points filter to clear payload for.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
     public BatchUpdatePointsRequest ClearPointsPayload(
-        QdrantFilter pointsFilterToClearPayloadFor)
+        QdrantFilter pointsFilterToClearPayloadFor,
+        ShardSelector shardSelector = null)
     {
         var opeartion = new ClearPointsPayloadOperation()
         {
             ClearPayload = new ClearPointsPayloadRequest(pointsFilterToClearPayloadFor)
+            {
+                ShardKey = shardSelector
+            }
         };
 
         Operations.Add(opeartion);
@@ -246,13 +326,20 @@ public class BatchUpdatePointsRequest
     /// Append an update points vectors operation to batch.
     /// </summary>
     /// <param name="updatedPointVectors">Points with updated vectors.</param>
-    public BatchUpdatePointsRequest UpdatePointsVectors(PointVector[] updatedPointVectors)
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
+    public BatchUpdatePointsRequest UpdatePointsVectors(
+        PointVector[] updatedPointVectors,
+        ShardSelector shardSelector = null)
     {
         var opeartion = new UpdatePointsVectorsOperation()
         {
             UpdateVectors = new UpdatePointsVectorsRequest()
             {
-                Points = updatedPointVectors
+                Points = updatedPointVectors,
+                ShardKey = shardSelector
             }
         };
 
@@ -264,12 +351,50 @@ public class BatchUpdatePointsRequest
     /// <summary>
     /// Append a delete points vectors operation to batch.
     /// </summary>
-    /// <param name="deletePointsVectorsRequest">Delete points vectors request.</param>
-    public BatchUpdatePointsRequest DeletePointsVectors(DeletePointsVectorsRequest deletePointsVectorsRequest)
+    /// <param name="vectorNamesToDelete">Names of vectors to delete.</param>
+    /// <param name="pointsToDelteVectorsFor">Point ids to delete vectors for.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
+    public BatchUpdatePointsRequest DeletePointsVectors(
+        IEnumerable<string> vectorNamesToDelete,
+        IEnumerable<PointId> pointsToDelteVectorsFor,
+        ShardSelector shardSelector = null)
     {
         var opeartion = new DeletePointsVectorsOperation()
         {
-            DeleteVectors = deletePointsVectorsRequest
+            DeleteVectors = new DeletePointsVectorsRequest(vectorNamesToDelete, pointsToDelteVectorsFor)
+            {
+                ShardKey = shardSelector
+            }
+        };
+
+        Operations.Add(opeartion);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Append a delete points vectors operation to batch.
+    /// </summary>
+    /// <param name="vectorNamesToDelete">Names of vectors to delete.</param>>
+    /// <param name="pointsFilterToDeleteVectorsFor">Points filter to delete vectors for.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
+    public BatchUpdatePointsRequest DeletePointsVectors(
+        IEnumerable<string> vectorNamesToDelete,
+        QdrantFilter pointsFilterToDeleteVectorsFor,
+        ShardSelector shardSelector = null)
+    {
+        var opeartion = new DeletePointsVectorsOperation()
+        {
+            DeleteVectors = new DeletePointsVectorsRequest(vectorNamesToDelete, pointsFilterToDeleteVectorsFor)
+            {
+                ShardKey = shardSelector
+            }
         };
 
         Operations.Add(opeartion);

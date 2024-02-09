@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Shared;
 
 // ReSharper disable MemberCanBeInternal
 // ReSharper disable ClassNeverInstantiated.Global
@@ -18,4 +19,11 @@ public sealed class DeletePointsRequest
     /// </summary>
     [JsonConverter(typeof(PointIdCollectionJsonConverter))]
     public required IEnumerable<PointId> Points { get; set; }
+
+    /// <summary>
+    /// The shard selector to perform operation only on specified shards.
+    /// If not set - perform operation on all shards.
+    /// </summary>
+    [JsonConverter(typeof(ShardSelectorJsonConverter))]
+    public ShardSelector ShardKey { get; set; }
 }

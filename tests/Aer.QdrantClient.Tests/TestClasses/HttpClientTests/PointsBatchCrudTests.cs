@@ -293,4 +293,74 @@ internal class PointsBatchCrudTests : QdrantTestsBase
         readAllPoints.Result.Single(p => p.Id.Equals(pointToUpdateVectorFor))
             .Vector.Default.Should().BeEquivalentTo(vectorToUpdateTo);
     }
+
+    [Test]
+    public async Task BatchUpdatePoints_Upsert_DeleteVector()
+    {
+        var vectorSize = 10U;
+        var vectorCount = 5;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                vectorSize,
+                namedVectorNames: CreateVectorNames(2),
+                isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+
+        for (int i = 0; i < vectorCount; i++)
+        {
+            upsertPoints.Add(
+                new(
+                    PointId.Integer((ulong) i),
+                    CreateTestNamedVectors(vectorSize, 2),
+                    new TestPayload()
+                    {
+                        Integer = i + 1,
+                        Text = (i + 1).ToString()
+                    }
+                )
+            );
+        }
+
+        var pointToDeleteVectorFor = upsertPoints.Select(u => u.Id).Skip(1).First();
+        var pointToDeleteVectorForVectorName = upsertPoints.Select(u => u.Vector).Skip(1).First()
+            .AsNamedVectors().Vectors.Keys.First();
+
+        var batchUpdateRequest = BatchUpdatePointsRequest.Create()
+            .UpsertPoints(upsertPoints)
+            .DeletePointsVectors(
+                pointToDeleteVectorForVectorName.YieldSingle(),
+                pointToDeleteVectorFor.YieldSingle()
+            );
+
+        var batchUpdateResponse = await _qdrantHttpClient.BatchUpdate(
+            TestCollectionName,
+            batchUpdateRequest,
+            CancellationToken.None);
+
+        batchUpdateResponse.Status.IsSuccess.Should().BeTrue();
+        batchUpdateResponse.Result.Length.Should().Be(batchUpdateRequest.OperationsCount);
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        var readAllPoints = await _qdrantHttpClient.GetPoints(
+            TestCollectionName,
+            upsertPoints.Select(p => p.Id),
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true);
+
+        readAllPoints.Status.IsSuccess.Should().BeTrue();
+        readAllPoints.Result.Length.Should().Be(upsertPoints.Count);
+
+        readAllPoints.Result.Single(p => p.Id.Equals(pointToDeleteVectorFor))
+            .Vector.AsNamedVectors().Vectors.ContainsKey(pointToDeleteVectorForVectorName).Should().BeFalse();
+    }
 }

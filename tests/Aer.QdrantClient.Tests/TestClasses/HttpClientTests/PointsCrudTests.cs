@@ -699,7 +699,7 @@ internal class PointsCrudTests : QdrantTestsBase
         var vectorCount = 10;
         var namedVectorsCount = 3;
 
-        var vectorNames = GetVectorNames(namedVectorsCount);
+        var vectorNames = CreateVectorNames(namedVectorsCount);
 
         var createCollectionResponse = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -787,7 +787,7 @@ internal class PointsCrudTests : QdrantTestsBase
         var vectorCount = 10;
         var namedVectorsCount = 3;
 
-        var vectorNames = GetVectorNames(namedVectorsCount);
+        var vectorNames = CreateVectorNames(namedVectorsCount);
 
         var includedVectorNames = vectorNames.Take(2).ToHashSet();
 
@@ -1538,7 +1538,7 @@ internal class PointsCrudTests : QdrantTestsBase
         var vectorCount = 10;
         var namedVectorsCount = 3;
 
-        var vectorNames = GetVectorNames(namedVectorsCount);
+        var vectorNames = CreateVectorNames(namedVectorsCount);
 
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -1622,7 +1622,7 @@ internal class PointsCrudTests : QdrantTestsBase
         var vectorCount = 10;
         var namedVectorsCount = 3;
 
-        var vectorNames = GetVectorNames(namedVectorsCount);
+        var vectorNames = CreateVectorNames(namedVectorsCount);
 
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,

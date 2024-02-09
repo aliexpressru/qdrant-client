@@ -2,6 +2,7 @@
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Shared;
 
 // ReSharper disable MemberCanBeInternal
 // ReSharper disable ClassNeverInstantiated.Global
@@ -32,6 +33,13 @@ public sealed class OverwritePointsPayloadRequest<TPayload>
     /// </summary>
     [JsonConverter(typeof(QdrantFilterJsonConverter))]
     public QdrantFilter Filter { get; }
+
+    /// <summary>
+    /// The shard selector to perform operation only on specified shards.
+    /// If not set - perform operation on all shards.
+    /// </summary>
+    [JsonConverter(typeof(ShardSelectorJsonConverter))]
+    public ShardSelector ShardKey { get; set; }
 
     /// <summary>
     /// Initializes a new instance of <see cref="OverwritePointsPayloadRequest{TPayload}"/> with payload

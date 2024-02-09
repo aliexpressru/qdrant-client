@@ -143,12 +143,6 @@ public abstract class DiscoverPointsByRequest
     #endregion
 
     /// <summary>
-    /// Specify in which shards to look for the points, if not specified - look in all shards.
-    /// </summary>
-    [JsonConverter(typeof(ShardSelectorJsonConverter))]
-    public ShardSelector ShardKey { get; set; }
-
-    /// <summary>
     /// Look only for points which satisfy the filter conditions.
     /// </summary>
     [JsonConverter(typeof(QdrantFilterJsonConverter))]
@@ -203,6 +197,13 @@ public abstract class DiscoverPointsByRequest
     /// </summary>
     /// <remarks>The other collection should have the same vector size as the current collection.</remarks>
     public VectorsLookupLocation LookupFrom { set; get; }
+
+    /// <summary>
+    /// The shard selector to perform operation only on specified shards.
+    /// If not set - perform operation on all shards.
+    /// </summary>
+    [JsonConverter(typeof(ShardSelectorJsonConverter))]
+    public ShardSelector ShardKey { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DiscoverPointsByRequest"/> class.

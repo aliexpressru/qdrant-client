@@ -31,4 +31,11 @@ internal sealed class GetPointsRequest
     /// </summary>
     [JsonConverter(typeof(VectorSelectorJsonConverter))]
     public VectorSelector WithVector { get; set; } = false;
+
+    /// <summary>
+    /// The shard selector to perform operation only on specified shards.
+    /// If not set - perform operation on all shards.
+    /// </summary>
+    [JsonConverter(typeof(ShardSelectorJsonConverter))]
+    public ShardSelector ShardKey { get; set; }
 }

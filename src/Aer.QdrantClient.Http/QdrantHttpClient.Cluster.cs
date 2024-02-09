@@ -1,4 +1,5 @@
-﻿using Aer.QdrantClient.Http.Models.Requests;
+﻿using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
 
 // ReSharper disable MemberCanBeInternal
@@ -76,8 +77,8 @@ public partial class QdrantHttpClient
     /// </summary>
     /// <param name="collectionName">Collection name to update sharding info for.</param>
     /// <param name="updateOperation">The required collection clustering setup update operation model.</param>
-    /// <param name="cancellationToken">THe cancellation token.</param>
-    /// <param name="timeout">THe operation timeout. If not set the default value of 30 seconds used.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="timeout">The operation timeout. If not set the default value of 30 seconds used.</param>
     public async Task<DefaultOperationResponse> UpdateCollectionClusteringSetup(
         string collectionName,
         UpdateCollectionClusteringSetupRequest updateOperation,
@@ -92,6 +93,71 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             updateOperation,
+            cancellationToken);
+
+        return response;
+    }
+
+    /// <summary>
+    /// Creates collection shards with specified shard key.
+    /// </summary>
+    /// <param name="collectionName">Collection name to create shard key for.</param>
+    /// <param name="shardKey">The shard key for shards to create.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="shardsNumber">How many shards to create for this key. If not specified, will use the default value from config.</param>
+    /// <param name="replicationFactor">How many replicas to create for each shard. If not specified, will use the default value from config.</param>
+    /// <param name="placement">
+    /// Placement of shards for this key - array of peer ids, that can be used to place shards for this key.
+    /// If not specified, will be randomly placed among all peers.
+    /// </param>
+    /// <param name="timeout">The operation timeout. If not set the default value of 30 seconds used.</param>
+    public async Task<DefaultOperationResponse> CreateShardKey(
+        string collectionName,
+        ShardKey shardKey,
+        CancellationToken cancellationToken,
+        uint? shardsNumber = null,
+        uint? replicationFactor = null,
+        ulong[] placement = null,
+        TimeSpan? timeout = null)
+    {
+        var timeoutValue = GetTimeoutValueOrDefault(timeout);
+
+        var createShardKeyRequest = new CreateShardKeyRequest(shardKey, shardsNumber, replicationFactor, placement);
+
+        string url = $"/collections/{collectionName}/shards?timeout={timeoutValue}";
+
+        var response = await ExecuteRequest<CreateShardKeyRequest, DefaultOperationResponse>(
+            url,
+            HttpMethod.Put,
+            createShardKeyRequest,
+            cancellationToken);
+
+        return response;
+    }
+
+    /// <summary>
+    /// Deletes collection shards with specified shard key.
+    /// </summary>
+    /// <param name="collectionName">Collection name to delete shard key for.</param>
+    /// <param name="shardKey">The shard key for shards to delete.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="timeout">The operation timeout. If not set the default value of 30 seconds used.</param>
+    public async Task<DefaultOperationResponse> DeleteShardKey(
+        string collectionName,
+        ShardKey shardKey,
+        CancellationToken cancellationToken,
+        TimeSpan? timeout = null)
+    {
+        var timeoutValue = GetTimeoutValueOrDefault(timeout);
+
+        var deleteShardKeyRequest = new DeleteShardKeyRequest(shardKey);
+
+        string url = $"/collections/{collectionName}/shards/delete?timeout={timeoutValue}";
+
+        var response = await ExecuteRequest<DeleteShardKeyRequest, DefaultOperationResponse>(
+            url,
+            HttpMethod.Post,
+            deleteShardKeyRequest,
             cancellationToken);
 
         return response;

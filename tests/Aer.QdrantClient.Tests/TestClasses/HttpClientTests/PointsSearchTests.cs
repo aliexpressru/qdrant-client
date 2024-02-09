@@ -142,7 +142,7 @@ internal class PointsSearchTests : QdrantTestsBase
         var vectorCount = 10;
         var namedVectorsCount = 1;
 
-        var vectorNames = GetVectorNames(namedVectorsCount);
+        var vectorNames = CreateVectorNames(namedVectorsCount);
 
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,

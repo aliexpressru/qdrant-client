@@ -33,6 +33,12 @@ public abstract class RecommendPointsByRequest
         [JsonConverter(typeof(PointIdCollectionJsonConverter))]
         public IEnumerable<PointId> Negative { get; }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RecommendPointsByRequest.RecommendPointsByIdRequest"/>.
+        /// </summary>
+        /// <param name="positive">Recommend points closest to specified vectors.</param>
+        /// <param name="negative">Optional vectors to avoid similarity with.</param>
+        /// <param name="limit">Maximal number of points to return.</param>
         public RecommendPointsByIdRequest(
             IEnumerable<PointId> positive,
             IEnumerable<PointId> negative,
@@ -55,6 +61,12 @@ public abstract class RecommendPointsByRequest
         /// </summary>
         public IEnumerable<float[]> Negative { get; }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RecommendPointsByRequest.RecommendPointsByExampleRequest"/>.
+        /// </summary>
+        /// <param name="positive">Recommend points closest to specified vectors.</param>
+        /// <param name="negative">Optional vectors to avoid similarity with.</param>
+        /// <param name="limit">Maximal number of points to return.</param>
         public RecommendPointsByExampleRequest(
             IEnumerable<float[]> positive,
             IEnumerable<float[]> negative,
@@ -127,6 +139,13 @@ public abstract class RecommendPointsByRequest
     /// </summary>
     /// <remarks>The other collection should have the same vector size as the current collection.</remarks>
     public VectorsLookupLocation LookupFrom { set; get; }
+
+    /// <summary>
+    /// The shard selector to perform operation only on specified shards.
+    /// If not set - perform operation on all shards.
+    /// </summary>
+    [JsonConverter(typeof(ShardSelectorJsonConverter))]
+    public ShardSelector ShardKey { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RecommendPointsByRequest"/> class.

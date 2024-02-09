@@ -43,4 +43,11 @@ internal sealed class ScrollPointsRequest
     /// </summary>
     [JsonConverter(typeof(PointIdJsonConverter))]
     public PointId Offset { get; set; }
+
+    /// <summary>
+    /// The shard selector to perform operation only on specified shards.
+    /// If not set - perform operation on all shards.
+    /// </summary>
+    [JsonConverter(typeof(ShardSelectorJsonConverter))]
+    public ShardSelector ShardKey { get; set; }
 }

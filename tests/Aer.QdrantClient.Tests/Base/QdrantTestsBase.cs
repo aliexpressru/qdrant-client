@@ -222,7 +222,7 @@ public class QdrantTestsBase
     {
         Dictionary<string, float[]> namedVectors = new(namedVectorsCount);
 
-        foreach (var vectorName in GetVectorNames(namedVectorsCount))
+        foreach (var vectorName in CreateVectorNames(namedVectorsCount))
         {
             var vector = Enumerable.Range(0, (int) vectorLength)
                 .Select(_ => float.CreateTruncating(Random.Shared.NextDouble()))
@@ -234,7 +234,7 @@ public class QdrantTestsBase
         return namedVectors;
     }
 
-    protected List<string> GetVectorNames(int vectorCount)
+    protected List<string> CreateVectorNames(int vectorCount)
     {
         List<string> ret = new(vectorCount);
         for (int i = 0; i < vectorCount; i++)

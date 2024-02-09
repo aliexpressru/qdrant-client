@@ -25,37 +25,6 @@ public abstract class ShardKey
     /// </summary>
     public abstract string GetString();
 
-    #region Operators
-
-    /// <summary>
-    /// Performs an implicit conversion from <see cref="ulong"/> to <see cref="ShardKey"/>.
-    /// </summary>
-    /// <param name="shardKey">The shard key value.</param>
-    public static implicit operator ShardKey(ulong shardKey)
-    {
-        return Integer(shardKey);
-    }
-
-    /// <summary>
-    /// Performs an implicit conversion from <see cref="int"/> to <see cref="ShardKey"/>.
-    /// </summary>
-    /// <param name="shardKey">The shard key value.</param>
-    public static implicit operator ShardKey(int shardKey)
-    {
-        return Integer(checked((ulong)shardKey));
-    }
-
-    /// <summary>
-    /// Performs an implicit conversion from <see cref="String"/> to <see cref="ShardKey"/>.
-    /// </summary>
-    /// <param name="shardKey">The shard key value.</param>
-    public static implicit operator ShardKey(string shardKey)
-    {
-        return String(shardKey);
-    }
-
-    #endregion
-
     #region Factory methods
 
     /// <summary>
@@ -71,6 +40,42 @@ public abstract class ShardKey
     /// <param name="shardKeyValue">Shard key value.</param>
     public static ShardKey Integer(ulong shardKeyValue)
         => new IntegerShardKey(shardKeyValue);
+
+    #endregion
+
+    #region Operators
+
+    /// <summary>
+    /// Performs an implicit conversion from <see cref="ulong"/> to <see cref="ShardKey"/>.
+    /// </summary>
+    /// <param name="shardKeyValue">The shard key value.</param>
+    public static implicit operator ShardKey(ulong shardKeyValue)
+    {
+        return Integer(shardKeyValue);
+    }
+
+    /// <summary>
+    /// Performs an implicit conversion from <see cref="int"/> to <see cref="ShardKey"/>.
+    /// </summary>
+    /// <param name="shardKeyValue">The shard key value.</param>
+    public static implicit operator ShardKey(int shardKeyValue)
+    {
+        if (shardKeyValue < 0)
+        {
+            throw new InvalidOperationException($"Can't use negative integer {shardKeyValue} as shard key value");
+        }
+
+        return Integer(checked((ulong) shardKeyValue));
+    }
+
+    /// <summary>
+    /// Performs an implicit conversion from <see cref="String"/> to <see cref="ShardKey"/>.
+    /// </summary>
+    /// <param name="shardKeyValue">The shard key value.</param>
+    public static implicit operator ShardKey(string shardKeyValue)
+    {
+        return String(shardKeyValue);
+    }
 
     #endregion
 }
