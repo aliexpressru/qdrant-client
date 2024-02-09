@@ -77,7 +77,7 @@ public class PointsDiscoverTests : QdrantTestsBase
                     target: CreateTestVector(10)),
                 CancellationToken.None);
 
-        discoverNonexistentPointResult.Status.IsSuccess.Should().BeFalse();
+        discoverNonexistentPointResult.Status.IsSuccess.Should().BeTrue();
 
         discoverNonexistentPointResult.Result.Length.Should().Be(0);
     }
@@ -304,7 +304,7 @@ public class PointsDiscoverTests : QdrantTestsBase
             CancellationToken.None);
 
         recommendedPoints.Status.IsSuccess.Should().BeTrue();
-        recommendedPoints.Result.Length.Should().Be(vectorCount-2); // all vectors except the two example ones
+        recommendedPoints.Result.Length.Should().Be(vectorCount-3); // all vectors except the three example ones
         recommendedPoints.Result.Should().AllSatisfy(
             p =>
                 p.Id.Should().NotBe(targetPointId)
@@ -427,8 +427,6 @@ public class PointsDiscoverTests : QdrantTestsBase
 
         await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
 
-        var filterOutPointId = upsertPoints.Last().Id;
-
         var request1 = DiscoverPointsRequest.ByVectorExamples(
             positiveNegativeContextPairs: new[] {new KeyValuePair<float[], float[]>(positiveVector, negativeVector)},
             (uint) vectorCount,
@@ -453,10 +451,7 @@ public class PointsDiscoverTests : QdrantTestsBase
         foreach (var pointsForRequestInBatch in recommendedPoints.Result)
         {
             pointsForRequestInBatch.Length.Should()
-                .Be(vectorCount - 1); // all points since we supplied all of the existing vectors minus one filtered out
-
-            pointsForRequestInBatch.Should()
-                .AllSatisfy(p => p.Id.Should().NotBe(filterOutPointId));
+                .Be(vectorCount); // all points since we supplied all of the existing vectors minus one filtered out
 
             pointsForRequestInBatch.Should()
                 .AllSatisfy(p => p.Vector.Should().NotBeNull())

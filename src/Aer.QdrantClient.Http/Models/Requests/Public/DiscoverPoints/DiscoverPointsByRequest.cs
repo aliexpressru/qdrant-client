@@ -13,6 +13,8 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
 /// <summary>
 /// Represents a discovery API request.
 /// </summary>
+[JsonDerivedType(typeof(DiscoverPointsByIdRequest))]
+[JsonDerivedType(typeof(DiscoverPointsByExampleRequest))]
 public abstract class DiscoverPointsByRequest
 {
     #region Nested classes
