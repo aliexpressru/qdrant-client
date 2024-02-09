@@ -9,7 +9,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// </summary>
 /// <remarks>
 /// The batch search API enables to perform multiple search requests via a single request.
-/// Its semantic is straightforward, n batched search requests are equivalent to n singular search requests.
+/// Its semantic is straightforward : 1 batched search request is equivalent to n singular search requests.
 /// </remarks>
 public sealed class SearchPointsBatchedRequest
 {

@@ -5,32 +5,29 @@ using Aer.QdrantClient.Http.Models.Shared;
 // ReSharper disable ClassNeverInstantiated.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace Aer.QdrantClient.Http.Models.Requests.Public;
+namespace Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
 
 /// <summary>
-/// Represents a builder class for building instances of <see cref="RecommendPointsByRequest"/> point recommendation requests.
+/// Represents a builder class for building instances of <see cref="DiscoverPointsByRequest"/> point discovery requests.
 /// </summary>
-public static class RecommendPointsRequest
+public static class DiscoverPointsRequest
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="RecommendPointsByRequest"/> class with point id vector examples.
+    /// Initializes a new instance of the <see cref="DiscoverPointsByRequest"/> class with point id vector target and context.
     /// </summary>
-    /// <param name="positiveVectorExamples">Recommend points closest to specified vectors.</param>
+    /// <param name="positiveNegativeContextPairs">Pairs of positive - negative examples to constrain the search.</param>
     /// <param name="limit">Maximal number of nearest points to return.</param>
-    /// <param name="negativeVectorExamples">Optional vectors to avoid similarity with.</param>
+    /// <param name="target">Look for vectors closest to this.</param>
     /// <param name="withVector">Whether the vector, all named vectors or only selected named vectors should be returned with the response.</param>
     /// <param name="withPayload">Whether the whole payload or only selected payload properties should be returned with the response.</param>
-    public static RecommendPointsByRequest ByPointIds(
-        IEnumerable<PointId> positiveVectorExamples,
+    public static DiscoverPointsByRequest ByPointIds(
+        IEnumerable<KeyValuePair<PointId, PointId>> positiveNegativeContextPairs,
         uint limit,
-        IEnumerable<PointId> negativeVectorExamples = null,
+        PointId target = null,
         VectorSelector withVector = null,
         PayloadPropertiesSelector withPayload = null)
     {
-        var ret = new RecommendPointsByRequest.RecommendPointsByIdRequest(
-            positiveVectorExamples,
-            negativeVectorExamples,
-            limit)
+        var ret = new DiscoverPointsByRequest.DiscoverPointsByIdRequest(target, positiveNegativeContextPairs, limit)
         {
             WithVector = withVector ?? VectorSelector.None,
             WithPayload = withPayload
@@ -40,24 +37,21 @@ public static class RecommendPointsRequest
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RecommendPointsByRequest"/> class with raw vector examples.
+    /// Initializes a new instance of the <see cref="DiscoverPointsByRequest"/> class with raw vector target and context.
     /// </summary>
-    /// <param name="positiveVectorExamples">Recommend points closest to specified vectors.</param>
+    /// <param name="positiveNegativeContextPairs">Pairs of positive - negative examples to constrain the search.</param>
     /// <param name="limit">Maximal number of nearest points to return.</param>
-    /// <param name="negativeVectorExamples">Optional vectors to avoid similarity with.</param>
+    /// <param name="target">Look for vectors closest to this.</param>
     /// <param name="withVector">Whether the vector, all named vectors or only selected named vectors should be returned with the response.</param>
     /// <param name="withPayload">Whether the whole payload or only selected payload properties should be returned with the response.</param>
-    public static RecommendPointsByRequest ByVectorExamples(
-        IEnumerable<float[]> positiveVectorExamples,
+    public static DiscoverPointsByRequest ByVectorExamples(
+        IEnumerable<KeyValuePair<float[], float[]>> positiveNegativeContextPairs,
         uint limit,
-        IEnumerable<float[]> negativeVectorExamples = null,
+        float[] target = null,
         VectorSelector withVector = null,
         PayloadPropertiesSelector withPayload = null)
     {
-        var ret = new RecommendPointsByRequest.RecommendPointsByExampleRequest(
-            positiveVectorExamples,
-            negativeVectorExamples,
-            limit)
+        var ret = new DiscoverPointsByRequest.DiscoverPointsByExampleRequest(target, positiveNegativeContextPairs, limit)
         {
             WithVector = withVector ?? VectorSelector.None,
             WithPayload = withPayload

@@ -231,9 +231,9 @@ internal class PointsSearchTests : QdrantTestsBase
                     upsertPoints[0].Vector,
                     5)
                 {
-                    Params = new SearchPointsRequest.SearchParameters()
+                    Params = new VectorSearchParameters()
                     {
-                        Quantization = new SearchPointsRequest.SearchParameters.QuantizationParameters()
+                        Quantization = new VectorSearchParameters.QuantizationParameters()
                         {
                             Ignore = false,
                             Rescore = true,

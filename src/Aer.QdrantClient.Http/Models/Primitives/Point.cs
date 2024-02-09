@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
+using Aer.QdrantClient.Http.Models.Shared;
 
 // ReSharper disable MemberCanBeInternal
 // ReSharper disable ClassNeverInstantiated.Global
@@ -30,4 +31,10 @@ public class Point
     /// </summary>
     [JsonConverter(typeof(PayloadJsonConverter))]
     public Payload Payload { get; set; }
+
+    /// <summary>
+    /// Gets or sets the point shard key.
+    /// </summary>
+    [JsonConverter(typeof(ShardKeyJsonConverter))]
+    public ShardKey ShardKey { get; set; }
 }

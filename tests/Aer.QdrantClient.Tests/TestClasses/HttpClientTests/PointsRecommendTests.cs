@@ -31,14 +31,14 @@ public class PointsRecommendTests : QdrantTestsBase
     [Test]
     public async Task RecommendPoints_CollectionDoesNotExist()
     {
-        var searchPointInNonexistentCollectionResult
+        var recommendPointInNonexistentCollectionResult
             = await _qdrantHttpClient.RecommendPoints(
                 TestCollectionName,
                 RecommendPointsRequest.ByVectorExamples(new[] {CreateTestVector(10)}, 10),
                 CancellationToken.None);
 
-        searchPointInNonexistentCollectionResult.Status.IsSuccess.Should().BeFalse();
-        searchPointInNonexistentCollectionResult.Status.Error.Should()
+        recommendPointInNonexistentCollectionResult.Status.IsSuccess.Should().BeFalse();
+        recommendPointInNonexistentCollectionResult.Status.Error.Should()
             .Contain(TestCollectionName)
             .And.Contain("doesn't exist");
     }
@@ -54,15 +54,15 @@ public class PointsRecommendTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var searchForNonexistentPointResult
+        var recommendNonexistentPointResult
             = await _qdrantHttpClient.RecommendPoints(
                 TestCollectionName,
                 RecommendPointsRequest.ByVectorExamples(new[] {CreateTestVector(10)}, 10),
                 CancellationToken.None);
 
-        searchForNonexistentPointResult.Status.IsSuccess.Should().BeTrue();
+        recommendNonexistentPointResult.Status.IsSuccess.Should().BeTrue();
 
-        searchForNonexistentPointResult.Result.Length.Should().Be(0);
+        recommendNonexistentPointResult.Result.Length.Should().Be(0);
     }
 
     [Test]
@@ -119,14 +119,14 @@ public class PointsRecommendTests : QdrantTestsBase
         await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
 
         var positiveExamplePointId = upsertPoints[0].Id;
-        var vectorToAvoid = upsertPoints.Last().Id;
+        var vectorToAvoidPointId = upsertPoints.Last().Id;
 
         var recommendedPoints = await _qdrantHttpClient.RecommendPoints(
             TestCollectionName,
             RecommendPointsRequest.ByPointIds(
                 positiveExamplePointId.YieldSingle(),
                 1,
-                negativeVectorExamples: vectorToAvoid.YieldSingle(),
+                negativeVectorExamples: vectorToAvoidPointId.YieldSingle(),
                 withVector: true,
                 withPayload: true),
             CancellationToken.None);
@@ -350,7 +350,7 @@ public class PointsRecommendTests : QdrantTestsBase
             CancellationToken.None);
 
         recommendedPoints.Status.IsSuccess.Should().BeTrue();
-        recommendedPoints.Result.Length.Should().Be(vectorCount); // all points since we supplied only all of the existing vectors
+        recommendedPoints.Result.Length.Should().Be(vectorCount); // all points since we supplied all of the existing vectors
 
         recommendedPoints.Result.Should()
             .AllSatisfy(p => p.Vector.Should().NotBeNull())
@@ -501,7 +501,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         recommendedPoints.Status.IsSuccess.Should().BeTrue();
         recommendedPoints.Result.Length.Should()
-            .Be(vectorCount - 1); // all points since we supplied only all of the existing vectors minus one filtered out
+            .Be(vectorCount - 1); // all points since we supplied all of the existing vectors minus one filtered out
 
         recommendedPoints.Result.Should()
             .AllSatisfy(p => p.Id.Should().NotBe(filterOutPointId));
@@ -596,7 +596,7 @@ public class PointsRecommendTests : QdrantTestsBase
         foreach (var pointsForRequestInBatch in recommendedPoints.Result)
         {
             pointsForRequestInBatch.Length.Should()
-                .Be(vectorCount - 1); // all points since we supplied only all of the existing vectors minus one filtered out
+                .Be(vectorCount - 1); // all points since we supplied all of the existing vectors minus one filtered out
 
             pointsForRequestInBatch.Should()
                 .AllSatisfy(p => p.Id.Should().NotBe(filterOutPointId));

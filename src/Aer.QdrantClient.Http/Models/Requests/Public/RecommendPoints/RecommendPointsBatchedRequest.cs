@@ -8,8 +8,8 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// Represents the recommend points batch request.
 /// </summary>
 /// <remarks>
-/// The batch search API enables to perform multiple recommend requests via a single request.
-/// Its semantic is straightforward, n batched recommend requests are equivalent to n singular recommend requests.
+/// The batch recommend API enables to perform multiple recommend requests via a single request.
+/// Its semantic is straightforward : 1 batched recommend request is equivalent to n singular recommend requests.
 /// </remarks>
 public sealed class RecommendPointsBatchedRequest
 {

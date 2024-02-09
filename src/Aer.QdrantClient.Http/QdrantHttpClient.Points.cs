@@ -3,6 +3,7 @@ using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Requests.Public;
+using Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 
@@ -580,6 +581,72 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             recommendPointsGroupedRequest,
+            cancellationToken);
+
+        return response;
+    }
+
+    /// <summary>
+    /// Use context and a target to find the most similar points to the target, constrained by the context.
+    /// When using only the context (without a target), a special search - called context search - is performed
+    /// where pairs of points are used to generate a loss that guides the search towards the zone where
+    /// most positive examples overlap. This means that the score minimizes the scenario of finding a point
+    /// closer to a negative than to a positive part of a pair. Since the score of a context relates to loss,
+    /// the maximum score a point can get is <c>0.0</c>, and it becomes normal that many points can have a score of <c>0.0</c>.
+    /// <br/>
+    /// When using target (with or without context), the score behaves a little different:
+    /// The integer part of the score represents the rank with respect to the context, while the decimal part
+    /// of the score relates to the distance to the target. The context part of the score for each pair
+    /// is calculated <c>+1</c> if the point is closer to a positive than to a negative part of a pair,
+    /// and <c>-1</c> otherwise.
+    /// </summary>
+    /// <param name="collectionName">Name of the collection to search in.</param>
+    /// <param name="discoverPointsRequest">The discover points request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="consistency">The consistency settings.</param>
+    public async Task<SearchPointsResponse> DiscoverPoints(
+        string collectionName,
+        DiscoverPointsByRequest discoverPointsRequest,
+        CancellationToken cancellationToken,
+        ReadPointsConsistency consistency = null,
+        TimeSpan? timeout = null)
+    {
+        var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
+
+        var url = $"/collections/{collectionName}/points/discover?consistency={consistencyValue}&timeout={GetTimeoutValueOrDefault(timeout)}";
+
+        var response = await ExecuteRequest<DiscoverPointsByRequest, SearchPointsResponse>(
+            url,
+            HttpMethod.Post,
+            discoverPointsRequest,
+            cancellationToken);
+
+        return response;
+    }
+
+    /// <summary>
+    /// Look for points based on target and/or positive and negative example pairs, in batch.
+    /// </summary>
+    /// <param name="collectionName">Name of the collection to search in.</param>
+    /// <param name="discoverPointsBatchedRequest">The discover points batched request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="consistency">The consistency settings.</param>
+    public async Task<SearchPointsBatchedResponse> DiscoverPointsBatched(
+        string collectionName,
+        DiscoverPointsBatchedRequest discoverPointsBatchedRequest,
+        CancellationToken cancellationToken,
+        ReadPointsConsistency consistency = null,
+        TimeSpan? timeout = null)
+    {
+        var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
+
+        var url =
+            $"/collections/{collectionName}/points/discover/batch?consistency={consistencyValue}&timeout={GetTimeoutValueOrDefault(timeout)}";
+
+        var response = await ExecuteRequest<DiscoverPointsBatchedRequest, SearchPointsBatchedResponse>(
+            url,
+            HttpMethod.Post,
+            discoverPointsBatchedRequest,
             cancellationToken);
 
         return response;
