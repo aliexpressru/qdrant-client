@@ -18,20 +18,17 @@ public sealed class Vector : VectorBase
     public override float[] Default => VectorValues;
 
     /// <inheritdoc/>
-    public override float[] this[string vectorName] =>
-        throw new NotSupportedException(
-            $"Vector names are not supported for single vector values {GetType()}");
+    public override VectorBase this[string vectorName]
+        =>
+            throw new NotSupportedException(
+                $"Vector names are not supported for single vector values {GetType()}");
 
     /// <inheritdoc/>
-    public override float[] FirstOrDefault() => Default;
+    public override VectorBase FirstOrDefault() => Default;
 
     /// <inheritdoc/>
-    public override VectorBase GetNamedVector(string vectorName) =>
-        throw new NotSupportedException(
-            $"Vector names are not supported for single vector values {GetType()}");
-
-    /// <inheritdoc/>
-    public override bool ContainsVector(string vectorName) =>
-        throw new NotSupportedException(
-            $"Vector names are not supported for single vector values {GetType()}");
+    public override bool ContainsVector(string vectorName)
+        =>
+            throw new NotSupportedException(
+                $"Vector names are not supported for single vector values {GetType()}");
 }

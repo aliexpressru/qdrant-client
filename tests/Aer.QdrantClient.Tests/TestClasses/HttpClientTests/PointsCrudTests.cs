@@ -774,7 +774,7 @@ internal class PointsCrudTests : QdrantTestsBase
 
             foreach (var vectorName in vectorNames)
             {
-                var pointVector = namedPointVectors[vectorName];
+                var pointVector = namedPointVectors[vectorName].AsSingleVector().Default;
                 pointVector.Should().NotBeNullOrEmpty();
             }
         }
@@ -868,7 +868,7 @@ internal class PointsCrudTests : QdrantTestsBase
                 {
                     namedPointVectors.Vectors.ContainsKey(vectorName).Should().BeTrue();
 
-                    var pointVector = namedPointVectors[vectorName];
+                    var pointVector = namedPointVectors[vectorName].AsSingleVector().Default;
                     pointVector.Should().NotBeNullOrEmpty();
                 }
                 else
@@ -997,7 +997,7 @@ internal class PointsCrudTests : QdrantTestsBase
                     continue;
                 }
 
-                var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key];
+                var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsSingleVector().Default;
                 var upsertPointNamedVectorValue = upsertPointVector.Value;
 
                 readPointNamedVectorValue.Should().Equal(upsertPointNamedVectorValue);
@@ -1089,10 +1089,11 @@ internal class PointsCrudTests : QdrantTestsBase
             {
                 readPointVectors.ContainsVector(upsertPointVector.Key).Should().BeTrue();
 
-                var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key];
-                var upsertPointNamedVectorValue = upsertPointVector.Value;
+                var readPointSparseVectorValue = readPointVectors[upsertPointVector.Key].AsSparseVector();
+                var upsertPointSparseVectorValue = upsertPointVector.Value.AsSparseVector();
 
-                readPointNamedVectorValue.Should().Equal(upsertPointNamedVectorValue);
+                readPointSparseVectorValue.Indices.Should().Equal(upsertPointSparseVectorValue.Indices);
+                readPointSparseVectorValue.Values.Should().Equal(upsertPointSparseVectorValue.Values);
             }
         }
     }
@@ -1189,10 +1190,22 @@ internal class PointsCrudTests : QdrantTestsBase
             {
                 readPointVectors.ContainsVector(upsertPointVector.Key).Should().BeTrue();
 
-                var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key];
-                var upsertPointNamedVectorValue = upsertPointVector.Value;
+                if (!readPointVectors[upsertPointVector.Key].IsSparseVector)
+                {
+                    var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsSingleVector().Default;
+                    var upsertPointNamedVectorValue = upsertPointVector.Value;
 
-                readPointNamedVectorValue.Should().Equal(upsertPointNamedVectorValue);
+                    readPointNamedVectorValue.Should().Equal(upsertPointNamedVectorValue);
+                }
+                else
+                {
+                    // means we are checking sparse vector
+                    var readPointSparseVectorValue = readPointVectors[upsertPointVector.Key].AsSparseVector();
+                    var upsertPointSparseVectorValue = upsertPointVector.Value.AsSparseVector();
+
+                    readPointSparseVectorValue.Indices.Should().Equal(upsertPointSparseVectorValue.Indices);
+                    readPointSparseVectorValue.Values.Should().Equal(upsertPointSparseVectorValue.Values);
+                }
             }
         }
     }

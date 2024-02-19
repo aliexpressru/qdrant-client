@@ -19,7 +19,8 @@ public abstract class VectorBase
 
     /// <summary>
     /// For <see cref="Vector"/> instance gets a vector itself,
-    /// for <see cref="NamedVectors"/> gets the vector named <see cref="DefaultVectorName"/>.
+    /// for <see cref="NamedVectors"/> gets the vector named <see cref="DefaultVectorName"/>
+    /// for <see cref="SparseVector"/> throws an exception.
     /// </summary>
     [JsonIgnore]
     public abstract float[] Default { get; }
@@ -43,18 +44,13 @@ public abstract class VectorBase
     /// or throws if it is the single vector instance.
     /// </summary>
     /// <param name="vectorName">Name of the vector to get.</param>
-    public abstract float[] this[string vectorName] { get; }
+    public abstract VectorBase this[string vectorName] { get; }
 
     /// <summary>
-    /// Returns the first vector from named vectors collection or a single from a single vector instance.
+    /// Returns the first vector from named vectors collection or a single from a single vector instance,
+    /// for sparse vector throws na exception since sparse vectors are two-component values.
     /// </summary>
-    public abstract float[] FirstOrDefault();
-
-    /// <summary>
-    /// Gets the named vector if this instance is named vector collection or throws if it is the single vector instance.
-    /// </summary>
-    /// <param name="vectorName">Name of the vector to get.</param>
-    public abstract VectorBase GetNamedVector(string vectorName);
+    public abstract VectorBase FirstOrDefault();
 
     /// <summary>
     /// Checks if named vectors for point contain vector with specified name.
@@ -80,7 +76,7 @@ public abstract class VectorBase
     /// <summary>
     /// Converts this instance into an instance of <see cref="SparseVector"/> type which represents a sparse vector.
     /// </summary>
-    /// <exception cref="InvalidCastException">Occurs when this instance is not a single unnamed vector.</exception>
+    /// <exception cref="InvalidCastException">Occurs when this instance is not a sparse vector.</exception>
     public SparseVector AsSparseVector() => this as SparseVector
         ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(SparseVector)}");
 
@@ -91,12 +87,11 @@ public abstract class VectorBase
     /// </summary>
     /// <param name="vectorValues">The vector values.</param>
     public static implicit operator VectorBase(float[] vectorValues)
-    {
-        return new Vector()
-        {
-            VectorValues = vectorValues
-        };
-    }
+        =>
+            new Vector()
+            {
+                VectorValues = vectorValues
+            };
 
     /// <summary>
     /// Implicitly converts a dictionary of type <see cref="Dictionary{TKey,TValue}"/> to a vector instance.
@@ -104,18 +99,17 @@ public abstract class VectorBase
     /// </summary>
     /// <param name="namedVectors">The named vectors.</param>
     public static implicit operator VectorBase(Dictionary<string, float[]> namedVectors)
-    {
-        return new NamedVectors()
-        {
-            Vectors = namedVectors
-                .ToDictionary(
-                    nv => nv.Key,
-                    nv => (VectorBase) new Vector()
-                    {
-                        VectorValues = nv.Value
-                    })
-        };
-    }
+        =>
+            new NamedVectors()
+            {
+                Vectors = namedVectors
+                    .ToDictionary(
+                        nv => nv.Key,
+                        nv => (VectorBase) new Vector()
+                        {
+                            VectorValues = nv.Value
+                        })
+            };
 
     /// <summary>
     /// Implicitly converts a dictionary of type <see cref="Dictionary{TKey,TValue}"/> to a vector instance.
@@ -123,42 +117,37 @@ public abstract class VectorBase
     /// </summary>
     /// <param name="namedSparseVectors">The named sparse vectors.</param>
     public static implicit operator VectorBase(Dictionary<string, (uint[] Indices, float[] Values)> namedSparseVectors)
-    {
-        return new NamedVectors()
-        {
-            Vectors = namedSparseVectors
-                .ToDictionary(
-                    nv => nv.Key,
-                    nv => (VectorBase) new SparseVector()
-                    {
-                        Indices = nv.Value.Indices.ToHashSet(),
-                        Values = nv.Value.Values
-                    })
-        };
-    }
+        =>
+            new NamedVectors()
+            {
+                Vectors = namedSparseVectors
+                    .ToDictionary(
+                        nv => nv.Key,
+                        nv => (VectorBase) new SparseVector()
+                        {
+                            Indices = nv.Value.Indices.ToHashSet(),
+                            Values = nv.Value.Values
+                        })
+            };
 
     /// <summary>
     /// Implicitly converts an indices-values tuple to a vector instance.
     /// </summary>
     /// <param name="sparseVectorComponents">The sparse vector components.</param>
     public static implicit operator VectorBase((uint[] Indices, float[] Values) sparseVectorComponents)
-    {
-        return new SparseVector()
-        {
-            Indices = sparseVectorComponents.Indices.ToHashSet(),
-            Values = sparseVectorComponents.Values
-        };
-    }
+        =>
+            new SparseVector()
+            {
+                Indices = sparseVectorComponents.Indices.ToHashSet(),
+                Values = sparseVectorComponents.Values
+            };
 
     /// <summary>
     /// Implicitly converts the <see cref="VectorBase"/> instance to an array of <see cref="float"/> values.
     /// Returns <see cref="Default"/> vector.
     /// </summary>
     /// <param name="vector">Instance to get single vector from.</param>
-    public static implicit operator float[](VectorBase vector)
-    {
-        return vector.Default;
-    }
+    public static implicit operator float[](VectorBase vector) => vector.Default;
 
     #endregion
 }

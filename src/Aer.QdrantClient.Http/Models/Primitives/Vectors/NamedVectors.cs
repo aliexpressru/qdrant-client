@@ -32,24 +32,11 @@ public sealed class NamedVectors : VectorBase
     }
 
     /// <inheritdoc/>
-    public override float[] FirstOrDefault()
+    public override VectorBase FirstOrDefault()
     {
         EnsureNotEmpty();
 
         return Vectors.First().Value;
-    }
-
-    /// <inheritdoc/>
-    public override VectorBase GetNamedVector(string vectorName)
-    {
-        EnsureNotEmpty();
-
-        if (Vectors.TryGetValue(vectorName, out var vector))
-        {
-            return vector;
-        }
-
-        throw new KeyNotFoundException($"Named vector {vectorName} for point is not found");
     }
 
     /// <inheritdoc/>
@@ -61,15 +48,15 @@ public sealed class NamedVectors : VectorBase
     }
 
     /// <inheritdoc/>
-    public override float[] this[string vectorName]
+    public override VectorBase this[string vectorName]
     {
         get
         {
             EnsureNotEmpty();
 
-            if (Vectors.TryGetValue(vectorName, out var vectorValues))
+            if (Vectors.TryGetValue(vectorName, out var vector))
             {
-                return vectorValues;
+                return vector;
             }
 
             throw new KeyNotFoundException($"Named vector {vectorName} for point is not found");
