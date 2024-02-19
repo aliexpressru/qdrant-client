@@ -39,7 +39,8 @@ public abstract class VectorBase
     public bool IsSparseVector => this is SparseVector;
 
     /// <summary>
-    /// Gets the named vector if this instance is named vector collection or throws if it is the single vector instance.
+    /// Gets the named vector value if this instance is named vector collection
+    /// or throws if it is the single vector instance.
     /// </summary>
     /// <param name="vectorName">Name of the vector to get.</param>
     public abstract float[] this[string vectorName] { get; }
@@ -48,6 +49,12 @@ public abstract class VectorBase
     /// Returns the first vector from named vectors collection or a single from a single vector instance.
     /// </summary>
     public abstract float[] FirstOrDefault();
+
+    /// <summary>
+    /// Gets the named vector if this instance is named vector collection or throws if it is the single vector instance.
+    /// </summary>
+    /// <param name="vectorName">Name of the vector to get.</param>
+    public abstract VectorBase GetNamedVector(string vectorName);
 
     /// <summary>
     /// Checks if named vectors for point contain vector with specified name.

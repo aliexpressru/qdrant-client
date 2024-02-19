@@ -40,6 +40,19 @@ public sealed class NamedVectors : VectorBase
     }
 
     /// <inheritdoc/>
+    public override VectorBase GetNamedVector(string vectorName)
+    {
+        EnsureNotEmpty();
+
+        if (Vectors.TryGetValue(vectorName, out var vector))
+        {
+            return vector;
+        }
+
+        throw new KeyNotFoundException($"Named vector {vectorName} for point is not found");
+    }
+
+    /// <inheritdoc/>
     public override bool ContainsVector(string vectorName)
     {
         EnsureNotEmpty();
@@ -67,8 +80,7 @@ public sealed class NamedVectors : VectorBase
     {
         if (Vectors.Count is 0)
         {
-            throw new InvalidOperationException(
-                $"Named vectors collection for point is empty");
+            throw new InvalidOperationException("Named vectors collection for point is empty");
         }
     }
 }
