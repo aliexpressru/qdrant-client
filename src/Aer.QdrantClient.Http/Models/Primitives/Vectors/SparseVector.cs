@@ -2,12 +2,14 @@
 // ReSharper disable ClassNeverInstantiated.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
+using System.Text.Json.Serialization;
+
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
 /// <summary>
 /// Represents a sparse vector.
 /// </summary>
-public class SparseVector : VectorBase
+public sealed class SparseVector : VectorBase
 {
     /// <summary>
     /// Gets the positions of the non-zero values in the sparse vector.
@@ -19,17 +21,18 @@ public class SparseVector : VectorBase
     /// </summary>
     public float[] Values { get; init; }
 
-    public override float[] Default => throw new NotImplementedException();
+    /// <inheritdoc/>
+    [JsonIgnore]
+    public override float[] Default => Values;
 
-    public override float[] this[string vectorName] => throw new NotImplementedException();
+    /// <inheritdoc/>
+    public override float[] this[string vectorName] => throw new NotSupportedException(
+        $"Vector names are not supported for sparse vector values {GetType()}");
 
-    public override float[] FirstOrDefault()
-    {
-        throw new NotImplementedException();
-    }
+    /// <inheritdoc/>
+    public override float[] FirstOrDefault() => Default;
 
-    public override bool ContainsVector(string vectorName)
-    {
-        throw new NotImplementedException();
-    }
+    /// <inheritdoc/>
+    public override bool ContainsVector(string vectorName) => throw new NotSupportedException(
+        $"Vector names are not supported for sparse vector values {GetType()}");
 }

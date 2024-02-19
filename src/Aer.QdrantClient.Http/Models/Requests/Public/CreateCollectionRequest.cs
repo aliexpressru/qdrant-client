@@ -43,9 +43,6 @@ public sealed class CreateCollectionRequest
     /// <summary>
     /// Gets the vectors configuration.
     /// </summary>
-    /// <remarks>
-    /// Currently only single vector mode collection creation is supported.
-    /// </remarks>
     [JsonConverter(typeof(VectorConfigurationJsonConverter))]
     public VectorConfigurationBase Vectors { get; }
 
@@ -148,8 +145,34 @@ public sealed class CreateCollectionRequest
         }
     }
 
-    /// <summary>Initializes a new instance of the <see cref="CreateCollectionRequest" /> class with
-    /// multiple named vectors with different configurations for each named vector.</summary>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreateCollectionRequest" /> class with
+    /// multiple named vectors as well as multiple named sparse vectors configurations.
+    /// </summary>
+    /// <param name="namedVectorsConfiguration">The named vectors configurations.</param>
+    /// <param name="sparseVectorsConfiguration">The sparse vectors configurations.</param>
+    public CreateCollectionRequest(
+        Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration> namedVectorsConfiguration,
+        Dictionary<string, SparseVectorConfiguration> sparseVectorsConfiguration)
+    {
+        Vectors = new VectorConfigurationBase.NamedVectorsConfiguration(namedVectorsConfiguration);
+        SparseVectors = sparseVectorsConfiguration;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreateCollectionRequest" /> class with
+    /// multiple named sparse vectors configurations.
+    /// </summary>
+    /// <param name="sparseVectorsConfiguration">The sparse vectors configurations.</param>
+    public CreateCollectionRequest(Dictionary<string, SparseVectorConfiguration> sparseVectorsConfiguration)
+    {
+        SparseVectors = sparseVectorsConfiguration;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreateCollectionRequest" /> class with
+    /// multiple named vectors configurations.
+    /// </summary>
     /// <param name="namedVectorsConfiguration">The named vectors configurations.</param>
     public CreateCollectionRequest(
         Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration> namedVectorsConfiguration)

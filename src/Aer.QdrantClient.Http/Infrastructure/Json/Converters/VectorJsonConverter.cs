@@ -28,17 +28,47 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
             case JsonTokenType.StartObject:
             {
                 // means named vectors collection:
+
+                // name - vector name
+                // value can be ither a simple vector
                 // "vector1" : [0.0, 0.1, 0.2], "vector2" " [10, 11, 12]
+
+                // or it can be asparse vector
+                // "vector1" : {"indices": [6, 7], "values": [1.0, 2.0]}
 
                 var namedVectorsJObject = JsonNode.Parse(ref reader);
 
-                var namedVectorsObject = namedVectorsJObject.Deserialize<Dictionary<string, float[]>>(
+                var namedVectorsObject = namedVectorsJObject.Deserialize<Dictionary<string, JsonNode>>(
                     JsonSerializerConstants.SerializerOptions);
 
-                return new NamedVectors()
+                var vectors = new Dictionary<string, VectorBase>();
+
+                foreach (var (vectorName, vector) in namedVectorsObject)
                 {
-                    Vectors = namedVectorsObject
-                };
+                    if (vector is JsonArray singleVectorValues)
+                    {
+                        vectors.Add(
+                            vectorName,
+                            new Vector()
+                            {
+                                VectorValues = singleVectorValues.GetValues<float>().ToArray()
+                            });
+                    }
+                    else if(vector is JsonObject sparseVectorValues)
+                    {
+                        var sparseVector =
+                            sparseVectorValues.Deserialize<SparseVector>(JsonSerializerConstants.SerializerOptions);
+
+                        vectors.Add(vectorName, sparseVector);
+                    }
+                    else
+                    {
+                        throw new QdrantJsonParsingException(
+                            $"Unbable to deserialize Qdrant vector value. Unexpected vector representation : {vector.GetType()}");
+                    }
+                }
+
+                return new NamedVectors() {Vectors = vectors};
             }
 
             default:
@@ -55,9 +85,30 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
             return;
         }
 
-        if (value is NamedVectors mv)
+        if (value is NamedVectors nv)
         {
-            JsonSerializer.Serialize(writer, mv.Vectors, JsonSerializerConstants.SerializerOptions);
+            writer.WriteStartObject();
+            {
+                // named vector contains either Vector or SparseVector as value
+
+                foreach (var (vectorName, vector) in nv.Vectors)
+                {
+                    writer.WritePropertyName(vectorName);
+
+                    if (vector.IsSparseVector)
+                    {
+                        var sparseVector = vector.AsSparseVector();
+                        JsonSerializer.Serialize(writer, sparseVector, JsonSerializerConstants.SerializerOptions);
+                    }
+                    else
+                    {
+                        // means this vector is a non-sparse one
+                        var sngleVector = vector.AsSingleVector();
+                        JsonSerializer.Serialize(writer, sngleVector.VectorValues, JsonSerializerConstants.SerializerOptions);
+                    }
+                }
+            }
+            writer.WriteEndObject();
 
             return;
         }

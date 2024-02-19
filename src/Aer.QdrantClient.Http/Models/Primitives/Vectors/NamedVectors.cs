@@ -12,7 +12,7 @@ public sealed class NamedVectors : VectorBase
     /// <summary>
     /// The name to vector mapping.
     /// </summary>
-    public required Dictionary<string, float[]> Vectors { init; get; } = new();
+    public required Dictionary<string, VectorBase> Vectors { init; get; } = new();
 
     /// <inheritdoc/>
     public override float[] Default
@@ -21,9 +21,9 @@ public sealed class NamedVectors : VectorBase
         {
             EnsureNotEmpty();
 
-            if (Vectors.TryGetValue(DefaultVectorName, out float[] defaultVectorValue))
+            if (Vectors.TryGetValue(DefaultVectorName, out VectorBase defaultVector))
             {
-                return defaultVectorValue;
+                return defaultVector.Default;
             }
 
             throw new InvalidOperationException(

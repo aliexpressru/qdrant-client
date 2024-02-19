@@ -912,40 +912,41 @@ internal class PointsCrudTests : QdrantTestsBase
 
         UpsertPointsRequest<TestPayload>.UpsertPoint firstPoint =
             new(
-                PointId.Integer(1),
-                new NamedVectors()
+                id: 1,
+                vector : new NamedVectors()
                 {
-                    Vectors = new Dictionary<string, float[]>()
+                    Vectors = new Dictionary<string, VectorBase>()
                     {
+                        // here and further on float[] will be implicitly converted to Vector
                         ["Vector_1"] = CreateTestVector(100U),
                         ["Vector_2"] = CreateTestVector(5U),
                         ["Vector_3"] = CreateTestVector(50U),
                     }
                 },
-                1);
+                payload : 1);
 
         UpsertPointsRequest<TestPayload>.UpsertPoint secondPoint = new(
-            PointId.Integer(2),
-            new NamedVectors()
+            id: 2,
+            vector: new NamedVectors()
             {
-                Vectors = new Dictionary<string, float[]>()
+                Vectors = new Dictionary<string, VectorBase>()
                 {
                     ["Vector_2"] = CreateTestVector(5U),
                     ["Vector_3"] = CreateTestVector(50U),
                 }
             },
-            2);
+            payload: 2);
 
         UpsertPointsRequest<TestPayload>.UpsertPoint thirdPoint = new(
-            PointId.Integer(3),
-            new NamedVectors()
+            id: 3,
+            vector: new NamedVectors()
             {
-                Vectors = new Dictionary<string, float[]>()
+                Vectors = new Dictionary<string, VectorBase>()
                 {
                     ["Vector_1"] = CreateTestVector(100U),
                 }
             },
-            3);
+            payload: 3);
 
         var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>(){
             firstPoint,
@@ -989,11 +990,204 @@ internal class PointsCrudTests : QdrantTestsBase
 
                 if (upsertPointVector.Key == cosineDistanceVetorName)
                 {
-                    // for cosine disntance metric points got normalized upon insert
-                    // presumably to optimize distance calculation
+                    // according to documentation https://qdrant.tech/documentation/concepts/collections/
+                    // "For search efficiency, Cosine similarity is implemented as dot-product over normalized vectors.
+                    // Vectors are automatically normalized during upload"
                     // thus there is no point of comparing upserted and read vector - they will always be different!
                     continue;
                 }
+
+                var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key];
+                var upsertPointNamedVectorValue = upsertPointVector.Value;
+
+                readPointNamedVectorValue.Should().Equal(upsertPointNamedVectorValue);
+            }
+        }
+    }
+
+    [Test]
+    public async Task UpsertPoints_SparseVectors_OnlySparse()
+    {
+        Dictionary<string, SparseVectorConfiguration> sparseVectors = new()
+        {
+            ["Vector_1"] = new(true, fullScanThreshold: 1000),
+            ["Vector_2"] = new(), // default sparse vector configuration
+        };
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(
+                sparseVectorsConfiguration: sparseVectors)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        UpsertPointsRequest<TestPayload>.UpsertPoint firstPoint =
+            new(
+                id: 1,
+                vector : new NamedVectors()
+                {
+                    Vectors = new Dictionary<string, VectorBase>()
+                    {
+                        ["Vector_1"] = CreateTestSparseVector(100U, 4),
+                        ["Vector_2"] = CreateTestSparseVector(50U, 5),
+                    }
+                },
+                payload : 1);
+
+        UpsertPointsRequest<TestPayload>.UpsertPoint secondPoint = new(
+            id: 2,
+            vector: new NamedVectors()
+            {
+                Vectors = new Dictionary<string, VectorBase>()
+                {
+                    ["Vector_1"] = CreateTestSparseVector(100U, 6),
+                    ["Vector_2"] = CreateTestSparseVector(50U, 7),
+                }
+            },
+            payload: 2);
+
+        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>(){
+            firstPoint,
+            secondPoint,
+        };
+
+        var upsertPointsResult
+            = await _qdrantHttpClient.UpsertPoints(
+                TestCollectionName,
+                new UpsertPointsRequest<TestPayload>()
+                {
+                    Points = upsertPoints
+                },
+                CancellationToken.None);
+
+        var readPointsResult = await _qdrantHttpClient.GetPoints(
+            TestCollectionName,
+            upsertPoints.Select(p=>p.Id),
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true);
+
+        upsertPointsResult.Status.IsSuccess.Should().BeTrue();
+        upsertPointsResult.Result.Status.Should()
+            .BeOneOf(QdrantOperationStatus.Completed);
+
+        readPointsResult.Status.IsSuccess.Should().BeTrue();
+        readPointsResult.Result.Length.Should().Be(upsertPoints.Count);
+
+        foreach (var upsertPoint in upsertPoints)
+        {
+            var readPoint =
+                readPointsResult.Result.Single(p => p.Id.Equals(upsertPoint.Id));
+
+            var readPointVectors = readPoint.Vector.AsNamedVectors();
+
+            foreach (var upsertPointVector in upsertPoint.Vector.AsNamedVectors().Vectors)
+            {
+                readPointVectors.ContainsVector(upsertPointVector.Key).Should().BeTrue();
+
+                var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key];
+                var upsertPointNamedVectorValue = upsertPointVector.Value;
+
+                readPointNamedVectorValue.Should().Equal(upsertPointNamedVectorValue);
+            }
+        }
+    }
+
+    [Test]
+    public async Task UpsertPoints_SparseVectors_MixedSparseAndNamed()
+    {
+        Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration> namedVectors = new()
+        {
+            ["Vector_1"] = new VectorConfigurationBase.SingleVectorConfiguration(
+                VectorDistanceMetric.Manhattan,
+                100,
+                isServeVectorsFromDisk: true)
+        };
+
+        Dictionary<string, SparseVectorConfiguration> sparseVectors = new()
+        {
+            ["Vector_2"] = new(true, fullScanThreshold: 1000)
+        };
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(
+                namedVectorsConfiguration: namedVectors,
+                sparseVectorsConfiguration: sparseVectors)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        UpsertPointsRequest<TestPayload>.UpsertPoint firstPoint =
+            new(
+                id: 1,
+                vector : new NamedVectors()
+                {
+                    Vectors = new Dictionary<string, VectorBase>()
+                    {
+                        ["Vector_1"] = CreateTestVector(100U),
+                        ["Vector_2"] = CreateTestSparseVector(50U, 5),
+                    }
+                },
+                payload : 1);
+
+        UpsertPointsRequest<TestPayload>.UpsertPoint secondPoint = new(
+            id: 2,
+            vector: new NamedVectors()
+            {
+                Vectors = new Dictionary<string, VectorBase>()
+                {
+                    ["Vector_1"] = CreateTestVector(100U),
+                    ["Vector_2"] = CreateTestSparseVector(50U, 7),
+                }
+            },
+            payload: 2);
+
+        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>(){
+            firstPoint,
+            secondPoint,
+        };
+
+        var upsertPointsResult
+            = await _qdrantHttpClient.UpsertPoints(
+                TestCollectionName,
+                new UpsertPointsRequest<TestPayload>()
+                {
+                    Points = upsertPoints
+                },
+                CancellationToken.None);
+
+        var readPointsResult = await _qdrantHttpClient.GetPoints(
+            TestCollectionName,
+            upsertPoints.Select(p=>p.Id),
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true);
+
+        upsertPointsResult.Status.IsSuccess.Should().BeTrue();
+        upsertPointsResult.Result.Status.Should()
+            .BeOneOf(QdrantOperationStatus.Completed);
+
+        readPointsResult.Status.IsSuccess.Should().BeTrue();
+        readPointsResult.Result.Length.Should().Be(upsertPoints.Count);
+
+        foreach (var upsertPoint in upsertPoints)
+        {
+            var readPoint =
+                readPointsResult.Result.Single(p => p.Id.Equals(upsertPoint.Id));
+
+            var readPointVectors = readPoint.Vector.AsNamedVectors();
+
+            foreach (var upsertPointVector in upsertPoint.Vector.AsNamedVectors().Vectors)
+            {
+                readPointVectors.ContainsVector(upsertPointVector.Key).Should().BeTrue();
 
                 var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key];
                 var upsertPointNamedVectorValue = upsertPointVector.Value;

@@ -20,7 +20,7 @@ public sealed class Vector : VectorBase
     /// <inheritdoc/>
     public override float[] this[string vectorName] =>
         throw new NotSupportedException(
-            $"Named vectors are not supported for single vector values {GetType()}");
+            $"Vector names are not supported for single vector values {GetType()}");
 
     /// <inheritdoc/>
     public override float[] FirstOrDefault() => Default;
@@ -28,5 +28,5 @@ public sealed class Vector : VectorBase
     /// <inheritdoc/>
     public override bool ContainsVector(string vectorName) =>
         throw new NotSupportedException(
-            $"Named vectors are not supported for single vector values {GetType()}");
+            $"Vector names are not supported for single vector values {GetType()}");
 }
