@@ -28,7 +28,7 @@ public partial class QdrantHttpClient
     public async Task<DefaultOperationResponse> RecoverPeerRaftState(
         CancellationToken cancellationToken)
     {
-        var url = $"/cluster/recover";
+        var url = "/cluster/recover";
 
         var response = await ExecuteRequest<DefaultOperationResponse>(
             url,

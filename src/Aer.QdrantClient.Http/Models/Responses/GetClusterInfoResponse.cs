@@ -77,5 +77,10 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
         /// This node role.
         /// </summary>
         public string Role { set; get; }
+
+        /// <summary>
+        /// Is this peer a voter or a learner.
+        /// </summary>
+        public bool IsVoter { set; get; }
     }
 }
