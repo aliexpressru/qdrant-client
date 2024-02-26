@@ -21,7 +21,7 @@ internal static class JsonSerializerConstants
         IncludeFields = false,
         PropertyNameCaseInsensitive = true,
         UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
-        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
+        UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip
     };
 
     public static JsonSerializerOptions IndentedSerializerOptions { get; } = new()
@@ -36,6 +36,6 @@ internal static class JsonSerializerConstants
         IncludeFields = false,
         PropertyNameCaseInsensitive = true,
         UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
-        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
+        UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip
     };
 }

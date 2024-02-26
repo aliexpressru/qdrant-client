@@ -35,6 +35,55 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
         /// The nodes consensus status.
         /// </summary>
         public RaftInfoUnit RaftInfo { set; get; }
+
+        /// <summary>
+        /// Information about current consensus thread status.
+        /// </summary>
+        public ConsensusThreadStatusUnit ConsensusThreadStatus { set; get; }
+
+        /// <summary>
+        /// Consequent failures of message send operations in consensus by peer address.
+        /// On the first success to send to that peer - entry is removed from this hashmap.
+        /// </summary>
+        public Dictionary<string, MessageSendFailureUnit> MessageSendFailures { set; get; }
+    }
+
+    /// <summary>
+    /// Represents a consensus message send failure information.
+    /// </summary>
+    public class MessageSendFailureUnit
+    {
+        /// <summary>
+        /// Failures count.
+        /// </summary>
+        public uint Count { set; get; }
+
+        /// <summary>
+        /// The latest message send error.
+        /// </summary>
+        public string LatestError { set; get; }
+    }
+
+    /// <summary>
+    /// Represents a consensus status information.
+    /// </summary>
+    public class ConsensusThreadStatusUnit
+    {
+        /// <summary>
+        /// The consensus thread status.
+        /// TODO: convert to enum
+        /// </summary>
+        public string ConsensusThreadStatus { set; get; }
+
+        /// <summary>
+        /// The consensus status last update.
+        /// </summary>
+        public DateTime LastUpdate { set; get; }
+
+        /// <summary>
+        /// The consensus status error.
+        /// </summary>
+        public string Err { set; get; }
     }
 
     /// <summary>
