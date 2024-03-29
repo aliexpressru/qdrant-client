@@ -80,6 +80,11 @@ public abstract class ShardSelector
     /// <param name="shardKeyValues">The shard key values.</param>
     public static implicit operator ShardSelector(ulong[] shardKeyValues)
     {
+        if (shardKeyValues is null or {Length: 0})
+        {
+            throw new ArgumentNullException(nameof(shardKeyValues));
+        }
+
         return Integer(shardKeyValues);
     }
 
@@ -103,6 +108,8 @@ public abstract class ShardSelector
     /// <param name="shardKeyValue">The shard key value.</param>
     public static implicit operator ShardSelector(string shardKeyValue)
     {
+        ArgumentException.ThrowIfNullOrEmpty(shardKeyValue);
+
         return String(shardKeyValue);
     }
 
@@ -112,9 +119,13 @@ public abstract class ShardSelector
     /// <param name="shardKeyValues">The shard key values.</param>
     public static implicit operator ShardSelector(string[] shardKeyValues)
     {
+        if (shardKeyValues is null or {Length: 0})
+        {
+            throw new ArgumentNullException(nameof(shardKeyValues));
+        }
+
         return String(shardKeyValues);
     }
 
     #endregion
-
 }

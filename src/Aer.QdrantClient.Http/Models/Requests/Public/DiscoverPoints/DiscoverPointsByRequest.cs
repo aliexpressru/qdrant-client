@@ -72,7 +72,7 @@ public abstract class DiscoverPointsByRequest
 
             Context = gotCount
                 ? new(contextPaitCount)
-                : new();
+                : [];
 
             foreach (var (positivePoint, negativePoint) in positiveNegativeContextPairs)
             {
@@ -131,7 +131,7 @@ public abstract class DiscoverPointsByRequest
 
             Context = gotCount
                 ? new(contextPaitCount)
-                : new();
+                : [];
 
             foreach (var (positivePoint, negativePoint) in positiveNegativeContextPairs)
             {

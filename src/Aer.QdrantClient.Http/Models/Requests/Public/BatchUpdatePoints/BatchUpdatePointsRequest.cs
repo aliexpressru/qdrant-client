@@ -20,7 +20,7 @@ public class BatchUpdatePointsRequest
     /// Points operations to apply.
     /// </summary>
     [JsonInclude]
-    internal List<BatchUpdatePointsOperationBase> Operations { get; } = new();
+    internal List<BatchUpdatePointsOperationBase> Operations { get; } = [];
 
     /// <summary>
     /// Returns the count of operations defined so far on this request.

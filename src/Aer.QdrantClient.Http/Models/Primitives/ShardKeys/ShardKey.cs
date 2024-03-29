@@ -74,6 +74,8 @@ public abstract class ShardKey
     /// <param name="shardKeyValue">The shard key value.</param>
     public static implicit operator ShardKey(string shardKeyValue)
     {
+        ArgumentException.ThrowIfNullOrEmpty(shardKeyValue);
+
         return String(shardKeyValue);
     }
 

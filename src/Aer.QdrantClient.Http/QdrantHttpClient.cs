@@ -24,11 +24,11 @@ public partial class QdrantHttpClient
     private readonly TimeSpan _defaultOperationTimeout = TimeSpan.FromSeconds(DEFAULT_OPERATION_TIMEOUT_SECONDS);
     private readonly TimeSpan _defaultPollingInterval = TimeSpan.FromSeconds(1);
 
-    private readonly List<string> _invalidQdrantNameSymbols = new()
-    {
+    private readonly List<string> _invalidQdrantNameSymbols =
+    [
         "/",
         " "
-    };
+    ];
 
     /// <summary>
     /// Initializes a new Qdrant HTTP client instance.

@@ -7,7 +7,7 @@ namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 /// </summary>
 internal class ShouldCondition : FilterConditionBase
 {
-    internal readonly List<FilterConditionBase> Conditions = new();
+    internal readonly List<FilterConditionBase> Conditions = [];
 
     public ShouldCondition(IEnumerable<FilterConditionBase> conditions) : base(DiscardPayloadFieldName)
     {

@@ -48,7 +48,7 @@ public abstract class FilterConditionBase
     /// <param name="right">The right condition to combine.</param>
     public static FilterConditionBase operator &(FilterConditionBase left, FilterConditionBase right)
     {
-        List<FilterConditionBase> conditions = new();
+        List<FilterConditionBase> conditions = [];
 
         // unwarp must conditions
 
@@ -80,7 +80,7 @@ public abstract class FilterConditionBase
     /// <param name="right">The right condition to combine.</param>
     public static FilterConditionBase operator |(FilterConditionBase left, FilterConditionBase right)
     {
-        List<FilterConditionBase> conditions = new();
+        List<FilterConditionBase> conditions = [];
 
         // unwarp should conditions
 

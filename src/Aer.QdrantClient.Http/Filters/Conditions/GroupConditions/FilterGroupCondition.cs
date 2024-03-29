@@ -7,7 +7,7 @@ namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 /// </summary>
 internal class FilterGroupCondition : FilterConditionBase
 {
-    internal readonly List<FilterConditionBase> Conditions = new();
+    internal readonly List<FilterConditionBase> Conditions = [];
 
     public FilterGroupCondition(params FilterConditionBase[] conditions) : this((IEnumerable<FilterConditionBase>)conditions)
     { }

@@ -152,7 +152,7 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
     /// <summary>
     /// Performs an implicit conversion from <see cref="int"/> to <see cref="SearchGroupId"/>.
     /// </summary>
-    /// <param name="id">The identifier value.</param>
+    /// <param name="id">The integer group identifier value.</param>
     public static implicit operator SearchGroupId(int id)
     {
         return Integer(id);
@@ -161,9 +161,11 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
     /// <summary>
     /// Performs an implicit conversion from <see cref="System.String"/> to <see cref="SearchGroupId"/>.
     /// </summary>
-    /// <param name="id">The identifier value.</param>
+    /// <param name="id">The string group identifier value.</param>
     public static implicit operator SearchGroupId(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
+
         return String(id);
     }
 

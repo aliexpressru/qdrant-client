@@ -10,7 +10,7 @@ internal class FieldMatchAnyConditionFast<T> : FilterConditionBase
     public FieldMatchAnyConditionFast(string payloadFieldName, IEnumerable<T> matchAnyValues)
         : base(payloadFieldName)
     {
-        List<FilterConditionBase> splitMatchConditions = new();
+        List<FilterConditionBase> splitMatchConditions = [];
 
         foreach (var value in matchAnyValues)
         {

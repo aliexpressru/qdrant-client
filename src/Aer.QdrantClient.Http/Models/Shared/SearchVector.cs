@@ -64,11 +64,21 @@ public abstract class SearchVector
     /// <param name="vector">The vector to use in search.</param>
     public static SearchVector Create(string vectorName, float[] vector) => new NamedSearchVector(vectorName, vector);
 
+    #region Operators
+
     /// <summary>
     /// Implicitly converts an array of <see cref="float"/> to an instance of <see cref="SearchVector"/>.
     /// </summary>
     /// <param name="vector">The value to convert.</param>
-    public static implicit operator SearchVector(float[] vector) => new UnnamedSearchVector(vector);
+    public static implicit operator SearchVector(float[] vector)
+    {
+        if (vector is null or {Length: 0})
+        {
+            throw new ArgumentNullException(nameof(vector));
+        }
+
+        return new UnnamedSearchVector(vector);
+    }
 
     /// <summary>
     /// Implicitly converts an instance of <see cref="VectorBase"/> to an instance of <see cref="SearchVector"/>.
@@ -76,23 +86,24 @@ public abstract class SearchVector
     /// <param name="vector">The value to convert.</param>
     public static implicit operator SearchVector(VectorBase vector)
     {
-        if (vector is Vector v)
+        switch (vector)
         {
-            return new UnnamedSearchVector(v.VectorValues);
-        }
-
-        if (vector is NamedVectors { Vectors.Count: 1} nv)
-        {
-            if (nv.Vectors.Count == 1)
+            case null:
+                throw new ArgumentNullException(nameof(vector));
+            case Vector v:
+                return new UnnamedSearchVector(v.VectorValues);
+            case NamedVectors { Vectors.Count: 1 } nv:
             {
                 var firstVector = nv.Vectors.Single();
 
                 return new NamedSearchVector(firstVector.Key, firstVector.Value);
             }
+            default:
+                throw new InvalidCastException(
+                    $"Can't implicitly cast instance of type {vector.GetType()} to {typeof(SearchVector)}. "
+                    + $"The value should either be an unnamed vector or a named vectors collection with length of 1");
         }
-
-        throw new InvalidCastException(
-            $"Can't implicitly cast instance of type {vector.GetType()} to {typeof(SearchVector)}. "
-            + $"The value should either be an unnamed vector or a named vectors collection with length of 1");
     }
+
+    #endregion
 }

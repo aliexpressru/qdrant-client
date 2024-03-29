@@ -87,11 +87,17 @@ public abstract class VectorBase
     /// </summary>
     /// <param name="vectorValues">The vector values.</param>
     public static implicit operator VectorBase(float[] vectorValues)
-        =>
-            new Vector()
-            {
-                VectorValues = vectorValues
-            };
+    {
+        if (vectorValues is null or {Length: 0})
+        {
+            throw new ArgumentNullException(nameof(vectorValues));
+        }
+
+        return new Vector()
+        {
+            VectorValues = vectorValues
+        };
+    }
 
     /// <summary>
     /// Implicitly converts a dictionary of type <see cref="Dictionary{TKey,TValue}"/> to a vector instance.
@@ -99,17 +105,26 @@ public abstract class VectorBase
     /// </summary>
     /// <param name="namedVectors">The named vectors.</param>
     public static implicit operator VectorBase(Dictionary<string, float[]> namedVectors)
-        =>
-            new NamedVectors()
-            {
-                Vectors = namedVectors
-                    .ToDictionary(
-                        nv => nv.Key,
-                        nv => (VectorBase) new Vector()
-                        {
-                            VectorValues = nv.Value
-                        })
-            };
+    {
+        if (namedVectors is null or {Count: 0})
+        {
+            throw new ArgumentNullException(nameof(namedVectors));
+        }
+
+        return new NamedVectors()
+        {
+            Vectors = namedVectors
+                .ToDictionary(
+                    nv => nv.Key,
+                    nv => (VectorBase) new Vector()
+                    {
+                        VectorValues = nv.Value is null or {Length: 0}
+                            ? throw new InvalidOperationException(
+                                $"Can't create named vector {nv.Key} with null or empty vector value")
+                            : nv.Value
+                    })
+        };
+    }
 
     /// <summary>
     /// Implicitly converts a dictionary of type <see cref="Dictionary{TKey,TValue}"/> to a vector instance.
@@ -117,18 +132,24 @@ public abstract class VectorBase
     /// </summary>
     /// <param name="namedSparseVectors">The named sparse vectors.</param>
     public static implicit operator VectorBase(Dictionary<string, (uint[] Indices, float[] Values)> namedSparseVectors)
-        =>
-            new NamedVectors()
-            {
-                Vectors = namedSparseVectors
-                    .ToDictionary(
-                        nv => nv.Key,
-                        nv => (VectorBase) new SparseVector()
-                        {
-                            Indices = nv.Value.Indices.ToHashSet(),
-                            Values = nv.Value.Values
-                        })
-            };
+    {
+        if (namedSparseVectors is null or {Count: 0})
+        {
+            throw new ArgumentNullException(nameof(namedSparseVectors));
+        }
+
+        return new NamedVectors()
+        {
+            Vectors = namedSparseVectors
+                .ToDictionary(
+                    nv => nv.Key,
+                    nv => (VectorBase) new SparseVector()
+                    {
+                        Indices = nv.Value.Indices?.ToHashSet(),
+                        Values = nv.Value.Values
+                    })
+        };
+    }
 
     /// <summary>
     /// Implicitly converts an indices-values tuple to a vector instance.
@@ -138,7 +159,7 @@ public abstract class VectorBase
         =>
             new SparseVector()
             {
-                Indices = sparseVectorComponents.Indices.ToHashSet(),
+                Indices = sparseVectorComponents.Indices?.ToHashSet(),
                 Values = sparseVectorComponents.Values
             };
 
@@ -147,7 +168,7 @@ public abstract class VectorBase
     /// Returns <see cref="Default"/> vector.
     /// </summary>
     /// <param name="vector">Instance to get single vector from.</param>
-    public static implicit operator float[](VectorBase vector) => vector.Default;
+    public static implicit operator float[](VectorBase vector) => vector?.Default;
 
     #endregion
 }

@@ -22,7 +22,7 @@ internal class PointIdCollectionJsonConverter : JsonConverter<IEnumerable<PointI
 
         JsonNode array = JsonNode.Parse(ref reader);
 
-        List<PointId> collection = new();
+        List<PointId> collection = [];
 
         foreach (var jelement in array!.AsArray())
         {

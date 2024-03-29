@@ -16,7 +16,7 @@ namespace Aer.QdrantClient.Http.Filters;
 /// </summary>
 public class QdrantFilter
 {
-    private readonly List<FilterConditionBase> _conditions = new();
+    private readonly List<FilterConditionBase> _conditions = [];
 
     /// <summary>
     /// Returns an empty filter.
@@ -34,10 +34,7 @@ public class QdrantFilter
     /// </summary>
     public static QdrantFilter Create(FilterConditionBase singleCondition)
     {
-        if (singleCondition == null)
-        {
-            throw new ArgumentNullException(nameof(singleCondition));
-        }
+        ArgumentNullException.ThrowIfNull(singleCondition);
 
         QdrantFilter ret = new();
 
@@ -53,12 +50,12 @@ public class QdrantFilter
     /// </summary>
     public static QdrantFilter Create(params FilterConditionBase[] conditions)
     {
-        QdrantFilter ret = new();
-
-        if (conditions is null)
+        if (conditions is null or {Length: 0})
         {
-            return ret;
+            return Empty;
         }
+
+        QdrantFilter ret = new();
 
         foreach (var condition in conditions)
         {

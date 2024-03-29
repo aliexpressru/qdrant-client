@@ -18,7 +18,7 @@ public class UpdateCollectionAliasesRequest
     /// Points operations to apply.
     /// </summary>
     [JsonInclude]
-    internal List<UpdateCollectionAliasOperationBase> Actions { get; } = new();
+    internal List<UpdateCollectionAliasOperationBase> Actions { get; } = [];
 
     /// <summary>
     /// Returns the count of operations defined so far on this request.

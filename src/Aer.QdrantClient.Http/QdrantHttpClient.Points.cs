@@ -618,6 +618,7 @@ public partial class QdrantHttpClient
     /// <param name="discoverPointsRequest">The discover points request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="consistency">The consistency settings.</param>
+    /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
     public async Task<SearchPointsResponse> DiscoverPoints(
         string collectionName,
         DiscoverPointsByRequest discoverPointsRequest,
@@ -645,6 +646,7 @@ public partial class QdrantHttpClient
     /// <param name="discoverPointsBatchedRequest">The discover points batched request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="consistency">The consistency settings.</param>
+    /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
     public async Task<SearchPointsBatchedResponse> DiscoverPointsBatched(
         string collectionName,
         DiscoverPointsBatchedRequest discoverPointsBatchedRequest,
