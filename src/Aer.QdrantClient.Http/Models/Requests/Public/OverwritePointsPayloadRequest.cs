@@ -42,17 +42,25 @@ public sealed class OverwritePointsPayloadRequest<TPayload>
     public ShardSelector ShardKey { get; set; }
 
     /// <summary>
+    /// Assigns payload to each point that satisfy this path of property.
+    /// </summary>
+    public string Key { get; }
+
+    /// <summary>
     /// Initializes a new instance of <see cref="OverwritePointsPayloadRequest{TPayload}"/> with payload
     /// and point ids to overwrite payload for.
     /// </summary>
     /// <param name="payload">Payload to overwrite.</param>
     /// <param name="pointsToOverwritePayloadFor">Point ids to overwrite payload for.</param>
+    /// <param name="nestedPayloadPropertyPath">Assigns payload to each point that satisfy this path of property.</param>
     public OverwritePointsPayloadRequest(
         TPayload payload,
-        IEnumerable<PointId> pointsToOverwritePayloadFor)
+        IEnumerable<PointId> pointsToOverwritePayloadFor,
+        string nestedPayloadPropertyPath = null)
     {
         Payload = payload;
         Points = pointsToOverwritePayloadFor;
+        Key = nestedPayloadPropertyPath;
     }
 
     /// <summary>
@@ -61,11 +69,14 @@ public sealed class OverwritePointsPayloadRequest<TPayload>
     /// </summary>
     /// <param name="payload">Payload to overwrite.</param>
     /// <param name="pointsFilterToOverwritePayloadFor">Points filter to overwrite payload for.</param>
+    /// <param name="nestedPayloadPropertyPath">Assigns payload to each point that satisfy this path of property.</param>
     public OverwritePointsPayloadRequest(
         TPayload payload,
-        QdrantFilter pointsFilterToOverwritePayloadFor)
+        QdrantFilter pointsFilterToOverwritePayloadFor,
+        string nestedPayloadPropertyPath = null)
     {
         Payload = payload;
         Filter = pointsFilterToOverwritePayloadFor;
+        Key = nestedPayloadPropertyPath;
     }
 }

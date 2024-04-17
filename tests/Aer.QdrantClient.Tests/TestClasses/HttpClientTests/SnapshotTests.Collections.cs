@@ -2,6 +2,7 @@
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
+using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
@@ -90,7 +91,7 @@ public class CollectionSnapshotTests : QdrantTestsBase
     [Test]
     public async Task ListSnapshots_ExistingCollectionNoSnapshotsYet()
     {
-        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         var listSnapshotsResult = await _qdrantHttpClient.ListCollectionSnapshots(
             TestCollectionName,
@@ -105,7 +106,7 @@ public class CollectionSnapshotTests : QdrantTestsBase
     [Test]
     public async Task CreateSnapshot()
     {
-        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult = await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None);
 
@@ -118,7 +119,7 @@ public class CollectionSnapshotTests : QdrantTestsBase
     [Test]
     public async Task ListSnapshots()
     {
-        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         // create first snapshot
 
@@ -156,7 +157,7 @@ public class CollectionSnapshotTests : QdrantTestsBase
     [Test]
     public async Task DeleteSnapshot()
     {
-        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         // create first snapshot
 
@@ -220,7 +221,7 @@ public class CollectionSnapshotTests : QdrantTestsBase
     [Test]
     public async Task DownloadSnapshot()
     {
-        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult = await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None);
 
@@ -238,14 +239,14 @@ public class CollectionSnapshotTests : QdrantTestsBase
     [Test]
     public async Task DownloadSnapshot_AfterCollectionIsDeleted()
     {
-        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult = await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None);
 
         createSnapshotResult.EnsureSuccess();
 
-        var deleteColelctionResut = await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None);
-        deleteColelctionResut.EnsureSuccess();
+        var deleteCollectionResult = await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None);
+        deleteCollectionResult.EnsureSuccess();
 
         // after explicit collection delete the snapshot download will not be accessible with message saying that the collection does not exist
 
@@ -279,7 +280,7 @@ public class CollectionSnapshotTests : QdrantTestsBase
     [Test]
     public async Task RecoverFromSnapshot()
     {
-        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult = await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None);
 
@@ -319,7 +320,7 @@ public class CollectionSnapshotTests : QdrantTestsBase
     [Test]
     public async Task RecoverFromUploadedSnapshot()
     {
-        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult = await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None);
 

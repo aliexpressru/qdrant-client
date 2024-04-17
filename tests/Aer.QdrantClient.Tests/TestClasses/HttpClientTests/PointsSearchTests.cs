@@ -67,7 +67,7 @@ internal class PointsSearchTests : QdrantTestsBase
     public async Task SearchPoints_SinglePoint_WithoutFilter()
     {
         var (upsertPoints, upsertPointsByPointIds, _) =
-            await PrepareCollection(
+            await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -101,7 +101,7 @@ internal class PointsSearchTests : QdrantTestsBase
     public async Task SearchPoints_WithoutFilter()
     {
         var (upsertPoints, upsertPointsByPointIds, _) =
-            await PrepareCollection(
+            await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -219,7 +219,7 @@ internal class PointsSearchTests : QdrantTestsBase
     public async Task SearchPoints_WithoutFilter_WithQuantization()
     {
         var (upsertPoints, upsertPointsByPointIds, _) =
-            await PrepareCollection(
+            await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName,
                 quantizationConfig: QuantizationConfiguration.Scalar(quantile: 0.99f, isQuantizedVectorAlwaysInRam: true));
@@ -267,7 +267,7 @@ internal class PointsSearchTests : QdrantTestsBase
     public async Task SearchPoints_WithFilter()
     {
         var (upsertPoints, upsertPointsByPointIds, _) =
-            await PrepareCollection(
+            await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -310,7 +310,7 @@ internal class PointsSearchTests : QdrantTestsBase
     public async Task SearchPoints_Euclid_WithFilter()
     {
         var (upsertPoints, upsertPointsByPointIds, _) =
-            await PrepareCollection(
+            await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName,
                 distanceMetric: VectorDistanceMetric.Euclid);
@@ -354,7 +354,7 @@ internal class PointsSearchTests : QdrantTestsBase
     public async Task SearchPoints_Cosine_WithFilter()
     {
         var (upsertPoints, upsertPointsByPointIds, _) =
-            await PrepareCollection(
+            await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName,
                 distanceMetric: VectorDistanceMetric.Cosine);
@@ -593,7 +593,7 @@ internal class PointsSearchTests : QdrantTestsBase
     {
         var vectorCount = 10;
 
-        await PrepareCollection(
+        await PrepareCollection<TestPayload>(
             _qdrantHttpClient,
             TestCollectionName,
             vectorCount: vectorCount);
@@ -616,7 +616,7 @@ internal class PointsSearchTests : QdrantTestsBase
     {
         var vectorCount = 10;
 
-        await PrepareCollection(
+        await PrepareCollection<TestPayload>(
             _qdrantHttpClient,
             TestCollectionName,
             vectorCount: vectorCount);
@@ -646,7 +646,7 @@ internal class PointsSearchTests : QdrantTestsBase
     public async Task SearchPointsBatched_WithFilter()
     {
         var (upsertPoints, upsertPointsByPointIds, _) =
-            await PrepareCollection(
+            await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName);
 

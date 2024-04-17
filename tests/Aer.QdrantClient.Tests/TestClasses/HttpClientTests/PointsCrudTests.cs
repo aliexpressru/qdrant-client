@@ -175,7 +175,7 @@ internal class PointsCrudTests : QdrantTestsBase
     [Test]
     public async Task UpsertPoint_CollectionDoesNotExist()
     {
-        var upsertPointsToNonExistentColelctionResult
+        var upsertPointsToNonExistentCollectionResult
             = await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
                 new UpsertPointsRequest<TestPayload>()
@@ -191,8 +191,8 @@ internal class PointsCrudTests : QdrantTestsBase
                 },
                 CancellationToken.None);
 
-        upsertPointsToNonExistentColelctionResult.Status.IsSuccess.Should().BeFalse();
-        upsertPointsToNonExistentColelctionResult.Status.Error.Should()
+        upsertPointsToNonExistentCollectionResult.Status.IsSuccess.Should().BeFalse();
+        upsertPointsToNonExistentCollectionResult.Status.Error.Should()
             .Contain(TestCollectionName)
             .And.Contain("doesn't exist");
     }
@@ -200,7 +200,7 @@ internal class PointsCrudTests : QdrantTestsBase
     [Test]
     public async Task UpsertPoint_InvalidPayloadType()
     {
-        var upsertPointsToNonExistentColelctionAct
+        var upsertPointsToNonExistentCollectionAct
             = async () => await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
                 new UpsertPointsRequest<string>()
@@ -216,7 +216,7 @@ internal class PointsCrudTests : QdrantTestsBase
                 },
                 CancellationToken.None);
 
-        await upsertPointsToNonExistentColelctionAct.Should().ThrowAsync<QdrantInvalidPayloadTypeException>();
+        await upsertPointsToNonExistentCollectionAct.Should().ThrowAsync<QdrantInvalidPayloadTypeException>();
     }
 
     [Test]
@@ -567,7 +567,7 @@ internal class PointsCrudTests : QdrantTestsBase
 
         payloadWithAllProperties2.AllPropertiesNotNull().Should().BeTrue();
 
-        // no payload properties selected (explicit PatloadSelector)
+        // no payload properties selected (explicit PayloadSelector)
 
         var readPointNoPayloadPropertiesResult = await _qdrantHttpClient.GetPoints(
             TestCollectionName,
@@ -581,7 +581,7 @@ internal class PointsCrudTests : QdrantTestsBase
 
         readPointNoPayloadPropertiesResult.Result[0].Payload.Should().BeNull();
 
-        // no payload properties selected (implicit PatloadSelector)
+        // no payload properties selected (implicit PayloadSelector)
 
         var readPointNoPayloadPropertiesImplicitResult = await _qdrantHttpClient.GetPoints(
             TestCollectionName,
@@ -885,7 +885,7 @@ internal class PointsCrudTests : QdrantTestsBase
     [Test]
     public async Task UpsertPoints_NamedVectors_DifferentConfig()
     {
-        var cosineDistanceVetorName = "Vector_3";
+        var cosineDistanceVectorName = "Vector_3";
 
         Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration> namedVectors = new()
         {
@@ -897,7 +897,7 @@ internal class PointsCrudTests : QdrantTestsBase
                 VectorDistanceMetric.Euclid,
                 5,
                 isServeVectorsFromDisk: false),
-            [cosineDistanceVetorName] = new VectorConfigurationBase.SingleVectorConfiguration(
+            [cosineDistanceVectorName] = new VectorConfigurationBase.SingleVectorConfiguration(
                 VectorDistanceMetric.Cosine,
                 50,
                 isServeVectorsFromDisk: true),
@@ -991,7 +991,7 @@ internal class PointsCrudTests : QdrantTestsBase
             {
                 readPointVectors.ContainsVector(upsertPointVector.Key).Should().BeTrue();
 
-                if (upsertPointVector.Key == cosineDistanceVetorName)
+                if (upsertPointVector.Key == cosineDistanceVectorName)
                 {
                     // according to documentation https://qdrant.tech/documentation/concepts/collections/
                     // "For search efficiency, Cosine similarity is implemented as dot-product over normalized vectors.
@@ -1220,14 +1220,14 @@ internal class PointsCrudTests : QdrantTestsBase
         var pointsToDeleteCount = 5;
 
         var (_, upsertPointsByPointIds, _) =
-            await PrepareCollection(
+            await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName,
                 vectorCount: vectorCount);
 
-        var poinsToDelete = upsertPointsByPointIds.Values.Take(pointsToDeleteCount).ToList();
+        var pointsToDelete = upsertPointsByPointIds.Values.Take(pointsToDeleteCount).ToList();
 
-        List<PointId> pintIdsToDelete = poinsToDelete.Select(p => p.Id).ToList();
+        List<PointId> pintIdsToDelete = pointsToDelete.Select(p => p.Id).ToList();
         foreach (var pointIdToDelete in pintIdsToDelete)
         {
             upsertPointsByPointIds.Remove(((IntegerPointId) pointIdToDelete).Id);
@@ -1272,7 +1272,7 @@ internal class PointsCrudTests : QdrantTestsBase
     public async Task SetPointsPayload()
     {
         var (upsertPoints, _, upsertPointIds) =
-            await PrepareCollection(
+            await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName,
                 payloadInitializerFunction: (i) => i + 1);
@@ -1368,7 +1368,7 @@ internal class PointsCrudTests : QdrantTestsBase
     public async Task OverwritePointsPayload()
     {
         var (upsertPoints, _, upsertPointIds) =
-            await PrepareCollection(
+            await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName,
                 payloadInitializerFunction: (i) => i + 1);
@@ -1467,6 +1467,69 @@ internal class PointsCrudTests : QdrantTestsBase
 
         pointsThatShouldNotBeUpdated.Should().AllSatisfy(p => p.Payload.As<TestPayload>()
             .Text.Should().NotBe("1000"));
+    }
+
+    [Test]
+    public async Task OverwritePointsPayload_NestedPropertyPath()
+    {
+        var (upsertPoints, _, upsertPointIds) =
+            await PrepareCollection(
+                _qdrantHttpClient,
+                TestCollectionName,
+                payloadInitializerFunction: (i) => new TestComplexPayload()
+                {
+                    IntProperty = i,
+                    Nested = new TestComplexPayload.NestedClass(){
+                        Integer = i
+                    }
+                });
+
+        // overwrite payload by id and path
+
+        var pointIdsToUpdatePayloadFor = upsertPoints.Take(5)
+            .Select(p => p.Id).ToHashSet();
+
+        var overwritePayloadById = await _qdrantHttpClient.OverwritePointsPayload(
+            TestCollectionName,
+            new OverwritePointsPayloadRequest<object>(
+                new{Integer = 100},
+                pointIdsToUpdatePayloadFor,
+                "nested"
+            ),
+            CancellationToken.None
+        );
+
+        overwritePayloadById.Status.IsSuccess.Should().BeTrue();
+
+        // check payload updated by id and path
+
+        var readAllPoints = await _qdrantHttpClient.GetPoints(
+            TestCollectionName,
+            upsertPointIds,
+            PayloadPropertiesSelector.All,
+            CancellationToken.None);
+
+        var pointsThatShouldBeUpdated = readAllPoints.Result
+            .Where(p => pointIdsToUpdatePayloadFor.Contains(p.Id));
+
+        var pointsThatShouldNotBeUpdated = readAllPoints.Result
+            .Where(p => !pointIdsToUpdatePayloadFor.Contains(p.Id));
+
+        pointsThatShouldBeUpdated.Should().AllSatisfy(
+            p =>
+            {
+                // check initial key is overwritten
+                p.Payload.As<TestComplexPayload>().IntProperty.Should().NotBeNull();
+
+                p.Payload.As<TestComplexPayload>().Nested.Integer.Should().Be(100);
+            });
+
+        pointsThatShouldNotBeUpdated.Should().AllSatisfy(p => {
+            // check initial key is not overwritten
+            p.Payload.As<TestComplexPayload>().IntProperty.Should().NotBeNull();
+
+            p.Payload.As<TestComplexPayload>().Nested.Integer.Should().NotBe(100);
+        });
     }
 
     [Test]

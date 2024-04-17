@@ -71,7 +71,7 @@ internal class PointsScrollTests : QdrantTestsBase
         var vectorCount = 10;
 
         var (_, upsertPointsByPointIds, _) =
-            await PrepareCollection(
+            await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName,
                 vectorCount: vectorCount);
@@ -103,7 +103,7 @@ internal class PointsScrollTests : QdrantTestsBase
     [Test]
     public async Task ScrollPoints_WithFilter()
     {
-        //NOTE: there is no point of testing this with every possible filter since we testing his library, not the Qdrant engine
+        //NOTE: there is no point of testing this with every possible filter since we are testing this library, not the Qdrant engine
         var vectorSize = 10U;
         var vectorCount = 10;
 
@@ -180,7 +180,7 @@ internal class PointsScrollTests : QdrantTestsBase
         uint pageSize = 5;
 
         var (_, upsertPointsByPointIds, _) =
-            await PrepareCollection(
+            await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName,
                 vectorCount: vectorCount);

@@ -2,6 +2,7 @@
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Tests.Base;
+using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
@@ -47,7 +48,7 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task RenameAlias_AliasDoesNotExist()
     {
-        await PrepareCollection(
+        await PrepareCollection<TestPayload>(
             _qdrantHttpClient,
             TestCollectionName);
 
@@ -75,15 +76,15 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_TwoAliasesForTwoDifferentCollections()
     {
-        await PrepareCollection(
+        await PrepareCollection<TestPayload>(
             _qdrantHttpClient,
             TestCollectionName);
 
-        await PrepareCollection(
+        await PrepareCollection<TestPayload>(
             _qdrantHttpClient,
             TestCollectionName2);
 
-        // create 2 aliases for two different collecitons
+        // create 2 aliases for two different collections
 
         var updateAliasesResult = await _qdrantHttpClient.UpdateCollectionsAliases(
             UpdateCollectionAliasesRequest.Create()
@@ -103,15 +104,15 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_SameAliasForDifferentCollections_LastOneWins()
     {
-        await PrepareCollection(
+        await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName);
 
-        await PrepareCollection(
+        await PrepareCollection<TestPayload>(
             _qdrantHttpClient,
             TestCollectionName2);
 
-        // create 2 aliases for one colleciton
+        // create 2 aliases for one collection
 
         var updateAliasesResult = await _qdrantHttpClient.UpdateCollectionsAliases(
             UpdateCollectionAliasesRequest.Create()
@@ -134,12 +135,12 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias()
     {
-        var (_, _, upserPointIds) =
-            await PrepareCollection(
+        var (_, _, upsertPointIds) =
+            await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName);
 
-        // create 2 aliases for one colleciton
+        // create 2 aliases for one collection
 
         var updateAliasesResult = await _qdrantHttpClient.UpdateCollectionsAliases(
             UpdateCollectionAliasesRequest.Create()
@@ -180,36 +181,36 @@ public class CollectionAliasTests : QdrantTestsBase
 
         var readPointsUsingCollectionName = await _qdrantHttpClient.GetPoints(
             TestCollectionName,
-            upserPointIds,
+            upsertPointIds,
             withPayload: false,
             CancellationToken.None);
 
         readPointsUsingCollectionName.EnsureSuccess();
-        readPointsUsingCollectionName.Result.Length.Should().Be(upserPointIds.Count);
+        readPointsUsingCollectionName.Result.Length.Should().Be(upsertPointIds.Count);
 
         var readPointsUsingCollectionAlias1 = await _qdrantHttpClient.GetPoints(
             TestCollectionAlias,
-            upserPointIds,
+            upsertPointIds,
             withPayload: false,
             CancellationToken.None);
 
         readPointsUsingCollectionAlias1.EnsureSuccess();
-        readPointsUsingCollectionAlias1.Result.Length.Should().Be(upserPointIds.Count);
+        readPointsUsingCollectionAlias1.Result.Length.Should().Be(upsertPointIds.Count);
 
         var readPointsUsingCollectionAlias2 = await _qdrantHttpClient.GetPoints(
             TestCollectionAlias2,
-            upserPointIds,
+            upsertPointIds,
             withPayload: false,
             CancellationToken.None);
 
         readPointsUsingCollectionAlias2.EnsureSuccess();
-        readPointsUsingCollectionAlias2.Result.Length.Should().Be(upserPointIds.Count);
+        readPointsUsingCollectionAlias2.Result.Length.Should().Be(upsertPointIds.Count);
     }
 
     [Test]
     public async Task CreateAlias_DeleteCollection_AliasShouldBeDeleted()
     {
-        await PrepareCollection(
+        await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -223,7 +224,7 @@ public class CollectionAliasTests : QdrantTestsBase
         updateAliasesResult.Status.IsSuccess.Should().BeTrue();
         updateAliasesResult.Result.Should().BeTrue();
 
-        // list asliases
+        // list aliases
         var listAllCollectionAliasesResult = await _qdrantHttpClient.ListCollectionAliases(CancellationToken.None);
 
         listAllCollectionAliasesResult.Status.IsSuccess.Should().BeTrue();
@@ -234,7 +235,7 @@ public class CollectionAliasTests : QdrantTestsBase
         var deleteCollection = await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None);
         deleteCollection.EnsureSuccess();
 
-        // list asliases again
+        // list aliases again
         listAllCollectionAliasesResult = await _qdrantHttpClient.ListCollectionAliases(CancellationToken.None);
 
         listAllCollectionAliasesResult.Status.IsSuccess.Should().BeTrue();
@@ -244,11 +245,11 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_DeleteAlias()
     {
-        await PrepareCollection(
+        await PrepareCollection<TestPayload>(
             _qdrantHttpClient,
             TestCollectionName);
 
-        // create 1 alias for colleciton
+        // create 1 alias for collection
 
         var updateAliasesResult = await _qdrantHttpClient.UpdateCollectionsAliases(
             UpdateCollectionAliasesRequest.Create()
@@ -289,11 +290,11 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_RenameAlias()
     {
-        await PrepareCollection(
+        await PrepareCollection<TestPayload>(
             _qdrantHttpClient,
             TestCollectionName);
 
-        // create alias for colleciton
+        // create alias for collection
 
         var updateAliasesResult = await _qdrantHttpClient.UpdateCollectionsAliases(
             UpdateCollectionAliasesRequest.Create()
@@ -312,7 +313,7 @@ public class CollectionAliasTests : QdrantTestsBase
 
         getAllAliasesResponse.Result.Aliases[0].AliasName.Should().Be(TestCollectionAlias);
 
-        // reaname alias
+        // rename alias
 
         updateAliasesResult = await _qdrantHttpClient.UpdateCollectionsAliases(
             UpdateCollectionAliasesRequest.Create()
@@ -331,11 +332,11 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_RenameAlias_DuplicateAlias()
     {
-        await PrepareCollection(
+        await PrepareCollection<TestPayload>(
             _qdrantHttpClient,
             TestCollectionName);
 
-        await PrepareCollection(
+        await PrepareCollection<TestPayload>(
             _qdrantHttpClient,
             TestCollectionName2);
 
@@ -346,7 +347,7 @@ public class CollectionAliasTests : QdrantTestsBase
                 // rename alias for collection TestCollectionName to be
                 // the same as for TestCollectionName2
 
-                // this should overwrite info that colelction TestCollectionName2 has any aliases
+                // this should overwrite info that collection TestCollectionName2 has any aliases
                 // leaving us with only one alias for collection TestCollectionName
                 .RenameAlias(TestCollectionAlias, TestCollectionAlias2),
             CancellationToken.None);
@@ -366,7 +367,7 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_RenameAlias_DeleteAlias_NoAliasesLeft()
     {
-        await PrepareCollection(
+        await PrepareCollection<TestPayload>(
             _qdrantHttpClient,
             TestCollectionName);
 
@@ -390,11 +391,11 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_RenameAlias_DeleteAlias()
     {
-        await PrepareCollection(
+        await PrepareCollection<TestPayload>(
             _qdrantHttpClient,
             TestCollectionName);
 
-        await PrepareCollection(
+        await PrepareCollection<TestPayload>(
             _qdrantHttpClient,
             TestCollectionName2);
 

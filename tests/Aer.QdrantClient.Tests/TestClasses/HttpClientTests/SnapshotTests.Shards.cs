@@ -2,11 +2,12 @@
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
+using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
 // Replace attribute when shard snapshot api will be functional
-// [Ignore("Since snapshot has a minimal size of roughly 100MB these tests are time consuming"
+// [Ignore("Since snapshot has a minimal size of roughly 100MB these tests are time-consuming"
 // +" and we only run these tests on local machine, not in CI")]
 
 [Ignore("Shard snapshot API seems to be buggy, so we skip testing it altogether")]
@@ -16,7 +17,7 @@ public class ShardSnapshotTests : QdrantTestsBase
     // these tests basically repeat the tests from CollectionSnapshotTests but using shard methods
     private QdrantHttpClient _qdrantHttpClient;
 
-    // since we don't have a cluster in test and thus have only one shard which is is always 0
+    // since we don't have a cluster in test and thus have only one shard which is always 0
     private const int SINGLE_SHARD_ID = 0;
 
     [OneTimeSetUp]
@@ -96,7 +97,7 @@ public class ShardSnapshotTests : QdrantTestsBase
     [Test]
     public async Task ListSnapshots_ExistingCollectionNoSnapshotsYet()
     {
-        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         var listSnapshotsResult = await _qdrantHttpClient.ListShardSnapshots(
             TestCollectionName,
@@ -112,7 +113,7 @@ public class ShardSnapshotTests : QdrantTestsBase
     [Test]
     public async Task CreateSnapshot()
     {
-        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult = await _qdrantHttpClient.CreateShardSnapshot(
             TestCollectionName,
@@ -128,7 +129,7 @@ public class ShardSnapshotTests : QdrantTestsBase
     [Test]
     public async Task ListSnapshots()
     {
-        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         // create first snapshot
 
@@ -178,7 +179,7 @@ public class ShardSnapshotTests : QdrantTestsBase
     [Test]
     public async Task DeleteSnapshot()
     {
-        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         // create first snapshot
 
@@ -267,7 +268,7 @@ public class ShardSnapshotTests : QdrantTestsBase
     [Test]
     public async Task DownloadSnapshot()
     {
-        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult = await _qdrantHttpClient.CreateShardSnapshot(
             TestCollectionName,
@@ -289,7 +290,7 @@ public class ShardSnapshotTests : QdrantTestsBase
     [Test]
     public async Task DownloadSnapshot_AfterCollectionIsDeleted()
     {
-        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult = await _qdrantHttpClient.CreateShardSnapshot(
             TestCollectionName,
@@ -298,8 +299,8 @@ public class ShardSnapshotTests : QdrantTestsBase
 
         createSnapshotResult.EnsureSuccess();
 
-        var deleteColelctionResut = await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None);
-        deleteColelctionResut.EnsureSuccess();
+        var deleteCollectionResult = await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None);
+        deleteCollectionResult.EnsureSuccess();
 
         // after explicit collection delete the snapshot download will not be accessible with message saying that the collection does not exist
 
@@ -335,7 +336,7 @@ public class ShardSnapshotTests : QdrantTestsBase
     [Test]
     public async Task RecoverFromSnapshot()
     {
-        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult = await _qdrantHttpClient.CreateShardSnapshot(
             TestCollectionName,
@@ -379,7 +380,7 @@ public class ShardSnapshotTests : QdrantTestsBase
     [Test]
     public async Task RecoverFromUploadedSnapshot()
     {
-        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult = await _qdrantHttpClient.CreateShardSnapshot(
             TestCollectionName,

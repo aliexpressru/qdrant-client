@@ -115,7 +115,7 @@ public class QdrantTestsBase
 
                         if (Directory.Exists(qdrantCollectionsDataDirectoryPath))
                         {
-                            // cache directory path to avoid multiple traversings
+                            // cache directory path to avoid multiple traversing
                             _collectionsDataDirectoryToClear = qdrantCollectionsDataDirectoryPath;
                         }
                         else
@@ -132,7 +132,7 @@ public class QdrantTestsBase
 
                         if (Directory.Exists(qdrantSnapshotsDataDirectoryPath))
                         {
-                            // cache directory path to avoid multiple traversings
+                            // cache directory path to avoid multiple traversing
                             _snapshotsDataDirectoryToClear = qdrantSnapshotsDataDirectoryPath;
                         }
                         else
@@ -167,7 +167,7 @@ public class QdrantTestsBase
                     {
                         if (collectionSnapshotDirectory.Name.Equals("tmp"))
                         {
-                            // skip deletting "tmp" directory as is is created upon qdrant start
+                            // skip deleting "tmp" directory as it is created upon qdrant start,
                             // and it won't be recreated automatically which will corrupt snapshot APIs
                             continue;
                         }
@@ -265,16 +265,17 @@ public class QdrantTestsBase
                 .Select(_ => vectorElement)
                 .ToArray();
 
-    internal async Task<(IReadOnlyList<UpsertPointsRequest<TestPayload>.UpsertPoint> UpsertPoints,
-        Dictionary<ulong, UpsertPointsRequest<TestPayload>.UpsertPoint> UpsertPointsByPointIds,
-        IReadOnlyList<PointId> UpsertPointIds)> PrepareCollection(
+    internal async Task<(IReadOnlyList<UpsertPointsRequest<TPayload>.UpsertPoint> UpsertPoints,
+        Dictionary<ulong, UpsertPointsRequest<TPayload>.UpsertPoint> UpsertPointsByPointIds,
+        IReadOnlyList<PointId> UpsertPointIds)> PrepareCollection<TPayload>(
         QdrantHttpClient qdrantHttpClient,
         string collectionName,
         VectorDistanceMetric distanceMetric = VectorDistanceMetric.Dot,
         uint vectorSize = 10U,
         int vectorCount = 10,
-        Func<int, TestPayload> payloadInitializerFunction = null,
+        Func<int, TPayload> payloadInitializerFunction = null,
         QuantizationConfiguration quantizationConfig = null)
+    where TPayload : Payload, new()
     {
         await qdrantHttpClient.CreateCollection(
             collectionName,
@@ -285,32 +286,36 @@ public class QdrantTestsBase
             },
             CancellationToken.None);
 
-        Func<int, TestPayload> payloadInitializer = payloadInitializerFunction ?? (i => i);
+        //Func<int, TPayload> payloadInitializer = payloadInitializerFunction ?? (i => new TestPayload(){Integer = i});
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest<TPayload>.UpsertPoint>();
         var upsertPointIds = new List<PointId>();
 
         for (int i = 0; i < vectorCount; i++)
         {
             var pointId = PointId.Integer((ulong) i);
 
+            Payload payload = payloadInitializerFunction is null
+                ? new TestPayload() {Integer = i}
+                : payloadInitializerFunction(i);
+
             upsertPoints.Add(
                 new(
                     pointId,
                     CreateTestVector(vectorSize),
-                    payloadInitializer(i)
+                    (TPayload)payload
                 )
             );
 
             upsertPointIds.Add(pointId);
         }
 
-        Dictionary<ulong, UpsertPointsRequest<TestPayload>.UpsertPoint> upsertPointsByPointIds =
+        Dictionary<ulong, UpsertPointsRequest<TPayload>.UpsertPoint> upsertPointsByPointIds =
             upsertPoints.ToDictionary(p => ((IntegerPointId) p.Id).Id);
 
         var upsertPointsResult = await qdrantHttpClient.UpsertPoints(
             collectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest<TPayload>()
             {
                 Points = upsertPoints
             },
