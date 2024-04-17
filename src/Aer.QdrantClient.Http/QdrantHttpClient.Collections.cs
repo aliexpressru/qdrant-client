@@ -168,20 +168,20 @@ public partial class QdrantHttpClient
     /// <summary>
     /// Execute multiple collection aliases update operations in one batch.
     /// </summary>
-    /// <param name="updateCollectonAliasesRequest">The request with update aliases operations batch.</param>
+    /// <param name="updateCollectionAliasesRequest">The request with update aliases operations batch.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
     public async Task<DefaultOperationResponse> UpdateCollectionsAliases(
-        UpdateCollectionAliasesRequest updateCollectonAliasesRequest,
+        UpdateCollectionAliasesRequest updateCollectionAliasesRequest,
         CancellationToken cancellationToken,
         TimeSpan? timeout = null)
     {
-        if (updateCollectonAliasesRequest.OperationsCount == 0)
+        if (updateCollectionAliasesRequest.OperationsCount == 0)
         {
             throw new QdrantEmptyBatchRequestException(
                 "N/A",
                 nameof(UpdateCollectionsAliases),
-                updateCollectonAliasesRequest.GetType());
+                updateCollectionAliasesRequest.GetType());
         }
 
         var url = $"/collections/aliases?timeout={GetTimeoutValueOrDefault(timeout)}";
@@ -189,7 +189,26 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<UpdateCollectionAliasesRequest, DefaultOperationResponse>(
             url,
             HttpMethod.Post,
-            updateCollectonAliasesRequest,
+            updateCollectionAliasesRequest,
+            cancellationToken);
+
+        return response;
+    }
+
+    /// <summary>
+    /// Checks whether collection with specified name exists.
+    /// </summary>
+    /// <param name="collectionName">The name of the collection to check existence for.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    public async Task<CheckCollectionExistsResponse> CheckCollectionExists(
+        string collectionName,
+        CancellationToken cancellationToken)
+    {
+        var url = $"/collections/{collectionName}/exists";
+
+        var response = await ExecuteRequest<CheckCollectionExistsResponse>(
+            url,
+            HttpMethod.Get,
             cancellationToken);
 
         return response;

@@ -50,6 +50,36 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task TestCollectionExists()
+    {
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName2,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        // check non-existent collection first
+
+        var collectionDoesNoExistResult =
+            await _qdrantHttpClient.CheckCollectionExists(TestCollectionName, CancellationToken.None);
+
+        collectionDoesNoExistResult.Status.IsSuccess.Should().BeTrue();
+
+        collectionDoesNoExistResult.Result.Exists.Should().BeFalse();
+
+        // check whether the created collection exists
+
+        var collectionExistsResult =
+            await _qdrantHttpClient.CheckCollectionExists(TestCollectionName2, CancellationToken.None);
+
+        collectionExistsResult.Status.IsSuccess.Should().BeTrue();
+
+        collectionExistsResult.Result.Exists.Should().BeTrue();
+    }
+
+    [Test]
     public async Task TestCreateCollection()
     {
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
