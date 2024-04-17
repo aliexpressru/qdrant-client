@@ -477,6 +477,7 @@ internal class PointsCrudTests : QdrantTestsBase
         TestPayload testPayload = "test";
         testPayload.Integer = 1567;
         testPayload.FloatingPointNumber = 15.67;
+        testPayload.DateTimeValue = DateTime.Parse("2020-01-01T00:00:00");
 
         await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
@@ -508,6 +509,7 @@ internal class PointsCrudTests : QdrantTestsBase
         payloadWithIncludedProperties.Integer.HasValue.Should().BeTrue();
         payloadWithIncludedProperties.FloatingPointNumber.HasValue.Should().BeFalse();
         payloadWithIncludedProperties.Text.Should().BeNull();
+        payloadWithIncludedProperties.DateTimeValue.Should().BeNull();
 
         // some payload properties excluded
 
@@ -528,8 +530,9 @@ internal class PointsCrudTests : QdrantTestsBase
         payloadWithExcludedProperties.Integer.HasValue.Should().BeFalse();
         payloadWithExcludedProperties.FloatingPointNumber.HasValue.Should().BeTrue();
         payloadWithExcludedProperties.Text.Should().NotBeNull();
+        payloadWithExcludedProperties.DateTimeValue.Should().NotBeNull();
 
-        // all payload properties selected (explicit PatloadSelector)
+        // all payload properties selected (explicit PayloadSelector)
 
         var readPointAllPayloadPropertiesResult = await _qdrantHttpClient.GetPoints(
             TestCollectionName,
@@ -546,7 +549,7 @@ internal class PointsCrudTests : QdrantTestsBase
 
         payloadWithAllProperties.AllPropertiesNotNull().Should().BeTrue();
 
-        // all payload properties selected (implicit PatloadSelector)
+        // all payload properties selected (implicit PayloadSelector)
 
         var readPointAllPayloadPropertiesImplicitResult = await _qdrantHttpClient.GetPoints(
             TestCollectionName,

@@ -25,5 +25,10 @@ public enum PayloadIndexedFieldType
     /// <summary>
     /// The geo coordinates type.
     /// </summary>
-    Geo
+    Geo,
+
+    /// <summary>
+    /// The datetime type.
+    /// </summary>
+    Datetime
 }

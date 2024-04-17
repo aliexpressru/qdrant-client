@@ -277,7 +277,8 @@ public partial class QdrantHttpClient
             // BadRequest && NotFound contains error message in its "status" json field so still we need to parse response
             && response.StatusCode != HttpStatusCode.BadRequest
             && response.StatusCode != HttpStatusCode.NotFound
-            && response.StatusCode != HttpStatusCode.Forbidden)
+            && response.StatusCode != HttpStatusCode.Forbidden
+            && response.StatusCode != HttpStatusCode.Conflict)
         {
             throw new QdrantCommunicationException(
                 message.Method.Method,

@@ -14,7 +14,7 @@ internal class VectorConfigurationJsonConverter : JsonConverter<VectorConfigurat
 
         try
         {
-            // try read as multiple vectors configuraiton
+            // try read as multiple vectors configuration
 
             var namedVectorsConfigurations = configurationObject.Deserialize<
                 Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration>>(JsonSerializerConstants.SerializerOptions);

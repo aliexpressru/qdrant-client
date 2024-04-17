@@ -50,4 +50,10 @@ internal sealed class ScrollPointsRequest
     /// </summary>
     [JsonConverter(typeof(ShardSelectorJsonConverter))]
     public ShardSelector ShardKey { get; set; }
+
+    /// <summary>
+    /// Order the records by a selected payload field.
+    /// </summary>
+    /// <remarks>When you use the <see cref="OrderBySelector"/> parameter, pagination is disabled.</remarks>
+    public OrderBySelector OrderBy { get; set; }
 }

@@ -392,7 +392,8 @@ public partial class QdrantHttpClient
         PointId offsetPoint = null,
         VectorSelector withVector = null,
         ReadPointsConsistency consistency = null,
-        ShardSelector shardSelector = null)
+        ShardSelector shardSelector = null,
+        OrderBySelector orderBySelector = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -403,7 +404,8 @@ public partial class QdrantHttpClient
             Offset = offsetPoint,
             WithPayload = withPayload,
             WithVector = withVector ?? VectorSelector.None,
-            ShardKey = shardSelector
+            ShardKey = shardSelector,
+            OrderBy = orderBySelector
         };
 
         string url = $"/collections/{collectionName}/points/scroll?consistency={consistencyValue}";

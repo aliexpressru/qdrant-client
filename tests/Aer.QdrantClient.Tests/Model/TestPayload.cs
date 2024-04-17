@@ -10,10 +10,13 @@ internal class TestPayload : Payload
 
     public double? FloatingPointNumber { get; set; }
 
+    public DateTime? DateTimeValue { get; set; }
+
     public bool AllPropertiesNotNull() =>
         !string.IsNullOrEmpty(Text)
         && Integer.HasValue
-        && FloatingPointNumber.HasValue;
+        && FloatingPointNumber.HasValue
+        && DateTimeValue.HasValue;
 
     #region Operators
 
@@ -38,6 +41,14 @@ internal class TestPayload : Payload
         return new TestPayload()
         {
             FloatingPointNumber = value
+        };
+    }
+
+    public static implicit operator TestPayload(DateTime value)
+    {
+        return new TestPayload()
+        {
+            DateTimeValue = value
         };
     }
 

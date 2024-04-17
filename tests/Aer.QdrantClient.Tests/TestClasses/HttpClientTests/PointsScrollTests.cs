@@ -244,4 +244,320 @@ internal class PointsScrollTests : QdrantTestsBase
             readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
         }
     }
+
+    [Test]
+    public async Task ScrollPoints_OrderBy()
+    {
+        var vectorCount = 10;
+
+        DateTime startDateTimeValue = DateTime.Parse("2020-01-01T00:00:00");
+
+        var (_, upsertPointsByPointIds, _) =
+            await PrepareCollection(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorCount: vectorCount,
+                payloadInitializerFunction: i => new TestPayload
+                {
+                    Integer = Random.Shared.Next(1, 101),
+                    FloatingPointNumber = Math.Round(Random.Shared.NextDouble(), 2, MidpointRounding.AwayFromZero),
+                    DateTimeValue = startDateTimeValue.AddDays(i)
+                });
+
+        // create collection indexes to enable order by functionality
+
+        var integerIndexCreationResult = await _qdrantHttpClient.CreatePayloadIndex(
+            TestCollectionName,
+            "integer",
+            PayloadIndexedFieldType.Integer,
+            CancellationToken.None,
+            isWaitForResult: true);
+
+        integerIndexCreationResult.EnsureSuccess();
+
+        var floatIndexCreationResult = await _qdrantHttpClient.CreatePayloadIndex(
+            TestCollectionName,
+            "floating_point_number",
+            PayloadIndexedFieldType.Float,
+            CancellationToken.None,
+            isWaitForResult: true);
+
+        floatIndexCreationResult.EnsureSuccess();
+
+        var dateTimeIndexCreationResult = await _qdrantHttpClient.CreatePayloadIndex(
+            TestCollectionName,
+            "date_time_value",
+            PayloadIndexedFieldType.Datetime,
+            CancellationToken.None,
+            isWaitForResult: true);
+
+        dateTimeIndexCreationResult.EnsureSuccess();
+
+        // order by integer ascending
+
+        var readPointsResult = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            QdrantFilter.Empty,
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true,
+            orderBySelector: "integer");
+
+        readPointsResult.Status.IsSuccess.Should().BeTrue();
+        readPointsResult.Result.Points.Length.Should().Be(vectorCount);
+
+        int previousInteger = 0;
+
+        foreach (var readPoint in readPointsResult.Result.Points)
+        {
+            var readPointId = readPoint.Id.AsInteger();
+
+            var expectedPoint = upsertPointsByPointIds[readPointId];
+
+            expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
+
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPoint.Payload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPoint.Payload.Text);
+            readPointPayload.DateTimeValue.Should().Be(expectedPoint.Payload.DateTimeValue);
+
+            readPointPayload.Integer.Should().BeGreaterThanOrEqualTo(previousInteger);
+
+            previousInteger = readPointPayload.Integer!.Value;
+        }
+
+        // order by double descending
+
+        var previousDouble = double.MaxValue;
+
+        var readPointsResult2 = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            QdrantFilter.Empty,
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true,
+            orderBySelector: OrderBySelector.Desc("floating_point_number"));
+
+        readPointsResult2.Status.IsSuccess.Should().BeTrue();
+        readPointsResult2.Result.Points.Length.Should().Be(vectorCount);
+
+        foreach (var readPoint in readPointsResult2.Result.Points)
+        {
+            var readPointId = readPoint.Id.AsInteger();
+
+            var expectedPoint = upsertPointsByPointIds[readPointId];
+
+            expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
+
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPoint.Payload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPoint.Payload.Text);
+            readPointPayload.DateTimeValue.Should().Be(expectedPoint.Payload.DateTimeValue);
+
+            readPointPayload.FloatingPointNumber.Should().BeLessOrEqualTo(previousDouble);
+
+            previousDouble = readPointPayload.FloatingPointNumber!.Value;
+        }
+
+        // order by datetime descending
+
+        var previousDateTime = DateTime.MaxValue;
+
+        var readPointsResult3 = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            QdrantFilter.Empty,
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true,
+            orderBySelector: OrderBySelector.Desc("date_time_value"));
+
+        readPointsResult3.Status.IsSuccess.Should().BeTrue();
+        readPointsResult3.Result.Points.Length.Should().Be(vectorCount);
+
+        foreach (var readPoint in readPointsResult3.Result.Points)
+        {
+            var readPointId = readPoint.Id.AsInteger();
+
+            var expectedPoint = upsertPointsByPointIds[readPointId];
+
+            expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
+
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPoint.Payload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPoint.Payload.Text);
+            readPointPayload.DateTimeValue.Should().Be(expectedPoint.Payload.DateTimeValue);
+
+            readPointPayload.DateTimeValue.Should().BeBefore(previousDateTime);
+
+            previousDateTime = readPointPayload.DateTimeValue!.Value;
+        }
+    }
+
+    [Test]
+    public async Task ScrollPoints_OrderBy_StartFrom()
+    {
+        var vectorCount = 10;
+
+        DateTime startDateTimeValue = DateTime.Parse("2020-01-01T00:00:00");
+
+        var (_, upsertPointsByPointIds, _) =
+            await PrepareCollection(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorCount: vectorCount,
+                payloadInitializerFunction: i => new TestPayload
+                {
+                    Integer = i,
+                    FloatingPointNumber = 1.567 + i,
+                    DateTimeValue = startDateTimeValue.AddDays(i)
+                });
+
+        // create collection indexes to enable order by functionality
+
+        var integerIndexCreationResult = await _qdrantHttpClient.CreatePayloadIndex(
+            TestCollectionName,
+            "integer",
+            PayloadIndexedFieldType.Integer,
+            CancellationToken.None,
+            isWaitForResult: true);
+
+        integerIndexCreationResult.EnsureSuccess();
+
+        var floatIndexCreationResult = await _qdrantHttpClient.CreatePayloadIndex(
+            TestCollectionName,
+            "floating_point_number",
+            PayloadIndexedFieldType.Float,
+            CancellationToken.None,
+            isWaitForResult: true);
+
+        floatIndexCreationResult.EnsureSuccess();
+
+        var dateTimeIndexCreationResult = await _qdrantHttpClient.CreatePayloadIndex(
+            TestCollectionName,
+            "date_time_value",
+            PayloadIndexedFieldType.Datetime,
+            CancellationToken.None,
+            isWaitForResult: true);
+
+        dateTimeIndexCreationResult.EnsureSuccess();
+
+        // order by integer ascending
+
+        var readPointsResult = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            QdrantFilter.Empty,
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true,
+            orderBySelector: OrderBySelector.Asc("integer", startFrom: 3));
+
+        readPointsResult.Status.IsSuccess.Should().BeTrue();
+
+        // we skip 3 first points by using startFrom
+        readPointsResult.Result.Points.Length.Should().Be(vectorCount - 3);
+
+        int previousInteger = 0;
+
+        foreach (var readPoint in readPointsResult.Result.Points)
+        {
+            var readPointId = readPoint.Id.AsInteger();
+
+            var expectedPoint = upsertPointsByPointIds[readPointId];
+
+            expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
+
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPoint.Payload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPoint.Payload.Text);
+            readPointPayload.DateTimeValue.Should().Be(expectedPoint.Payload.DateTimeValue);
+
+            readPointPayload.Integer.Should().BeGreaterThanOrEqualTo(previousInteger);
+
+            previousInteger = readPointPayload.Integer!.Value;
+        }
+
+        // order by double descending
+
+        var previousDouble = double.MaxValue;
+
+        var readPointsResult2 = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            QdrantFilter.Empty,
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true,
+            orderBySelector: OrderBySelector.Desc("floating_point_number", startFrom: 4.567));
+
+        readPointsResult2.Status.IsSuccess.Should().BeTrue();
+
+        // we invert points then start getting them from value 4.567
+        // which gives us only first 4 points
+        readPointsResult2.Result.Points.Length.Should().Be(vectorCount-6);
+
+        foreach (var readPoint in readPointsResult2.Result.Points)
+        {
+            var readPointId = readPoint.Id.AsInteger();
+
+            var expectedPoint = upsertPointsByPointIds[readPointId];
+
+            expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
+
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPoint.Payload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPoint.Payload.Text);
+            readPointPayload.DateTimeValue.Should().Be(expectedPoint.Payload.DateTimeValue);
+
+            readPointPayload.FloatingPointNumber.Should().BeLessOrEqualTo(previousDouble);
+
+            previousDouble = readPointPayload.FloatingPointNumber!.Value;
+        }
+
+        // order by datetime descending
+
+        var previousDateTime = DateTime.MaxValue;
+
+        var readPointsResult3 = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            QdrantFilter.Empty,
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true,
+            orderBySelector: OrderBySelector.Desc("date_time_value", startFrom: startDateTimeValue.AddDays(3)));
+
+        readPointsResult3.Status.IsSuccess.Should().BeTrue();
+
+        // we invert points then start getting them from value "2020-01-04T00:00:00"
+        // which gives us only first 4 points
+        readPointsResult3.Result.Points.Length.Should().Be(vectorCount-6);
+
+        foreach (var readPoint in readPointsResult3.Result.Points)
+        {
+            var readPointId = readPoint.Id.AsInteger();
+
+            var expectedPoint = upsertPointsByPointIds[readPointId];
+
+            expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
+
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPoint.Payload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPoint.Payload.Text);
+            readPointPayload.DateTimeValue.Should().Be(expectedPoint.Payload.DateTimeValue);
+
+            readPointPayload.DateTimeValue.Should().BeBefore(previousDateTime);
+
+            previousDateTime = readPointPayload.DateTimeValue!.Value;
+        }
+    }
 }
