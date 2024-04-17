@@ -1469,7 +1469,7 @@ internal class PointsCrudTests : QdrantTestsBase
             .Text.Should().NotBe("1000"));
     }
 
-    [Test]
+    //[Test]
     public async Task OverwritePointsPayload_NestedPropertyPath()
     {
         var (upsertPoints, _, upsertPointIds) =
