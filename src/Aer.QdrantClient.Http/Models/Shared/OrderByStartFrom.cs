@@ -44,13 +44,13 @@ public class OrderByStartFrom
         /// <summary>
         /// Which payload value to start scrolling from.
         /// </summary>
-        public DateTime StartFrom { get; }
+        public DateTimeOffset StartFrom { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrderByStartFrom"/> class with date-time start.
         /// </summary>
         /// <param name="startFrom">The starting value for the order by.</param>
-        public OrderByStartFromDateTime(DateTime startFrom)
+        public OrderByStartFromDateTime(DateTimeOffset startFrom)
         {
             StartFrom = startFrom;
         }
@@ -72,5 +72,5 @@ public class OrderByStartFrom
     /// Implicitly converts the date-time value to <see cref="OrderByStartFrom"/>.
     /// </summary>
     /// <param name="startFrom">The start from value.</param>
-    public static implicit operator OrderByStartFrom(DateTime startFrom) => new OrderByStartFromDateTime(startFrom);
+    public static implicit operator OrderByStartFrom(DateTimeOffset startFrom) => new OrderByStartFromDateTime(startFrom);
 }

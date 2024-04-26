@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -8,13 +9,12 @@ using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Shared;
 
-// ReSharper disable MemberCanBeInternal
-
 namespace Aer.QdrantClient.Http;
 
 /// <summary>
 /// Client for Qdrant HTTP API.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public partial class QdrantHttpClient
 {
     private readonly HttpClient _apiClient;
@@ -24,7 +24,27 @@ public partial class QdrantHttpClient
     private readonly TimeSpan _defaultOperationTimeout = TimeSpan.FromSeconds(DEFAULT_OPERATION_TIMEOUT_SECONDS);
     private readonly TimeSpan _defaultPollingInterval = TimeSpan.FromSeconds(1);
 
-    private readonly List<string> _invalidQdrantNameSymbols =
+    // Forbidden status code was issued until qdrant 1.9
+    // from 1.9 Unauthorized is issued
+    private static readonly HashSet<HttpStatusCode> _unauthorizedStatusCodes =
+    [
+        HttpStatusCode.Forbidden,
+        HttpStatusCode.Unauthorized
+    ];
+
+    // contains codes which should be handled specially
+    private static readonly HashSet<HttpStatusCode> _specialStatusCodes = [
+        // BadRequest, NotFound, Conflict contain error message in their "status" json field,
+        // so we need to parse responses with those codes
+        HttpStatusCode.BadRequest,
+        HttpStatusCode.NotFound,
+        HttpStatusCode.Conflict,
+
+        // Forbidden and Unauthorized are handled specially to throw unauthorized exception
+        .. _unauthorizedStatusCodes
+    ];
+
+    private static readonly List<string> _invalidQdrantNameSymbols =
     [
         "/",
         " "
@@ -46,7 +66,7 @@ public partial class QdrantHttpClient
     /// <param name="port">The qdrant HTTP API port.</param>
     /// <param name="useHttps">Set to <c>true</c> to use communication over HTTPS, defaults to <c>false</c>.</param>
     /// <param name="apiKey">The Qdrant api key value.</param>
-    /// <param name="httpClientTimeout">Http client timeout. Deafult value is <c>100 seconds</c>.</param>
+    /// <param name="httpClientTimeout">Http client timeout. Default value is <c>100 seconds</c>.</param>
     public QdrantHttpClient(
         string host,
         int port = 6334,
@@ -66,7 +86,7 @@ public partial class QdrantHttpClient
     /// </summary>
     /// <param name="httpAddress">The Qdrant HTTP api server address and port.</param>
     /// <param name="apiKey">The Qdrant api key value.</param>
-    /// <param name="httpClientTimeout">Http client timeout. Deafult value is <c>100 seconds</c>.</param>
+    /// <param name="httpClientTimeout">Http client timeout. Default value is <c>100 seconds</c>.</param>
     public QdrantHttpClient(Uri httpAddress, string apiKey = null, TimeSpan? httpClientTimeout = null)
     {
         var apiClient = new HttpClient()
@@ -87,8 +107,8 @@ public partial class QdrantHttpClient
     }
 
     /// <summary>
-    /// Aynchronously wait until the collection status becomes <see cref="QdrantCollectionStatus.Green"/>
-    /// and colelction optimizer status becomes <see cref="QdrantOptimizerStatus.Ok"/>.
+    /// Asynchronously wait until the collection status becomes <see cref="QdrantCollectionStatus.Green"/>
+    /// and collection optimizer status becomes <see cref="QdrantOptimizerStatus.Ok"/>.
     /// </summary>
     /// <param name="collectionName">The name of the collection to check status for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -120,9 +140,9 @@ public partial class QdrantHttpClient
 
         var pollingEndTime = DateTime.Now.Add(actualTimeout);
 
-        var requredCollectionIsReadyResponsesLeft = requiredNumberOfGreenCollectionResponses;
+        var requiredCollectionIsReadyResponsesLeft = requiredNumberOfGreenCollectionResponses;
 
-        while (requredCollectionIsReadyResponsesLeft > 0)
+        while (requiredCollectionIsReadyResponsesLeft > 0)
         {
             if (DateTime.Now > pollingEndTime)
             {
@@ -136,9 +156,9 @@ public partial class QdrantHttpClient
             if (collectionInfoResponse.Result.Status is QdrantCollectionStatus.Green
                 && collectionInfoResponse.Result.OptimizerStatus.IsOk)
             {
-                requredCollectionIsReadyResponsesLeft--;
+                requiredCollectionIsReadyResponsesLeft--;
 
-                if (requredCollectionIsReadyResponsesLeft == 0)
+                if (requiredCollectionIsReadyResponsesLeft == 0)
                 {
                     // in this case there is no point in waiting for polling interval to elapse
                     break;
@@ -222,9 +242,7 @@ public partial class QdrantHttpClient
             cancellationToken);
 
         if (!response.IsSuccessStatusCode
-            // BadRequest && NotFound contains error message in its "status" json field so still we need to parse response
-            && response.StatusCode != HttpStatusCode.BadRequest
-            && response.StatusCode != HttpStatusCode.Forbidden)
+            && !_specialStatusCodes.Contains(response.StatusCode))
         {
             var errorResult = await response.Content.ReadAsStringAsync(cancellationToken);
 
@@ -236,8 +254,8 @@ public partial class QdrantHttpClient
                 errorResult);
         }
 
-        // handle unauthorized exception
-        if (response.StatusCode == HttpStatusCode.Forbidden)
+        // handle unauthorized codes
+        if (_unauthorizedStatusCodes.Contains(response.StatusCode))
         {
             throw new QdrantUnauthorizedAccessException(response.ReasonPhrase);
         }
@@ -274,11 +292,7 @@ public partial class QdrantHttpClient
         var result = await response.Content.ReadAsStringAsync(cancellationToken);
 
         if (!response.IsSuccessStatusCode
-            // BadRequest && NotFound contains error message in its "status" json field so still we need to parse response
-            && response.StatusCode != HttpStatusCode.BadRequest
-            && response.StatusCode != HttpStatusCode.NotFound
-            && response.StatusCode != HttpStatusCode.Forbidden
-            && response.StatusCode != HttpStatusCode.Conflict)
+            && !_specialStatusCodes.Contains(response.StatusCode))
         {
             throw new QdrantCommunicationException(
                 message.Method.Method,
@@ -288,8 +302,8 @@ public partial class QdrantHttpClient
                 result);
         }
 
-        // handle unauthorized exception
-        if (response.StatusCode == HttpStatusCode.Forbidden)
+        // handle unauthorized codes
+        if (_unauthorizedStatusCodes.Contains(response.StatusCode))
         {
             throw new QdrantUnauthorizedAccessException(result);
         }
@@ -321,10 +335,10 @@ public partial class QdrantHttpClient
             }
         }
 
-        var deserizlizedObject =
+        var deserializedObject =
             JsonSerializer.Deserialize<TResponse>(result, JsonSerializerConstants.SerializerOptions);
 
-        return deserizlizedObject;
+        return deserializedObject;
     }
 
     private void EnsureQdrantNameCorrect(string qdrantEntityName)

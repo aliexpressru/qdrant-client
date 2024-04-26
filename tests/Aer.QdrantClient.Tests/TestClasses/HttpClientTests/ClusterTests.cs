@@ -242,4 +242,47 @@ public class ClusterTests : QdrantTestsBase
 
         deleteShardKeyResult.Status.IsSuccess.Should().BeTrue();
     }
+
+    // [Test]
+    // NOTE: this test will work only when cluster is enabled in qdrant-config_node_0.yaml
+    public async Task TestCollectionRemovePeer()
+    {
+        const uint vectorSize = 10;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var clusterInfo = await _qdrantHttpClient.GetClusterInfo(CancellationToken.None);
+
+        var deleteShardKeyResult = await _qdrantHttpClient.RemovePeer(
+            clusterInfo.Result.PeerId,
+            CancellationToken.None);
+
+        deleteShardKeyResult.Status.IsSuccess.Should().BeTrue();
+    }
+
+    // [Test]
+    // NOTE: this test will work only when cluster is enabled in qdrant-config_node_0.yaml
+    public async Task TestCollectionRecoverRaftStart()
+    {
+        const uint vectorSize = 10;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var recoverCollectionRaftState = await _qdrantHttpClient.RecoverPeerRaftState(
+            CancellationToken.None);
+
+        recoverCollectionRaftState.Status.IsSuccess.Should().BeTrue();
+    }
 }

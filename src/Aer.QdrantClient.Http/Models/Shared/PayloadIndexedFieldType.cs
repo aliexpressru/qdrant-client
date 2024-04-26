@@ -30,5 +30,10 @@ public enum PayloadIndexedFieldType
     /// <summary>
     /// The datetime type.
     /// </summary>
-    Datetime
+    Datetime,
+
+    /// <summary>
+    /// The fulltext type. Used only for a fulltext indexes.
+    /// </summary>
+    Text
 }

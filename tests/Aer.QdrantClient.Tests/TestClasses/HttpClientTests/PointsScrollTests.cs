@@ -103,7 +103,8 @@ internal class PointsScrollTests : QdrantTestsBase
     [Test]
     public async Task ScrollPoints_WithFilter()
     {
-        //NOTE: there is no point of testing this with every possible filter since we are testing this library, not the Qdrant engine
+        //NOTE: there is no point of testing this with every possible filter
+        //since we are testing this library, not the Qdrant engine
         var vectorSize = 10U;
         var vectorCount = 10;
 
@@ -118,13 +119,18 @@ internal class PointsScrollTests : QdrantTestsBase
         var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
         List<int> valuesToMatchAgainst = new(vectorCount);
 
+        var startDateTime = DateTime.Parse("2020-01-01T00:00:00");
+
         for (int i = 0; i < vectorCount; i++)
         {
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
                     CreateTestVector(vectorSize),
-                    i
+                    new TestPayload(){
+                        Integer = i,
+                        DateTimeValue = startDateTime.AddDays(i)
+                    }
                 )
             );
 
@@ -156,6 +162,22 @@ internal class PointsScrollTests : QdrantTestsBase
 
         readPointsResult.Status.IsSuccess.Should().BeTrue();
         readPointsResult.Result.Points.Length.Should().Be(valuesToMatchAgainst.Count);
+
+        var readPointsRangeResult = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            Q.Must(
+                Q<TestPayload>.BeInRange(
+                    p => p.DateTimeValue,
+                    greaterThan: startDateTime.AddDays(2),
+                    lessThanOrEqual: startDateTime.AddDays(upsertPoints.Count - 1))
+            ),
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true);
+
+        readPointsRangeResult.Status.IsSuccess.Should().BeTrue();
+        // -3 since one end of the BeInRange filter is exclusive and the second one is not
+        readPointsRangeResult.Result.Points.Length.Should().Be(upsertPoints.Count - 3);
 
         foreach (var readPoint in readPointsResult.Result.Points)
         {
@@ -250,7 +272,7 @@ internal class PointsScrollTests : QdrantTestsBase
     {
         var vectorCount = 10;
 
-        DateTime startDateTimeValue = DateTime.Parse("2020-01-01T00:00:00");
+        DateTimeOffset startDateTimeValue = DateTime.Parse("2020-01-01T00:00:00");
 
         var (_, upsertPointsByPointIds, _) =
             await PrepareCollection(
@@ -365,7 +387,7 @@ internal class PointsScrollTests : QdrantTestsBase
 
         // order by datetime descending
 
-        var previousDateTime = DateTime.MaxValue;
+        var previousDateTime = DateTimeOffset.MaxValue;
 
         var readPointsResult3 = await _qdrantHttpClient.ScrollPoints(
             TestCollectionName,
@@ -524,7 +546,8 @@ internal class PointsScrollTests : QdrantTestsBase
 
         // order by datetime descending
 
-        var previousDateTime = DateTime.MaxValue;
+        var previousDateTime = DateTimeOffset.MaxValue;
+        DateTimeOffset startFromDateTime = startDateTimeValue.AddDays(3);
 
         var readPointsResult3 = await _qdrantHttpClient.ScrollPoints(
             TestCollectionName,
@@ -532,7 +555,7 @@ internal class PointsScrollTests : QdrantTestsBase
             PayloadPropertiesSelector.All,
             CancellationToken.None,
             withVector: true,
-            orderBySelector: OrderBySelector.Desc("date_time_value", startFrom: startDateTimeValue.AddDays(3)));
+            orderBySelector: OrderBySelector.Desc("date_time_value", startFrom: startFromDateTime));
 
         readPointsResult3.Status.IsSuccess.Should().BeTrue();
 

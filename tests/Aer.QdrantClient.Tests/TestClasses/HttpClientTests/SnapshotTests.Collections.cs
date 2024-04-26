@@ -6,10 +6,9 @@ using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
-#if !DEBUG
-[Ignore("Since snapshot has a minimal size of roughly 100MB these tests are time consuming"
-+" and we only run these tests on local machine, not in CI")]
-#endif
+
+[Ignore("Since snapshot has a minimal size of roughly 100MB these tests are time consuming and somewhat flaky"
++" and we only run these tests on local machine and only manually when needed")]
 public class CollectionSnapshotTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;

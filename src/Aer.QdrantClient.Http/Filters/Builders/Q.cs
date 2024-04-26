@@ -1,16 +1,15 @@
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Filters.Conditions;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 using Aer.QdrantClient.Http.Models.Primitives;
 
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-
 namespace Aer.QdrantClient.Http.Filters.Builders;
 
 /// <summary>
-/// Class for buiding filter condition instances.
+/// Class for building filter condition instances.
 /// </summary>
+[SuppressMessage("ReSharper", "UnusedMember.Global", Justification = "Public API")]
+[SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public static class Q
 {
     /// <summary>
@@ -38,16 +37,28 @@ public static class Q
         => new MustNotCondition(conditions);
 
     /// <summary>
-    /// Checks whether any of the the underlying conditions was satisfied.
+    /// Checks whether any of the underlying conditions was satisfied.
     /// </summary>
     public static FilterConditionBase Should(params FilterConditionBase[] conditions)
         => new ShouldCondition(conditions);
 
     /// <summary>
-    /// Checks whether any of the the underlying conditions was satisfied.
+    /// Checks whether any of the underlying conditions was satisfied.
     /// </summary>
     public static FilterConditionBase Should(IEnumerable<FilterConditionBase> conditions)
         => new ShouldCondition(conditions);
+
+    /// <summary>
+    /// Checks whether the minimum number of the underlying conditions was satisfied.
+    /// </summary>
+    public static FilterConditionBase MinShould(int minCount, params FilterConditionBase[] conditions)
+        => new MinimumShouldCondition(minCount, conditions);
+
+    /// <summary>
+    /// Checks whether the minimum number of the underlying conditions was satisfied.
+    /// </summary>
+    public static FilterConditionBase MinShould(int minCount, IEnumerable<FilterConditionBase> conditions)
+        => new MinimumShouldCondition(minCount, conditions);
 
     /// <summary>
     /// Check if payload has a field with a given value.
@@ -73,7 +84,7 @@ public static class Q
     /// <typeparam name="T">Type of the value to match payload value against.</typeparam>
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
     /// <param name="anyValues">Payload field values to match with.</param>
-    [Obsolete($"There is an aternative, faster implementation of this filter. Use {nameof(MatchAnyFast)} condition.")]
+    [Obsolete($"There is an alternative, faster implementation of this filter. Use {nameof(MatchAnyFast)} condition.")]
     public static FilterConditionBase MatchAny<T>(string payloadFieldName, params T[] anyValues)
         => new FieldMatchAnyCondition<T>(payloadFieldName, anyValues);
 
@@ -124,7 +135,7 @@ public static class Q
     /// <param name="lessThan">Value that palyload value must be less than.</param>
     /// <param name="lessThanOrEqual">Value that palyload value must be less than or equal.</param>
     /// <param name="greaterThan">Value that palyload value must be greater than.</param>
-    /// <param name="greaterThanOrEqual">Value that palyload value must be greater than or equal.</param>
+    /// <param name="greaterThanOrEqual">Value that payload value must be greater than or equal.</param>
     public static FilterConditionBase BeInRange(
         string payloadFieldName,
         int? lessThan = null,
@@ -146,7 +157,7 @@ public static class Q
     /// <param name="lessThan">Value that palyload value must be less than.</param>
     /// <param name="lessThanOrEqual">Value that palyload value must be less than or equal.</param>
     /// <param name="greaterThan">Value that palyload value must be greater than.</param>
-    /// <param name="greaterThanOrEqual">Value that palyload value must be greater than or equal.</param>
+    /// <param name="greaterThanOrEqual">Value that payload value must be greater than or equal.</param>
     public static FilterConditionBase BeInRange(
         string payloadFieldName,
         double? lessThan = null,
@@ -154,6 +165,28 @@ public static class Q
         double? greaterThan = null,
         double? greaterThanOrEqual = null)
         => new FieldRangeDoubleCondition(
+            payloadFieldName,
+            lessThan,
+            lessThanOrEqual,
+            greaterThan,
+            greaterThanOrEqual);
+
+    /// <summary>
+    /// Check if payload field value lies in a given range.
+    /// If several values are stored, at least one of them should match the condition.
+    /// </summary>
+    /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
+    /// <param name="lessThan">Value that palyload value must be less than.</param>
+    /// <param name="lessThanOrEqual">Value that palyload value must be less than or equal.</param>
+    /// <param name="greaterThan">Value that palyload value must be greater than.</param>
+    /// <param name="greaterThanOrEqual">Value that payload value must be greater than or equal.</param>
+    public static FilterConditionBase BeInRange(
+        string payloadFieldName,
+        DateTime? lessThan = null,
+        DateTime? lessThanOrEqual = null,
+        DateTime? greaterThan = null,
+        DateTime? greaterThanOrEqual = null)
+        => new FieldRangeDateTimeCondition(
             payloadFieldName,
             lessThan,
             lessThanOrEqual,
@@ -260,21 +293,21 @@ public static class Q
     /// These conditions can only be applied to payloads that match the geo-data format.
     /// </summary>
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
-    /// <param name="topLeftLongtitude">Area bounding box top left longtitude.</param>
+    /// <param name="topLeftLongitude">Area bounding box top left longtitude.</param>
     /// <param name="topLeftLatitude">Area bounding box top left latitude.</param>
-    /// <param name="bottomRightLongtitude">Area bounding box bottom right longtitude.</param>
+    /// <param name="bottomRightLongitude">Area bounding box bottom right longtitude.</param>
     /// <param name="bottomRightLatitude">Area bounding box bottom right latitude.</param>
     public static FilterConditionBase BeWithinGeoBoundingBox(
         string payloadFieldName,
-        double topLeftLongtitude,
+        double topLeftLongitude,
         double topLeftLatitude,
-        double bottomRightLongtitude,
+        double bottomRightLongitude,
         double bottomRightLatitude)
         => new FieldInGeoBoundingBoxCondition(
             payloadFieldName,
-            topLeftLongtitude,
+            topLeftLongitude,
             topLeftLatitude,
-            bottomRightLongtitude,
+            bottomRightLongitude,
             bottomRightLatitude);
 
     /// <summary>
@@ -282,17 +315,17 @@ public static class Q
     /// These conditions can only be applied to payloads that match the geo-data format.
     /// </summary>
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
-    /// <param name="centerLongtitude">Area center longtitude.</param>
+    /// <param name="centerLongitude">Area center longtitude.</param>
     /// <param name="centerLatitude">Area center latitude.</param>
     /// <param name="radius">Radius of the area in meters.</param>
     public static FilterConditionBase BeWithinGeoRadius(
         string payloadFieldName,
-        double centerLongtitude,
+        double centerLongitude,
         double centerLatitude,
         double radius)
         => new FieldInGeoRadiusCondition(
             payloadFieldName,
-            centerLongtitude,
+            centerLongitude,
             centerLatitude,
             radius);
 
@@ -306,7 +339,7 @@ public static class Q
     /// </summary>
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
     /// <param name="exteriorPolygonPoints">Points that define exterior polygon to search into.</param>
-    /// <param name="interiorPolygonsPoints">Points that define interior ploygons to exclude from search.</param>
+    /// <param name="interiorPolygonsPoints">Points that define interior polygons to exclude from search.</param>
     public static FilterConditionBase BeWithinGeoPolygon(
         string payloadFieldName,
         IEnumerable<GeoPoint> exteriorPolygonPoints,

@@ -1469,7 +1469,7 @@ internal class PointsCrudTests : QdrantTestsBase
             .Text.Should().NotBe("1000"));
     }
 
-    //[Test]
+    [Ignore("This API does not seem to work properly, or I've done something wrong")]
     public async Task OverwritePointsPayload_NestedPropertyPath()
     {
         var (upsertPoints, _, upsertPointIds) =

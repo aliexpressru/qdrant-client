@@ -10,7 +10,7 @@ internal class TestPayload : Payload
 
     public double? FloatingPointNumber { get; set; }
 
-    public DateTime? DateTimeValue { get; set; }
+    public DateTimeOffset? DateTimeValue { get; set; }
 
     public bool AllPropertiesNotNull() =>
         !string.IsNullOrEmpty(Text)

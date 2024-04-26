@@ -1,11 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 
-// ReSharper disable MemberCanBeInternal
-
 namespace Aer.QdrantClient.Http;
 
+[SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public partial class QdrantHttpClient
 {
     /// <summary>
@@ -30,6 +30,12 @@ public partial class QdrantHttpClient
     {
         EnsureQdrantNameCorrect(collectionName);
         EnsureQdrantNameCorrect(payloadFieldName);
+
+        if (payloadFieldType == PayloadIndexedFieldType.Text)
+        {
+            throw new InvalidOperationException(
+                $"Direct creation of the text type indexes (fulltext search indexes) is not supported. To create fulltext index please use {nameof(CreateFullTextPayloadIndex)} method");
+        }
 
         var index = new CreatePayloadIndexRequest(payloadFieldName, payloadFieldType);
 
@@ -73,7 +79,7 @@ public partial class QdrantHttpClient
         EnsureQdrantNameCorrect(collectionName);
         EnsureQdrantNameCorrect(payloadTextFieldName);
 
-        var index = new CreateFullTextPayloadIndexRequest(
+        var createIndexRequest = new CreateFullTextPayloadIndexRequest(
             payloadTextFieldName,
             new CreateFullTextPayloadIndexRequest.FullTextPayloadFieldSchema()
             {
@@ -88,7 +94,7 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<CreateFullTextPayloadIndexRequest, PayloadIndexOperationResponse>(
             url,
             HttpMethod.Put,
-            index,
+            createIndexRequest,
             cancellationToken);
 
         return response;

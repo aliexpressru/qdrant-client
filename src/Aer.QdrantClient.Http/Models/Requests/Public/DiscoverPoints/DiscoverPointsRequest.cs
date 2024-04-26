@@ -1,15 +1,14 @@
-﻿using Aer.QdrantClient.Http.Models.Primitives;
+﻿using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Shared;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
 
 /// <summary>
 /// Represents a builder class for building instances of <see cref="DiscoverPointsByRequest"/> point discovery requests.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public static class DiscoverPointsRequest
 {
     /// <summary>

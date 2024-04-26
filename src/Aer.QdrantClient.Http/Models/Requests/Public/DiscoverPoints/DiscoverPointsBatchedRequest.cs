@@ -1,6 +1,4 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
 
@@ -11,6 +9,8 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
 /// The batch discover API enables to perform multiple discover requests via a single request.
 /// Its semantic is straightforward : 1 batched discover request is equivalent to n singular discover requests.
 /// </remarks>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public class DiscoverPointsBatchedRequest
 {
     /// <summary>

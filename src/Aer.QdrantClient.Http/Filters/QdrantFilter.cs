@@ -1,20 +1,16 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
-
-using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters.Conditions;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Aer.QdrantClient.Http.Filters;
 
 /// <summary>
 /// Represents a qdrant filter.
 /// </summary>
-public class QdrantFilter
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+public sealed class QdrantFilter
 {
     private readonly List<FilterConditionBase> _conditions = [];
 
@@ -26,7 +22,7 @@ public class QdrantFilter
     /// <summary>
     /// This ctor is for preventing builder from being created manually.
     /// </summary>
-    protected QdrantFilter()
+    private QdrantFilter()
     { }
 
     /// <summary>
@@ -38,9 +34,9 @@ public class QdrantFilter
 
         QdrantFilter ret = new();
 
-        CheckTopLevelConditionValid(singleCondition);
+        var isConditionGroup = CheckTopLevelConditionIsGroup(singleCondition);
 
-        ret._conditions.Add(singleCondition);
+        ret._conditions.Add(isConditionGroup ? singleCondition : new MustCondition(singleCondition));
 
         return ret;
     }
@@ -59,16 +55,16 @@ public class QdrantFilter
 
         foreach (var condition in conditions)
         {
-            CheckTopLevelConditionValid(condition);
+            var isConditionGroup = CheckTopLevelConditionIsGroup(condition);
 
-            ret._conditions.Add(condition);
+            ret._conditions.Add(isConditionGroup ? condition : new MustCondition(condition));
         }
 
         return ret;
     }
 
     /// <summary>
-    /// Creates a qdrant filter from filter conditions.
+    /// Creates a qdrant filter instance from filter conditions.
     /// </summary>
     /// <param name="conditions">The filter conditions to create filter from.</param>
     public static QdrantFilter Create(List<FilterConditionBase> conditions)
@@ -104,11 +100,11 @@ public class QdrantFilter
     /// <param name="condition">The condition to add to the filter.</param>
     public static QdrantFilter operator +(QdrantFilter filter, FilterConditionBase condition)
     {
-        CheckTopLevelConditionValid(condition);
+        var isConditionGroup = CheckTopLevelConditionIsGroup(condition);
 
         if (filter is { } existingFilter)
         {
-            existingFilter._conditions.Add(condition);
+            existingFilter._conditions.Add(isConditionGroup ? condition : new MustCondition(condition));
 
             return filter;
         }
@@ -171,17 +167,13 @@ public class QdrantFilter
     /// <inheritdoc/>
     public override string ToString() => ToString(isIndentFilterSyntax: true);
 
-    internal static void CheckTopLevelConditionValid(FilterConditionBase condition)
-    {
-        if (condition is not MustCondition
-            && condition is not MustNotCondition
-            && condition is not ShouldCondition
-            && condition is not FilterGroupCondition)
-        {
-            throw new QdrantInvalidFilterException(
-                $"Top-level filter condition must be one of [{nameof(MustCondition)}, {nameof(MustNotCondition)}, {nameof(ShouldCondition)}, {nameof(FilterGroupCondition)}], but found {condition.GetType().Name}");
-        }
-    }
+    internal static bool CheckTopLevelConditionIsGroup(FilterConditionBase condition)
+        =>
+            condition is MustCondition
+                or MustNotCondition
+                or ShouldCondition
+                or FilterGroupCondition
+                or MinimumShouldCondition;
 
     /// <summary>
     /// Write this filter as Json to output writer. For serialization purposes.

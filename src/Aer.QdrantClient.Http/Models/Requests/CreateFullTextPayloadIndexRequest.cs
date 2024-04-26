@@ -21,10 +21,10 @@ internal sealed class CreateFullTextPayloadIndexRequest
         /// <summary>
         /// The type of the payload field. Since this is a full-text index the field type can only be <c>Keyword</c>.
         /// </summary>
-        public PayloadIndexedFieldType Type { get; } = PayloadIndexedFieldType.Keyword;
+        public PayloadIndexedFieldType Type { get; } = PayloadIndexedFieldType.Text;
 
         /// <summary>
-        /// The type of the payloiad text tokenizer.
+        /// The type of the payload text tokenizer.
         /// </summary>
         public PayloadIndexedTextFieldTokenizerType Tokenizer { get; set; }
 
@@ -61,7 +61,9 @@ internal sealed class CreateFullTextPayloadIndexRequest
     /// </summary>
     /// <param name="payloadTextFieldName">The name of the indexed text payload field.</param>
     /// <param name="payloadTextFieldSchema">The schema type of the indexed text payload field.</param>
-    public CreateFullTextPayloadIndexRequest(string payloadTextFieldName, FullTextPayloadFieldSchema payloadTextFieldSchema)
+    public CreateFullTextPayloadIndexRequest(
+        string payloadTextFieldName,
+        FullTextPayloadFieldSchema payloadTextFieldSchema)
     {
         FieldName = payloadTextFieldName;
         FieldSchema = payloadTextFieldSchema;

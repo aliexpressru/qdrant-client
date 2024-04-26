@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Models.Primitives;
@@ -7,10 +8,9 @@ using Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 
-// ReSharper disable MemberCanBeInternal
-
 namespace Aer.QdrantClient.Http;
 
+[SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public partial class QdrantHttpClient
 {
     #region Create \ Update \ Delete operations
@@ -211,7 +211,6 @@ public partial class QdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="ordering">The batch update operation ordering settings.</param>
-    /// <remarks>Named vectors are not supportd yet so single vector for each point will be updated.</remarks>
     public async Task<PointsOperationResponse> UpdatePointsVectors(
         string collectionName,
         UpdatePointsVectorsRequest updatePointsVectors,
@@ -382,6 +381,10 @@ public partial class QdrantHttpClient
     /// <param name="shardSelector">
     /// The shard selector. If set performs operation on specified shard(s).
     /// If not set - performs operation on all shards.
+    /// </param>
+    /// <param name="orderBySelector">
+    /// The ordering field and direction selector.
+    /// You can pass a string payload field name value which would be interpreted as order by the specified field in ascending order.
     /// </param>
     public async Task<ScrollPointsResponse> ScrollPoints(
         string collectionName,

@@ -1,11 +1,11 @@
-﻿using Aer.QdrantClient.Http.Models.Primitives;
+﻿using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
 
-// ReSharper disable MemberCanBeInternal
-
 namespace Aer.QdrantClient.Http;
 
+[SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public partial class QdrantHttpClient
 {
     /// <summary>

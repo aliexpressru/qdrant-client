@@ -21,7 +21,7 @@ internal class FilterGroupCondition : FilterConditionBase
                 continue;
             }
 
-            QdrantFilter.CheckTopLevelConditionValid(condition);
+            QdrantFilter.CheckTopLevelConditionIsGroup(condition);
 
             if (condition is FilterGroupCondition fgc)
             {

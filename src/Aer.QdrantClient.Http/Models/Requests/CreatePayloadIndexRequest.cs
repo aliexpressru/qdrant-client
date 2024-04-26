@@ -7,7 +7,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 namespace Aer.QdrantClient.Http.Models.Requests;
 
 /// <summary>
-/// The request for creating index on a pyalod field.
+/// The request for creating index on a payload field.
 /// </summary>
 internal sealed class CreatePayloadIndexRequest
 {

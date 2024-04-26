@@ -1,15 +1,16 @@
-﻿using Aer.QdrantClient.Http.Models.Responses.Base;
+﻿using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Shared;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Aer.QdrantClient.Http.Models.Responses;
 
 /// <summary>
 /// Represents current clustering information for the collection.
 /// </summary>
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<GetCollectionClusteringInfoResponse.CollectionClusteringInfo>
 {
     /// <summary>
@@ -28,12 +29,12 @@ public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<Get
         public uint ShardCount { set; get; }
 
         /// <summary>
-        /// Local shards information.
+        /// Local shard information.
         /// </summary>
         public LocalShardInfo[] LocalShards { set; get; }
 
         /// <summary>
-        /// Remote shards information.
+        /// Remote shard information.
         /// </summary>
         public RemoteShardInfo[] RemoteShards { set; get; }
 
@@ -49,7 +50,7 @@ public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<Get
     public class LocalShardInfo
     {
         /// <summary>
-        /// Local shard indentifier.
+        /// Local shard identifier.
         /// </summary>
         public uint ShardId { set; get; }
 
@@ -70,7 +71,7 @@ public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<Get
     public class RemoteShardInfo
     {
         /// <summary>
-        /// Remote shard indentifier.
+        /// Remote shard identifier.
         /// </summary>
         public uint ShardId { set; get; }
 
@@ -96,12 +97,12 @@ public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<Get
         public uint ShardId { set; get; }
 
         /// <summary>
-        /// The peer id that the shard is being transfered from.
+        /// The peer id that the shard is being transferred from.
         /// </summary>
         public ulong From { set; get; }
 
         /// <summary>
-        /// The peer id that the shard is being transfered to.
+        /// The peer id that the shard is being transferred to.
         /// </summary>
         public ulong To { set; get; }
 

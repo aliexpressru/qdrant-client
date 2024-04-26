@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 namespace Aer.QdrantClient.Http.Models.Shared;
@@ -6,6 +7,7 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 /// <summary>
 /// The selector for the field that the results should be ordered by.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class OrderBySelector
 {
     /// <summary>

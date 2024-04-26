@@ -1,17 +1,18 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Shared;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Aer.QdrantClient.Http.Models.Responses;
 
 /// <summary>
 /// Represents the detailed collection information.
 /// </summary>
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollectionInfoResponse.CollectionInfo>
 {
     /// <summary>
@@ -34,7 +35,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         public QdrantOptimizerStatusUint OptimizerStatus { get; set; }
 
         /// <summary>
-        /// The total vectors count in collecton.
+        /// The total vectors count in collection.
         /// </summary>
         public ulong? VectorsCount { get; set; }
 
@@ -156,7 +157,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             public ShardingMethod? ShardingMethod { set; get; }
 
             /// <summary>
-            /// The replicaton factor.
+            /// The replication factor.
             /// </summary>
             public uint? ReplicationFactor { set; get; }
 

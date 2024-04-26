@@ -35,7 +35,7 @@ internal class OrderByStartFromJsonConverter : JsonConverter<OrderByStartFrom>
 
         if (value is OrderByStartFrom.OrderByStartFromDateTime obsdt)
         {
-            writer.WriteStringValue(obsdt.StartFrom.ToString("s"));
+            writer.WriteStringValue(obsdt.StartFrom.ToString("u"));
         }
     }
 }

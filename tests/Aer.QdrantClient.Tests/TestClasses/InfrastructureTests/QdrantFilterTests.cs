@@ -7,25 +7,29 @@ using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.InfrastructureTests;
 
-internal class QdrantFlterTests
+internal class QdrantFilterTests
 {
     [Test]
-    public void TestQdrantFilter_InvalidTopLevelCondition()
+    public void TestQdrantFilter_ImplicitlyCreateMustTopLevelCondition()
     {
-        var act = () => QdrantFilter.Create(Q.MatchValue("whatever", 1));
+        QdrantFilter filter = Q.MatchValue("whatever", 1);
 
-        act.Should().Throw<QdrantInvalidFilterException>();
-    }
+        var filterString = filter.ToString();
 
-    [Test]
-    public void TestQdrantFilter_ImplicitlyCreate_InvalidTopLevelCondition()
-    {
-        var act = () =>
-        {
-            QdrantFilter filter = Q.MatchValue("whatever", 1);
-        };
+        var expectedFilter = """
+            {
+              "must": [
+                {
+                  "key": "whatever",
+                  "match": {
+                    "value": 1
+                  }
+                }
+              ]
+            }
+            """;
 
-        act.Should().Throw<QdrantInvalidFilterException>();
+        filterString.Should().Be(expectedFilter.ReplaceLineEndings());
     }
 
     [Test]
@@ -96,6 +100,44 @@ internal class QdrantFlterTests
                   }
                 }
               ]
+            }
+            """;
+
+        filter.Should().NotBeNull();
+        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+    }
+
+    [Test]
+    public void TestQdrantFilter_MinShould_Match()
+    {
+        var filter = QdrantFilter.Create(
+                Q.MinShould(
+                    1,
+                    Q.MatchValue("test_key", 123),
+                    Q.MatchValue("test_key_2", "test_value")
+                )
+            )
+            .ToString();
+
+        var expectedFilter = """
+            {
+              "min_should": {
+                "min_count": 1,
+                "conditions": [
+                  {
+                    "key": "test_key",
+                    "match": {
+                      "value": 123
+                    }
+                  },
+                  {
+                    "key": "test_key_2",
+                    "match": {
+                      "value": "test_value"
+                    }
+                  }
+                ]
+              }
             }
             """;
 

@@ -1,19 +1,18 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using Aer.QdrantClient.Http.Filters.Conditions;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Models.Primitives;
 
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-
 namespace Aer.QdrantClient.Http.Filters.Builders;
 
 /// <summary>
-/// Class for buiding filter condition instances with payload field names extracted from the specified typed payload.
+/// Class for building filter condition instances with payload field names extracted from the specified typed payload.
 /// </summary>
 /// <typeparam name="TPayload">The payload type.</typeparam>
+[SuppressMessage("ReSharper", "UnusedMember.Global", Justification = "Public API")]
+[SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public static class Q<TPayload>
 {
     /// <summary>
@@ -145,7 +144,7 @@ public static class Q<TPayload>
     /// <param name="lessThan">Value that palyload value must be less than.</param>
     /// <param name="lessThanOrEqual">Value that palyload value must be less than or equal.</param>
     /// <param name="greaterThan">Value that palyload value must be greater than.</param>
-    /// <param name="greaterThanOrEqual">Value that palyload value must be greater than or equal.</param>
+    /// <param name="greaterThanOrEqual">Value that payload value must be greater than or equal.</param>
     public static FilterConditionBase BeInRange<TField>(
         Expression<Func<TPayload, TField>> payloadFieldSelectorExpression,
         int? lessThan = null,
@@ -171,8 +170,8 @@ public static class Q<TPayload>
     /// <param name="payloadFieldSelectorExpression">The payload field selector expression.</param>
     /// <param name="lessThan">Value that palyload value must be less than.</param>
     /// <param name="lessThanOrEqual">Value that palyload value must be less than or equal.</param>
-    /// <param name="greaterThan">Value that palyload value must be greater than.</param>
-    /// <param name="greaterThanOrEqual">Value that palyload value must be greater than or equal.</param>
+    /// <param name="greaterThan">Value that payload value must be greater than.</param>
+    /// <param name="greaterThanOrEqual">Value that payload value must be greater than or equal.</param>
     public static FilterConditionBase BeInRange<TField>(
         Expression<Func<TPayload, TField>> payloadFieldSelectorExpression,
         double? lessThan = null,
@@ -183,6 +182,33 @@ public static class Q<TPayload>
         var payloadFieldName = ReflectionHelper.GetPayloadFieldName(payloadFieldSelectorExpression);
 
         return new FieldRangeDoubleCondition(
+            payloadFieldName,
+            lessThan,
+            lessThanOrEqual,
+            greaterThan,
+            greaterThanOrEqual);
+    }
+
+    /// <summary>
+    /// Check if payload field value lies in a given range.
+    /// If several values are stored, at least one of them should match the condition.
+    /// </summary>
+    /// <typeparam name="TField">The type of the payload field.</typeparam>
+    /// <param name="payloadFieldSelectorExpression">The payload field selector expression.</param>
+    /// <param name="lessThan">Value that palyload value must be less than.</param>
+    /// <param name="lessThanOrEqual">Value that palyload value must be less than or equal.</param>
+    /// <param name="greaterThan">Value that payload value must be greater than.</param>
+    /// <param name="greaterThanOrEqual">Value that payload value must be greater than or equal.</param>
+    public static FilterConditionBase BeInRange<TField>(
+        Expression<Func<TPayload, TField>> payloadFieldSelectorExpression,
+        DateTime? lessThan = null,
+        DateTime? lessThanOrEqual = null,
+        DateTime? greaterThan = null,
+        DateTime? greaterThanOrEqual = null)
+    {
+        var payloadFieldName = ReflectionHelper.GetPayloadFieldName(payloadFieldSelectorExpression);
+
+        return new FieldRangeDateTimeCondition(
             payloadFieldName,
             lessThan,
             lessThanOrEqual,
@@ -248,24 +274,24 @@ public static class Q<TPayload>
     /// </summary>
     /// <typeparam name="TField">The type of the payload field.</typeparam>
     /// <param name="payloadFieldSelectorExpression">The payload field selector expression.</param>
-    /// <param name="topLeftLongtitude">Area bounding box top left longtitude.</param>
+    /// <param name="topLeftLongitude">Area bounding box top left longtitude.</param>
     /// <param name="topLeftLatitude">Area bounding box top left latitude.</param>
-    /// <param name="bottomRightLongtitude">Area bounding box bottom right longtitude.</param>
+    /// <param name="bottomRightLongitude">Area bounding box bottom right longtitude.</param>
     /// <param name="bottomRightLatitude">Area bounding box bottom right latitude.</param>
     public static FilterConditionBase BeWithinGeoBoundingBox<TField>(
         Expression<Func<TPayload, TField>> payloadFieldSelectorExpression,
-        double topLeftLongtitude,
+        double topLeftLongitude,
         double topLeftLatitude,
-        double bottomRightLongtitude,
+        double bottomRightLongitude,
         double bottomRightLatitude)
     {
         var payloadFieldName = ReflectionHelper.GetPayloadFieldName(payloadFieldSelectorExpression);
 
         return new FieldInGeoBoundingBoxCondition(
             payloadFieldName,
-            topLeftLongtitude,
+            topLeftLongitude,
             topLeftLatitude,
-            bottomRightLongtitude,
+            bottomRightLongitude,
             bottomRightLatitude);
     }
 
@@ -274,12 +300,12 @@ public static class Q<TPayload>
     /// </summary>
     /// <typeparam name="TField">The type of the payload field.</typeparam>
     /// <param name="payloadFieldSelectorExpression">The payload field selector expression.</param>
-    /// <param name="centerLongtitude">Area center longtitude.</param>
+    /// <param name="centerLongitude">Area center longtitude.</param>
     /// <param name="centerLatitude">Area center latitude.</param>
     /// <param name="radius">Radius of the area in meters.</param>
     public static FilterConditionBase BeWithinGeoRadius<TField>(
         Expression<Func<TPayload, TField>> payloadFieldSelectorExpression,
-        double centerLongtitude,
+        double centerLongitude,
         double centerLatitude,
         double radius)
     {
@@ -287,7 +313,7 @@ public static class Q<TPayload>
 
         return new FieldInGeoRadiusCondition(
             payloadFieldName,
-            centerLongtitude,
+            centerLongitude,
             centerLatitude,
             radius);
     }
@@ -302,7 +328,7 @@ public static class Q<TPayload>
     /// </summary>
     /// <param name="payloadFieldSelectorExpression">The payload field selector expression.</param>
     /// <param name="exteriorPolygonPoints">Points that define exterior polygon to search into.</param>
-    /// <param name="interiorPolygonsPoints">Points that define interior ploygons to exclude from search.</param>
+    /// <param name="interiorPolygonsPoints">Points that define interior polygons to exclude from search.</param>
     public static FilterConditionBase BeWithinGeoPolygon<TField>(
         Expression<Func<TPayload, TField>> payloadFieldSelectorExpression,
         IEnumerable<GeoPoint> exteriorPolygonPoints,

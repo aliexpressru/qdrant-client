@@ -9,32 +9,42 @@ internal class MustCondition : FilterConditionBase
 {
     internal readonly List<FilterConditionBase> Conditions = [];
 
+    public MustCondition(FilterConditionBase condition) : base(DiscardPayloadFieldName)
+    {
+        AddCondition(condition);
+    }
+
     public MustCondition(IEnumerable<FilterConditionBase> conditions) : base(DiscardPayloadFieldName)
     {
         foreach (var condition in conditions)
         {
-            if (condition is FilterGroupCondition fgc)
+            AddCondition(condition);
+        }
+    }
+
+    private void AddCondition(FilterConditionBase condition)
+    {
+        if (condition is FilterGroupCondition fgc)
+        {
+            foreach (var groupCondition in fgc.Conditions)
             {
-                foreach (var groupCondition in fgc.Conditions)
+                if (groupCondition is MustCondition gmc)
                 {
-                    if (groupCondition is MustCondition gmc)
-                    {
-                        Conditions.AddRange(gmc.Conditions);
-                    }
-                    else
-                    {
-                        Conditions.Add(groupCondition);
-                    }
+                    Conditions.AddRange(gmc.Conditions);
+                }
+                else
+                {
+                    Conditions.Add(groupCondition);
                 }
             }
-            else if (condition is MustCondition mc)
-            {
-                Conditions.AddRange(mc.Conditions);
-            }
-            else
-            {
-                Conditions.Add(condition);
-            }
+        }
+        else if (condition is MustCondition mc)
+        {
+            Conditions.AddRange(mc.Conditions);
+        }
+        else
+        {
+            Conditions.Add(condition);
         }
     }
 

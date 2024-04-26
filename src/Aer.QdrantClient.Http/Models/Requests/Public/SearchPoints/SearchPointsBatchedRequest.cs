@@ -1,6 +1,4 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public;
 
@@ -11,6 +9,8 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// The batch search API enables to perform multiple search requests via a single request.
 /// Its semantic is straightforward : 1 batched search request is equivalent to n singular search requests.
 /// </remarks>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class SearchPointsBatchedRequest
 {
     /// <summary>
