@@ -227,7 +227,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
         createCollectionResult.EnsureSuccess();
 
         var testPointId = PointId.Integer(1);
-        var testVector = CreateTestVector(vectorSize);
+        var testVector = CreateTestFloatVector(vectorSize);
         TestPayload testPayload = "test";
 
         await _qdrantHttpClient.UpsertPoints(
@@ -272,7 +272,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
         readPointsResult.Result.Should().NotBeNull();
 
         readPointsResult.Result.Id.ToJson().Should().Be(testPointId.ToJson());
-        readPointsResult.Result.Vector.Default.Should().BeEquivalentTo(testVector);
+        readPointsResult.Result.Vector.AsFloatVector().Values.Should().BeEquivalentTo(testVector);
         var readTestPayload = readPointsResult.Result.Payload.As<TestPayload>();
 
         readTestPayload.Integer.Should().Be(testPayload.Integer);

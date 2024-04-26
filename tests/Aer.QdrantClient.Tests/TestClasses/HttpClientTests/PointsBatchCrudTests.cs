@@ -59,7 +59,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
-                    CreateTestVector(vectorSize),
+                    CreateTestFloatVector(vectorSize),
                     i
                 )
             );
@@ -108,7 +108,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
-                    CreateTestVector(vectorSize),
+                    CreateTestFloatVector(vectorSize),
                     i
                 )
             );
@@ -158,7 +158,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
-                    CreateTestVector(vectorSize),
+                    CreateTestFloatVector(vectorSize),
                     i
                 )
             );
@@ -211,7 +211,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
-                    CreateTestVector(vectorSize),
+                    CreateTestFloatVector(vectorSize),
                     new TestPayload()
                     {
                         Integer = i+1,
@@ -291,7 +291,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             .Payload.Should().BeNull();
 
         readAllPoints.Result.Single(p => p.Id.Equals(pointToUpdateVectorFor))
-            .Vector.Default.Should().BeEquivalentTo(vectorToUpdateTo);
+            .Vector.AsFloatVector().Values.Should().BeEquivalentTo(vectorToUpdateTo);
     }
 
     [Test]

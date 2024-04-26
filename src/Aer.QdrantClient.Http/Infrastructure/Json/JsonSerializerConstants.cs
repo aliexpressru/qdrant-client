@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json;
 
@@ -13,7 +14,7 @@ internal static class JsonSerializerConstants
     {
         WriteIndented = false,
         PropertyNamingPolicy = NamingStrategy,
-        Converters = { EnumConverter },
+        Converters = {EnumConverter, new ByteArrayJsonConverter()},
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         NumberHandling = JsonNumberHandling.Strict,
         IgnoreReadOnlyProperties = false,
@@ -21,14 +22,14 @@ internal static class JsonSerializerConstants
         IncludeFields = false,
         PropertyNameCaseInsensitive = true,
         UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
-        UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip
+        UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
     };
 
     public static JsonSerializerOptions IndentedSerializerOptions { get; } = new()
     {
         WriteIndented = true,
         PropertyNamingPolicy = NamingStrategy,
-        Converters = {EnumConverter},
+        Converters = {EnumConverter, new ByteArrayJsonConverter()},
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         NumberHandling = JsonNumberHandling.Strict,
         IgnoreReadOnlyProperties = false,

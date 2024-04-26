@@ -15,23 +15,6 @@ public sealed class NamedVectors : VectorBase
     public required Dictionary<string, VectorBase> Vectors { init; get; } = new();
 
     /// <inheritdoc/>
-    public override float[] Default
-    {
-        get
-        {
-            EnsureNotEmpty();
-
-            if (Vectors.TryGetValue(DefaultVectorName, out VectorBase defaultVector))
-            {
-                return defaultVector.Default;
-            }
-
-            throw new InvalidOperationException(
-                $"Can't find default vector with name {DefaultVectorName}");
-        }
-    }
-
-    /// <inheritdoc/>
     public override VectorBase FirstOrDefault()
     {
         EnsureNotEmpty();

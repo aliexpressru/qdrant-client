@@ -14,36 +14,38 @@ internal class ShardSelectorJsonConverter : JsonConverter<ShardSelector>
 
     public override void Write(Utf8JsonWriter writer, ShardSelector value, JsonSerializerOptions options)
     {
-        if (value is ShardSelector.IntegerShardKeyShardSelector iss)
+        switch (value)
         {
-            if (iss.ShardKeyValues is {Length: > 1})
+            case ShardSelector.IntegerShardKeyShardSelector iss:
             {
-                JsonSerializer.Serialize(writer, iss.ShardKeyValues, JsonSerializerConstants.SerializerOptions);
-            }
-            else
-            {
-                // means only one shard key
-                writer.WriteNumberValue(iss.ShardKeyValues[0]);
-            }
+                if (iss.ShardKeyValues is {Length: > 1})
+                {
+                    JsonSerializer.Serialize(writer, iss.ShardKeyValues, JsonSerializerConstants.SerializerOptions);
+                }
+                else
+                {
+                    // means only one shard key
+                    writer.WriteNumberValue(iss.ShardKeyValues[0]);
+                }
 
-            return;
+                return;
+            }
+            case ShardSelector.StringShardKeyShardSelector sss:
+            {
+                if (sss.ShardKeyValues is {Length: > 1})
+                {
+                    JsonSerializer.Serialize(writer, sss.ShardKeyValues, JsonSerializerConstants.SerializerOptions);
+                }
+                else
+                {
+                    // means only one shard key
+                    writer.WriteStringValue(sss.ShardKeyValues[0]);
+                }
+
+                return;
+            }
+            default:
+                throw new QdrantJsonSerializationException($"Can't serialize {value} shard selector of type {value.GetType()}");
         }
-
-        if (value is ShardSelector.StringShardKeyShardSelector sss)
-        {
-            if (sss.ShardKeyValues is {Length: > 1})
-            {
-                JsonSerializer.Serialize(writer, sss.ShardKeyValues, JsonSerializerConstants.SerializerOptions);
-            }
-            else
-            {
-                // means only one shard key
-                writer.WriteStringValue(sss.ShardKeyValues[0]);
-            }
-
-            return;
-        }
-
-        throw new QdrantJsonSerializationException($"Can't serialize {value} shard selector of type {value.GetType()}");
     }
 }

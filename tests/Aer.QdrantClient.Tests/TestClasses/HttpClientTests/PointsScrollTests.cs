@@ -126,7 +126,7 @@ internal class PointsScrollTests : QdrantTestsBase
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
-                    CreateTestVector(vectorSize),
+                    CreateTestFloatVector(vectorSize),
                     new TestPayload(){
                         Integer = i,
                         DateTimeValue = startDateTime.AddDays(i)
