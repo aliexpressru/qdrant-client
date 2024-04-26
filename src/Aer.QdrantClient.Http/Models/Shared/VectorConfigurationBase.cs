@@ -2,15 +2,15 @@
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-
 namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
 /// Represents a one vector or multiple named vectors collection configuration.
 /// </summary>
+[SuppressMessage("ReSharper", "AutoPropertyCanBeMadeGetOnly.Global")]
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public abstract class VectorConfigurationBase
 {
     #region Nested classes
@@ -46,6 +46,12 @@ public abstract class VectorConfigurationBase
         /// </summary>
         public bool OnDisk { get; set; }
 
+        /// <summary>
+        /// Defines which datatype should be used to represent vectors in the storage.
+        /// Choosing different datatypes allows to optimize memory usage and performance vs accuracy.
+        /// </summary>
+        public VectorDataType Datatype { get; set; }
+
         [JsonConstructor]
         internal SingleVectorConfiguration()
         { }
@@ -58,19 +64,22 @@ public abstract class VectorConfigurationBase
         /// <param name="isServeVectorsFromDisk">If <c>true</c>, vectors are served from disk, improving RAM usage at the cost of latency.</param>
         /// <param name="vectorHnswConfiguration">Custom params for HNSW index. If none - values from collection configuration are used.</param>
         /// <param name="vectorQuantizationConfiguration">Custom params for quantization. If none - values from collection configuration are used.</param>
+        /// <param name="vectorDataType">The datatype that should be used to represent vectors in the storage.</param>
         [SetsRequiredMembers]
         public SingleVectorConfiguration(
             VectorDistanceMetric vectorDistanceMetric,
             ulong vectorSize,
             bool isServeVectorsFromDisk,
             HnswConfiguration vectorHnswConfiguration = null,
-            QuantizationConfiguration vectorQuantizationConfiguration = null)
+            QuantizationConfiguration vectorQuantizationConfiguration = null,
+            VectorDataType vectorDataType = VectorDataType.Float32)
         {
             Distance = vectorDistanceMetric.ToString();
             Size = vectorSize;
             OnDisk = isServeVectorsFromDisk;
             HnswConfig = vectorHnswConfiguration;
             QuantizationConfig = vectorQuantizationConfiguration;
+            Datatype = vectorDataType;
         }
     }
 
@@ -107,6 +116,7 @@ public abstract class VectorConfigurationBase
         /// <param name="namedVectorNames">The named vector names. All vectors share same size and distance metric.</param>
         /// <param name="vectorHnswConfiguration">Custom params for HNSW index. If none - values from collection configuration are used.</param>
         /// <param name="vectorQuantizationConfiguration">Custom params for quantization. If none - values from collection configuration are used.</param>
+        /// <param name="vectorDataType">The datatype that should be used to represent vectors in the storage.</param>
         [SetsRequiredMembers]
         public NamedVectorsConfiguration(
             VectorDistanceMetric vectorDistanceMetric,
@@ -114,7 +124,8 @@ public abstract class VectorConfigurationBase
             bool isServeVectorsFromDisk,
             IEnumerable<string> namedVectorNames,
             HnswConfiguration vectorHnswConfiguration,
-            QuantizationConfiguration vectorQuantizationConfiguration)
+            QuantizationConfiguration vectorQuantizationConfiguration,
+            VectorDataType vectorDataType = VectorDataType.Float32)
         {
             Dictionary<string, SingleVectorConfiguration> namedVectors = new();
 
@@ -127,7 +138,8 @@ public abstract class VectorConfigurationBase
                         vectorSize,
                         isServeVectorsFromDisk,
                         vectorHnswConfiguration,
-                        vectorQuantizationConfiguration
+                        vectorQuantizationConfiguration,
+                        vectorDataType
                     )
                 );
             }
@@ -148,7 +160,7 @@ public abstract class VectorConfigurationBase
     /// Casts this instance to <see cref="NamedVectorsConfiguration"/> multiple named vectors configuraiton.
     /// </summary>
     /// <returns></returns>
-    /// <exception cref="InvalidCastException">Occures if this instance is not <see cref="NamedVectorsConfiguration"/></exception>
+    /// <exception cref="InvalidCastException">Occurs if this instance is not <see cref="NamedVectorsConfiguration"/></exception>
     public NamedVectorsConfiguration AsMultipleVectorsConfiguration()
     {
         if (this is NamedVectorsConfiguration nvc)
@@ -157,14 +169,14 @@ public abstract class VectorConfigurationBase
         }
 
         throw new InvalidCastException(
-            $"Can't cast {GetType()} to {typeof(NamedVectorsConfiguration)}. Looks like this configuraiton is single vector configuration");
+            $"Can't cast {GetType()} to {typeof(NamedVectorsConfiguration)}. Looks like this configuration is single vector configuration");
     }
 
     /// <summary>
     /// Casts this instance to <see cref="SingleVectorConfiguration"/> single vector configuration.
     /// </summary>
     /// <returns></returns>
-    /// <exception cref="InvalidCastException">Occures if this instance is not <see cref="SingleVectorConfiguration"/></exception>
+    /// <exception cref="InvalidCastException">Occurs if this instance is not <see cref="SingleVectorConfiguration"/></exception>
     public SingleVectorConfiguration AsSingleVectorConfiguration()
     {
         if (this is SingleVectorConfiguration svc)
@@ -173,7 +185,7 @@ public abstract class VectorConfigurationBase
         }
 
         throw new InvalidCastException(
-            $"Can't cast {GetType()} to {typeof(SingleVectorConfiguration)}. Looks like this configuraiton is multiple named vectors configuration");
+            $"Can't cast {GetType()} to {typeof(SingleVectorConfiguration)}. Looks like this configuration is multiple named vectors configuration");
     }
 }
 

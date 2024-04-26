@@ -47,11 +47,6 @@ public sealed class CreateCollectionRequest
     public VectorConfigurationBase Vectors { get; }
 
     /// <summary>
-    /// Gets the sparse vectors configuration.
-    /// </summary>
-    public Dictionary<string, SparseVectorConfiguration> SparseVectors { get; set; }
-
-    /// <summary>
     /// Number of shards in collection. Default is <c>1</c> for standalone,
     /// otherwise equal to the number of nodes. Minimum is <c>1</c>.
     /// </summary>
@@ -98,15 +93,20 @@ public sealed class CreateCollectionRequest
     public OptimizersConfiguration OptimizersConfig { get; set; }
 
     /// <summary>
+    /// Specify other collection to copy data from.
+    /// </summary>
+    public InitFromCollection InitFrom { get; set; }
+
+    /// <summary>
     /// Gets or sets the collection quantization configuration.
     /// </summary>
     [JsonConverter(typeof(QuantizationConfigurationJsonConverter))]
     public QuantizationConfiguration QuantizationConfig { get; set; }
 
     /// <summary>
-    /// Specify other collection to copy data from.
+    /// The sparse vector configuration.
     /// </summary>
-    public InitFromCollection InitFrom { get; set; }
+    public Dictionary<string, SparseVectorConfiguration> SparseVectors { get; set; }
 
     /// <summary>Initializes a new instance of the <see cref="CreateCollectionRequest" /> class with singe vector
     /// or multiple named vectors with identical configuration.</summary>
@@ -116,13 +116,15 @@ public sealed class CreateCollectionRequest
     /// <param name="namedVectorNames">The named vector names. All vectors share same size and distance metric.</param>
     /// <param name="vectorHnswConfiguration">Custom params for HNSW index. If none - values from collection configuration are used.</param>
     /// <param name="vectorQuantizationConfiguration">Custom params for quantization. If none - values from collection configuration are used.</param>
+    /// <param name="vectorDataType">The datatype that should be used to represent vectors in the storage.</param>
     public CreateCollectionRequest(
         VectorDistanceMetric vectorDistanceMetric,
         ulong vectorSize,
         bool isServeVectorsFromDisk,
         IEnumerable<string> namedVectorNames = null,
         HnswConfiguration vectorHnswConfiguration = null,
-        QuantizationConfiguration vectorQuantizationConfiguration = null)
+        QuantizationConfiguration vectorQuantizationConfiguration = null,
+        VectorDataType vectorDataType = VectorDataType.Float32)
     {
         if (namedVectorNames is null)
         {
@@ -131,7 +133,8 @@ public sealed class CreateCollectionRequest
                 vectorSize,
                 isServeVectorsFromDisk,
                 vectorHnswConfiguration,
-                vectorQuantizationConfiguration);
+                vectorQuantizationConfiguration,
+                vectorDataType);
         }
         else
         {
@@ -141,8 +144,18 @@ public sealed class CreateCollectionRequest
                 isServeVectorsFromDisk,
                 namedVectorNames,
                 vectorHnswConfiguration,
-                vectorQuantizationConfiguration);
+                vectorQuantizationConfiguration,
+                vectorDataType);
         }
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreateCollectionRequest" /> class with a single vector configuration.
+    /// </summary>
+    /// <param name="singleVectorConfiguration">The single vector configuration.</param>
+    public CreateCollectionRequest(VectorConfigurationBase.SingleVectorConfiguration singleVectorConfiguration)
+    {
+        Vectors = singleVectorConfiguration;
     }
 
     /// <summary>

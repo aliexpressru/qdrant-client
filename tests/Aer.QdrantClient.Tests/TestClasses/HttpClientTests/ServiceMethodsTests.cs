@@ -55,7 +55,7 @@ public class ServiceMethodsTests : QdrantTestsBase
                 TestCollectionName,
                 CancellationToken.None);
 
-        await act.Should().ThrowAsync<QdrantUnsuccessfullResponseStatusException>()
+        await act.Should().ThrowAsync<QdrantUnsuccessfulResponseStatusException>()
             .Where(e => e.Message.Contains("not found", StringComparison.InvariantCultureIgnoreCase));
     }
 

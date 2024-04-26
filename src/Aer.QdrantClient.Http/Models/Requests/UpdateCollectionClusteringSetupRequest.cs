@@ -1,7 +1,4 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-
+﻿using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Requests;
@@ -9,6 +6,9 @@ namespace Aer.QdrantClient.Http.Models.Requests;
 /// <summary>
 /// Represents the request to update collection clustering (sharding) information.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public abstract class UpdateCollectionClusteringSetupRequest
 {
     #region Nested classes

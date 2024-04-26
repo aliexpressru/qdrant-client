@@ -218,6 +218,12 @@ public class QdrantTestsBase
                 .Select(_ => float.CreateTruncating(Random.Shared.NextDouble()))
                 .ToArray();
 
+    protected byte[] CreateTestUint8Vector(uint vectorLength)
+        =>
+            Enumerable.Range(0, (int) vectorLength)
+                .Select(_ => byte.CreateTruncating(Random.Shared.Next()))
+                .ToArray();
+
     protected (uint[] Indices, float[] Values) CreateTestSparseVector(uint vectorLength, uint numberOfNonZeroIndices)
     {
         var values = CreateTestVector(numberOfNonZeroIndices);

@@ -1,7 +1,9 @@
 ﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
+using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
@@ -21,6 +23,61 @@ public class CollectionParametersTests : QdrantTestsBase
     public async Task BeforeEachTest()
     {
         await ResetStorage();
+    }
+
+    [Test]
+    public async Task TestCreateCollection_CheckParameters()
+    {
+        uint vectorSize = 10U;
+
+        var createCollectionRequest = new CreateCollectionRequest(
+            new VectorConfigurationBase.SingleVectorConfiguration(
+                VectorDistanceMetric.Dot,
+                vectorSize,
+                isServeVectorsFromDisk: true,
+                vectorDataType: VectorDataType.Uint8
+            )
+        );
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            createCollectionRequest,
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        // upsert points
+
+        var testPointId = PointId.NewGuid();
+        var testVector = CreateTestVector(vectorSize);
+        TestPayload testPayload = "test";
+
+        var upsertPointsResult
+            = await _qdrantHttpClient.UpsertPoints(
+                TestCollectionName,
+                new UpsertPointsRequest<TestPayload>()
+                {
+                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    {
+                        new(testPointId, testVector, testPayload)
+                    }
+                },
+                CancellationToken.None);
+
+        upsertPointsResult.EnsureSuccess();
+
+        // check parameters
+
+        var createdCollectionInfoResponse =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        createdCollectionInfoResponse.EnsureSuccess();
+
+        var collectionInfo = createdCollectionInfoResponse.Result;
+
+        // todo: check other collection parameters
+
+        collectionInfo.Config.Params.Vectors.AsSingleVectorConfiguration().Datatype.Should().Be(VectorDataType.Uint8);
     }
 
     [Test]
@@ -54,11 +111,7 @@ public class CollectionParametersTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
-
-        collectionCreationResult.Should().NotBeNull();
-        collectionCreationResult.Result.Should().BeTrue();
+        collectionCreationResult.EnsureSuccess();
 
         // check named vector parameters
 
@@ -101,17 +154,14 @@ public class CollectionParametersTests : QdrantTestsBase
             new CreateCollectionRequest(namedVectors)
             {
                 OnDiskPayload = true,
-                SparseVectors = new Dictionary<string, SparseVectorConfiguration>(){
+                SparseVectors = new Dictionary<string, SparseVectorConfiguration>()
+                {
                     [sparseVectorName] = new (onDisk: true, fullScanThreshold: 5000)
                 }
             },
             CancellationToken.None);
 
-        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
-
-        collectionCreationResult.Should().NotBeNull();
-        collectionCreationResult.Result.Should().BeTrue();
+        collectionCreationResult.EnsureSuccess();
 
         // check sparse vectors config
 
@@ -148,11 +198,7 @@ public class CollectionParametersTests : QdrantTestsBase
             createCollectionRequest,
             CancellationToken.None);
 
-        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
-
-        collectionCreationResult.Should().NotBeNull();
-        collectionCreationResult.Result.Should().BeTrue();
+        collectionCreationResult.EnsureSuccess();
 
         // check on disk vector parameters
 
@@ -179,11 +225,7 @@ public class CollectionParametersTests : QdrantTestsBase
             createCollectionRequest,
             CancellationToken.None);
 
-        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
-
-        collectionCreationResult.Should().NotBeNull();
-        collectionCreationResult.Result.Should().BeTrue();
+        collectionCreationResult.EnsureSuccess();
 
         // check on custom sharding parameter
 
@@ -208,11 +250,7 @@ public class CollectionParametersTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
-
-        collectionCreationResult.Should().NotBeNull();
-        collectionCreationResult.Result.Should().BeTrue();
+        collectionCreationResult.EnsureSuccess();
 
         // check quantization parameters
 
@@ -242,11 +280,7 @@ public class CollectionParametersTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
-
-        collectionCreationResult.Should().NotBeNull();
-        collectionCreationResult.Result.Should().BeTrue();
+        collectionCreationResult.EnsureSuccess();
 
         // check quantization parameters
 
@@ -277,11 +311,7 @@ public class CollectionParametersTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
-
-        collectionCreationResult.Should().NotBeNull();
-        collectionCreationResult.Result.Should().BeTrue();
+        collectionCreationResult.EnsureSuccess();
 
         // check quantization parameters
 
@@ -323,11 +353,7 @@ public class CollectionParametersTests : QdrantTestsBase
             createCollectionRequest,
             CancellationToken.None);
 
-        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
-
-        collectionCreationResult.Should().NotBeNull();
-        collectionCreationResult.Result.Should().BeTrue();
+        collectionCreationResult.EnsureSuccess();
 
         // check collection parameters
 

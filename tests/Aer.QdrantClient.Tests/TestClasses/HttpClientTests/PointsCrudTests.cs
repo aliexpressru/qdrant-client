@@ -54,7 +54,7 @@ internal class PointsCrudTests : QdrantTestsBase
 
         var act = () => getPointFromNonexistentCollectionResult.EnsureSuccess();
 
-        act.Should().Throw<QdrantUnsuccessfullResponseStatusException>()
+        act.Should().Throw<QdrantUnsuccessfulResponseStatusException>()
             .Where(e => e.Message.Contains("doesn't exist"));
     }
 
@@ -694,6 +694,74 @@ internal class PointsCrudTests : QdrantTestsBase
             readPointPayload.Text.Should().Be(expectedPoint.Payload.Text);
         }
     }
+
+    // [Test]
+    // public async Task UpsertPointsUint8()
+    // {
+    //     var vectorSize = 10U;
+    //     var vectorCount = 10;
+    //
+    //     await _qdrantHttpClient.CreateCollection(
+    //         TestCollectionName,
+    //         new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+    //         {
+    //             OnDiskPayload = true
+    //         },
+    //         CancellationToken.None);
+    //
+    //     var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+    //     for (int i = 0; i < vectorCount; i++)
+    //     {
+    //         upsertPoints.Add(
+    //             new(
+    //                 PointId.Integer((ulong) i),
+    //                 CreateTestUint8Vector(vectorSize),
+    //                 i
+    //             )
+    //         );
+    //     }
+    //
+    //     Dictionary<ulong, UpsertPointsRequest<TestPayload>.UpsertPoint> upsertPointsByPointIds =
+    //         upsertPoints.ToDictionary(p => ((IntegerPointId) p.Id).Id);
+    //
+    //     var upsertPointsResult
+    //         = await _qdrantHttpClient.UpsertPoints(
+    //             TestCollectionName,
+    //             new UpsertPointsRequest<TestPayload>()
+    //             {
+    //                 Points = upsertPoints
+    //             },
+    //             CancellationToken.None);
+    //
+    //     var readPointsResult = await _qdrantHttpClient.GetPoints(
+    //         TestCollectionName,
+    //         upsertPointsByPointIds.Keys.Select(PointId.Integer),
+    //         PayloadPropertiesSelector.All,
+    //         CancellationToken.None,
+    //         withVector: true);
+    //
+    //     upsertPointsResult.Status.IsSuccess.Should().BeTrue();
+    //     upsertPointsResult.Result.Status.Should()
+    //         .BeOneOf(QdrantOperationStatus.Completed);
+    //
+    //     readPointsResult.Status.IsSuccess.Should().BeTrue();
+    //     readPointsResult.Result.Length.Should().Be(vectorCount);
+    //
+    //     foreach (var readPoint in readPointsResult.Result)
+    //     {
+    //         var readPointId = readPoint.Id.As<IntegerPointId>().Id;
+    //
+    //         var expectedPoint = upsertPointsByPointIds[readPointId];
+    //
+    //         expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
+    //
+    //         var readPointPayload = readPoint.Payload.As<TestPayload>();
+    //
+    //         readPointPayload.Integer.Should().Be(expectedPoint.Payload.Integer);
+    //         readPointPayload.FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
+    //         readPointPayload.Text.Should().Be(expectedPoint.Payload.Text);
+    //     }
+    // }
 
     [Test]
     public async Task UpsertPoints_NamedVectors_SameConfig()

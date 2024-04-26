@@ -1,17 +1,17 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Shared;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Aer.QdrantClient.Http.Models.Responses.Base;
 
 /// <summary>
 /// Represents
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public abstract class QdrantResponseBase
 {
     /// <summary>
@@ -21,15 +21,15 @@ public abstract class QdrantResponseBase
     public QdrantStatus Status { get; set; }
 
     /// <summary>
-    /// Gets or sets the time (in seconds) elapsed for the opeartion.
+    /// Gets or sets the time (in seconds) elapsed for the operation.
     /// </summary>
     public double Time { get; set; }
 
     /// <summary>
     /// Ensures that the <see cref="Status"/> indicates successfull response.
-    /// Throws <see cref="QdrantUnsuccessfullResponseStatusException"/> if it does not.
+    /// Throws <see cref="QdrantUnsuccessfulResponseStatusException"/> if it does not.
     /// </summary>
-    /// <exception cref="QdrantUnsuccessfullResponseStatusException">Occures when <see cref="Status"/> does not indicate success.</exception>
+    /// <exception cref="QdrantUnsuccessfulResponseStatusException">Occurs when <see cref="Status"/> does not indicate success.</exception>
     public void EnsureSuccess()
     {
         if (Status.IsSuccess)
@@ -37,6 +37,6 @@ public abstract class QdrantResponseBase
             return;
         }
 
-        throw new QdrantUnsuccessfullResponseStatusException(GetType(), Status);
+        throw new QdrantUnsuccessfulResponseStatusException(GetType(), Status);
     }
 }
