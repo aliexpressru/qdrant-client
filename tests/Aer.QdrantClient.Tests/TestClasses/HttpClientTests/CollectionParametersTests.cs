@@ -49,7 +49,7 @@ public class CollectionParametersTests : QdrantTestsBase
         // upsert points
 
         var testPointId = PointId.NewGuid();
-        var testVector = CreateTestVector(vectorSize);
+        var testVector = CreateTestFloatVector(vectorSize);
         TestPayload testPayload = "test";
 
         var upsertPointsResult

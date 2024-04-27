@@ -2,6 +2,8 @@
 // ReSharper disable ClassNeverInstantiated.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
+using Aer.QdrantClient.Http.Exceptions;
+
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
 /// <summary>
@@ -26,8 +28,7 @@ public sealed class NamedVectors : VectorBase
                 return defaultVector.Default;
             }
 
-            throw new InvalidOperationException(
-                $"Can't find default vector with name {DefaultVectorName}");
+            throw new QdrantNoDefaultVectorException(DefaultVectorName);
         }
     }
 

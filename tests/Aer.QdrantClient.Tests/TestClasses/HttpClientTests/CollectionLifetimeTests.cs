@@ -227,7 +227,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
         createCollectionResult.EnsureSuccess();
 
         var testPointId = PointId.Integer(1);
-        var testVector = CreateTestVector(vectorSize);
+        var testVector = CreateTestFloatVector(vectorSize);
         TestPayload testPayload = "test";
 
         await _qdrantHttpClient.UpsertPoints(
