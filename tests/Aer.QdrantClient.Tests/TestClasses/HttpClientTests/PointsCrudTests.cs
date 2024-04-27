@@ -368,9 +368,8 @@ internal class PointsCrudTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task UpsertPoint_SinglePoint_JObjectPayload_ExpectedNullPayloadValuesDueToIncorrectSerialization()
+    public async Task UpsertPoint_SinglePoint_JObjectPayload()
     {
-        // NOTE: JObject payload gets serialized incorrectly and this test shows how
         var vectorSize = 10U;
 
         await _qdrantHttpClient.CreateCollection(
@@ -420,11 +419,8 @@ internal class PointsCrudTests : QdrantTestsBase
 
         readTestPayload.Should().NotBeNull();
 
-        (readTestPayload["test"] is JsonArray).Should().BeTrue();
-        readTestPayload["test"]?.AsArray().Count.Should().Be(0);
-
-        (readTestPayload["test_2"] is JsonArray).Should().BeTrue();
-        readTestPayload["test_2"]?.AsArray().Count.Should().Be(0);
+        readTestPayload["test"]?.GetValue<int>().Should().Be(1);
+        readTestPayload["test_2"]?.GetValue<string>().Should().Be("some_string");
     }
 
     [Test]
