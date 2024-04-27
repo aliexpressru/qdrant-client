@@ -212,13 +212,13 @@ public class QdrantTestsBase
         await qdrantHttpClient.DeleteAllCollectionSnapshots(TestCollectionName2, CancellationToken.None);
     }
 
-    protected float[] CreateTestFloatVector(uint vectorLength)
+    protected float[] CreateTestVector(uint vectorLength)
         =>
             Enumerable.Range(0, (int)vectorLength)
                 .Select(_ => float.CreateTruncating(Random.Shared.NextDouble()))
                 .ToArray();
 
-    protected byte[] CreateTestByteVector(uint vectorLength)
+    protected byte[] CreateTestUint8Vector(uint vectorLength)
         =>
             Enumerable.Range(0, (int) vectorLength)
                 .Select(_ => byte.CreateTruncating(Random.Shared.Next()))
@@ -226,7 +226,7 @@ public class QdrantTestsBase
 
     protected (uint[] Indices, float[] Values) CreateTestSparseVector(uint vectorLength, uint numberOfNonZeroIndices)
     {
-        var values = CreateTestFloatVector(numberOfNonZeroIndices);
+        var values = CreateTestVector(numberOfNonZeroIndices);
 
         var indices = Enumerable.Range(0, (int) vectorLength)
             .Select(_ => (uint) Random.Shared.Next((int) vectorLength + 1))
@@ -308,7 +308,7 @@ public class QdrantTestsBase
             upsertPoints.Add(
                 new(
                     pointId,
-                    CreateTestFloatVector(vectorSize),
+                    CreateTestVector(vectorSize),
                     (TPayload)payload
                 )
             );

@@ -4,7 +4,6 @@
 // ReSharper disable MemberCanBeProtected.Global
 
 using System.Text.Json.Serialization;
-using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
@@ -13,6 +12,19 @@ namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 /// </summary>
 public abstract class VectorBase
 {
+    /// <summary>
+    /// The special default vector name.
+    /// </summary>
+    public const string DefaultVectorName = "default";
+
+    /// <summary>
+    /// For <see cref="Vector"/> instance gets a vector itself,
+    /// for <see cref="NamedVectors"/> gets the vector named <see cref="DefaultVectorName"/>
+    /// for <see cref="SparseVector"/> throws an exception.
+    /// </summary>
+    [JsonIgnore]
+    public abstract float[] Default { get; }
+
     /// <summary>
     /// <c>true</c> if this instance represents a named vector collection.
     /// <c>false</c> if this instance represents either a single unnamed vector or a sparse vector.
@@ -25,26 +37,7 @@ public abstract class VectorBase
     /// <c>false</c> if this instance represents either a named vectors collection or a single unnamed vector.
     /// </summary>
     [JsonIgnore]
-    public bool IsSparseVector => this is SparseFloatVector;
-
-    /// <summary>
-    /// A data type used to represent this vector values.
-    /// </summary>
-    [JsonIgnore]
-    public VectorDataType DataType {
-        get
-        {
-            return this switch
-            {
-                FloatVector => VectorDataType.Float32,
-                SparseFloatVector => VectorDataType.Float32,
-                ByteVector => VectorDataType.Uint8,
-                SparseByteVector => VectorDataType.Uint8,
-                _ => throw new InvalidOperationException($"Vector of type {GetType()} has an unknown data type")
-            };
-
-        }
-    }
+    public bool IsSparseVector => this is SparseVector;
 
     /// <summary>
     /// Gets the named vector value if this instance is named vector collection
@@ -74,32 +67,18 @@ public abstract class VectorBase
         ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(NamedVectors)}");
 
     /// <summary>
-    /// Converts this instance into an instance of <see cref="FloatVector"/> type which represents a single unnamed vector of float32 values.
+    /// Converts this instance into an instance of <see cref="Vector"/> type which represents a single unnamed vector.
     /// </summary>
-    /// <exception cref="InvalidCastException">Occurs when this instance is not a single unnamed float32 vector.</exception>
-    public FloatVector AsFloatVector() => this as FloatVector
-        ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(FloatVector)}");
+    /// <exception cref="InvalidCastException">Occurs when this instance is not a single unnamed vector.</exception>
+    public Vector AsSingleVector() => this as Vector
+        ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(Vector)}");
 
     /// <summary>
-    /// Converts this instance into an instance of <see cref="SparseFloatVector"/> type which represents a sparse vector of float32 values.
+    /// Converts this instance into an instance of <see cref="SparseVector"/> type which represents a sparse vector.
     /// </summary>
-    /// <exception cref="InvalidCastException">Occurs when this instance is not a sparse float32 vector.</exception>
-    public SparseFloatVector AsSparseFloatVector() => this as SparseFloatVector
-        ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(SparseFloatVector)}");
-
-    /// <summary>
-    /// Converts this instance into an instance of <see cref="ByteVector"/> type which represents a single unnamed vector of byte values.
-    /// </summary>
-    /// <exception cref="InvalidCastException">Occurs when this instance is not a single unnamed byte vector.</exception>
-    public ByteVector AsByteVector() => this as ByteVector
-        ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(ByteVector)}");
-
-    /// <summary>
-    /// Converts this instance into an instance of <see cref="SparseByteVector"/> type which represents a sparse vector of byte values.
-    /// </summary>
-    /// <exception cref="InvalidCastException">Occurs when this instance is not a sparse byte vector.</exception>
-    public SparseByteVector AsSparseByteVector() => this as SparseByteVector
-        ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(SparseFloatVector)}");
+    /// <exception cref="InvalidCastException">Occurs when this instance is not a sparse vector.</exception>
+    public SparseVector AsSparseVector() => this as SparseVector
+        ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(SparseVector)}");
 
     #region Operators
 
@@ -114,26 +93,9 @@ public abstract class VectorBase
             throw new ArgumentNullException(nameof(vectorValues));
         }
 
-        return new FloatVector()
+        return new Vector()
         {
-            Values = vectorValues
-        };
-    }
-
-    /// <summary>
-    /// Implicitly converts an array of <see cref="byte"/> values to a vector instance.
-    /// </summary>
-    /// <param name="vectorValues">The vector values.</param>
-    public static implicit operator VectorBase(byte[] vectorValues)
-    {
-        if (vectorValues is null or {Length: 0})
-        {
-            throw new ArgumentNullException(nameof(vectorValues));
-        }
-
-        return new ByteVector()
-        {
-            Values = vectorValues
+            VectorValues = vectorValues
         };
     }
 
@@ -154,36 +116,9 @@ public abstract class VectorBase
             Vectors = namedVectors
                 .ToDictionary(
                     nv => nv.Key,
-                    nv => (VectorBase) new FloatVector()
+                    nv => (VectorBase) new Vector()
                     {
-                        Values = nv.Value is null or {Length: 0}
-                            ? throw new InvalidOperationException(
-                                $"Can't create named vector {nv.Key} with null or empty vector value")
-                            : nv.Value
-                    })
-        };
-    }
-
-    /// <summary>
-    /// Implicitly converts a dictionary of type <see cref="Dictionary{TKey,TValue}"/> to a vector instance.
-    /// Dictionary key must be <see cref="string"/>, dictionary value must be array of <see cref="byte"/>.
-    /// </summary>
-    /// <param name="namedVectors">The named vectors.</param>
-    public static implicit operator VectorBase(Dictionary<string, byte[]> namedVectors)
-    {
-        if (namedVectors is null or {Count: 0})
-        {
-            throw new ArgumentNullException(nameof(namedVectors));
-        }
-
-        return new NamedVectors()
-        {
-            Vectors = namedVectors
-                .ToDictionary(
-                    nv => nv.Key,
-                    nv => (VectorBase) new ByteVector()
-                    {
-                        Values = nv.Value is null or {Length: 0}
+                        VectorValues = nv.Value is null or {Length: 0}
                             ? throw new InvalidOperationException(
                                 $"Can't create named vector {nv.Key} with null or empty vector value")
                             : nv.Value
@@ -208,32 +143,7 @@ public abstract class VectorBase
             Vectors = namedSparseVectors
                 .ToDictionary(
                     nv => nv.Key,
-                    nv => (VectorBase) new SparseFloatVector()
-                    {
-                        Indices = nv.Value.Indices?.ToHashSet(),
-                        Values = nv.Value.Values
-                    })
-        };
-    }
-
-    /// <summary>
-    /// Implicitly converts a dictionary of type <see cref="Dictionary{TKey,TValue}"/> to a vector instance.
-    /// Dictionary key must be a <see cref="string"/>, dictionary value must be an indices-values tuple.
-    /// </summary>
-    /// <param name="namedSparseVectors">The named sparse vectors.</param>
-    public static implicit operator VectorBase(Dictionary<string, (uint[] Indices, byte[] Values)> namedSparseVectors)
-    {
-        if (namedSparseVectors is null or {Count: 0})
-        {
-            throw new ArgumentNullException(nameof(namedSparseVectors));
-        }
-
-        return new NamedVectors()
-        {
-            Vectors = namedSparseVectors
-                .ToDictionary(
-                    nv => nv.Key,
-                    nv => (VectorBase) new SparseByteVector()
+                    nv => (VectorBase) new SparseVector()
                     {
                         Indices = nv.Value.Indices?.ToHashSet(),
                         Values = nv.Value.Values
@@ -247,30 +157,18 @@ public abstract class VectorBase
     /// <param name="sparseVectorComponents">The sparse vector components.</param>
     public static implicit operator VectorBase((uint[] Indices, float[] Values) sparseVectorComponents)
         =>
-            new SparseFloatVector()
+            new SparseVector()
             {
                 Indices = sparseVectorComponents.Indices?.ToHashSet(),
                 Values = sparseVectorComponents.Values
             };
 
     /// <summary>
-    /// Implicitly converts an indices-values tuple to a vector instance.
+    /// Implicitly converts the <see cref="VectorBase"/> instance to an array of <see cref="float"/> values.
+    /// Returns <see cref="Default"/> vector.
     /// </summary>
-    /// <param name="sparseVectorComponents">The sparse vector components.</param>
-    public static implicit operator VectorBase((uint[] Indices, byte[] Values) sparseVectorComponents)
-        =>
-            new SparseByteVector()
-            {
-                Indices = sparseVectorComponents.Indices?.ToHashSet(),
-                Values = sparseVectorComponents.Values
-            };
-
-    // /// <summary>
-    // /// Implicitly converts the <see cref="VectorBase"/> instance to an array of <see cref="float"/> values.
-    // /// Returns <see cref="Default"/> vector.
-    // /// </summary>
-    // /// <param name="vector">Instance to get single vector from.</param>
-    // public static implicit operator float[](VectorBase vector) => vector is FloatVector fv ? fv.VectorValues : throw
+    /// <param name="vector">Instance to get single vector from.</param>
+    public static implicit operator float[](VectorBase vector) => vector?.Default;
 
     #endregion
 }

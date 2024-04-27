@@ -24,9 +24,9 @@ internal class PointIdCollectionJsonConverter : JsonConverter<IEnumerable<PointI
 
         List<PointId> collection = [];
 
-        foreach (var element in array!.AsArray())
+        foreach (var jelement in array!.AsArray())
         {
-            var pointIdValueString = element.GetValue<string>();
+            var pointIdValueString = jelement.GetValue<string>();
 
             var parsedPointId = ulong.TryParse(pointIdValueString, out ulong pointIdInt)
                 ? PointId.Integer(pointIdInt)

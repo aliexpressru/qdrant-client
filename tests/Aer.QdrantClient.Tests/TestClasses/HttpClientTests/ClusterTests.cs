@@ -48,7 +48,7 @@ public class ClusterTests : QdrantTestsBase
             CancellationToken.None);
 
         var testPointId = PointId.NewGuid();
-        var testVector = CreateTestFloatVector(vectorSize);
+        var testVector = CreateTestVector(vectorSize);
         TestPayload testPayload = "test";
 
         await _qdrantHttpClient.UpsertPoints(
@@ -95,7 +95,7 @@ public class ClusterTests : QdrantTestsBase
             CancellationToken.None);
 
         var testPointId = PointId.NewGuid();
-        var testVector = CreateTestFloatVector(vectorSize);
+        var testVector = CreateTestVector(vectorSize);
         TestPayload testPayload = "test";
 
         await _qdrantHttpClient.UpsertPoints(
@@ -154,7 +154,7 @@ public class ClusterTests : QdrantTestsBase
             CancellationToken.None);
 
         var testPointId = PointId.NewGuid();
-        var testVector = CreateTestFloatVector(vectorSize);
+        var testVector = CreateTestVector(vectorSize);
         TestPayload testPayload = "test";
 
         await _qdrantHttpClient.UpsertPoints(

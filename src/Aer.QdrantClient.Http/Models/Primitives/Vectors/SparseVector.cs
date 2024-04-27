@@ -1,14 +1,15 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿// ReSharper disable MemberCanBeInternal
+// ReSharper disable ClassNeverInstantiated.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
 /// <summary>
-/// Represents a sparse vector of byte values.
+/// Represents a sparse vector.
 /// </summary>
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
-[SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public sealed class SparseByteVector : VectorBase
+public sealed class SparseVector : VectorBase
 {
     /// <summary>
     /// Gets the positions of the non-zero values in the sparse vector.
@@ -18,12 +19,19 @@ public sealed class SparseByteVector : VectorBase
     /// <summary>
     /// Gets the values of the non-zero sparse vector elements.
     /// </summary>
-    public byte[] Values { get; init; }
+    public float[] Values { get; init; }
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    public override float[] Default
+        =>
+            throw new NotSupportedException(
+            $"Getting default vector from sparse vector {GetType()} is not supported since sparse vector is a two-component value");
 
     /// <summary>
     /// Deconstructs the sparse vector into its Indices and Values components.
     /// </summary>
-    public void Deconstruct(out HashSet<uint> indices, out byte[] values)
+    public void Deconstruct(out HashSet<uint> indices, out float[] values)
     {
         indices = Indices;
         values = Values;

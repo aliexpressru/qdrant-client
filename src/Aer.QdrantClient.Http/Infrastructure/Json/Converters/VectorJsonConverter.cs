@@ -3,7 +3,6 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
-using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -20,9 +19,9 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
                 var vectorValuesArray =
                     vectorValuesJArray.Deserialize<float[]>(JsonSerializerConstants.SerializerOptions);
 
-                return new FloatVector()
+                return new Vector()
                 {
-                    Values = vectorValuesArray
+                    VectorValues = vectorValuesArray
                 };
             }
 
@@ -31,10 +30,10 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
                 // means named vectors collection:
 
                 // name - vector name
-                // value can be either a simple vector
+                // value can be ither a simple vector
                 // "vector1" : [0.0, 0.1, 0.2], "vector2" " [10, 11, 12]
 
-                // or it can be a sparse vector
+                // or it can be asparse vector
                 // "vector1" : {"indices": [6, 7], "values": [1.0, 2.0]}
 
                 var namedVectorsJObject = JsonNode.Parse(ref reader);
@@ -50,22 +49,22 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
                     {
                         vectors.Add(
                             vectorName,
-                            new FloatVector()
+                            new Vector()
                             {
-                                Values = singleVectorValues.GetValues<float>().ToArray()
+                                VectorValues = singleVectorValues.GetValues<float>().ToArray()
                             });
                     }
                     else if(vector is JsonObject sparseVectorValues)
                     {
                         var sparseVector =
-                            sparseVectorValues.Deserialize<SparseFloatVector>(JsonSerializerConstants.SerializerOptions);
+                            sparseVectorValues.Deserialize<SparseVector>(JsonSerializerConstants.SerializerOptions);
 
                         vectors.Add(vectorName, sparseVector);
                     }
                     else
                     {
                         throw new QdrantJsonParsingException(
-                            $"Unable to deserialize Qdrant vector value. Unexpected vector representation : {vector.GetType()}");
+                            $"Unbable to deserialize Qdrant vector value. Unexpected vector representation : {vector.GetType()}");
                     }
                 }
 
@@ -73,95 +72,47 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
             }
 
             default:
-                throw new QdrantJsonParsingException("Unable to deserialize Qdrant vector value");
+                throw new QdrantJsonParsingException("Unbable to deserialize Qdrant vector value");
         }
     }
 
     public override void Write(Utf8JsonWriter writer, VectorBase value, JsonSerializerOptions options)
     {
-        switch (value)
+        if (value is Vector v)
         {
-            case FloatVector fv:
-                JsonSerializer.Serialize(writer, fv.Values, JsonSerializerConstants.SerializerOptions);
+            JsonSerializer.Serialize(writer, v.VectorValues, JsonSerializerConstants.SerializerOptions);
 
-                return;
-            case ByteVector bv:
-                JsonSerializer.Serialize(writer, bv.Values, JsonSerializerConstants.SerializerOptions);
+            return;
+        }
 
-                return;
-            case NamedVectors nv:
+        if (value is NamedVectors nv)
+        {
+            writer.WriteStartObject();
             {
-                writer.WriteStartObject();
+                // named vector contains either Vector or SparseVector as value
+
+                foreach (var (vectorName, vector) in nv.Vectors)
                 {
-                    // named vector contains either Vector or SparseVector as value
+                    writer.WritePropertyName(vectorName);
 
-                    foreach (var (vectorName, vector) in nv.Vectors)
+                    if (vector.IsSparseVector)
                     {
-                        writer.WritePropertyName(vectorName);
-
-                        if (vector.IsSparseVector)
-                        {
-                            switch (vector.DataType)
-                            {
-                                case VectorDataType.Float32:
-                                {
-                                    var sparseVector = vector.AsSparseFloatVector();
-                                    JsonSerializer.Serialize(writer, sparseVector, JsonSerializerConstants.SerializerOptions);
-
-                                    break;
-                                }
-                                case VectorDataType.Uint8:
-                                {
-                                    var sparseVector = vector.AsSparseByteVector();
-                                    JsonSerializer.Serialize(writer, sparseVector, JsonSerializerConstants.SerializerOptions);
-
-                                    break;
-                                }
-                                default:
-                                    throw new QdrantJsonSerializationException($"Can't serialize vector with data type of {vector.DataType}");
-                            }
-                        }
-                        else
-                        {
-                            // means this vector is a non-sparse one
-
-                            switch (vector.DataType)
-                            {
-                                case VectorDataType.Float32:
-                                {
-                                    var singleVector = vector.AsFloatVector();
-
-                                    JsonSerializer.Serialize(
-                                        writer,
-                                        singleVector.Values,
-                                        JsonSerializerConstants.SerializerOptions);
-
-                                    break;
-                                }
-                                case VectorDataType.Uint8:
-                                {
-                                    var singleVector = vector.AsByteVector();
-
-                                    JsonSerializer.Serialize(
-                                        writer,
-                                        singleVector.Values,
-                                        JsonSerializerConstants.SerializerOptions);
-
-                                    break;
-                                }
-                                default:
-                                    throw new QdrantJsonSerializationException(
-                                        $"Can't serialize vector with data type of {vector.DataType}");
-                            }
-                        }
+                        var sparseVector = vector.AsSparseVector();
+                        JsonSerializer.Serialize(writer, sparseVector, JsonSerializerConstants.SerializerOptions);
+                    }
+                    else
+                    {
+                        // means this vector is a non-sparse one
+                        var sngleVector = vector.AsSingleVector();
+                        JsonSerializer.Serialize(writer, sngleVector.VectorValues, JsonSerializerConstants.SerializerOptions);
                     }
                 }
-                writer.WriteEndObject();
-
-                return;
             }
-            default:
-                throw new QdrantJsonSerializationException($"Can't serialize {value} vector of type {value.GetType()}");
+            writer.WriteEndObject();
+
+            return;
         }
+
+        throw new QdrantJsonSerializationException($"Can't serialize {value} vector of type {value.GetType()}");
     }
 }

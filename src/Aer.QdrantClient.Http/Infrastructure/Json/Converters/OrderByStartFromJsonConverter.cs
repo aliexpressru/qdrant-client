@@ -19,19 +19,23 @@ internal class OrderByStartFromJsonConverter : JsonConverter<OrderByStartFrom>
         OrderByStartFrom value,
         JsonSerializerOptions options)
     {
-        switch (value)
+        if (value is OrderByStartFrom.OrderByStartFromInteger obsi)
         {
-            case OrderByStartFrom.OrderByStartFromInteger obsi:
-                writer.WriteNumberValue(obsi.StartFrom);
+            writer.WriteNumberValue(obsi.StartFrom);
 
-                return;
-            case OrderByStartFrom.OrderByStartFromDouble obsd:
-                writer.WriteNumberValue(obsd.StartFrom);
+            return;
+        }
 
-                return;
-            case OrderByStartFrom.OrderByStartFromDateTime obsdt:
-                writer.WriteStringValue(obsdt.StartFrom.ToString("u"));
-                break;
+        if (value is OrderByStartFrom.OrderByStartFromDouble obsd)
+        {
+            writer.WriteNumberValue(obsd.StartFrom);
+
+            return;
+        }
+
+        if (value is OrderByStartFrom.OrderByStartFromDateTime obsdt)
+        {
+            writer.WriteStringValue(obsdt.StartFrom.ToString("u"));
         }
     }
 }

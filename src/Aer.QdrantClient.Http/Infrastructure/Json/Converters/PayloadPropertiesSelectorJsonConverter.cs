@@ -14,34 +14,39 @@ internal class PayloadPropertiesSelectorJsonConverter : JsonConverter<PayloadPro
 
     public override void Write(Utf8JsonWriter writer, PayloadPropertiesSelector value, JsonSerializerOptions options)
     {
-        switch (value)
+        if (value is PayloadPropertiesSelector.AllPayloadPropertiesSelector aps)
         {
-            case PayloadPropertiesSelector.AllPayloadPropertiesSelector aps:
-                JsonSerializer.Serialize(writer, aps.AreAllPayloadPropertiesSelected);
+            JsonSerializer.Serialize(writer, aps.AreAllPayloadPropertiesSelected);
 
-                return;
-            case PayloadPropertiesSelector.IncludePayloadPropertiesSelector ips:
-                writer.WriteStartObject();
-
-                writer.WritePropertyName("include");
-
-                JsonSerializer.Serialize(writer, ips.IncludedPayloadProperties, JsonSerializerConstants.SerializerOptions);
-
-                writer.WriteEndObject();
-
-                return;
-            case PayloadPropertiesSelector.ExcludePayloadPropertiesSelector eps:
-                writer.WriteStartObject();
-
-                writer.WritePropertyName("exclude");
-
-                JsonSerializer.Serialize(writer, eps.ExcludedPayloadProperties, JsonSerializerConstants.SerializerOptions);
-
-                writer.WriteEndObject();
-
-                return;
-            default:
-                throw new QdrantJsonSerializationException($"Can't serialize {value} payload properties selector of type {value.GetType()}");
+            return;
         }
+
+        if (value is PayloadPropertiesSelector.IncludePayloadPropertiesSelector ips)
+        {
+            writer.WriteStartObject();
+
+            writer.WritePropertyName("include");
+
+            JsonSerializer.Serialize(writer, ips.IncludedPayloadProperties, JsonSerializerConstants.SerializerOptions);
+
+            writer.WriteEndObject();
+
+            return;
+        }
+
+        if (value is PayloadPropertiesSelector.ExcludePayloadPropertiesSelector eps)
+        {
+            writer.WriteStartObject();
+
+            writer.WritePropertyName("exclude");
+
+            JsonSerializer.Serialize(writer, eps.ExcludedPayloadProperties, JsonSerializerConstants.SerializerOptions);
+
+            writer.WriteEndObject();
+
+            return;
+        }
+
+        throw new QdrantJsonSerializationException($"Can't serialize {value} payload properties selector of type {value.GetType()}");
     }
 }

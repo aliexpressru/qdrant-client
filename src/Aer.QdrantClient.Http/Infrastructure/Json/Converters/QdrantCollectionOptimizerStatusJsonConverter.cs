@@ -40,14 +40,14 @@ internal class QdrantCollectionOptimizerStatusJsonConverter : JsonConverter<GetC
 
                 var statusObject = JsonNode.Parse(ref reader);
 
-                var errorMessage = statusObject?["error"]?.GetValue<string>();
+                var errorMesage = statusObject?["error"]?.GetValue<string>();
 
-                if (errorMessage is not null)
+                if (errorMesage is not null)
                 {
                     return new GetCollectionInfoResponse.QdrantOptimizerStatusUint(
                         QdrantOptimizerStatus.Error)
                     {
-                        Error = errorMessage
+                        Error = errorMesage
                     };
                 }
 
@@ -59,7 +59,7 @@ internal class QdrantCollectionOptimizerStatusJsonConverter : JsonConverter<GetC
             }
 
             default:
-                throw new QdrantJsonSerializationException("Unable to deserialize Qdrant collection optimizer status value");
+                throw new QdrantJsonSerializationException("Unbable to deserialize Qdrant collection optimizer status value");
         }
     }
 

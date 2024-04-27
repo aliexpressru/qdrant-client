@@ -5,14 +5,17 @@
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
 /// <summary>
-/// Represents a single unnamed vector of float32 values.
+/// Represents a single unnamed vector.
 /// </summary>
-public sealed class FloatVector : VectorBase
+public sealed class Vector : VectorBase
 {
     /// <summary>
     /// The vector values array.
     /// </summary>
-    public float[] Values { internal init; get; }
+    public float[] VectorValues { internal init; get; }
+
+    /// <inheritdoc/>
+    public override float[] Default => VectorValues;
 
     /// <inheritdoc/>
     public override VectorBase this[string vectorName]
@@ -21,7 +24,7 @@ public sealed class FloatVector : VectorBase
                 $"Vector names are not supported for single vector values {GetType()}");
 
     /// <inheritdoc/>
-    public override VectorBase FirstOrDefault() => this;
+    public override VectorBase FirstOrDefault() => Default;
 
     /// <inheritdoc/>
     public override bool ContainsVector(string vectorName)
