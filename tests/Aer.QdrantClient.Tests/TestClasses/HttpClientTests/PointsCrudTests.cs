@@ -757,6 +757,9 @@ internal class PointsCrudTests : QdrantTestsBase
 
             var expectedPoint = upsertPointsByPointIds[readPointId];
 
+            readPoint.Vector.AsByteVector().Values.Should()
+                .BeEquivalentTo(expectedPoint.Vector.AsByteVector().Values);
+
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
 
             var readPointPayload = readPoint.Payload.As<TestPayload>();

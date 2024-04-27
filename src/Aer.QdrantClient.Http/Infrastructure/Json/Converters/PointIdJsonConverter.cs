@@ -12,11 +12,8 @@ internal class PointIdJsonConverter : JsonConverter<PointId>
         switch (reader.TokenType)
         {
             case JsonTokenType.String:
-            {
                 var parsedGuid = reader.GetGuid();
-
                 return PointId.Guid(parsedGuid);
-            }
             case JsonTokenType.Number:
                 return PointId.Integer(reader.GetInt64());
             default:
