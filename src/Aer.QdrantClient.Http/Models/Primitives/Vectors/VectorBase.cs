@@ -1,16 +1,16 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿// ReSharper disable MemberCanBeInternal
+// ReSharper disable ClassNeverInstantiated.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable MemberCanBeProtected.Global
+
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
 /// <summary>
-/// Represents a base class for either a single vector or a collection of named vectors.
+/// Represents a base class for either a single vector or a colection of named vectors.
 /// </summary>
-[SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-[SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
 public abstract class VectorBase
 {
     /// <summary>
@@ -264,6 +264,13 @@ public abstract class VectorBase
                 Indices = sparseVectorComponents.Indices?.ToHashSet(),
                 Values = sparseVectorComponents.Values
             };
+
+    // /// <summary>
+    // /// Implicitly converts the <see cref="VectorBase"/> instance to an array of <see cref="float"/> values.
+    // /// Returns <see cref="Default"/> vector.
+    // /// </summary>
+    // /// <param name="vector">Instance to get single vector from.</param>
+    // public static implicit operator float[](VectorBase vector) => vector is FloatVector fv ? fv.VectorValues : throw
 
     #endregion
 }

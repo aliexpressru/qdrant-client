@@ -17,11 +17,13 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
             {
                 var vectorValuesJArray = JsonNode.Parse(ref reader);
 
-                // qdrant API returns values as floats even if they are integer : e.g. 33.0
                 var vectorValuesArray =
                     vectorValuesJArray.Deserialize<float[]>(JsonSerializerConstants.SerializerOptions);
 
-                return GetFloatOrByteVector(vectorValuesArray);
+                return new FloatVector()
+                {
+                    Values = vectorValuesArray
+                };
             }
 
             case JsonTokenType.StartObject:
@@ -29,10 +31,10 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
                 // means named vectors collection:
 
                 // name - vector name
-                // value can be either a simple vector (float32 or byte)
+                // value can be either a simple vector
                 // "vector1" : [0.0, 0.1, 0.2], "vector2" " [10, 11, 12]
 
-                // or it can be a sparse vector (float32 or byte)
+                // or it can be a sparse vector
                 // "vector1" : {"indices": [6, 7], "values": [1.0, 2.0]}
 
                 var namedVectorsJObject = JsonNode.Parse(ref reader);
@@ -46,9 +48,12 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
                 {
                     if (vector is JsonArray singleVectorValues)
                     {
-                        var vectorValuesArray = singleVectorValues.GetValues<float>().ToArray();
-
-                        vectors.Add(vectorName, GetFloatOrByteVector(vectorValuesArray)                            );
+                        vectors.Add(
+                            vectorName,
+                            new FloatVector()
+                            {
+                                Values = singleVectorValues.GetValues<float>().ToArray()
+                            });
                     }
                     else if(vector is JsonObject sparseVectorValues)
                     {
@@ -69,41 +74,6 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
 
             default:
                 throw new QdrantJsonParsingException("Unable to deserialize Qdrant vector value");
-        }
-    }
-
-    private VectorBase GetFloatOrByteVector(float[] vectorValues)
-    {
-        // vector values array may contain the byte values in the form of e.g. [123.0, 25.0]
-        if (vectorValues.All(x => x is >= 0 and <= 255)
-            // check that float value is actually an integer with fractional part as 0
-            // ReSharper disable once CompareOfFloatsByEqualityOperator | Justification - we need to check for uint8 number inside float32 value
-            && vectorValues.All(x => Math.Floor(x) == x))
-        {
-            return new ByteVector()
-            {
-                Values = vectorValues.Select(x => checked((byte) x)).ToArray()
-            };
-        }
-
-        return new FloatVector()
-        {
-            Values = vectorValues
-        };
-
-        static bool IsByte(float n)
-        {
-            byte possiblyByteValue = (byte) n;
-
-            double convertedValueOriginalValueDifference = n - possiblyByteValue;
-
-            if (convertedValueOriginalValueDifference > 0)
-            {
-                // means there was a fractional part
-                return false;
-            }
-
-            return true;
         }
     }
 
