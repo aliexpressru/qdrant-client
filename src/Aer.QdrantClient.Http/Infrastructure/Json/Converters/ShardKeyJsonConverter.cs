@@ -9,33 +9,26 @@ internal class ShardKeyJsonConverter : JsonConverter<ShardKey>
 {
     public override ShardKey Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        if (reader.TokenType == JsonTokenType.String)
+        return reader.TokenType switch
         {
-            return new StringShardKey(reader.GetString());
-        }
-
-        if (reader.TokenType == JsonTokenType.Number)
-        {
-            return new IntegerShardKey(reader.GetUInt64());
-        }
-
-        throw new QdrantJsonSerializationException($"Can't deserialize {reader.GetString()} shard key value");
+            JsonTokenType.String => new StringShardKey(reader.GetString()),
+            JsonTokenType.Number => new IntegerShardKey(reader.GetUInt64()),
+            _ => throw new QdrantJsonSerializationException($"Can't deserialize {reader.GetString()} shard key value")
+        };
     }
 
     public override void Write(Utf8JsonWriter writer, ShardKey value, JsonSerializerOptions options)
     {
-        if (value is StringShardKey ssk)
+        switch (value)
         {
-            writer.WriteStringValue(ssk.ShardKeyValue);
-            return;
+            case StringShardKey ssk:
+                writer.WriteStringValue(ssk.ShardKeyValue);
+                return;
+            case IntegerShardKey isk:
+                writer.WriteNumberValue(isk.ShardKeyValue);
+                return;
+            default:
+                throw new QdrantJsonSerializationException($"Can't serialize shard key value of type {value.GetType()}");
         }
-
-        if (value is IntegerShardKey isk)
-        {
-            writer.WriteNumberValue(isk.ShardKeyValue);
-            return;
-        }
-
-        throw new QdrantJsonSerializationException($"Can't serialize shard key value of type {value.GetType()}");
     }
 }

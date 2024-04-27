@@ -14,20 +14,18 @@ internal class SearchVectorJsonConverter : JsonConverter<SearchVector>
 
     public override void Write(Utf8JsonWriter writer, SearchVector value, JsonSerializerOptions options)
     {
-        if (value is SearchVector.UnnamedSearchVector uv)
+        switch (value)
         {
-            JsonSerializer.Serialize(writer, uv.Vector, JsonSerializerConstants.SerializerOptions);
+            case SearchVector.UnnamedSearchVector uv:
+                JsonSerializer.Serialize(writer, uv.Vector, JsonSerializerConstants.SerializerOptions);
 
-            return;
+                return;
+            case SearchVector.NamedSearchVector nv:
+                JsonSerializer.Serialize(writer, nv, JsonSerializerConstants.SerializerOptions);
+
+                return;
+            default:
+                throw new QdrantJsonSerializationException($"Can't serialize {value} vector of type {value.GetType()}");
         }
-
-        if (value is SearchVector.NamedSearchVector nv)
-        {
-            JsonSerializer.Serialize(writer, nv, JsonSerializerConstants.SerializerOptions);
-
-            return;
-        }
-
-        throw new QdrantJsonSerializationException($"Can't serialize {value} vector of type {value.GetType()}");
     }
 }

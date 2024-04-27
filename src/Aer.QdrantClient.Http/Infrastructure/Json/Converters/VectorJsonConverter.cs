@@ -30,10 +30,10 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
                 // means named vectors collection:
 
                 // name - vector name
-                // value can be ither a simple vector
+                // value can be either a simple vector
                 // "vector1" : [0.0, 0.1, 0.2], "vector2" " [10, 11, 12]
 
-                // or it can be asparse vector
+                // or it can be a sparse vector
                 // "vector1" : {"indices": [6, 7], "values": [1.0, 2.0]}
 
                 var namedVectorsJObject = JsonNode.Parse(ref reader);
@@ -64,7 +64,7 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
                     else
                     {
                         throw new QdrantJsonParsingException(
-                            $"Unbable to deserialize Qdrant vector value. Unexpected vector representation : {vector.GetType()}");
+                            $"Unable to deserialize Qdrant vector value. Unexpected vector representation : {vector.GetType()}");
                     }
                 }
 
@@ -72,47 +72,47 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
             }
 
             default:
-                throw new QdrantJsonParsingException("Unbable to deserialize Qdrant vector value");
+                throw new QdrantJsonParsingException("Unable to deserialize Qdrant vector value");
         }
     }
 
     public override void Write(Utf8JsonWriter writer, VectorBase value, JsonSerializerOptions options)
     {
-        if (value is Vector v)
+        switch (value)
         {
-            JsonSerializer.Serialize(writer, v.VectorValues, JsonSerializerConstants.SerializerOptions);
+            case Vector v:
+                JsonSerializer.Serialize(writer, v.VectorValues, JsonSerializerConstants.SerializerOptions);
 
-            return;
-        }
-
-        if (value is NamedVectors nv)
-        {
-            writer.WriteStartObject();
+                return;
+            case NamedVectors nv:
             {
-                // named vector contains either Vector or SparseVector as value
-
-                foreach (var (vectorName, vector) in nv.Vectors)
+                writer.WriteStartObject();
                 {
-                    writer.WritePropertyName(vectorName);
+                    // named vector contains either Vector or SparseVector as value
 
-                    if (vector.IsSparseVector)
+                    foreach (var (vectorName, vector) in nv.Vectors)
                     {
-                        var sparseVector = vector.AsSparseVector();
-                        JsonSerializer.Serialize(writer, sparseVector, JsonSerializerConstants.SerializerOptions);
-                    }
-                    else
-                    {
-                        // means this vector is a non-sparse one
-                        var sngleVector = vector.AsSingleVector();
-                        JsonSerializer.Serialize(writer, sngleVector.VectorValues, JsonSerializerConstants.SerializerOptions);
+                        writer.WritePropertyName(vectorName);
+
+                        if (vector.IsSparseVector)
+                        {
+                            var sparseVector = vector.AsSparseVector();
+                            JsonSerializer.Serialize(writer, sparseVector, JsonSerializerConstants.SerializerOptions);
+                        }
+                        else
+                        {
+                            // means this vector is a non-sparse one
+                            var singleVector = vector.AsSingleVector();
+                            JsonSerializer.Serialize(writer, singleVector.VectorValues, JsonSerializerConstants.SerializerOptions);
+                        }
                     }
                 }
+                writer.WriteEndObject();
+
+                return;
             }
-            writer.WriteEndObject();
-
-            return;
+            default:
+                throw new QdrantJsonSerializationException($"Can't serialize {value} vector of type {value.GetType()}");
         }
-
-        throw new QdrantJsonSerializationException($"Can't serialize {value} vector of type {value.GetType()}");
     }
 }

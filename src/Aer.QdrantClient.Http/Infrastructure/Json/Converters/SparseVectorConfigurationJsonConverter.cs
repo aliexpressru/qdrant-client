@@ -23,21 +23,21 @@ internal class SparseVectorConfigurationJsonConverter : JsonConverter<SparseVect
                 configurationObject["index"].AsObject();
 
             var onDiskPayload = sparseVectorConfigurationObject["on_disk"]!.GetValue<bool>();
-            var fullScanThresold = sparseVectorConfigurationObject["full_scan_threshold"]?.GetValue<ulong?>();
+            var fullScanThreshold = sparseVectorConfigurationObject["full_scan_threshold"]?.GetValue<ulong?>();
 
-            var ret = new SparseVectorConfiguration(onDiskPayload, fullScanThresold);
+            var ret = new SparseVectorConfiguration(onDiskPayload, fullScanThreshold);
 
             return ret;
         }
         catch (InvalidOperationException iox)
         {
             throw new QdrantJsonParsingException(
-                $"Can't deserialize sprse vector configuration {configurationObject.ToJsonString()}. Exception : {iox}");
+                $"Can't deserialize sparse vector configuration {configurationObject.ToJsonString()}. Exception : {iox}");
         }
         catch (JsonException ex)
         {
             throw new QdrantJsonParsingException(
-                $"Can't deserialize sprse vector configuration {configurationObject.ToJsonString()}. Exception : {ex}");
+                $"Can't deserialize sparse vector configuration {configurationObject.ToJsonString()}. Exception : {ex}");
         }
     }
 

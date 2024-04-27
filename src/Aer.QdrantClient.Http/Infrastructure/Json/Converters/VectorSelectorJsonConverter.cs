@@ -14,20 +14,18 @@ internal class VectorSelectorJsonConverter : JsonConverter<VectorSelector>
 
     public override void Write(Utf8JsonWriter writer, VectorSelector value, JsonSerializerOptions options)
     {
-        if (value is VectorSelector.AllVectorsSelector avs)
+        switch (value)
         {
-            writer.WriteBooleanValue(avs.AreAllVectorsSelected);
+            case VectorSelector.AllVectorsSelector avs:
+                writer.WriteBooleanValue(avs.AreAllVectorsSelected);
 
-            return;
+                return;
+            case VectorSelector.IncludeNamedVectorsSelector ivs:
+                JsonSerializer.Serialize(writer, ivs.IncludedVectorNames, JsonSerializerConstants.SerializerOptions);
+
+                return;
+            default:
+                throw new QdrantJsonSerializationException($"Can't serialize {value} vector selector of type {value.GetType()}");
         }
-
-        if (value is VectorSelector.IncludeNamedVectorsSelector ivs)
-        {
-            JsonSerializer.Serialize(writer, ivs.IncludedVectorNames, JsonSerializerConstants.SerializerOptions);
-
-            return;
-        }
-
-        throw new QdrantJsonSerializationException($"Can't serialize {value} vector selector of type {value.GetType()}");
     }
 }

@@ -15,6 +15,8 @@ internal class VectorConfigurationJsonConverter : JsonConverter<VectorConfigurat
         try
         {
             // try read as multiple vectors configuration
+            // since this method is never expected to be on the hot path - we use try-catch here to
+            // determine which vector configuration we are reading
 
             var namedVectorsConfigurations = configurationObject.Deserialize<
                 Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration>>(JsonSerializerConstants.SerializerOptions);
@@ -42,18 +44,16 @@ internal class VectorConfigurationJsonConverter : JsonConverter<VectorConfigurat
 
     public override void Write(Utf8JsonWriter writer, VectorConfigurationBase value, JsonSerializerOptions options)
     {
-        if (value is VectorConfigurationBase.SingleVectorConfiguration sv)
+        switch (value)
         {
-            JsonSerializer.Serialize(writer, sv, JsonSerializerConstants.SerializerOptions);
-            return;
+            case VectorConfigurationBase.SingleVectorConfiguration sv:
+                JsonSerializer.Serialize(writer, sv, JsonSerializerConstants.SerializerOptions);
+                return;
+            case VectorConfigurationBase.NamedVectorsConfiguration nv:
+                JsonSerializer.Serialize(writer, nv.NamedVectors, JsonSerializerConstants.SerializerOptions);
+                return;
+            default:
+                throw new QdrantJsonSerializationException($"Can't serialize {value} vector configuration of type {value.GetType()}");
         }
-
-        if (value is VectorConfigurationBase.NamedVectorsConfiguration nv)
-        {
-            JsonSerializer.Serialize(writer, nv.NamedVectors, JsonSerializerConstants.SerializerOptions);
-            return;
-        }
-
-        throw new QdrantJsonSerializationException($"Can't serialize {value} vector configuration of type {value.GetType()}");
     }
 }

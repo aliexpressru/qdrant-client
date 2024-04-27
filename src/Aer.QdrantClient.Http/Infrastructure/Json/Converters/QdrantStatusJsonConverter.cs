@@ -37,13 +37,13 @@ internal class QdrantStatusJsonConverter : JsonConverter<QdrantStatus>
 
                 var statusObject = JsonNode.Parse(ref reader);
 
-                var errorMesage = statusObject?["error"]?.GetValue<string>();
+                var errorMessage = statusObject?["error"]?.GetValue<string>();
 
-                if (errorMesage is not null)
+                if (errorMessage is not null)
                 {
                     return new QdrantStatus(QdrantOperationStatusType.Error)
                     {
-                        Error = errorMesage
+                        Error = errorMessage
                     };
                 }
 
@@ -54,7 +54,7 @@ internal class QdrantStatusJsonConverter : JsonConverter<QdrantStatus>
             }
 
             default:
-                throw new QdrantJsonParsingException("Unbable to deserialize Qdrant status value");
+                throw new QdrantJsonParsingException("Unable to deserialize Qdrant status value");
         }
     }
 
