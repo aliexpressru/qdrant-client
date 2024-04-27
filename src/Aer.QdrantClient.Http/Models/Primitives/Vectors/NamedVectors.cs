@@ -28,7 +28,7 @@ public sealed class NamedVectors : VectorBase
                 return defaultVector.Default;
             }
 
-            throw new QdrantNoDefaultVectorException(DefaultVectorName);
+            throw new QdrantDefaultVectorNotFoundException(DefaultVectorName);
         }
     }
 

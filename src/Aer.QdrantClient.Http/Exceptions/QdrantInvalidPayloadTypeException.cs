@@ -1,5 +1,4 @@
-// ReSharper disable MemberCanBeInternal
-
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Nodes;
 using Newtonsoft.Json.Linq;
 
@@ -8,6 +7,7 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// <summary>
 /// Represents an exception which happens when the Qdrant payload is found to be of invalid type.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class QdrantInvalidPayloadTypeException : Exception
 {
 

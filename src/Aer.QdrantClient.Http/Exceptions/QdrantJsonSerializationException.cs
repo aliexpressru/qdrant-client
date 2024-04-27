@@ -1,10 +1,11 @@
-﻿// ReSharper disable MemberCanBeInternal
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Exceptions;
 
 /// <summary>
 /// Represents an exception which happens when the object can't be serialized to Qdrant JSON.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class QdrantJsonSerializationException : Exception
 {
     /// <summary>

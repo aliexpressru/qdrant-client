@@ -1,10 +1,11 @@
-// ReSharper disable MemberCanBeInternal
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Exceptions;
 
 /// <summary>
 /// Represents an exception which happens if trying to construct SearchGroupId from invalid number. E.g. negative one.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class QdrantInvalidNumericSearchGroupIdException : Exception
 {
     /// <summary>

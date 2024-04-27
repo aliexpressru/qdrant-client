@@ -1,12 +1,12 @@
-﻿using Aer.QdrantClient.Http.Models.Shared;
-
-// ReSharper disable MemberCanBeInternal
+﻿using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Exceptions;
 
 /// <summary>
 /// Represents an exception which happens when waiting time for the collection to become green exceeded the specified timeout value.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class QdrantCollectionNotGreenException : Exception
 {
     /// <summary>

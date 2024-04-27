@@ -1308,7 +1308,7 @@ internal class PointsCrudTests : QdrantTestsBase
 
             if (!pointIdsWithDefaultVector.Contains(readPoint.Id.AsInteger()))
             {
-                getDefaultVectorAct.Should().Throw<QdrantNoDefaultVectorException>();
+                getDefaultVectorAct.Should().Throw<QdrantDefaultVectorNotFoundException>();
             }
             else
             {

@@ -1,10 +1,11 @@
-﻿// ReSharper disable MemberCanBeInternal
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Exceptions;
 
 /// <summary>
 /// Represents an exception which happens when trying to access secure Qdrant engine API without authorization.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class QdrantUnauthorizedAccessException : Exception
 {
     /// <summary>

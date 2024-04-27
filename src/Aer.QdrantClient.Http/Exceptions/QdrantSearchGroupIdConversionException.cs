@@ -1,10 +1,11 @@
-// ReSharper disable MemberCanBeInternal
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Exceptions;
 
 /// <summary>
 /// Represents an exception which happens when trying to read search group identifier value as an incompatible type.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class QdrantSearchGroupIdConversionException : Exception
 {
     /// <summary>

@@ -1,6 +1,5 @@
-﻿using Aer.QdrantClient.Http.Models.Requests.Public;
-
-// ReSharper disable MemberCanBeInternal
+﻿using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Models.Requests.Public;
 
 namespace Aer.QdrantClient.Http.Exceptions;
 
@@ -8,6 +7,7 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// Represents an exception which happens if qdarnt batched operations request
 /// such as <see cref="BatchUpdatePointsRequest"/> or <see cref="UpdateCollectionAliasesRequest"/> operations list is empty.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class QdrantEmptyBatchRequestException : Exception
 {
     /// <summary>

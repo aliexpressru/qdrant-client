@@ -1,12 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
-
-// ReSharper disable MemberCanBeInternal
 
 namespace Aer.QdrantClient.Http.Exceptions;
 
 /// <summary>
 /// Represents an exception which happens if communicating with Qdrant back-end failed.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class QdrantCommunicationException : Exception
 {
     /// <summary>
