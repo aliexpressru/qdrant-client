@@ -10,6 +10,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Helpers;
 using Aer.QdrantClient.Tests.Model;
+using Newtonsoft.Json.Linq;
 using QdrantOperationStatus = Aer.QdrantClient.Http.Models.Shared.QdrantOperationStatus;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
@@ -308,6 +309,122 @@ internal class PointsCrudTests : QdrantTestsBase
         readTestPayload.Integer.Should().Be(testPayload.Integer);
         readTestPayload.FloatingPointNumber.Should().Be(testPayload.FloatingPointNumber);
         readTestPayload.Text.Should().Be(testPayload.Text);
+    }
+
+    [Test]
+    public async Task UpsertPoint_SinglePoint_JsonObjectPayload()
+    {
+        var vectorSize = 10U;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var testPointId = PointId.NewGuid();
+        var testVector = CreateTestFloatVector(vectorSize);
+
+        JsonObject testPayload = new JsonObject()
+        {
+            {"test", 1},
+            {"test_2", "some_string"},
+        };
+
+        var upsertPointsResult
+            = await _qdrantHttpClient.UpsertPoints(
+                TestCollectionName,
+                new UpsertPointsRequest<object>()
+                {
+                    Points = new List<UpsertPointsRequest<object>.UpsertPoint>()
+                    {
+                        new(testPointId, testVector, testPayload)
+                    }
+                },
+                CancellationToken.None);
+
+        var readPointsResult = await _qdrantHttpClient.GetPoint(
+            TestCollectionName,
+            testPointId,
+            CancellationToken.None);
+
+        upsertPointsResult.Status.IsSuccess.Should().BeTrue();
+        upsertPointsResult.Result.Status.Should()
+            .BeOneOf(QdrantOperationStatus.Completed);
+
+        readPointsResult.Status.IsSuccess.Should().BeTrue();
+        readPointsResult.Result.Should().NotBeNull();
+
+        readPointsResult.Result.Id.ToJson().Should().Be(testPointId.ToJson());
+        readPointsResult.Result.Vector.Default.Should().BeEquivalentTo(testVector);
+        var readTestPayload = readPointsResult.Result.Payload.As<JsonObject>();
+
+        readTestPayload.Should().NotBeNull();
+
+        readTestPayload["test"]?.GetValue<int>().Should().Be(1);
+        readTestPayload["test_2"]?.GetValue<string>().Should().Be("some_string");
+    }
+
+    [Test]
+    public async Task UpsertPoint_SinglePoint_JObjectPayload_ExpectedNullPayloadValuesDueToIncorrectSerialization()
+    {
+        // NOTE: JObject payload gets serialized incorrectly and this test shows how
+        var vectorSize = 10U;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var testPointId = PointId.NewGuid();
+        var testVector = CreateTestFloatVector(vectorSize);
+
+        JObject testPayload = new JObject()
+        {
+            {"test", 1},
+            {"test_2", "some_string"},
+        };
+
+        var upsertPointsResult
+            = await _qdrantHttpClient.UpsertPoints(
+                TestCollectionName,
+                new UpsertPointsRequest<object>()
+                {
+                    Points = new List<UpsertPointsRequest<object>.UpsertPoint>()
+                    {
+                        new(testPointId, testVector, testPayload)
+                    }
+                },
+                CancellationToken.None);
+
+        var readPointsResult = await _qdrantHttpClient.GetPoint(
+            TestCollectionName,
+            testPointId,
+            CancellationToken.None);
+
+        upsertPointsResult.Status.IsSuccess.Should().BeTrue();
+        upsertPointsResult.Result.Status.Should()
+            .BeOneOf(QdrantOperationStatus.Completed);
+
+        readPointsResult.Status.IsSuccess.Should().BeTrue();
+        readPointsResult.Result.Should().NotBeNull();
+
+        readPointsResult.Result.Id.ToJson().Should().Be(testPointId.ToJson());
+        readPointsResult.Result.Vector.Default.Should().BeEquivalentTo(testVector);
+        var readTestPayload = readPointsResult.Result.Payload.As<JsonObject>();
+
+        readTestPayload.Should().NotBeNull();
+
+        (readTestPayload["test"] is JsonArray).Should().BeTrue();
+        readTestPayload["test"]?.AsArray().Count.Should().Be(0);
+
+        (readTestPayload["test_2"] is JsonArray).Should().BeTrue();
+        readTestPayload["test_2"]?.AsArray().Count.Should().Be(0);
     }
 
     [Test]

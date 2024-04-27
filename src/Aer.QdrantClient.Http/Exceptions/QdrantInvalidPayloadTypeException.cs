@@ -13,6 +13,6 @@ public class QdrantInvalidPayloadTypeException : Exception
     /// </summary>
     /// <param name="payloadTypeName">Name of the payload type.</param>
     public QdrantInvalidPayloadTypeException(string payloadTypeName)
-        : base($"Payload of type {payloadTypeName} is not supported. Use complex type or a dicitonary.")
+        : base($"Payload of type {payloadTypeName} is not supported. Use complex type or a Dictionary<string, object>.")
     { }
 }
