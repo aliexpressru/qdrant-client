@@ -2,6 +2,7 @@
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http;
 
@@ -12,9 +13,37 @@ public partial class QdrantHttpClient
     /// Get information about the current state and composition of the cluster (shards).
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    public async Task<GetClusterInfoResponse> GetClusterInfo(CancellationToken cancellationToken)
+    public async Task<GetClusterInfoResponse> GetClusterInfo(
+        CancellationToken cancellationToken,
+        bool getAsRawString = false)
     {
         var url = "/cluster";
+
+        if (getAsRawString)
+        {
+            try
+            {
+                HttpRequestMessage message = new(HttpMethod.Get, url);
+                var rawClusterStatusString = await ExecuteRequestPlain(url, message, cancellationToken);
+
+                return new GetClusterInfoResponse()
+                {
+                    RawClusterStatusString = rawClusterStatusString,
+                    Status = new QdrantStatus(QdrantOperationStatusType.Ok)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GetClusterInfoResponse()
+                {
+                    Status = new QdrantStatus(QdrantOperationStatusType.Error)
+                    {
+                        Error = ex.Message,
+                        Exception = ex
+                    }
+                };
+            }
+        }
 
         var response = await ExecuteRequest<GetClusterInfoResponse>(url, HttpMethod.Get, cancellationToken);
 

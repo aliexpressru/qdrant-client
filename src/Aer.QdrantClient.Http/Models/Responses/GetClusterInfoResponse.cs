@@ -12,12 +12,17 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoResponse.ClusterInfo>
 {
     /// <summary>
+    /// Contains raw cluster status string.
+    /// </summary>
+    public string RawClusterStatusString { set; get; }
+
+    /// <summary>
     /// Represents information about current cluster status and structure.
     /// </summary>
     public class ClusterInfo
     {
         /// <summary>
-        /// Current scluster status <c>enabled</c>, <c>disabled</c>.
+        /// Current cluster status <c>enabled</c>, <c>disabled</c>.
         /// </summary>
         public string Status { set; get; }
 

@@ -58,12 +58,14 @@ public partial class QdrantHttpClient
     /// <param name="upsertPoints">The point data to upsert.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
+    /// <param name="ordering">The upsert operation ordering settings.</param>
     /// <typeparam name="TPayload">The type of the point payload.</typeparam>
     public async Task<PointsOperationResponse> UpsertPoints<TPayload>(
         string collectionName,
         UpsertPointsRequest<TPayload> upsertPoints,
         CancellationToken cancellationToken,
-        bool isWaitForResult = true)
+        bool isWaitForResult = true,
+        OrderingType? ordering = null)
         where TPayload : class
     {
         if (typeof(TPayload) == typeof(string))
@@ -71,7 +73,9 @@ public partial class QdrantHttpClient
             throw new QdrantInvalidPayloadTypeException(typeof(TPayload).FullName);
         }
 
-        var url = $"/collections/{collectionName}/points?wait={ToUrlQueryString(isWaitForResult)}";
+        var orderingValue = (ordering ?? OrderingType.Weak).ToString().ToLowerInvariant();
+
+        var url = $"/collections/{collectionName}/points?wait={ToUrlQueryString(isWaitForResult)}&ordering={orderingValue}";
 
         var response = await ExecuteRequest<UpsertPointsRequest<TPayload>, PointsOperationResponse>(
             url,

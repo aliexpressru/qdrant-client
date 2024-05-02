@@ -10,7 +10,7 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 public class QdrantStatus
 {
     /// <summary>
-    /// The sqdrant status type.
+    /// The qdrant status type.
     /// </summary>
     public QdrantOperationStatusType Type { get; }
 
@@ -30,7 +30,7 @@ public class QdrantStatus
     public string RawStatusString { get; init; }
 
     /// <summary>
-    /// The exeption that happened during qdrant operation execution.
+    /// The exception that happened during qdrant operation execution.
     /// </summary>
     public Exception Exception { get; init; }
 

@@ -9,7 +9,7 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 /// in the same order on all replicas. If this option is used, qdrant will route the operation to the
 /// leader replica of the shard and wait for the response before responding to the client.
 /// This option is useful to avoid data inconsistency in case of concurrent updates of the same documents.
-/// This options is preferred if read operations are more frequent than update and if search performance is critical.</remarks>
+/// These options are preferred if read operations are more frequent than update and if search performance is critical.</remarks>
 public enum OrderingType
 {
     /// <summary>
@@ -24,7 +24,7 @@ public enum OrderingType
     Medium,
 
     /// <summary>
-    /// ordering serializes all write operations through the permanent leader, which provides strong
+    /// Ordering serializes all write operations through the permanent leader, which provides strong
     /// consistency, but write operations may be unavailable if the leader is down.
     /// </summary>
     Strong
