@@ -776,7 +776,9 @@ internal class PointsCrudTests : QdrantTestsBase
                 {
                     Points = upsertPoints
                 },
-                CancellationToken.None);
+                CancellationToken.None,
+                isWaitForResult: true,
+                ordering: OrderingType.Strong);
 
         var readPointsResult = await _qdrantHttpClient.GetPoints(
             TestCollectionName,
