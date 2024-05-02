@@ -26,17 +26,6 @@ public class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestClusterInfo_RawString()
-    {
-        var clusterInfo = await _qdrantHttpClient.GetClusterInfo(CancellationToken.None, getAsRawString: true);
-
-        clusterInfo.Status.IsSuccess.Should().BeTrue();
-        clusterInfo.RawClusterStatusString.Should().NotBeNullOrWhiteSpace();
-
-        clusterInfo.RawClusterStatusString.Should().Contain("disabled");
-    }
-
-    [Test]
     public async Task TestClusterInfo()
     {
         var clusterInfo = await _qdrantHttpClient.GetClusterInfo(CancellationToken.None);

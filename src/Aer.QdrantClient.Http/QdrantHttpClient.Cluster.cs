@@ -14,36 +14,9 @@ public partial class QdrantHttpClient
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     public async Task<GetClusterInfoResponse> GetClusterInfo(
-        CancellationToken cancellationToken,
-        bool getAsRawString = false)
+        CancellationToken cancellationToken)
     {
         var url = "/cluster";
-
-        if (getAsRawString)
-        {
-            try
-            {
-                HttpRequestMessage message = new(HttpMethod.Get, url);
-                var rawClusterStatusString = await ExecuteRequestPlain(url, message, cancellationToken);
-
-                return new GetClusterInfoResponse()
-                {
-                    RawClusterStatusString = rawClusterStatusString,
-                    Status = new QdrantStatus(QdrantOperationStatusType.Ok)
-                };
-            }
-            catch (Exception ex)
-            {
-                return new GetClusterInfoResponse()
-                {
-                    Status = new QdrantStatus(QdrantOperationStatusType.Error)
-                    {
-                        Error = ex.Message,
-                        Exception = ex
-                    }
-                };
-            }
-        }
 
         var response = await ExecuteRequest<GetClusterInfoResponse>(url, HttpMethod.Get, cancellationToken);
 

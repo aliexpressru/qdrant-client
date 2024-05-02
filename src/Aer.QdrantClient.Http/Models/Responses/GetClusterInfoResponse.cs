@@ -1,21 +1,16 @@
-﻿using Aer.QdrantClient.Http.Models.Responses.Base;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
+﻿using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Models.Responses.Base;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
 
 /// <summary>
 /// Represents information about current cluster status and structure.
 /// </summary>
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoResponse.ClusterInfo>
 {
-    /// <summary>
-    /// Contains raw cluster status string.
-    /// </summary>
-    public string RawClusterStatusString { set; get; }
-
     /// <summary>
     /// Represents information about current cluster status and structure.
     /// </summary>
@@ -125,7 +120,7 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
         /// <summary>
         /// The cluster consensus leader peer id.
         /// </summary>
-        public ulong Leader { set; get; }
+        public ulong? Leader { set; get; }
 
         /// <summary>
         /// This node role.
