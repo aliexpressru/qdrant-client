@@ -24,28 +24,38 @@ public class ServiceMethodsTests : QdrantTestsBase
         await ResetStorage();
     }
 
-    [Test]
-    public async Task TestGetTelemetryData_NotAnonymized()
+    [TestCase(true)]
+    [TestCase(false)]
+    public async Task TestGetTelemetryData(bool isAnonymized)
     {
         var telemetry = await _qdrantHttpClient.GetTelemetry(
             CancellationToken.None,
             detailsLevel: 3,
-            isAnonymizeTelemetryData: false);
+            isAnonymizeTelemetryData: isAnonymized);
 
         telemetry.Status.IsSuccess.Should().BeTrue();
         telemetry.Result.Should().NotBeNull();
     }
 
-    [Test]
-    public async Task TestGetTelemetryData_Anonymized()
+    [TestCase(true)]
+    [TestCase(false)]
+    public async Task TestPrometheusMetrics(bool isAnonymized)
     {
-        var telemetry = await _qdrantHttpClient.GetTelemetry(
-            CancellationToken.None,
-            detailsLevel: 3,
-            isAnonymizeTelemetryData: true);
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 10, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
 
-        telemetry.Status.IsSuccess.Should().BeTrue();
-        telemetry.Result.Should().NotBeNull();
+        var prometheusMetrics = await _qdrantHttpClient.GetPrometheusMetrics(
+            CancellationToken.None,
+            isAnonymizeMetricsData: isAnonymized);
+
+        prometheusMetrics.Should().NotBeNull();
+
+        prometheusMetrics.Should().Contain("collections_total 1");
     }
 
     [Test]
