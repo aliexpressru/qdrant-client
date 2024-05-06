@@ -1,12 +1,11 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public;
 
 /// <summary>
 /// Represents the overwrite points payload operation.
 /// </summary>
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 internal sealed class OverwritePointsPayloadOperation : BatchUpdatePointsOperationBase
 {
     /// <summary>

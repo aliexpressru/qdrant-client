@@ -1,12 +1,13 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public;
 
 /// <summary>
 /// Delete alternative name for a collection.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 internal sealed class DeleteAliasOperation : UpdateCollectionAliasOperationBase
 {
     /// <summary>

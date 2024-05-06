@@ -1,10 +1,12 @@
-﻿using Aer.QdrantClient.Http.Models.Shared;
+﻿using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Requests;
 
 /// <summary>
 /// Request for recovering a single collection or collection shard from a snapshot.
 /// </summary>
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 internal class RecoverEntityFromSnapshotRequest
 {
     /// <summary>
@@ -22,7 +24,7 @@ internal class RecoverEntityFromSnapshotRequest
     /// in the cluster. If set to <see cref="SnapshotPriority.Snapshot"/>, the snapshot
     /// will be used as a source of truth, and the current state will be overwritten.
     /// If set to <see cref="SnapshotPriority.Replica"/>, the current state will be used
-    /// as a source of truth, and after recovery if will be synchronized with the snapshot.
+    /// as a source of truth, and after recovery it will be synchronized with the snapshot.
     /// </summary>
     public SnapshotPriority? Priority { set; get; }
 

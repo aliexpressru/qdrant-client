@@ -1,8 +1,11 @@
-﻿namespace Aer.QdrantClient.Http.Models.Requests.Public;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Aer.QdrantClient.Http.Models.Requests.Public;
 
 /// <summary>
 /// Represents the update points vectors operation.
 /// </summary>
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 internal sealed class UpdatePointsVectorsOperation : BatchUpdatePointsOperationBase
 {
     /// <summary>

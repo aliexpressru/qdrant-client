@@ -1,7 +1,4 @@
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public;
@@ -9,6 +6,9 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// <summary>
 /// The request for updating an existing Qdrant collection paramters.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class UpdateCollectionParametersRequest
 {
     #region Nested classes

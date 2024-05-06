@@ -1,12 +1,13 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public;
 
 /// <summary>
 /// Create alternative name for a collection. Collection will be available under both names for search, retrieve.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 internal sealed class CreateAliasOperation : UpdateCollectionAliasOperationBase
 {
     /// <summary>

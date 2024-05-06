@@ -1,4 +1,3 @@
-using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Filters.Conditions;

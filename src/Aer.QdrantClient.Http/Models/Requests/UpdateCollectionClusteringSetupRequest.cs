@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Requests;
@@ -6,9 +7,14 @@ namespace Aer.QdrantClient.Http.Models.Requests;
 /// <summary>
 /// Represents the request to update collection clustering (sharding) information.
 /// </summary>
+[JsonDerivedType(typeof(MoveShardRequest))]
+[JsonDerivedType(typeof(ReplicateShardRequest))]
+[JsonDerivedType(typeof(AbortShardTransferRequest))]
+[JsonDerivedType(typeof(DropShardReplicaRequest))]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public abstract class UpdateCollectionClusteringSetupRequest
 {
     #region Nested classes
@@ -52,12 +58,12 @@ public abstract class UpdateCollectionClusteringSetupRequest
     internal class DropShardReplicaRequest : UpdateCollectionClusteringSetupRequest
     {
         /// <summary>
-        /// Represnets a description of a replica to drop.
+        /// Represents a description of a replica to drop.
         /// </summary>
         public DropShardReplicaDescriptor DropReplica { set; get; }
 
         /// <summary>
-        /// Represnets a description of a replica to drop.
+        /// Represents a description of a replica to drop.
         /// </summary>
         public class DropShardReplicaDescriptor
         {
@@ -188,7 +194,7 @@ public abstract class UpdateCollectionClusteringSetupRequest
     /// Returns the drop shard replica operation request.
     /// </summary>
     /// <param name="shardId">The identifier of the shard to drop.</param>
-    /// <param name="peerId">Thw peer identifier to drop shard on.</param>
+    /// <param name="peerId">The peer identifier to drop shard on.</param>
     public static UpdateCollectionClusteringSetupRequest CreateDropShardReplicaRequest(
         uint shardId,
         ulong peerId)

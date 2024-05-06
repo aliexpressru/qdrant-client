@@ -1,17 +1,20 @@
-﻿namespace Aer.QdrantClient.Http.Models.Requests;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Aer.QdrantClient.Http.Models.Requests;
 
 /// <summary>
 /// Represents the request to set qdrant lock options.
 /// </summary>
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 internal sealed class SetLockOptionsRequest
 {
     /// <summary>
-    /// The write oprations lock reason.
+    /// The write operations lock reason.
     /// </summary>
     public string ErrorMessage { get; }
 
     /// <summary>
-    /// Is set to <c>true</c> write operations are locked, otherwise - write oprations are enabled.
+    /// Is set to <c>true</c> write operations are locked, otherwise - write operations are enabled.
     /// </summary>
     public bool Write { get; }
 

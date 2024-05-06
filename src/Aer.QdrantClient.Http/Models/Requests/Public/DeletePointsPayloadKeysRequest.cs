@@ -1,7 +1,4 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
@@ -11,8 +8,11 @@ using Aer.QdrantClient.Http.Models.Shared;
 namespace Aer.QdrantClient.Http.Models.Requests.Public;
 
 /// <summary>
-/// Represets a request to delete payload keys from point.
+/// Represents a request to delete payload keys from point.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class DeletePointsPayloadKeysRequest
 {
     /// <summary>

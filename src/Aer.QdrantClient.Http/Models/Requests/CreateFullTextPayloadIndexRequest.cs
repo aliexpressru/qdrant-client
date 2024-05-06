@@ -1,14 +1,15 @@
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Models.Shared;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Aer.QdrantClient.Http.Models.Requests;
 
 /// <summary>
 /// The request for creating full-text index on a specified text payload field.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 internal sealed class CreateFullTextPayloadIndexRequest
 {
     #region Nested types
@@ -21,7 +22,7 @@ internal sealed class CreateFullTextPayloadIndexRequest
         /// <summary>
         /// The type of the payload field. Since this is a full-text index the field type can only be <c>Keyword</c>.
         /// </summary>
-        public PayloadIndexedFieldType Type { get; } = PayloadIndexedFieldType.Text;
+        public PayloadIndexedFieldType Type => PayloadIndexedFieldType.Text;
 
         /// <summary>
         /// The type of the payload text tokenizer.

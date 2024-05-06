@@ -1,10 +1,5 @@
-﻿using System.Text.Json.Serialization;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-// ReSharper disable CollectionNeverQueried.Global
-
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public;
 
@@ -12,6 +7,9 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// Represents the batch update collection aliases request.
 /// All operations are executed in the order of their definition.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public class UpdateCollectionAliasesRequest
 {
     /// <summary>
