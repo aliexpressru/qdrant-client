@@ -20,7 +20,11 @@ public partial class QdrantHttpClient
     {
         var url = $"/telemetry?details_level={detailsLevel}&anonymize={ToUrlQueryString(isAnonymizeTelemetryData)}";
 
-        var response = await ExecuteRequest<GetTelemetryResponse>(url, HttpMethod.Get, cancellationToken);
+        var response = await ExecuteRequest<GetTelemetryResponse>(
+            url,
+            HttpMethod.Get,
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -73,7 +77,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             setLockOptionsRequest,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -90,7 +95,8 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<SetLockOptionsResponse>(
             url,
             HttpMethod.Get,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }

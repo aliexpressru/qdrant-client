@@ -28,7 +28,8 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<CreateSnapshotResponse>(
             url,
             HttpMethod.Post,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -48,7 +49,8 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<ListSnapshotsResponse>(
             url,
             HttpMethod.Get,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -107,7 +109,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Put,
             request,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -165,7 +168,8 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<DefaultOperationResponse>(
             url,
             HttpMethod.Delete,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -284,7 +288,8 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<CreateSnapshotResponse>(
             url,
             HttpMethod.Post,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -306,7 +311,8 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<ListSnapshotsResponse>(
             url,
             HttpMethod.Get,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -370,7 +376,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Put,
             request,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -432,7 +439,8 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<DefaultOperationResponse>(
             url,
             HttpMethod.Delete,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -480,7 +488,8 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<ListSnapshotsResponse>(
             url,
             HttpMethod.Get,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -500,7 +509,8 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<CreateSnapshotResponse>(
             url,
             HttpMethod.Post,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -522,7 +532,8 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<DefaultOperationResponse>(
             url,
             HttpMethod.Delete,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -567,7 +578,9 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequestCore<DefaultOperationResponse>(
             url,
             message,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0,
+            retryDelay: null);
 
         return response;
     }

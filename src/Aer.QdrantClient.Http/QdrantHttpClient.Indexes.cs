@@ -45,7 +45,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Put,
             index,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -95,7 +96,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Put,
             createIndexRequest,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -121,7 +123,8 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<PayloadIndexOperationResponse>(
             url,
             HttpMethod.Delete,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
