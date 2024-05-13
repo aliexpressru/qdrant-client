@@ -335,7 +335,7 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int> onRetry = null)
     {
-        string url = $"/collections/{collectionName}/points/{pointId}";
+        var url = $"/collections/{collectionName}/points/{pointId}";
 
         var response = await ExecuteRequest<GetPointResponse>(
             url,
@@ -389,7 +389,7 @@ public partial class QdrantHttpClient
 
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
-        string url = $"/collections/{collectionName}/points?consistency={consistencyValue}";
+        var url = $"/collections/{collectionName}/points?consistency={consistencyValue}";
 
         var response = await ExecuteRequest<GetPointsRequest, GetPointsResponse>(
             url,
@@ -456,7 +456,7 @@ public partial class QdrantHttpClient
             OrderBy = orderBySelector
         };
 
-        string url = $"/collections/{collectionName}/points/scroll?consistency={consistencyValue}";
+        var url = $"/collections/{collectionName}/points/scroll?consistency={consistencyValue}";
 
         var response = await ExecuteRequest<ScrollPointsRequest, ScrollPointsResponse>(
             url,

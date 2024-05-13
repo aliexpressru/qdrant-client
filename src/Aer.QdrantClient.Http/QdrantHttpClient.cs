@@ -315,7 +315,8 @@ public partial class QdrantHttpClient
         Action<Exception, TimeSpan, int> onRetry = null)
         where TResponse : QdrantResponseBase
     {
-        var getResponse = async () => await _apiClient.SendAsync(createMessage(), cancellationToken);
+        var getResponse =
+            async () => await _apiClient.SendAsync(createMessage(), cancellationToken);
 
         if (retryCount > 0)
         {
@@ -364,7 +365,8 @@ public partial class QdrantHttpClient
         {
             try
             {
-                var badRequestResult = JsonSerializer.Deserialize<TResponse>(result, JsonSerializerConstants.SerializerOptions);
+                var badRequestResult =
+                    JsonSerializer.Deserialize<TResponse>(result, JsonSerializerConstants.SerializerOptions);
 
                 return badRequestResult;
             }
@@ -390,6 +392,7 @@ public partial class QdrantHttpClient
         return deserializedObject;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void EnsureQdrantNameCorrect(string qdrantEntityName)
     {
         if (qdrantEntityName is null or {Length: 0})
@@ -423,6 +426,7 @@ public partial class QdrantHttpClient
         return convertedEnumName;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static double GetTimeoutValueOrDefault(TimeSpan? timeout)
         => timeout?.TotalSeconds ?? DEFAULT_OPERATION_TIMEOUT_SECONDS;
 }

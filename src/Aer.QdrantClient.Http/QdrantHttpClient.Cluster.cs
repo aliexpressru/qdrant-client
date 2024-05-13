@@ -139,7 +139,7 @@ public partial class QdrantHttpClient
 
         var createShardKeyRequest = new CreateShardKeyRequest(shardKey, shardsNumber, replicationFactor, placement);
 
-        string url = $"/collections/{collectionName}/shards?timeout={timeoutValue}";
+        var url = $"/collections/{collectionName}/shards?timeout={timeoutValue}";
 
         var response = await ExecuteRequest<CreateShardKeyRequest, DefaultOperationResponse>(
             url,
@@ -168,7 +168,7 @@ public partial class QdrantHttpClient
 
         var deleteShardKeyRequest = new DeleteShardKeyRequest(shardKey);
 
-        string url = $"/collections/{collectionName}/shards/delete?timeout={timeoutValue}";
+        var url = $"/collections/{collectionName}/shards/delete?timeout={timeoutValue}";
 
         var response = await ExecuteRequest<DeleteShardKeyRequest, DefaultOperationResponse>(
             url,
