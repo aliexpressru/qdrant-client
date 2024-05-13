@@ -166,7 +166,7 @@ public class PointsRecommendTests : QdrantTestsBase
                     Text = "1"
                 }),
             new(
-                PointId.Integer(2), // same vector but with different id, this one an previous one should be recommended
+                PointId.Integer(2), // same vector but with different id, this one and a previous one should be recommended
                 vector1Vector2Vector,
                 new TestPayload()
                 {
@@ -350,7 +350,7 @@ public class PointsRecommendTests : QdrantTestsBase
             CancellationToken.None);
 
         recommendedPoints.Status.IsSuccess.Should().BeTrue();
-        recommendedPoints.Result.Length.Should().Be(vectorCount); // all points since we supplied all of the existing vectors
+        recommendedPoints.Result.Length.Should().Be(vectorCount); // all points since we supplied all the existing vectors
 
         recommendedPoints.Result.Should()
             .AllSatisfy(p => p.Vector.Should().NotBeNull())
@@ -501,7 +501,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         recommendedPoints.Status.IsSuccess.Should().BeTrue();
         recommendedPoints.Result.Length.Should()
-            .Be(vectorCount - 1); // all points since we supplied all of the existing vectors minus one filtered out
+            .Be(vectorCount - 1); // all points since we supplied all the existing vectors minus one filtered out
 
         recommendedPoints.Result.Should()
             .AllSatisfy(p => p.Id.Should().NotBe(filterOutPointId));
@@ -596,7 +596,7 @@ public class PointsRecommendTests : QdrantTestsBase
         foreach (var pointsForRequestInBatch in recommendedPoints.Result)
         {
             pointsForRequestInBatch.Length.Should()
-                .Be(vectorCount - 1); // all points since we supplied all of the existing vectors minus one filtered out
+                .Be(vectorCount - 1); // all points since we supplied all the existing vectors minus one filtered out
 
             pointsForRequestInBatch.Should()
                 .AllSatisfy(p => p.Id.Should().NotBe(filterOutPointId));

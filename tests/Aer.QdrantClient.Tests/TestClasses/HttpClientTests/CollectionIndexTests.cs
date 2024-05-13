@@ -278,7 +278,7 @@ internal class CollectionIndexTests : QdrantTestsBase
                 CancellationToken.None,
                 isWaitForResult: true);
 
-        // this is unexpected but it's the way the API is built. For idempotence reasons I presume.
+        // this is unexpected, but it's the way the API is built. For idempotence reasons I presume.
         deleteNonExistentFieldIndexResult.Status.IsSuccess.Should().BeTrue();
     }
 

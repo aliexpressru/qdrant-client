@@ -96,7 +96,7 @@ public class ServiceMethodsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCollectionReady_OneSuccessfullResponse()
+    public async Task TestCollectionReady_OneSuccessfulResponse()
     {
         var vectorSize = 10U;
 
@@ -122,7 +122,7 @@ public class ServiceMethodsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCollectionReady_SeveralSuccessfullResponses()
+    public async Task TestCollectionReady_SeveralSuccessfulResponses()
     {
         var vectorSize = 10U;
 

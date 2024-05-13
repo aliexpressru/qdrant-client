@@ -19,7 +19,6 @@ namespace Aer.QdrantClient.Http;
 public partial class QdrantHttpClient
 {
     private readonly HttpClient _apiClient;
-    private readonly IAsyncPolicy _readPointsPolicy;
     private const int DEFAULT_OPERATION_TIMEOUT_SECONDS = 30;
 
     private const uint DEFAULT_POINTS_READ_RETRY_COUNT = 3;
@@ -305,10 +304,16 @@ public partial class QdrantHttpClient
 
         if (retryCount > 0)
         {
-            getResponse = () => Policy.Handle<HttpRequestException>()
+            getResponse = () => Policy
+                .Handle<HttpRequestException>(
+                    e => e.StatusCode is null
+                        ||
+                        (e.StatusCode is { } statusCode && !_specialStatusCodes.Contains(statusCode))
+                )
                 .WaitAndRetryAsync(
                     (int) retryCount,
-                    _ => retryDelay ?? _defaultPointsReadRetryDelay)
+                    _ => retryDelay ?? _defaultPointsReadRetryDelay
+                )
                 .ExecuteAsync(() => _apiClient.SendAsync(message, cancellationToken));
         }
 
