@@ -36,7 +36,8 @@ public partial class QdrantHttpClient
     ];
 
     // contains codes which should be handled specially
-    private static readonly HashSet<HttpStatusCode> _specialStatusCodes = [
+    private static readonly HashSet<HttpStatusCode> _specialStatusCodes =
+    [
         // BadRequest, NotFound, Conflict contain error message in their "status" json field,
         // so we need to parse responses with those codes
         HttpStatusCode.BadRequest,
@@ -81,7 +82,9 @@ public partial class QdrantHttpClient
                 ? "https"
                 : "http",
             host,
-            port).Uri, apiKey, httpClientTimeout)
+            port).Uri,
+        apiKey,
+        httpClientTimeout)
     { }
 
     /// <summary>
@@ -199,18 +202,18 @@ public partial class QdrantHttpClient
         HttpMethod method,
         CancellationToken cancellationToken,
         uint retryCount,
-        TimeSpan? retryDelay = null)
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int> onRetry = null)
         where TResponse : QdrantResponseBase
-    {
-        HttpRequestMessage message = new(method, url);
-
-        return ExecuteRequestCore<TResponse>(
-            url,
-            message,
-            cancellationToken,
-            retryCount,
-            retryDelay);
-    }
+        =>
+            ExecuteRequestCore<TResponse>(
+                url,
+                method,
+                () => new(method, url),
+                cancellationToken,
+                retryCount,
+                retryDelay,
+                onRetry);
 
     private Task<TResponse> ExecuteRequest<TRequest, TResponse>(
         string url,
@@ -218,28 +221,37 @@ public partial class QdrantHttpClient
         TRequest requestContent,
         CancellationToken cancellationToken,
         uint retryCount,
-        TimeSpan? retryDelay = null)
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int> onRetry = null)
         where TRequest : class
         where TResponse : QdrantResponseBase
     {
-        HttpRequestMessage message = new(method, url);
-
-        var contentJson = requestContent is string stringRequestContent // check whether the requestContent is already serialized
-            ? stringRequestContent
-            : JsonSerializer.Serialize(requestContent, JsonSerializerConstants.SerializerOptions);
-
-        var requestData = new StringContent(contentJson, Encoding.UTF8, "application/json");
-
-        message.Content = requestData;
-
         var response = ExecuteRequestCore<TResponse>(
             url,
-            message,
+            method,
+            CreateMessage,
             cancellationToken,
             retryCount,
-            retryDelay);
+            retryDelay,
+            onRetry);
 
         return response;
+
+        HttpRequestMessage CreateMessage()
+        {
+            HttpRequestMessage message = new(method, url);
+
+            var contentJson =
+                // check whether the requestContent is already a serialized string
+                requestContent as string
+                ?? JsonSerializer.Serialize(requestContent, JsonSerializerConstants.SerializerOptions);
+
+            var requestData = new StringContent(contentJson, Encoding.UTF8, "application/json");
+
+            message.Content = requestData;
+
+            return message;
+        }
     }
 
     private async Task<(long ContentLength, Stream ResponseStream)> ExecuteRequestReadAsStream(
@@ -294,13 +306,16 @@ public partial class QdrantHttpClient
 
     private async Task<TResponse> ExecuteRequestCore<TResponse>(
         string url,
-        HttpRequestMessage message,
+        HttpMethod httpMethod,
+        // We are using func to create message since sending one instance of HttpRequestMessage several times is not allowed.
+        Func<HttpRequestMessage> createMessage,
         CancellationToken cancellationToken,
         uint retryCount,
-        TimeSpan? retryDelay)
+        TimeSpan? retryDelay,
+        Action<Exception, TimeSpan, int> onRetry = null)
         where TResponse : QdrantResponseBase
     {
-        var getResponse = async () => await _apiClient.SendAsync(message, cancellationToken);
+        var getResponse = async () => await _apiClient.SendAsync(createMessage(), cancellationToken);
 
         if (retryCount > 0)
         {
@@ -312,9 +327,13 @@ public partial class QdrantHttpClient
                 )
                 .WaitAndRetryAsync(
                     (int) retryCount,
-                    _ => retryDelay ?? _defaultPointsReadRetryDelay
+                    _ => retryDelay ?? _defaultPointsReadRetryDelay,
+                    onRetry: (exception, currentRetryDelay, retryNumber, _) =>
+                    {
+                        onRetry?.Invoke(exception, currentRetryDelay, retryNumber);
+                    }
                 )
-                .ExecuteAsync(() => _apiClient.SendAsync(message, cancellationToken));
+                .ExecuteAsync(() => _apiClient.SendAsync(createMessage(), cancellationToken));
         }
 
         var response = await getResponse();
@@ -325,7 +344,7 @@ public partial class QdrantHttpClient
             && !_specialStatusCodes.Contains(response.StatusCode))
         {
             throw new QdrantCommunicationException(
-                message.Method.Method,
+                httpMethod.Method,
                 url,
                 response.StatusCode,
                 response.ReasonPhrase,

@@ -567,22 +567,30 @@ public partial class QdrantHttpClient
         Stream snapshotContent,
         CancellationToken cancellationToken)
     {
-        HttpRequestMessage message = new(HttpMethod.Post, url);
-
-        var requestData = new MultipartFormDataContent();
-
-        requestData.Add(new StreamContent(snapshotContent), name: "snapshot");
-
-        message.Content = requestData;
+        var httpMethod = HttpMethod.Post;
 
         var response = await ExecuteRequestCore<DefaultOperationResponse>(
             url,
-            message,
+            httpMethod,
+            CreateMessage,
             cancellationToken,
-            retryCount: 0,
-            retryDelay: null);
+            retryCount: 0U,
+            retryDelay: null,
+            onRetry: null);
 
         return response;
+
+        HttpRequestMessage CreateMessage()
+        {
+            HttpRequestMessage message = new(httpMethod, url);
+
+            var requestData = new MultipartFormDataContent();
+            requestData.Add(new StreamContent(snapshotContent), name: "snapshot");
+
+            message.Content = requestData;
+
+            return message;
+        }
     }
 
     private async Task<DownloadSnapshotResponse> DownloadSnapshot(

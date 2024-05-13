@@ -1796,7 +1796,8 @@ internal class PointsCrudTests : QdrantTestsBase
                 payloadInitializerFunction: (i) => new TestComplexPayload()
                 {
                     IntProperty = i,
-                    Nested = new TestComplexPayload.NestedClass(){
+                    Nested = new TestComplexPayload.NestedClass()
+                    {
                         Integer = i
                     }
                 });
