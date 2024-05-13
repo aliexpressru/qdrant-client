@@ -37,7 +37,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Put,
             request,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -82,7 +83,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Patch,
             request,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -98,7 +100,11 @@ public partial class QdrantHttpClient
 
         var url = $"/collections/{collectionName}";
 
-        var response = await ExecuteRequest<GetCollectionInfoResponse>(url, HttpMethod.Get, cancellationToken);
+        var response = await ExecuteRequest<GetCollectionInfoResponse>(
+            url,
+            HttpMethod.Get,
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -111,7 +117,11 @@ public partial class QdrantHttpClient
     {
         var url = "/collections";
 
-        var response = await ExecuteRequest<ListCollectionsResponse>(url, HttpMethod.Get, cancellationToken);
+        var response = await ExecuteRequest<ListCollectionsResponse>(
+            url,
+            HttpMethod.Get,
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -131,7 +141,11 @@ public partial class QdrantHttpClient
 
         var url = $"/collections/{collectionName}?timeout={GetTimeoutValueOrDefault(timeout)}";
 
-        var response = await ExecuteRequest<DefaultOperationResponse>(url, HttpMethod.Delete, cancellationToken);
+        var response = await ExecuteRequest<DefaultOperationResponse>(
+            url,
+            HttpMethod.Delete,
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -144,7 +158,11 @@ public partial class QdrantHttpClient
     {
         var url = "/aliases";
 
-        var response = await ExecuteRequest<ListCollectionAliasesResponse>(url, HttpMethod.Get, cancellationToken);
+        var response = await ExecuteRequest<ListCollectionAliasesResponse>(
+            url,
+            HttpMethod.Get,
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -160,7 +178,11 @@ public partial class QdrantHttpClient
     {
         var url = $"/collections/{collectionName}/aliases";
 
-        var response = await ExecuteRequest<ListCollectionAliasesResponse>(url, HttpMethod.Get, cancellationToken);
+        var response = await ExecuteRequest<ListCollectionAliasesResponse>(
+            url,
+            HttpMethod.Get,
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -190,7 +212,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             updateCollectionAliasesRequest,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -209,7 +232,8 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<CheckCollectionExistsResponse>(
             url,
             HttpMethod.Get,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }

@@ -88,7 +88,10 @@ public class PointsDiscoverTests : QdrantTestsBase
 
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 10, isServeVectorsFromDisk: true)
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                vectorSize,
+                isServeVectorsFromDisk: true)
             {
                 OnDiskPayload = true
             },
@@ -165,7 +168,10 @@ public class PointsDiscoverTests : QdrantTestsBase
 
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 10, isServeVectorsFromDisk: true)
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                vectorSize,
+                isServeVectorsFromDisk: true)
             {
                 OnDiskPayload = true
             },
@@ -184,7 +190,7 @@ public class PointsDiscoverTests : QdrantTestsBase
                     Text = "1"
                 }),
             new(
-                PointId.Integer(2), // same vector but with different id, this one an previous one should be recommended
+                PointId.Integer(2), // same vector but with different id, this one and a previous one should be recommended
                 vector1Vector2Vector,
                 new TestPayload()
                 {
@@ -252,7 +258,10 @@ public class PointsDiscoverTests : QdrantTestsBase
 
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 10, isServeVectorsFromDisk: true)
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                vectorSize,
+                isServeVectorsFromDisk: true)
             {
                 OnDiskPayload = true
             },
@@ -323,21 +332,24 @@ public class PointsDiscoverTests : QdrantTestsBase
 
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 10, isServeVectorsFromDisk: true)
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                vectorSize,
+                isServeVectorsFromDisk: true)
             {
                 OnDiskPayload = true
             },
             CancellationToken.None);
 
         var positiveVector = CreateConstantTestVector(1.1f, vectorSize);
-        var negtiveVector = CreateConstantTestVector(2.2f, vectorSize);
+        var negativeVector = CreateConstantTestVector(2.2f, vectorSize);
 
         var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
         for (int i = 0; i < vectorCount; i++)
         {
             var vector = i < 5
                 ? positiveVector
-                : negtiveVector;
+                : negativeVector;
 
             upsertPoints.Add(
                 new(
@@ -365,14 +377,14 @@ public class PointsDiscoverTests : QdrantTestsBase
         var recommendedPoints = await _qdrantHttpClient.DiscoverPoints(
             TestCollectionName,
             DiscoverPointsRequest.ByVectorExamples(
-                positiveNegativeContextPairs: new[]{new KeyValuePair<float[], float[]>(positiveVector, negtiveVector)},
+                positiveNegativeContextPairs: new[]{new KeyValuePair<float[], float[]>(positiveVector, negativeVector)},
                 limit: (uint) vectorCount,
                 withVector: true,
                 withPayload: true),
             CancellationToken.None);
 
         recommendedPoints.Status.IsSuccess.Should().BeTrue();
-        recommendedPoints.Result.Length.Should().Be(vectorCount); // all points since we supplied all of the existing vectors
+        recommendedPoints.Result.Length.Should().Be(vectorCount); // all points since we supplied all the existing vectors
 
         recommendedPoints.Result.Should()
             .AllSatisfy(p => p.Vector.Should().NotBeNull())
@@ -387,7 +399,10 @@ public class PointsDiscoverTests : QdrantTestsBase
 
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 10, isServeVectorsFromDisk: true)
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                vectorSize,
+                isServeVectorsFromDisk: true)
             {
                 OnDiskPayload = true
             },
@@ -450,7 +465,7 @@ public class PointsDiscoverTests : QdrantTestsBase
         foreach (var pointsForRequestInBatch in recommendedPoints.Result)
         {
             pointsForRequestInBatch.Length.Should()
-                .Be(vectorCount); // all points since we supplied all of the existing vectors minus one filtered out
+                .Be(vectorCount); // all points since we supplied all the existing vectors minus one filtered out
 
             pointsForRequestInBatch.Should()
                 .AllSatisfy(p => p.Vector.Should().NotBeNull())

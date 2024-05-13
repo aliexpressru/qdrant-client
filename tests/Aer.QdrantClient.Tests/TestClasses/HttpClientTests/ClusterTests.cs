@@ -80,8 +80,9 @@ public class ClusterTests : QdrantTestsBase
     }
 
     //[Test]
-    // NOTE: this test works locally only once. Then the docker compose restart and volumes drop required
-    // NOTE: this test will work only when cluster is enabled in qdrant-config_node_0.yaml
+    [Ignore(
+        "this test works locally only once. Then the docker compose restart and volumes drop required"
+        + " this test will work only when cluster is enabled in qdrant-config_node_0.yaml")]
     public async Task TestCollectionShardMove()
     {
         const uint vectorSize = 10;
@@ -139,8 +140,9 @@ public class ClusterTests : QdrantTestsBase
     }
 
     //[Test]
-    // NOTE: this test works locally only once. Then the docker compose restart and volumes drop required
-    // NOTE: this test will work only when cluster is enabled in qdrant-config_node_0.yaml
+    [Ignore(
+        "this test works locally only once. Then the docker compose restart and volumes drop required"
+        + " this test will work only when cluster is enabled in qdrant-config_node_0.yaml")]
     public async Task TestCollectionShardReplicate()
     {
         const uint vectorSize = 10;
@@ -198,7 +200,9 @@ public class ClusterTests : QdrantTestsBase
     }
 
     // [Test]
-    // NOTE: this test will work only when cluster is enabled in qdrant-config_node_0.yaml
+    [Ignore(
+        "this test works locally only once. Then the docker compose restart and volumes drop required"
+        + " this test will work only when cluster is enabled in qdrant-config_node_0.yaml")]
     public async Task TestCollectionShardCreate()
     {
         const uint vectorSize = 10;
@@ -222,7 +226,9 @@ public class ClusterTests : QdrantTestsBase
     }
 
     // [Test]
-    // NOTE: this test will work only when cluster is enabled in qdrant-config_node_0.yaml
+    [Ignore(
+        "this test works locally only once. Then the docker compose restart and volumes drop required"
+        + " this test will work only when cluster is enabled in qdrant-config_node_0.yaml")]
     public async Task TestCollectionShardDelete()
     {
         const uint vectorSize = 10;
@@ -244,7 +250,9 @@ public class ClusterTests : QdrantTestsBase
     }
 
     // [Test]
-    // NOTE: this test will work only when cluster is enabled in qdrant-config_node_0.yaml
+    [Ignore(
+        "this test works locally only once. Then the docker compose restart and volumes drop required"
+        + " this test will work only when cluster is enabled in qdrant-config_node_0.yaml")]
     public async Task TestCollectionRemovePeer()
     {
         const uint vectorSize = 10;
@@ -267,7 +275,9 @@ public class ClusterTests : QdrantTestsBase
     }
 
     // [Test]
-    // NOTE: this test will work only when cluster is enabled in qdrant-config_node_0.yaml
+    [Ignore(
+        "this test works locally only once. Then the docker compose restart and volumes drop required"
+        + " this test will work only when cluster is enabled in qdrant-config_node_0.yaml")]
     public async Task TestCollectionRecoverRaftStart()
     {
         const uint vectorSize = 10;

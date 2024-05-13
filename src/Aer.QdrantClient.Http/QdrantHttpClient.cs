@@ -8,6 +8,7 @@ using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Shared;
+using Polly;
 
 namespace Aer.QdrantClient.Http;
 
@@ -18,8 +19,10 @@ namespace Aer.QdrantClient.Http;
 public partial class QdrantHttpClient
 {
     private readonly HttpClient _apiClient;
-
     private const int DEFAULT_OPERATION_TIMEOUT_SECONDS = 30;
+
+    private const uint DEFAULT_POINTS_READ_RETRY_COUNT = 3;
+    private static readonly TimeSpan _defaultPointsReadRetryDelay = TimeSpan.FromSeconds(1);
 
     private readonly TimeSpan _defaultOperationTimeout = TimeSpan.FromSeconds(DEFAULT_OPERATION_TIMEOUT_SECONDS);
     private readonly TimeSpan _defaultPollingInterval = TimeSpan.FromSeconds(1);
@@ -194,7 +197,9 @@ public partial class QdrantHttpClient
     private Task<TResponse> ExecuteRequest<TResponse>(
         string url,
         HttpMethod method,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        uint retryCount,
+        TimeSpan? retryDelay = null)
         where TResponse : QdrantResponseBase
     {
         HttpRequestMessage message = new(method, url);
@@ -202,14 +207,18 @@ public partial class QdrantHttpClient
         return ExecuteRequestCore<TResponse>(
             url,
             message,
-            cancellationToken);
+            cancellationToken,
+            retryCount,
+            retryDelay);
     }
 
     private Task<TResponse> ExecuteRequest<TRequest, TResponse>(
         string url,
         HttpMethod method,
         TRequest requestContent,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        uint retryCount,
+        TimeSpan? retryDelay = null)
         where TRequest : class
         where TResponse : QdrantResponseBase
     {
@@ -226,7 +235,9 @@ public partial class QdrantHttpClient
         var response = ExecuteRequestCore<TResponse>(
             url,
             message,
-            cancellationToken);
+            cancellationToken,
+            retryCount,
+            retryDelay);
 
         return response;
     }
@@ -284,10 +295,29 @@ public partial class QdrantHttpClient
     private async Task<TResponse> ExecuteRequestCore<TResponse>(
         string url,
         HttpRequestMessage message,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        uint retryCount,
+        TimeSpan? retryDelay)
         where TResponse : QdrantResponseBase
     {
-        var response = await _apiClient.SendAsync(message, cancellationToken);
+        var getResponse = async () => await _apiClient.SendAsync(message, cancellationToken);
+
+        if (retryCount > 0)
+        {
+            getResponse = () => Policy
+                .Handle<HttpRequestException>(
+                    e => e.StatusCode is null
+                        ||
+                        (e.StatusCode is { } statusCode && !_specialStatusCodes.Contains(statusCode))
+                )
+                .WaitAndRetryAsync(
+                    (int) retryCount,
+                    _ => retryDelay ?? _defaultPointsReadRetryDelay
+                )
+                .ExecuteAsync(() => _apiClient.SendAsync(message, cancellationToken));
+        }
+
+        var response = await getResponse();
 
         var result = await response.Content.ReadAsStringAsync(cancellationToken);
 

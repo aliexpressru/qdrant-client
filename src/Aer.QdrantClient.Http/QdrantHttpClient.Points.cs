@@ -46,7 +46,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             points,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -81,7 +82,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Put,
             upsertPoints,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -113,7 +115,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             setPointsPayload,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -144,7 +147,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Put,
             overwritePointsPayload,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -173,7 +177,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             deletePointsPayloadKeys,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -202,7 +207,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             clearPointsPayload,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -231,7 +237,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Put,
             updatePointsVectors,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -260,7 +267,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             deletePointsVectors,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -298,7 +306,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             batchUpdatePointsRequest,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -306,24 +315,29 @@ public partial class QdrantHttpClient
     #endregion
 
     #region Read \ Count operations
-
     /// <summary>
     /// Retrieve full information of single point by id.
     /// </summary>
     /// <param name="collectionName">Name of the collection to retrieve point from.</param>
     /// <param name="pointId">The identifier of the point to retrieve.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     public async Task<GetPointResponse> GetPoint(
         string collectionName,
         PointId pointId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null)
     {
         string url = $"/collections/{collectionName}/points/{pointId}";
 
         var response = await ExecuteRequest<GetPointResponse>(
             url,
             HttpMethod.Get,
-            cancellationToken);
+            cancellationToken,
+            retryCount,
+            retryDelay);
 
         return response;
     }
@@ -341,6 +355,8 @@ public partial class QdrantHttpClient
     /// The shard selector. If set performs operation on specified shard(s).
     /// If not set - performs operation on all shards.
     /// </param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     public async Task<GetPointsResponse> GetPoints(
         string collectionName,
         IEnumerable<PointId> pointIds,
@@ -348,7 +364,9 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         VectorSelector withVector = null,
         ReadPointsConsistency consistency = null,
-        ShardSelector shardSelector = null)
+        ShardSelector shardSelector = null,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null)
     {
         var points = new GetPointsRequest
         {
@@ -366,7 +384,9 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             points,
-            cancellationToken);
+            cancellationToken,
+            retryCount,
+            retryDelay);
 
         return response;
     }
@@ -390,6 +410,8 @@ public partial class QdrantHttpClient
     /// The ordering field and direction selector.
     /// You can pass a string payload field name value which would be interpreted as order by the specified field in ascending order.
     /// </param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     public async Task<ScrollPointsResponse> ScrollPoints(
         string collectionName,
         QdrantFilter filter,
@@ -400,7 +422,9 @@ public partial class QdrantHttpClient
         VectorSelector withVector = null,
         ReadPointsConsistency consistency = null,
         ShardSelector shardSelector = null,
-        OrderBySelector orderBySelector = null)
+        OrderBySelector orderBySelector = null,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -421,7 +445,9 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             scrollRequest,
-            cancellationToken);
+            cancellationToken,
+            retryCount,
+            retryDelay);
 
         return response;
     }
@@ -432,10 +458,14 @@ public partial class QdrantHttpClient
     /// <param name="collectionName">Name of the collection to count points in.</param>
     /// <param name="countPointsRequest">The count points request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     public async Task<CountPointsResponse> CountPoints(
         string collectionName,
         CountPointsRequest countPointsRequest,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null)
     {
         var url = $"/collections/{collectionName}/points/count";
 
@@ -443,7 +473,9 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             countPointsRequest,
-            cancellationToken);
+            cancellationToken,
+            retryCount,
+            retryDelay);
 
         return response;
     }
@@ -453,17 +485,21 @@ public partial class QdrantHttpClient
     #region Search operations
 
     /// <summary>
-    /// Retrieve closest points based on vector similarity and given filtering conditions.
+    /// Retrieve the closest points based on vector similarity and given filtering conditions.
     /// </summary>
     /// <param name="collectionName">Name of the collection to search in.</param>
     /// <param name="searchPointsRequest">The search points request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="consistency">The consistency settings.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     public async Task<SearchPointsResponse> SearchPoints(
         string collectionName,
         SearchPointsRequest searchPointsRequest,
         CancellationToken cancellationToken,
-        ReadPointsConsistency consistency = null)
+        ReadPointsConsistency consistency = null,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -473,7 +509,9 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             searchPointsRequest,
-            cancellationToken);
+            cancellationToken,
+            retryCount,
+            retryDelay);
 
         return response;
     }
@@ -485,11 +523,15 @@ public partial class QdrantHttpClient
     /// <param name="searchPointsBatchedRequest">The search points request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="consistency">The consistency settings.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     public async Task<SearchPointsBatchedResponse> SearchPointsBatched(
         string collectionName,
         SearchPointsBatchedRequest searchPointsBatchedRequest,
         CancellationToken cancellationToken,
-        ReadPointsConsistency consistency = null)
+        ReadPointsConsistency consistency = null,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -499,23 +541,29 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             searchPointsBatchedRequest,
-            cancellationToken);
+            cancellationToken,
+            retryCount,
+            retryDelay);
 
         return response;
     }
 
     /// <summary>
-    /// Retrieve closest points based on vector similarity and given filtering conditions, grouped by a given payload field.
+    /// Retrieve the closest points based on vector similarity and given filtering conditions, grouped by a given payload field.
     /// </summary>
     /// <param name="collectionName">Name of the collection to search in.</param>
     /// <param name="searchPointsGroupedRequest">The search points grouped request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="consistency">The consistency settings.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     public async Task<SearchPointsGroupedResponse> SearchPointsGrouped(
         string collectionName,
         SearchPointsGroupedRequest searchPointsGroupedRequest,
         CancellationToken cancellationToken,
-        ReadPointsConsistency consistency = null)
+        ReadPointsConsistency consistency = null,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -525,7 +573,9 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             searchPointsGroupedRequest,
-            cancellationToken);
+            cancellationToken,
+            retryCount,
+            retryDelay);
 
         return response;
     }
@@ -537,11 +587,15 @@ public partial class QdrantHttpClient
     /// <param name="recommendPointsRequest">The recommend points request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="consistency">The consistency settings.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     public async Task<SearchPointsResponse> RecommendPoints(
         string collectionName,
         RecommendPointsByRequest recommendPointsRequest,
         CancellationToken cancellationToken,
-        ReadPointsConsistency consistency = null)
+        ReadPointsConsistency consistency = null,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -551,7 +605,9 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             recommendPointsRequest,
-            cancellationToken);
+            cancellationToken,
+            retryCount,
+            retryDelay);
 
         return response;
     }
@@ -563,11 +619,15 @@ public partial class QdrantHttpClient
     /// <param name="recommendPointsBatchedRequest">The recommend points batched request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="consistency">The consistency settings.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     public async Task<SearchPointsBatchedResponse> RecommendPointsBatched(
         string collectionName,
         RecommendPointsBatchedRequest recommendPointsBatchedRequest,
         CancellationToken cancellationToken,
-        ReadPointsConsistency consistency = null)
+        ReadPointsConsistency consistency = null,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -577,7 +637,9 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             recommendPointsBatchedRequest,
-            cancellationToken);
+            cancellationToken,
+            retryCount,
+            retryDelay);
 
         return response;
     }
@@ -590,11 +652,15 @@ public partial class QdrantHttpClient
     /// <param name="recommendPointsGroupedRequest">The recommend points grouped request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="consistency">The consistency settings.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     public async Task<SearchPointsGroupedResponse> RecommendPointsGrouped(
         string collectionName,
         RecommendPointsByGroupedRequest recommendPointsGroupedRequest,
         CancellationToken cancellationToken,
-        ReadPointsConsistency consistency = null)
+        ReadPointsConsistency consistency = null,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -604,7 +670,9 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             recommendPointsGroupedRequest,
-            cancellationToken);
+            cancellationToken,
+            retryCount,
+            retryDelay);
 
         return response;
     }
@@ -628,12 +696,16 @@ public partial class QdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="consistency">The consistency settings.</param>
     /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     public async Task<SearchPointsResponse> DiscoverPoints(
         string collectionName,
         DiscoverPointsByRequest discoverPointsRequest,
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -643,7 +715,9 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             discoverPointsRequest,
-            cancellationToken);
+            cancellationToken,
+            retryCount,
+            retryDelay);
 
         return response;
     }
@@ -656,12 +730,16 @@ public partial class QdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="consistency">The consistency settings.</param>
     /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     public async Task<SearchPointsBatchedResponse> DiscoverPointsBatched(
         string collectionName,
         DiscoverPointsBatchedRequest discoverPointsBatchedRequest,
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -672,7 +750,9 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             discoverPointsBatchedRequest,
-            cancellationToken);
+            cancellationToken,
+            retryCount,
+            retryDelay);
 
         return response;
     }

@@ -17,7 +17,11 @@ public partial class QdrantHttpClient
     {
         var url = "/cluster";
 
-        var response = await ExecuteRequest<GetClusterInfoResponse>(url, HttpMethod.Get, cancellationToken);
+        var response = await ExecuteRequest<GetClusterInfoResponse>(
+            url,
+            HttpMethod.Get,
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -34,7 +38,8 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<DefaultOperationResponse>(
             url,
             HttpMethod.Post,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -52,7 +57,11 @@ public partial class QdrantHttpClient
     {
         var url = $"/cluster/peer/{peerId}?force={ToUrlQueryString(isForceDropOperation)}";
 
-        var response = await ExecuteRequest<DefaultOperationResponse>(url, HttpMethod.Delete, cancellationToken);
+        var response = await ExecuteRequest<DefaultOperationResponse>(
+            url,
+            HttpMethod.Delete,
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -68,7 +77,11 @@ public partial class QdrantHttpClient
     {
         var url = $"/collections/{collectionName}/cluster";
 
-        var response = await ExecuteRequest<GetCollectionClusteringInfoResponse>(url, HttpMethod.Get, cancellationToken);
+        var response = await ExecuteRequest<GetCollectionClusteringInfoResponse>(
+            url,
+            HttpMethod.Get,
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -94,7 +107,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             updateOperation,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -131,7 +145,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Put,
             createShardKeyRequest,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }
@@ -159,7 +174,8 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             deleteShardKeyRequest,
-            cancellationToken);
+            cancellationToken,
+            retryCount: 0);
 
         return response;
     }

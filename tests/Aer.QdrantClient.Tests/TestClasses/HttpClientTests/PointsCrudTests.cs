@@ -262,7 +262,7 @@ internal class PointsCrudTests : QdrantTestsBase
     #region Upsert/Read/Delete operations tests
 
     [Test]
-    public async Task UpsertPoint_SinglePoint()
+    public async Task UpsertPoint()
     {
         var vectorSize = 10U;
 
@@ -312,7 +312,7 @@ internal class PointsCrudTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task UpsertPoint_SinglePoint_JsonObjectPayload()
+    public async Task UpsertPoint_JsonObjectPayload()
     {
         var vectorSize = 10U;
 
@@ -368,7 +368,7 @@ internal class PointsCrudTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task UpsertPoint_SinglePoint_JObjectPayload()
+    public async Task UpsertPoint_JObjectPayload()
     {
         var vectorSize = 10U;
 
@@ -524,7 +524,7 @@ internal class PointsCrudTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task UpsertPoint_SinglePoint_GetWithoutVectorAndPayload()
+    public async Task UpsertPoint_GetWithoutVectorAndPayload()
     {
         var vectorSize = 10U;
 
@@ -572,7 +572,7 @@ internal class PointsCrudTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task UpsertPoint_SinglePoint_GetWithPayloadSelector()
+    public async Task UpsertPoint_GetWithPayloadSelector()
     {
         var vectorSize = 10U;
 
@@ -710,7 +710,7 @@ internal class PointsCrudTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task UpsertPoint_SinglePoint_AsyncOperation()
+    public async Task UpsertPoint_AsyncOperation()
     {
         var vectorSize = 10U;
 
@@ -740,8 +740,9 @@ internal class PointsCrudTests : QdrantTestsBase
             .BeOneOf(QdrantOperationStatus.Acknowledged);
     }
 
-    [Test]
-    public async Task UpsertPoints()
+    [TestCase(0U)]
+    [TestCase(3U)]
+    public async Task UpsertPoints(uint readRetryCount)
     {
         var vectorSize = 10U;
         var vectorCount = 10;
@@ -785,7 +786,8 @@ internal class PointsCrudTests : QdrantTestsBase
             upsertPointsByPointIds.Keys.Select(PointId.Integer),
             PayloadPropertiesSelector.All,
             CancellationToken.None,
-            withVector: true);
+            withVector: true,
+            retryCount: readRetryCount);
 
         upsertPointsResult.Status.IsSuccess.Should().BeTrue();
         upsertPointsResult.Result.Status.Should()
@@ -811,7 +813,7 @@ internal class PointsCrudTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task UpsertPointsByteVector()
+    public async Task UpsertPoints_ByteVector()
     {
         var vectorSize = 10U;
         var vectorCount = 10;
@@ -1578,6 +1580,10 @@ internal class PointsCrudTests : QdrantTestsBase
             readPointPayload.Text.Should().Be(expectedPoint.Payload.Text);
         }
     }
+
+    #endregion
+
+    #region Points vectors and payload operations
 
     [Test]
     public async Task SetPointsPayload()
