@@ -18,15 +18,15 @@ public abstract class QdrantResponseBase<TResult> : QdrantResponseBase
     public TResult Result { get; init; }
 
     /// <summary>
-    /// Ensures that the <see cref="QdrantResponseBase.Status"/> indicates successfull response.
+    /// Ensures that the <see cref="QdrantResponseBase.Status"/> indicates successfull response and returns the result.
     /// Throws <see cref="QdrantUnsuccessfulResponseStatusException"/> if it does not.
     /// </summary>
     /// <exception cref="QdrantUnsuccessfulResponseStatusException">Occurs when <see cref="QdrantResponseBase.Status"/> does not indicate success.</exception>
-    public override QdrantResponseBase<TResult> EnsureSuccess()
+    public TResult EnsureSuccess()
     {
         if (Status.IsSuccess)
         {
-            return this;
+            return Result;
         }
 
         throw new QdrantUnsuccessfulResponseStatusException(GetType(), Status);
