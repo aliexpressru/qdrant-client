@@ -7,7 +7,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 namespace Aer.QdrantClient.Http.Models.Responses.Base;
 
 /// <summary>
-/// Represents
+/// A base class for all Qdrant API responses.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]

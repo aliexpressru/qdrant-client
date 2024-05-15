@@ -4,7 +4,7 @@ using Aer.QdrantClient.Http.Exceptions;
 namespace Aer.QdrantClient.Http.Models.Responses.Base;
 
 /// <summary>
-/// The base class for all the Qdrant API responses.
+/// The base class for all the Qdrant API responses with result.
 /// </summary>
 /// <typeparam name="TResult">The type of the class into which the <c>result</c> response json property should be deserialized.</typeparam>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
