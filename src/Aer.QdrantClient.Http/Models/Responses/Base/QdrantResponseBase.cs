@@ -30,11 +30,11 @@ public abstract class QdrantResponseBase
     /// Throws <see cref="QdrantUnsuccessfulResponseStatusException"/> if it does not.
     /// </summary>
     /// <exception cref="QdrantUnsuccessfulResponseStatusException">Occurs when <see cref="Status"/> does not indicate success.</exception>
-    public void EnsureSuccess()
+    public virtual QdrantResponseBase EnsureSuccess()
     {
         if (Status.IsSuccess)
         {
-            return;
+            return this;
         }
 
         throw new QdrantUnsuccessfulResponseStatusException(GetType(), Status);

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Exceptions;
 
 namespace Aer.QdrantClient.Http.Models.Responses.Base;
 
@@ -14,5 +15,20 @@ public abstract class QdrantResponseBase<TResult> : QdrantResponseBase
     /// <summary>
     /// The response result.
     /// </summary>
-    public TResult Result { get; set; }
+    public TResult Result { get; init; }
+
+    /// <summary>
+    /// Ensures that the <see cref="QdrantResponseBase.Status"/> indicates successfull response.
+    /// Throws <see cref="QdrantUnsuccessfulResponseStatusException"/> if it does not.
+    /// </summary>
+    /// <exception cref="QdrantUnsuccessfulResponseStatusException">Occurs when <see cref="QdrantResponseBase.Status"/> does not indicate success.</exception>
+    public override QdrantResponseBase<TResult> EnsureSuccess()
+    {
+        if (Status.IsSuccess)
+        {
+            return this;
+        }
+
+        throw new QdrantUnsuccessfulResponseStatusException(GetType(), Status);
+    }
 }

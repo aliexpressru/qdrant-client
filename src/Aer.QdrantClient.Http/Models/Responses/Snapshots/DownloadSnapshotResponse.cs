@@ -10,10 +10,10 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// <summary>
 /// Represents the response of the download snapshot operation.
 /// </summary>
-public sealed class DownloadSnapshotResponse : QdrantResponseBase
+public sealed class DownloadSnapshotResponse : QdrantResponseBase<DownloadSnapshotResponse.DownloadSnapshotUnit>
 {
     // NOTE: this class is manually created unlike any other response classes which are deserialized.
-    // Regardless, this class is modelled like all other response classes with Status and Result preoperties.
+    // Regardless, this class is modelled like all other response classes with Status and Result properties.
 
     #region Nested classes
 
@@ -59,11 +59,6 @@ public sealed class DownloadSnapshotResponse : QdrantResponseBase
     }
 
     #endregion
-
-    /// <summary>
-    /// The result of the download snapshot operation if it was successfull, <c>null</c> otherwise.
-    /// </summary>
-    public DownloadSnapshotUnit Result { get; }
 
     /// <summary>
     /// Initializes new instance of <see cref="DownloadSnapshotResponse"/>.
