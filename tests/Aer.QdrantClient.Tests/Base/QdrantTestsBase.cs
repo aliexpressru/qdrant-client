@@ -77,16 +77,16 @@ public class QdrantTestsBase
         ServiceProvider = services.BuildServiceProvider();
     }
 
-    protected async Task ResetStorage()
+    protected async Task ResetStorage(QdrantHttpClient qdrantClient = null, bool isDeleteCollectionFiles = true)
     {
         bool wasException = true;
         while (wasException)
         {
             try
             {
-                await DeleteCollectionsAndSnapshots();
+                await DeleteCollectionsAndSnapshots(qdrantClient);
 
-                if (!IsCiEnvironment)
+                if (!IsCiEnvironment && isDeleteCollectionFiles)
                 {
                     // drop collection files since on local machine they sometimes
                     // get left after the collection deletion preventing new collection
@@ -201,9 +201,9 @@ public class QdrantTestsBase
         await Task.Delay(TimeSpan.FromMilliseconds(500));
     }
 
-    private async Task DeleteCollectionsAndSnapshots()
+    private async Task DeleteCollectionsAndSnapshots(QdrantHttpClient qdrantClient = null)
     {
-        var qdrantHttpClient = ServiceProvider.GetRequiredService<QdrantHttpClient>();
+        var qdrantHttpClient = qdrantClient ?? ServiceProvider.GetRequiredService<QdrantHttpClient>();
 
         await qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None);
         await qdrantHttpClient.DeleteCollection(TestCollectionName2, CancellationToken.None);

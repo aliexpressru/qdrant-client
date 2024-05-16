@@ -8,6 +8,10 @@ using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
+#if !DEBUG
+[Ignore("I didn't find a way to configure both single-node deployment and 3 node cluster in "
++"GitHub actions so these tests will run only locally")]
+#endif
 public class ClusterTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
@@ -16,13 +20,13 @@ public class ClusterTests : QdrantTestsBase
     public void Setup()
     {
         Initialize();
-        _qdrantHttpClient = ServiceProvider.GetRequiredService<QdrantHttpClient>();
+        _qdrantHttpClient = new QdrantHttpClient("localhost", apiKey: "test", port:6343, useHttps: false);
     }
 
     [SetUp]
     public async Task BeforeEachTest()
     {
-        await ResetStorage();
+        await ResetStorage(_qdrantHttpClient, isDeleteCollectionFiles: false);
     }
 
     [Test]
@@ -31,7 +35,7 @@ public class ClusterTests : QdrantTestsBase
         var clusterInfo = await _qdrantHttpClient.GetClusterInfo(CancellationToken.None);
 
         clusterInfo.Status.IsSuccess.Should().BeTrue();
-        clusterInfo.Result.Status.Should().Be("disabled");
+        clusterInfo.Result.Status.Should().Be("enabled");
     }
 
     [Test]
@@ -39,19 +43,19 @@ public class ClusterTests : QdrantTestsBase
     {
         const uint vectorSize = 10;
 
-        await _qdrantHttpClient.CreateCollection(
+        (await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
             {
                 OnDiskPayload = true
             },
-            CancellationToken.None);
+            CancellationToken.None)).EnsureSuccess();
 
         var testPointId = PointId.NewGuid();
         var testVector = CreateTestFloatVector(vectorSize);
         TestPayload testPayload = "test";
 
-        await _qdrantHttpClient.UpsertPoints(
+        (await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
                 new UpsertPointsRequest<TestPayload>()
                 {
@@ -60,7 +64,9 @@ public class ClusterTests : QdrantTestsBase
                         new(testPointId, testVector, testPayload)
                     }
                 },
-                CancellationToken.None);
+                CancellationToken.None)).EnsureSuccess();
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, cancellationToken: CancellationToken.None);
 
         var collectionClusteringInfo =
             await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None);
@@ -68,14 +74,16 @@ public class ClusterTests : QdrantTestsBase
         collectionClusteringInfo.Status.IsSuccess.Should().BeTrue();
 
         collectionClusteringInfo.Result.PeerId.Should().NotBe(0);
-        collectionClusteringInfo.Result.ShardCount.Should().Be(1);
+        collectionClusteringInfo.Result.ShardCount.Should().Be(3);
         collectionClusteringInfo.Result.LocalShards.Length.Should().Be(1);
 
-        collectionClusteringInfo.Result.LocalShards[0].ShardId.Should().Be(0);
         collectionClusteringInfo.Result.LocalShards[0].PointsCount.Should().Be(1);
         collectionClusteringInfo.Result.LocalShards[0].State.Should().Be(ShardState.Active);
 
-        collectionClusteringInfo.Result.RemoteShards.Length.Should().Be(0);
+        collectionClusteringInfo.Result.RemoteShards[0].State.Should().Be(ShardState.Active);
+        collectionClusteringInfo.Result.RemoteShards[1].State.Should().Be(ShardState.Active);
+
+        collectionClusteringInfo.Result.RemoteShards.Length.Should().Be(2);
         collectionClusteringInfo.Result.ShardTransfers.Length.Should().Be(0);
     }
 
