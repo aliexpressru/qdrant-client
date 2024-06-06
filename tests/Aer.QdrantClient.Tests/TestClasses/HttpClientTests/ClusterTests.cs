@@ -20,6 +20,7 @@ public class ClusterTests : QdrantTestsBase
     public void Setup()
     {
         Initialize();
+        // create client with first cluster node port - 6343
         _qdrantHttpClient = new QdrantHttpClient("localhost", apiKey: "test", port:6343, useHttps: false);
     }
 

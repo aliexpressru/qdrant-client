@@ -44,9 +44,27 @@ public class QdrantStatus
     }
 
     /// <summary>
-    /// Tries to get error message from this qudrant status. If the status is <c>Ok</c> returns <c>null</c>.
+    /// Tries to get error message from this qdrant status. If the status is <c>Ok</c> returns <c>null</c>.
     /// </summary>
     public string GetErrorMessage() => Error ?? RawStatusString;
+
+    /// <summary>
+    /// Get qdrant status that indicates success.
+    /// </summary>
+    public static QdrantStatus Success() => new (QdrantOperationStatusType.Ok);
+
+    /// <summary>
+    /// Get qdrant status that indicates error.
+    /// </summary>
+    /// <param name="errorMessage">The error message.</param>
+    /// <param name="exception">The exception that happened during qdrant operation execution.</param>
+    public static QdrantStatus Fail(string errorMessage, Exception exception = null)
+        =>
+            new (QdrantOperationStatusType.Error)
+            {
+                Error = errorMessage,
+                Exception = exception
+            };
 
     /// <summary>
     /// Returns a string representation of the Qdrant status.

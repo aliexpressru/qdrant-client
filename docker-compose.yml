@@ -1,12 +1,10 @@
-version: "3.8"
-
 services:
 
   # single node qdrant
 
   qdrant-0:
     container_name: qdrant-0
-    image: qdrant/qdrant:v1.9.2
+    image: qdrant/qdrant:v1.9.4
     entrypoint: ./entrypoint.sh
     command: --uri 'http://qdrant-0:6335'
     volumes:
@@ -30,7 +28,7 @@ services:
 
   qdrant-1:
     container_name: qdrant-1
-    image: qdrant/qdrant:v1.9.2
+    image: qdrant/qdrant:v1.9.4
     entrypoint: ./entrypoint.sh
     command: --uri 'http://qdrant-1:6335'
     volumes:
@@ -52,7 +50,7 @@ services:
 
   qdrant-2:
     container_name: qdrant-2
-    image: qdrant/qdrant:v1.9.2
+    image: qdrant/qdrant:v1.9.4
     entrypoint: ./entrypoint.sh
     command: --bootstrap 'http://qdrant-1:6335'
     volumes:
@@ -74,7 +72,7 @@ services:
 
   qdrant-3:
     container_name: qdrant-3
-    image: qdrant/qdrant:v1.9.2
+    image: qdrant/qdrant:v1.9.4
     entrypoint: ./entrypoint.sh
     command: --bootstrap 'http://qdrant-1:6335'
     volumes:
