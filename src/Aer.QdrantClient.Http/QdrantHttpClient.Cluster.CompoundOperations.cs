@@ -41,11 +41,11 @@ public partial class QdrantHttpClient
         try
         {
             var (peerIdToPopulate, _, peerIdsToReplicateShardsFrom, peerUriPerPeerId) =
-                (await GetPeerInfoByNodeUriSubstring(targetClusterNodeSelectorString, cancellationToken)).EnsureSuccess();
+                (await GetPeerInfoByUriSubstring(targetClusterNodeSelectorString, cancellationToken)).EnsureSuccess();
 
-            var collectionInfos = await ListCollectionInfo(
+            var collectionInfos = (await ListCollectionInfo(
                 isCountExactPointsNumber: false,
-                cancellationToken);
+                cancellationToken)).EnsureSuccess();
 
             var peersToReplicateShardsFrom = new CircularEnumerable<ulong>(peerIdsToReplicateShardsFrom);
 
@@ -267,7 +267,7 @@ public partial class QdrantHttpClient
         try
         {
             var (peerIdToEmpty, _, peerIdsToMoveShardsTo, peerUriPerPeerId) =
-                (await GetPeerInfoByNodeUriSubstring(clusterNodeToEmptySelectorString, cancellationToken)).EnsureSuccess();
+                (await GetPeerInfoByUriSubstring(clusterNodeToEmptySelectorString, cancellationToken)).EnsureSuccess();
 
             var collectionNames = (await ListCollections(cancellationToken))
                 .EnsureSuccess()
@@ -485,7 +485,7 @@ public partial class QdrantHttpClient
     /// </summary>
     /// <param name="clusterNodeUriSubstring">The cluster node URI substring.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    public async Task<CheckIsPeerEmptyResponse> CheckIsClusterNodeEmpty(
+    public async Task<CheckIsPeerEmptyResponse> CheckIsPeerEmpty(
         string clusterNodeUriSubstring,
         CancellationToken cancellationToken)
     {
@@ -494,7 +494,7 @@ public partial class QdrantHttpClient
         try
         {
             var (peerIdToCheck, _, _, _) =
-                (await GetPeerInfoByNodeUriSubstring(clusterNodeUriSubstring, cancellationToken)).EnsureSuccess();
+                (await GetPeerInfoByUriSubstring(clusterNodeUriSubstring, cancellationToken)).EnsureSuccess();
 
             var collectionNames = (await ListCollections(cancellationToken))
                 .EnsureSuccess()
@@ -556,7 +556,7 @@ public partial class QdrantHttpClient
     /// <exception cref="QdrantNoNodesFoundForUriSubstringException">Occures when no nodes found for uri substring.</exception>
     /// <exception cref="QdrantMoreThanOneNodeFoundForUriSubstringException">Occures when more than one node found for uri substring.</exception>
     public async Task<GetPeerResponse>
-        GetPeerInfoByNodeUriSubstring(
+        GetPeerInfoByUriSubstring(
             string clusterNodeUriSubstring,
             CancellationToken cancellationToken)
     {
@@ -564,9 +564,9 @@ public partial class QdrantHttpClient
 
         var clusterInfo = await GetClusterInfoInternal(cancellationToken);
 
-        var peerIdByNodeUrl = clusterInfo.Peers.ToDictionary(
+        var peerIdByNodeUrl = clusterInfo.ParsedPeers.ToDictionary(
             ci => ci.Value.Uri,
-            ci => ulong.Parse(ci.Key));
+            ci => ci.Key);
 
         var candidatePeersIds = peerIdByNodeUrl.Where(
                 kv => kv.Key.Contains(clusterNodeUriSubstring, StringComparison.InvariantCulture))

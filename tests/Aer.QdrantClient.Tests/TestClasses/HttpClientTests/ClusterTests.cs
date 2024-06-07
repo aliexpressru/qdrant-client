@@ -21,7 +21,7 @@ public class ClusterTests : QdrantTestsBase
     {
         Initialize();
         // create client with first cluster node port - 6343
-        _qdrantHttpClient = new QdrantHttpClient("localhost", apiKey: "test", port:6343, useHttps: false);
+        _qdrantHttpClient = GetClusterClient();
     }
 
     [SetUp]
@@ -48,13 +48,34 @@ public class ClusterTests : QdrantTestsBase
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
             {
-                OnDiskPayload = true
+                OnDiskPayload = true,
+                WriteConsistencyFactor = 2,
+                ReplicationFactor = 1,
+                ShardNumber = 2,
+                ShardingMethod = ShardingMethod.Custom
             },
             CancellationToken.None)).EnsureSuccess();
 
-        var testPointId = PointId.NewGuid();
-        var testVector = CreateTestFloatVector(vectorSize);
-        TestPayload testPayload = "test";
+        // configure collection manual sharding to ensure consistent results
+
+        var allPeers = (await _qdrantHttpClient.GetClusterInfo(CancellationToken.None))
+            .EnsureSuccess().AllPeerIds;
+
+        (await _qdrantHttpClient.CreateShardKey(
+            TestCollectionName,
+            TestShardKey1,
+            CancellationToken.None,
+            shardsNumber: 1,
+            replicationFactor: 1,
+            placement: [allPeers.First()])).EnsureSuccess();
+
+        (await _qdrantHttpClient.CreateShardKey(
+            TestCollectionName,
+            TestShardKey2,
+            CancellationToken.None,
+            shardsNumber: 1,
+            replicationFactor: 1,
+            placement: [allPeers.Skip(1).First()])).EnsureSuccess();
 
         (await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
@@ -62,12 +83,27 @@ public class ClusterTests : QdrantTestsBase
                 {
                     Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
                     {
-                        new(testPointId, testVector, testPayload)
-                    }
+                        new(PointId.NewGuid(), CreateTestFloatVector(vectorSize), "test"),
+                    },
+                    ShardKey = TestShardKey1
                 },
                 CancellationToken.None)).EnsureSuccess();
 
+        (await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest<TestPayload>()
+            {
+                Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                {
+                    new(PointId.NewGuid(), CreateTestFloatVector(vectorSize), "test2"),
+                },
+                ShardKey = TestShardKey2
+            },
+            CancellationToken.None)).EnsureSuccess();
+
         await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, cancellationToken: CancellationToken.None);
+
+        await Task.Delay(TimeSpan.FromSeconds(1));
 
         var collectionClusteringInfo =
             await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None);
@@ -75,16 +111,15 @@ public class ClusterTests : QdrantTestsBase
         collectionClusteringInfo.Status.IsSuccess.Should().BeTrue();
 
         collectionClusteringInfo.Result.PeerId.Should().NotBe(0);
-        collectionClusteringInfo.Result.ShardCount.Should().Be(3);
+        collectionClusteringInfo.Result.ShardCount.Should().Be(2);
         collectionClusteringInfo.Result.LocalShards.Length.Should().Be(1);
 
         collectionClusteringInfo.Result.LocalShards[0].PointsCount.Should().Be(1);
         collectionClusteringInfo.Result.LocalShards[0].State.Should().Be(ShardState.Active);
 
         collectionClusteringInfo.Result.RemoteShards[0].State.Should().Be(ShardState.Active);
-        collectionClusteringInfo.Result.RemoteShards[1].State.Should().Be(ShardState.Active);
 
-        collectionClusteringInfo.Result.RemoteShards.Length.Should().Be(2);
+        collectionClusteringInfo.Result.RemoteShards.Length.Should().Be(1);
         collectionClusteringInfo.Result.ShardTransfers.Length.Should().Be(0);
     }
 

@@ -9,6 +9,8 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
+[SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoResponse.ClusterInfo>
 {
     /// <summary>
@@ -27,9 +29,23 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
         public ulong PeerId { set; get; }
 
         /// <summary>
-        /// All other cluster nodes peer information.
+        /// All cluster nodes peer information by string peer ids.
         /// </summary>
         public Dictionary<string, PeerInfoUint> Peers { set; get; }
+
+        /// <summary>
+        /// All cluster nodes peer information by parsed ulong peer ids.
+        /// </summary>
+        public Dictionary<ulong, PeerInfoUint> ParsedPeers =>
+            Peers.ToDictionary(
+                p => ulong.Parse(p.Key),
+                p => p.Value);
+
+        /// <summary>
+        /// All peer ids.
+        /// </summary>
+        public List<ulong> AllPeerIds =>
+            Peers.Select(x => ulong.Parse(x.Key)).ToList();
 
         /// <summary>
         /// The nodes consensus status.

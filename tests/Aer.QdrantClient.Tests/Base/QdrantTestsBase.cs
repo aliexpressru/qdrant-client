@@ -25,6 +25,9 @@ public class QdrantTestsBase
     protected const string TestCollectionAlias = "test_collection_alias";
     protected const string TestCollectionAlias2 = "test_collection_alias_2";
 
+    protected const string TestShardKey1 = "shard1";
+    protected const string TestShardKey2 = "shard2";
+
     protected const string TestCollectionName2 = "test_collection_2";
 
     protected const string TestPayloadFieldName = "test_payload_field";
@@ -270,6 +273,12 @@ public class QdrantTestsBase
             Enumerable.Range(0, (int) vectorLength)
                 .Select(_ => vectorElement)
                 .ToArray();
+
+    /// <summary>
+    /// Returns <see cref="QdrantHttpClient"/> for 3-node cluster.
+    /// </summary>
+    protected QdrantHttpClient GetClusterClient() =>
+        new ("localhost", apiKey: "test", port: 6343, useHttps: false);
 
     internal async Task<(IReadOnlyList<UpsertPointsRequest<TPayload>.UpsertPoint> UpsertPoints,
         Dictionary<ulong, UpsertPointsRequest<TPayload>.UpsertPoint> UpsertPointsByPointIds,
