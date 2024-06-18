@@ -245,7 +245,7 @@ public partial class QdrantHttpClient
     /// <summary>
     /// Removes all shards from a cluster node by either moving them physically or dropping their replicas.
     /// </summary>
-    /// <param name="clusterNodeToEmptySelectorString">The cluster node slector string for the node to move shards away from.</param>
+    /// <param name="clusterNodeToEmptySelectorString">The cluster node selector string for the node to move shards away from.</param>
     /// <param name="collectionNamesToMove">
     /// Filter for moving only shards for specified collections.
     /// If <c>null</c> or empty - moves all collection shards.</param>
@@ -553,8 +553,8 @@ public partial class QdrantHttpClient
     /// </summary>
     /// <param name="clusterNodeUriSubstring">Cluster node uri substring to get peer info for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <exception cref="QdrantNoNodesFoundForUriSubstringException">Occures when no nodes found for uri substring.</exception>
-    /// <exception cref="QdrantMoreThanOneNodeFoundForUriSubstringException">Occures when more than one node found for uri substring.</exception>
+    /// <exception cref="QdrantNoNodesFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
+    /// <exception cref="QdrantMoreThanOneNodeFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
     public async Task<GetPeerResponse>
         GetPeerInfoByUriSubstring(
             string clusterNodeUriSubstring,

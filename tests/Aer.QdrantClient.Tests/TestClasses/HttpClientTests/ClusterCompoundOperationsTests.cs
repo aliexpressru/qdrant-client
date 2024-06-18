@@ -29,7 +29,13 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestIsPeerEmpty()
+    public async Task TestGetPeerInfoByUriSubstring_Success()
+    {
+
+    }
+
+    [Test]
+    public async Task TestIsPeerEmpty_Success()
     {
         const uint vectorSize = 10;
 
@@ -81,4 +87,12 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
         checkPeerEmptyResult.Status.IsSuccess.Should().BeTrue();
         checkPeerEmptyResult.Result.Should().BeFalse();
     }
+
+    [Test]
+    public async Task TestDrainPeer_Success()
+    { }
+
+    [Test]
+    public async Task TestReplicateShardsToClusterNode_Success()
+    { }
 }

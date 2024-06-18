@@ -41,7 +41,7 @@ public class ClusterTests : QdrantTestsBase
     [Test]
     public async Task TestGetCollectionClusteringInfo_ManualSharding()
     {
-        await CreateSmallTestShardedCollection(TestCollectionName, 10U);
+        await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
         var collectionClusteringInfo =
             await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None);
@@ -64,7 +64,7 @@ public class ClusterTests : QdrantTestsBase
     [Test]
     public async Task TestCollectionShardMove_OneShard()
     {
-        await CreateSmallTestShardedCollection(TestCollectionName, 10U);
+        await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
         var collectionClusteringInfo =
             (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
@@ -127,7 +127,7 @@ public class ClusterTests : QdrantTestsBase
     [Test]
     public async Task TestCollectionShardReplicate_OneShard()
     {
-        await CreateSmallTestShardedCollection(TestCollectionName, 10U);
+        await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
         var collectionClusteringInfo =
             await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None);
@@ -280,7 +280,7 @@ public class ClusterTests : QdrantTestsBase
         // NOTE: after performing this test - stop all containers, remove volumes
         // and rerun docker compose up to restore cluster to its 2-node state
 
-        await CreateSmallTestShardedCollection(TestCollectionName, 10U);
+        await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
         var collectionClusteringInfo =
             await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None);
@@ -325,69 +325,5 @@ public class ClusterTests : QdrantTestsBase
 
         recoverCollectionRaftState.Status.IsSuccess.Should().BeTrue();
         recoverCollectionRaftState.Result.Should().BeTrue();
-    }
-
-    private async Task CreateSmallTestShardedCollection(string collectionName, uint vectorSize)
-    {
-        (await _qdrantHttpClient.CreateCollection(
-            collectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true,
-                WriteConsistencyFactor = 2,
-                ReplicationFactor = 1,
-                ShardNumber = 2,
-                ShardingMethod = ShardingMethod.Custom
-            },
-            CancellationToken.None)).EnsureSuccess();
-
-        // configure collection manual sharding to ensure consistent results
-
-        var allPeers = (await _qdrantHttpClient.GetClusterInfo(CancellationToken.None))
-            .EnsureSuccess().AllPeerIds;
-
-        (await _qdrantHttpClient.CreateShardKey(
-            collectionName,
-            TestShardKey1,
-            CancellationToken.None,
-            shardsNumber: 1,
-            replicationFactor: 1,
-            placement: [allPeers.First()])).EnsureSuccess();
-
-        (await _qdrantHttpClient.CreateShardKey(
-            collectionName,
-            TestShardKey2,
-            CancellationToken.None,
-            shardsNumber: 1,
-            replicationFactor: 1,
-            placement: [allPeers.Skip(1).First()])).EnsureSuccess();
-
-        (await _qdrantHttpClient.UpsertPoints(
-            collectionName,
-            new UpsertPointsRequest<TestPayload>()
-            {
-                Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
-                {
-                    new(PointId.NewGuid(), CreateTestFloatVector(vectorSize), "test"),
-                },
-                ShardKey = TestShardKey1
-            },
-            CancellationToken.None)).EnsureSuccess();
-
-        (await _qdrantHttpClient.UpsertPoints(
-            collectionName,
-            new UpsertPointsRequest<TestPayload>()
-            {
-                Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
-                {
-                    new(PointId.NewGuid(), CreateTestFloatVector(vectorSize), "test2"),
-                },
-                ShardKey = TestShardKey2
-            },
-            CancellationToken.None)).EnsureSuccess();
-
-        await _qdrantHttpClient.EnsureCollectionReady(collectionName, cancellationToken: CancellationToken.None);
-
-        await Task.Delay(TimeSpan.FromSeconds(1));
     }
 }
