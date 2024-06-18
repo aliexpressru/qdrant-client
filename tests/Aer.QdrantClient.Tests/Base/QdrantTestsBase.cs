@@ -39,7 +39,6 @@ public class QdrantTestsBase
     private const string QDRANT_COLLECTIONS_DATA_DIRECTORY_RELATIVE_PATH = "volumes/0/qdrant_storage/collections";
     private const string QDRANT_SNAPSHOTS_DATA_DIRECTORY_RELATIVE_PATH = "volumes/0/qdrant_snapshots";
 
-
     protected void Initialize(bool isDisableAuthorization = false)
     {
         Environment.SetEnvironmentVariable(
@@ -275,7 +274,7 @@ public class QdrantTestsBase
                 .ToArray();
 
     /// <summary>
-    /// Returns <see cref="QdrantHttpClient"/> for 3-node cluster.
+    /// Returns <see cref="QdrantHttpClient"/> for 2-node cluster.
     /// </summary>
     protected QdrantHttpClient GetClusterClient() =>
         new ("localhost", apiKey: "test", port: 6343, useHttps: false);

@@ -123,12 +123,14 @@ public partial class QdrantHttpClient
     /// <param name="requiredNumberOfGreenCollectionResponses">The number of green status responses to be received
     /// for collection status to be considered green. To increase the probability that every node has
     /// the same green status - set this parameter to a value greater than the number of nodes.</param>
+    /// <param name="checkAllCollectionShardTransfersCompleted">If set to <c>true</c> check that all collection shard transfers are completed.</param>
     public async Task EnsureCollectionReady(
         string collectionName,
         CancellationToken cancellationToken,
         TimeSpan? pollingInterval = null,
         TimeSpan? timeout = null,
-        uint requiredNumberOfGreenCollectionResponses = 1)
+        uint requiredNumberOfGreenCollectionResponses = 1,
+        bool checkAllCollectionShardTransfersCompleted = false)
     {
         if (timeout is {TotalMilliseconds: 0})
         {
@@ -155,12 +157,21 @@ public partial class QdrantHttpClient
                 throw new QdrantCollectionNotGreenException(collectionName, actualTimeout);
             }
 
-            var collectionInfoResponse = await GetCollectionInfo(collectionName, cancellationToken);
+            var collectionInfo = (await GetCollectionInfo(collectionName, cancellationToken)).EnsureSuccess();
 
-            collectionInfoResponse.EnsureSuccess();
+            bool isCollectionShardTransfersCompleted = true;
 
-            if (collectionInfoResponse.Result.Status is QdrantCollectionStatus.Green
-                && collectionInfoResponse.Result.OptimizerStatus.IsOk)
+            if (checkAllCollectionShardTransfersCompleted)
+            {
+                var collectionClusteringInfo =
+                    (await GetCollectionClusteringInfo(collectionName, cancellationToken)).EnsureSuccess();
+
+                isCollectionShardTransfersCompleted = collectionClusteringInfo.ShardTransfers.Length == 0;
+            }
+
+            if (collectionInfo.Status is QdrantCollectionStatus.Green
+                && collectionInfo.OptimizerStatus.IsOk
+                && isCollectionShardTransfersCompleted)
             {
                 requiredCollectionIsReadyResponsesLeft--;
 
