@@ -342,7 +342,11 @@ public class QdrantTestsBase
         return (upsertPoints, upsertPointsByPointIds, upsertPointIds);
     }
 
-    protected async Task CreateSmallTestShardedCollection(QdrantHttpClient qdrantHttpClient, string collectionName, uint vectorSize)
+    protected async Task CreateSmallTestShardedCollection(
+        QdrantHttpClient qdrantHttpClient,
+        string collectionName,
+        uint vectorSize,
+        uint replicationFactor = 1)
     {
         (await qdrantHttpClient.CreateCollection(
             collectionName,
@@ -350,7 +354,7 @@ public class QdrantTestsBase
             {
                 OnDiskPayload = true,
                 WriteConsistencyFactor = 2,
-                ReplicationFactor = 1,
+                ReplicationFactor = replicationFactor,
                 ShardNumber = 2,
                 ShardingMethod = ShardingMethod.Custom
             },
@@ -366,16 +370,19 @@ public class QdrantTestsBase
             TestShardKey1,
             CancellationToken.None,
             shardsNumber: 1,
-            replicationFactor: 1,
-            placement: [allPeers.First()])).EnsureSuccess();
+            replicationFactor: replicationFactor,
+            // with manual shard placement we need to manually specify all replica peers,
+            // since qdrant allows having collection replication factor of 2 while having only one peer
+            // for a specific shard. Thus, we need to manually tell it both primary peer and a replica peer
+            placement: replicationFactor == 1 ? [allPeers.First()] : [..allPeers])).EnsureSuccess();
 
         (await qdrantHttpClient.CreateShardKey(
             collectionName,
             TestShardKey2,
             CancellationToken.None,
             shardsNumber: 1,
-            replicationFactor: 1,
-            placement: [allPeers.Skip(1).First()])).EnsureSuccess();
+            replicationFactor: replicationFactor,
+            placement: replicationFactor == 1 ? [allPeers.Skip(1).First()] : [..allPeers])).EnsureSuccess();
 
         (await qdrantHttpClient.UpsertPoints(
             collectionName,

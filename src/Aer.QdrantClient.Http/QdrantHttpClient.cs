@@ -123,7 +123,10 @@ public partial class QdrantHttpClient
     /// <param name="requiredNumberOfGreenCollectionResponses">The number of green status responses to be received
     /// for collection status to be considered green. To increase the probability that every node has
     /// the same green status - set this parameter to a value greater than the number of nodes.</param>
-    /// <param name="checkAllCollectionShardTransfersCompleted">If set to <c>true</c> check that all collection shard transfers are completed.</param>
+    /// <param name="checkAllCollectionShardTransfersCompleted">
+    /// If set to <c>true</c> check that all collection shard transfers are completed.
+    /// The collection is not considered ready until all shard transfers are completed.
+    /// </param>
     public async Task EnsureCollectionReady(
         string collectionName,
         CancellationToken cancellationToken,

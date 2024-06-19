@@ -243,24 +243,25 @@ public partial class QdrantHttpClient
     }
 
     /// <summary>
-    /// Removes all shards from a cluster node by either moving them physically or dropping their replicas.
+    /// Removes all shards for all collections or specified collections from a peer by moving them to another peers.
     /// </summary>
     /// <param name="clusterNodeToEmptySelectorString">The cluster node selector string for the node to move shards away from.</param>
-    /// <param name="collectionNamesToMove">
-    /// Filter for moving only shards for specified collections.
-    /// If <c>null</c> or empty - moves all collection shards.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="logger">The optional logger for state logging.</param>
     /// <param name="isDryRun">
     /// If set to <c>true</c>, this operation calculates and logs
     /// all shard movements without actually executing them.
     /// </param>
+    /// <param name="collectionNamesToMove">
+    /// Filter for moving only shards for specified collections.
+    /// If <c>null</c> or empty - moves all collection shards.</param>
     public async Task<DrainPeerResponse> DrainPeer(
         string clusterNodeToEmptySelectorString,
-        string[] collectionNamesToMove,
         CancellationToken cancellationToken,
         ILogger logger = null,
-        bool isDryRun = false)
+        bool isDryRun = false,
+        params string[] collectionNamesToMove
+    )
     {
         Stopwatch sw = Stopwatch.StartNew();
 
@@ -347,110 +348,56 @@ public partial class QdrantHttpClient
 
                     foreach (var shardToMoveToPeer in shardsToMoveToPeer)
                     {
-                        if (collectionShardsPerPeers.ContainsKey(peerToMoveShardsTo)
-                            && collectionShardsPerPeers[peerToMoveShardsTo].Contains(shardToMoveToPeer))
+
+                        logger?.LogInformation(
+                            "Going to move collection '{CollectionName}' shard {ShardId} from peer {SourcePeer} ({SourcePeerUri}) to peer {TargetPeer} ({TargetPeerUri})",
+                            collectionName,
+                            shardToMoveToPeer,
+                            peerIdToEmpty,
+                            peerUriPerPeerId[peerIdToEmpty],
+                            peerToMoveShardsTo,
+                            peerUriPerPeerId[peerToMoveShardsTo]
+                        );
+
+                        if (!isDryRun)
                         {
-                            // means target peer already contains replica of this shard
-                            // just drop shard replica on peer to empty
-
-                            logger?.LogInformation(
-                                "Collection '{CollectionName}' shard {ShardId} already exists on peer {TargetPeer} ({TargetPeerUri}). Going to just drop replica from peer {SourcePeer} ({SourcePeerUri})",
+                            var isSuccessfullyStartOperationResponse = await UpdateCollectionClusteringSetup(
                                 collectionName,
-                                shardToMoveToPeer,
-                                peerToMoveShardsTo,
-                                peerUriPerPeerId[peerToMoveShardsTo],
-                                peerIdToEmpty,
-                                peerUriPerPeerId[peerIdToEmpty]);
+                                UpdateCollectionClusteringSetupRequest.CreateMoveShardRequest(
+                                    shardId: shardToMoveToPeer,
+                                    fromPeerId: peerIdToEmpty,
+                                    toPeerId: peerToMoveShardsTo,
+                                    ShardTransferMethod.StreamRecords),
+                                cancellationToken);
 
-                            if (!isDryRun)
+                            if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
+                                || isSuccessfullyStartOperationResponse.Result is false)
                             {
-                                var isSuccessfullyStartOperationResponse = await UpdateCollectionClusteringSetup(
+                                logger?.LogError(
+                                    "Error moving collection '{CollectionName}' shard {ShardId} from peer {SourcePeer} ({SourcePeerUri}) to peer {TargetPeer} ({TargetPeerUri}): {ErrorMessage}",
                                     collectionName,
-                                    UpdateCollectionClusteringSetupRequest.CreateDropShardReplicaRequest(
-                                        shardId: shardToMoveToPeer,
-                                        peerId: peerIdToEmpty),
-                                    cancellationToken);
+                                    shardToMoveToPeer,
+                                    peerIdToEmpty,
+                                    peerUriPerPeerId[peerIdToEmpty],
+                                    peerToMoveShardsTo,
+                                    peerUriPerPeerId[peerToMoveShardsTo],
+                                    isSuccessfullyStartOperationResponse.Status.GetErrorMessage());
 
-                                if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
-                                    || isSuccessfullyStartOperationResponse.Result is false)
+                                // means issuing move operation failed - abandon move
+
+                                sw.Stop();
+
+                                return new DrainPeerResponse()
                                 {
-                                    logger?.LogError(
-                                        "Error dropping collection '{CollectionName}' shard {ShardId} from peer {SourcePeer} ({SourcePeerUri}): {ErrorMessage}",
-                                        collectionName,
-                                        shardToMoveToPeer,
-                                        peerIdToEmpty,
-                                        peerUriPerPeerId[peerIdToEmpty],
-                                        isSuccessfullyStartOperationResponse.Status.GetErrorMessage());
-
-                                    // means issuing move operation failed - abandon move
-
-                                    sw.Stop();
-
-                                    return new DrainPeerResponse()
-                                    {
-                                        Result = false,
-                                        Status = isSuccessfullyStartOperationResponse.Status,
-                                        Time = sw.Elapsed.TotalMinutes
-                                    };
-                                }
-                            }
-                            else
-                            {
-                                logger?.LogInformation("Shard move simulation mode ON. No shards dropped");
+                                    Result = false,
+                                    Status = isSuccessfullyStartOperationResponse.Status,
+                                    Time = sw.Elapsed.TotalMinutes
+                                };
                             }
                         }
                         else
                         {
-                            logger?.LogInformation(
-                                "Going to move collection '{CollectionName}' shard {ShardId} from peer {SourcePeer} ({SourcePeerUri}) to peer {TargetPeer} ({TargetPeerUri})",
-                                collectionName,
-                                shardToMoveToPeer,
-                                peerIdToEmpty,
-                                peerUriPerPeerId[peerIdToEmpty],
-                                peerToMoveShardsTo,
-                                peerUriPerPeerId[peerToMoveShardsTo]
-                            );
-
-                            if (!isDryRun)
-                            {
-                                var isSuccessfullyStartOperationResponse = await UpdateCollectionClusteringSetup(
-                                    collectionName,
-                                    UpdateCollectionClusteringSetupRequest.CreateMoveShardRequest(
-                                        shardId: shardToMoveToPeer,
-                                        fromPeerId: peerIdToEmpty,
-                                        toPeerId: peerToMoveShardsTo,
-                                        ShardTransferMethod.StreamRecords),
-                                    cancellationToken);
-
-                                if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
-                                    || isSuccessfullyStartOperationResponse.Result is false)
-                                {
-                                    logger?.LogError(
-                                        "Error moving collection '{CollectionName}' shard {ShardId} from peer {SourcePeer} ({SourcePeerUri}) to peer {TargetPeer} ({TargetPeerUri}): {ErrorMessage}",
-                                        collectionName,
-                                        shardToMoveToPeer,
-                                        peerIdToEmpty,
-                                        peerUriPerPeerId[peerIdToEmpty],
-                                        peerToMoveShardsTo,
-                                        peerUriPerPeerId[peerToMoveShardsTo],
-                                        isSuccessfullyStartOperationResponse.Status.GetErrorMessage());
-
-                                    // means issuing move operation failed - abandon move
-
-                                    sw.Stop();
-
-                                    return new DrainPeerResponse()
-                                    {
-                                        Result = false,
-                                        Status = isSuccessfullyStartOperationResponse.Status,
-                                        Time = sw.Elapsed.TotalMinutes
-                                    };
-                                }
-                            }
-                            else
-                            {
-                                logger?.LogInformation("Shard move simulation mode ON. No shards moved");
-                            }
+                            logger?.LogInformation("Shard move simulation mode ON. No shards moved");
                         }
                     }
                 }

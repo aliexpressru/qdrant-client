@@ -15,6 +15,6 @@ public class QdrantUnsuccessfulResponseStatusException : Exception
     /// <param name="qdrantResponseType">The type of the qdrant response.</param>
     /// <param name="status">The status of the qdrant response.</param>
     public QdrantUnsuccessfulResponseStatusException(Type qdrantResponseType, QdrantStatus status)
-        : base($"Qdrant response {qdrantResponseType} status {status} does not indicate success")
+        : base($"Qdrant response '{qdrantResponseType}' status '{status}' does not indicate success")
     { }
 }
