@@ -9,7 +9,7 @@ using Aer.QdrantClient.Tests.Model;
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
 #if !DEBUG
-[Ignore("I didn't find a way to configure both single-node deployment and 3 node cluster in "
+[Ignore("I didn't find a way to configure both single-node and a multi-node cluster in "
 +"GitHub actions so these tests will run only locally")]
 #endif
 public class ClusterTests : QdrantTestsBase
@@ -100,7 +100,7 @@ public class ClusterTests : QdrantTestsBase
         await _qdrantHttpClient.EnsureCollectionReady(
             TestCollectionName,
             CancellationToken.None,
-            checkAllCollectionShardTransfersCompleted: true);
+            isCheckShardTransfersCompleted: true);
 
         var newCollectionClusteringInfoAfterShardMove = (
             await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
@@ -161,7 +161,7 @@ public class ClusterTests : QdrantTestsBase
         await _qdrantHttpClient.EnsureCollectionReady(
             TestCollectionName,
             CancellationToken.None,
-            checkAllCollectionShardTransfersCompleted: true);
+            isCheckShardTransfersCompleted: true);
 
         var newCollectionClusteringInfoAfterShardMove = (
                 await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))

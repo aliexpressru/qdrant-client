@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
 #if !DEBUG
-[Ignore("I didn't find a way to configure both single-node deployment and 3 node cluster in "
+[Ignore("I didn't find a way to configure both single-node and a multi-node cluster in "
 +"GitHub actions so these tests will run only locally")]
 #endif
 public class ClusterCompoundOperationsTests : QdrantTestsBase
@@ -124,6 +124,20 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task TestDrainPeer_CollectionDoesNotExist()
+    {
+        var drainPeerResponse =
+            await _qdrantHttpClient.DrainPeer(
+                "http://qdrant-1",
+                CancellationToken.None,
+                logger: _logger,
+                collectionNamesToMove: TestCollectionName);
+
+        drainPeerResponse.Status.IsSuccess.Should().BeFalse();
+        drainPeerResponse.Status.GetErrorMessage().Contains("does not exist").Should().BeTrue();
+    }
+
+    [Test]
     [TestCase(1)]
     [TestCase(2)]
     public async Task TestDrainPeer_SelectedCollection(int replicationFactor)
@@ -144,7 +158,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
             (await _qdrantHttpClient.GetPeerInfoByUriSubstring("http://qdrant-1", CancellationToken.None))
             .EnsureSuccess();
 
-        var peerToDrain = peerInfo.PeerId;
+        var peerIdToDrain = peerInfo.PeerId;
 
         var drainPeerResponse =
             await _qdrantHttpClient.DrainPeer(
@@ -156,7 +170,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
         await _qdrantHttpClient.EnsureCollectionReady(
             TestCollectionName,
             CancellationToken.None,
-            checkAllCollectionShardTransfersCompleted: true);
+            isCheckShardTransfersCompleted: true);
 
         drainPeerResponse.Status.IsSuccess.Should().BeTrue();
         drainPeerResponse.Result.Should().BeTrue();
@@ -169,7 +183,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
             (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName2, CancellationToken.None))
             .EnsureSuccess();
 
-        if (drainedCollectionClusteringInfo.PeerId == peerToDrain)
+        if (drainedCollectionClusteringInfo.PeerId == peerIdToDrain)
         {
             // means we got response from drained peer
             drainedCollectionClusteringInfo.LocalShards.Length.Should().Be(0);
@@ -231,7 +245,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
             (await _qdrantHttpClient.GetPeerInfoByUriSubstring("http://qdrant-1", CancellationToken.None))
             .EnsureSuccess();
 
-        var peerToDrain = peerInfo.PeerId;
+        var peerIdToDrain = peerInfo.PeerId;
 
         var drainPeerResponse =
             await _qdrantHttpClient.DrainPeer(
@@ -242,12 +256,12 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
         await _qdrantHttpClient.EnsureCollectionReady(
             TestCollectionName,
             CancellationToken.None,
-            checkAllCollectionShardTransfersCompleted: true);
+            isCheckShardTransfersCompleted: true);
 
         await _qdrantHttpClient.EnsureCollectionReady(
             TestCollectionName2,
             CancellationToken.None,
-            checkAllCollectionShardTransfersCompleted: true);
+            isCheckShardTransfersCompleted: true);
 
         drainPeerResponse.Status.IsSuccess.Should().BeTrue();
         drainPeerResponse.Result.Should().BeTrue();
@@ -265,7 +279,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
 
         foreach (var drainedCollectionClusteringInfo in drainedCollectionClusteringInfos)
         {
-            if (drainedCollectionClusteringInfo.PeerId == peerToDrain)
+            if (drainedCollectionClusteringInfo.PeerId == peerIdToDrain)
             {
                 // means we got response from drained peer
                 drainedCollectionClusteringInfo.LocalShards.Length.Should().Be(0);
@@ -305,6 +319,183 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestReplicateShardsToClusterNode_Success()
-    { }
+    [TestCase(1)]
+    [TestCase(2)]
+    public async Task TestReplicateShardsToClusterNode_SelectedCollection(int replicationFactor)
+    {
+        await CreateSmallTestShardedCollection(
+            _qdrantHttpClient,
+            TestCollectionName,
+            10U,
+            replicationFactor: (uint) replicationFactor);
+
+        await CreateSmallTestShardedCollection(
+            _qdrantHttpClient,
+            TestCollectionName2,
+            10U,
+            replicationFactor: (uint) replicationFactor);
+
+        var peerInfo =
+            (await _qdrantHttpClient.GetPeerInfoByUriSubstring("http://qdrant-1", CancellationToken.None))
+            .EnsureSuccess();
+
+        var targetPeerId = peerInfo.PeerId;
+
+        var replicateCollectionResponse =
+            await _qdrantHttpClient.ReplicateShardsToPeer(
+                "http://qdrant-1",
+                CancellationToken.None,
+                logger: _logger,
+                collectionNamesToReplicate: TestCollectionName);
+
+        await _qdrantHttpClient.EnsureCollectionReady(
+            TestCollectionName,
+            CancellationToken.None,
+            isCheckShardTransfersCompleted: true);
+
+        replicateCollectionResponse.Status.IsSuccess.Should().BeTrue();
+        replicateCollectionResponse.Result.Should().BeTrue();
+
+        var replicatedCollectionClusteringInfo =
+            (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
+            .EnsureSuccess();
+
+        var notReplicatedCollectionClusteringInfo =
+            (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName2, CancellationToken.None))
+            .EnsureSuccess();
+
+        if (replicatedCollectionClusteringInfo.PeerId == targetPeerId)
+        {
+            // means we got response from target peer
+
+            replicatedCollectionClusteringInfo.RemoteShards.Length.Should().Be(replicationFactor);
+
+            if (replicationFactor == 1)
+            {
+                // when replication factor is 1, the shard gets replicated to a target peer giving total number of shards of 2
+                replicatedCollectionClusteringInfo.LocalShards.Length.Should().Be(replicationFactor + 1);
+            }
+            else
+            {
+                // when replication factor is 2 (which is equals to the number of nodes in the cluster),
+                // the shard gets replicated to a target peer, but that peer already contains
+                // that shard so the number of shards on the target peer does not change
+                replicatedCollectionClusteringInfo.LocalShards.Length.Should().Be(replicationFactor);
+            }
+        }
+        else
+        {
+            replicatedCollectionClusteringInfo.LocalShards.Length.Should().Be(replicationFactor);
+
+            if (replicationFactor == 1)
+            {
+                // when replication factor is 1, the shard gets replicated to a target peer giving total number of shards of 2
+                replicatedCollectionClusteringInfo.RemoteShards.Length.Should().Be(replicationFactor + 1);
+            }
+            else
+            {
+                // when replication factor is 2 (which is equals to the number of nodes in the cluster),
+                // the shard gets replicated to a target peer, but that peer already contains
+                // that shard so the number of shards on the target peer does not change
+                replicatedCollectionClusteringInfo.RemoteShards.Length.Should().Be(replicationFactor);
+            }
+        }
+
+        notReplicatedCollectionClusteringInfo.LocalShards.Length.Should().Be(replicationFactor);
+        notReplicatedCollectionClusteringInfo.RemoteShards.Length.Should().Be(replicationFactor);
+    }
+
+    [Test]
+    [TestCase(1)]
+    [TestCase(2)]
+    public async Task TestReplicateShardsToClusterNode_AllCollections(int replicationFactor)
+    {
+        await CreateSmallTestShardedCollection(
+            _qdrantHttpClient,
+            TestCollectionName,
+            10U,
+            replicationFactor: (uint) replicationFactor);
+
+        await CreateSmallTestShardedCollection(
+            _qdrantHttpClient,
+            TestCollectionName2,
+            10U,
+            replicationFactor: (uint) replicationFactor);
+
+        var peerInfo =
+            (await _qdrantHttpClient.GetPeerInfoByUriSubstring("http://qdrant-1", CancellationToken.None))
+            .EnsureSuccess();
+
+        var targetPeerId = peerInfo.PeerId;
+
+        var replicateCollectionResponse =
+            await _qdrantHttpClient.ReplicateShardsToPeer(
+                "http://qdrant-1",
+                CancellationToken.None,
+                logger: _logger);
+
+        await _qdrantHttpClient.EnsureCollectionReady(
+            TestCollectionName,
+            CancellationToken.None,
+            isCheckShardTransfersCompleted: true);
+
+        await _qdrantHttpClient.EnsureCollectionReady(
+            TestCollectionName2,
+            CancellationToken.None,
+            isCheckShardTransfersCompleted: true);
+
+        replicateCollectionResponse.Status.IsSuccess.Should().BeTrue();
+        replicateCollectionResponse.Result.Should().BeTrue();
+
+        var firstReplicatedCollectionClusteringInfo =
+            (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
+            .EnsureSuccess();
+
+        var secondReplicatedCollectionClusteringInfo =
+            (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName2, CancellationToken.None))
+            .EnsureSuccess();
+
+        List<GetCollectionClusteringInfoResponse.CollectionClusteringInfo> replicatedCollectionClusteringInfos =
+            [firstReplicatedCollectionClusteringInfo, secondReplicatedCollectionClusteringInfo];
+
+        foreach (var replicatedCollectionClusteringInfo in replicatedCollectionClusteringInfos)
+        {
+            if (replicatedCollectionClusteringInfo.PeerId == targetPeerId)
+            {
+                // means we got response from target peer
+
+                replicatedCollectionClusteringInfo.RemoteShards.Length.Should().Be(replicationFactor);
+
+                if (replicationFactor == 1)
+                {
+                    // when replication factor is 1, the shard gets replicated to a target peer giving total number of shards of 2
+                    replicatedCollectionClusteringInfo.LocalShards.Length.Should().Be(replicationFactor + 1);
+                }
+                else
+                {
+                    // when replication factor is 2 (which is equals to the number of nodes in the cluster),
+                    // the shard gets replicated to a target peer, but that peer already contains
+                    // that shard so the number of shards on the target peer does not change
+                    replicatedCollectionClusteringInfo.LocalShards.Length.Should().Be(replicationFactor);
+                }
+            }
+            else
+            {
+                replicatedCollectionClusteringInfo.LocalShards.Length.Should().Be(replicationFactor);
+
+                if (replicationFactor == 1)
+                {
+                    // when replication factor is 1, the shard gets replicated to a target peer giving total number of shards of 2
+                    replicatedCollectionClusteringInfo.RemoteShards.Length.Should().Be(replicationFactor + 1);
+                }
+                else
+                {
+                    // when replication factor is 2 (which is equals to the number of nodes in the cluster),
+                    // the shard gets replicated to a target peer, but that peer already contains
+                    // that shard so the number of shards on the target peer does not change
+                    replicatedCollectionClusteringInfo.RemoteShards.Length.Should().Be(replicationFactor);
+                }
+            }
+        }
+    }
 }
