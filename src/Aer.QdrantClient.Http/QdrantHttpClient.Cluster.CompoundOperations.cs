@@ -124,6 +124,7 @@ public partial class QdrantHttpClient
                     // target peer either does not have any shards on it or does not have the source shard
                     var targetPeerDoesNotHaveSourceShard =
                         !collectionShardsPerPeers.ContainsKey(targetPeerId)
+                        // TODO: maybe we should not test that shard already exists on target peer ???
                         || !collectionShardsPerPeers[targetPeerId].Contains(sourceShardId);
 
                     if (!isSourceShardReplicationFactorReached
