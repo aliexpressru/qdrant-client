@@ -9,7 +9,7 @@ using Aer.QdrantClient.Tests.Model;
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
 #if !DEBUG
-[Ignore("I didn't find a way to configure both single-node deployment and 3 node cluster in "
+[Ignore("I didn't find a way to configure both single-node and a multi-node cluster in "
 +"GitHub actions so these tests will run only locally")]
 #endif
 public class ClusterTests : QdrantTestsBase
@@ -20,7 +20,7 @@ public class ClusterTests : QdrantTestsBase
     public void Setup()
     {
         Initialize();
-        _qdrantHttpClient = new QdrantHttpClient("localhost", apiKey: "test", port:6343, useHttps: false);
+        _qdrantHttpClient = GetClusterClient();
     }
 
     [SetUp]
@@ -30,7 +30,7 @@ public class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestClusterInfo()
+    public async Task TestClusterInfo_ClusterEnabled()
     {
         var clusterInfo = await _qdrantHttpClient.GetClusterInfo(CancellationToken.None);
 
@@ -39,34 +39,9 @@ public class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestGetCollectionClusteringInfo()
+    public async Task TestGetCollectionClusteringInfo_ManualSharding()
     {
-        const uint vectorSize = 10;
-
-        (await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true
-            },
-            CancellationToken.None)).EnsureSuccess();
-
-        var testPointId = PointId.NewGuid();
-        var testVector = CreateTestFloatVector(vectorSize);
-        TestPayload testPayload = "test";
-
-        (await _qdrantHttpClient.UpsertPoints(
-                TestCollectionName,
-                new UpsertPointsRequest<TestPayload>()
-                {
-                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
-                    {
-                        new(testPointId, testVector, testPayload)
-                    }
-                },
-                CancellationToken.None)).EnsureSuccess();
-
-        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, cancellationToken: CancellationToken.None);
+        await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
         var collectionClusteringInfo =
             await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None);
@@ -74,128 +49,105 @@ public class ClusterTests : QdrantTestsBase
         collectionClusteringInfo.Status.IsSuccess.Should().BeTrue();
 
         collectionClusteringInfo.Result.PeerId.Should().NotBe(0);
-        collectionClusteringInfo.Result.ShardCount.Should().Be(3);
+        collectionClusteringInfo.Result.ShardCount.Should().Be(2);
         collectionClusteringInfo.Result.LocalShards.Length.Should().Be(1);
 
         collectionClusteringInfo.Result.LocalShards[0].PointsCount.Should().Be(1);
         collectionClusteringInfo.Result.LocalShards[0].State.Should().Be(ShardState.Active);
 
         collectionClusteringInfo.Result.RemoteShards[0].State.Should().Be(ShardState.Active);
-        collectionClusteringInfo.Result.RemoteShards[1].State.Should().Be(ShardState.Active);
 
-        collectionClusteringInfo.Result.RemoteShards.Length.Should().Be(2);
+        collectionClusteringInfo.Result.RemoteShards.Length.Should().Be(1);
         collectionClusteringInfo.Result.ShardTransfers.Length.Should().Be(0);
     }
 
-    //[Test]
-    [Ignore(
-        "this test works locally only once. Then the docker compose restart and volumes drop required"
-        + " this test will work only when cluster is enabled in qdrant-config_node_0.yaml")]
-    public async Task TestCollectionShardMove()
+    [Test]
+    public async Task TestCollectionShardMove_OneShard()
     {
-        const uint vectorSize = 10;
-
-        await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true
-            },
-            CancellationToken.None);
-
-        var testPointId = PointId.NewGuid();
-        var testVector = CreateTestFloatVector(vectorSize);
-        TestPayload testPayload = "test";
-
-        await _qdrantHttpClient.UpsertPoints(
-            TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
-            {
-                Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
-                {
-                    new(testPointId, testVector, testPayload)
-                }
-            },
-            CancellationToken.None);
+        await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
         var collectionClusteringInfo =
-            await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None);
+            (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
+            .EnsureSuccess();
 
-        var localShardId = collectionClusteringInfo.Result.LocalShards[0].ShardId;
-        var localPeerId = collectionClusteringInfo.Result.PeerId;
+        var localShardId = collectionClusteringInfo.LocalShards[0].ShardId;
+        var localPeerId = collectionClusteringInfo.PeerId;
+        var remotePeerId = collectionClusteringInfo.RemoteShards[0].PeerId;
 
-        var moveSelfResult =
+        var moveShardResult =
             await _qdrantHttpClient.UpdateCollectionClusteringSetup(
                 TestCollectionName,
                 UpdateCollectionClusteringSetupRequest.CreateMoveShardRequest(
                     localShardId,
-                    localPeerId, // since we don't have more than one node in the cluster - we move shard from one peer to itself
-                    localPeerId),
+                    localPeerId,
+                    remotePeerId),
                 CancellationToken.None);
 
-        moveSelfResult.EnsureSuccess();
+        moveShardResult.EnsureSuccess();
 
-        moveSelfResult.Result.Should().BeTrue();
+        moveShardResult.Result.Should().BeTrue();
 
         var newCollectionClusteringInfo =
-            await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None);
+            (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
+            .EnsureSuccess();
 
-        newCollectionClusteringInfo.Result.ShardTransfers.Length.Should().Be(1);
-        newCollectionClusteringInfo.Result.ShardTransfers[0].ShardId.Should().Be(localShardId);
-        newCollectionClusteringInfo.Result.ShardTransfers[0].From.Should().Be(localPeerId);
-        newCollectionClusteringInfo.Result.ShardTransfers[0].To.Should().Be(localPeerId);
-        newCollectionClusteringInfo.Result.ShardTransfers[0].Sync.Should().Be(false);
+        newCollectionClusteringInfo.ShardTransfers.Length.Should().Be(1);
+        newCollectionClusteringInfo.ShardTransfers[0].ShardId.Should().Be(localShardId);
+        newCollectionClusteringInfo.ShardTransfers[0].From.Should().Be(localPeerId);
+        newCollectionClusteringInfo.ShardTransfers[0].To.Should().Be(remotePeerId);
+        newCollectionClusteringInfo.ShardTransfers[0].Sync.Should().Be(false);
+
+        await _qdrantHttpClient.EnsureCollectionReady(
+            TestCollectionName,
+            CancellationToken.None,
+            isCheckShardTransfersCompleted: true);
+
+        var newCollectionClusteringInfoAfterShardMove = (
+            await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
+            .EnsureSuccess();
+
+        if (newCollectionClusteringInfoAfterShardMove.PeerId == localPeerId)
+        {
+            // means we got response from local peer
+
+            // local peer should not contain shards since we moved one
+            newCollectionClusteringInfoAfterShardMove.LocalShards.Length.Should().Be(0);
+            newCollectionClusteringInfoAfterShardMove.RemoteShards.Length.Should().Be(2);
+        }
+        else
+        {
+            // means we got response from remote peer
+
+            // remote peer should contain all shards since we moved one
+            newCollectionClusteringInfoAfterShardMove.LocalShards.Length.Should().Be(2);
+            newCollectionClusteringInfoAfterShardMove.RemoteShards.Length.Should().Be(0);
+        }
     }
 
-    //[Test]
-    [Ignore(
-        "this test works locally only once. Then the docker compose restart and volumes drop required"
-        + " this test will work only when cluster is enabled in qdrant-config_node_0.yaml")]
-    public async Task TestCollectionShardReplicate()
+    [Test]
+    public async Task TestCollectionShardReplicate_OneShard()
     {
-        const uint vectorSize = 10;
-
-        await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true
-            },
-            CancellationToken.None);
-
-        var testPointId = PointId.NewGuid();
-        var testVector = CreateTestFloatVector(vectorSize);
-        TestPayload testPayload = "test";
-
-        await _qdrantHttpClient.UpsertPoints(
-            TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
-            {
-                Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
-                {
-                    new(testPointId, testVector, testPayload)
-                }
-            },
-            CancellationToken.None);
+        await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
         var collectionClusteringInfo =
             await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None);
 
         var localShardId = collectionClusteringInfo.Result.LocalShards[0].ShardId;
         var localPeerId = collectionClusteringInfo.Result.PeerId;
+        var remotePeerId = collectionClusteringInfo.Result.RemoteShards[0].PeerId;
 
-        var replicateSelfResult =
+        var replicateShardResult =
             await _qdrantHttpClient.UpdateCollectionClusteringSetup(
                 TestCollectionName,
                 UpdateCollectionClusteringSetupRequest.CreateReplicateShardRequest(
                     localShardId,
-                    localPeerId, // since we don't have more than one node in the cluster - we move shard from one peer to itself
-                    localPeerId),
+                    localPeerId,
+                    remotePeerId),
                 CancellationToken.None);
 
-        replicateSelfResult.EnsureSuccess();
+        replicateShardResult.EnsureSuccess();
 
-        replicateSelfResult.Result.Should().BeTrue();
+        replicateShardResult.Result.Should().BeTrue();
 
         var newCollectionClusteringInfo =
             await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None);
@@ -203,90 +155,160 @@ public class ClusterTests : QdrantTestsBase
         newCollectionClusteringInfo.Result.ShardTransfers.Length.Should().Be(1);
         newCollectionClusteringInfo.Result.ShardTransfers[0].ShardId.Should().Be(localShardId);
         newCollectionClusteringInfo.Result.ShardTransfers[0].From.Should().Be(localPeerId);
-        newCollectionClusteringInfo.Result.ShardTransfers[0].To.Should().Be(localPeerId);
+        newCollectionClusteringInfo.Result.ShardTransfers[0].To.Should().Be(remotePeerId);
         newCollectionClusteringInfo.Result.ShardTransfers[0].Sync.Should().Be(true);
+
+        await _qdrantHttpClient.EnsureCollectionReady(
+            TestCollectionName,
+            CancellationToken.None,
+            isCheckShardTransfersCompleted: true);
+
+        var newCollectionClusteringInfoAfterShardMove = (
+                await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
+            .EnsureSuccess();
+
+        // local peer should contain one shard
+        // remote peer should contain two shards since we replicated one
+
+        if (newCollectionClusteringInfoAfterShardMove.PeerId == localPeerId)
+        {
+            // means we got response from local peer
+
+            newCollectionClusteringInfoAfterShardMove.LocalShards.Length.Should().Be(1);
+            newCollectionClusteringInfoAfterShardMove.RemoteShards.Length.Should().Be(2);
+        }
+        else
+        {
+            // means we got response from remote peer
+
+            newCollectionClusteringInfoAfterShardMove.LocalShards.Length.Should().Be(2);
+            newCollectionClusteringInfoAfterShardMove.RemoteShards.Length.Should().Be(1);
+        }
     }
 
-    // [Test]
-    [Ignore(
-        "this test works locally only once. Then the docker compose restart and volumes drop required"
-        + " this test will work only when cluster is enabled in qdrant-config_node_0.yaml")]
-    public async Task TestCollectionShardCreate()
+    [Test]
+    public async Task TestCollectionCreateShardKey_ManualPlacement()
     {
-        const uint vectorSize = 10;
-
-        await _qdrantHttpClient.CreateCollection(
+        (await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 10U, isServeVectorsFromDisk: true)
             {
-                OnDiskPayload = true
+                OnDiskPayload = true,
+                WriteConsistencyFactor = 2,
+                ReplicationFactor = 1,
+                ShardNumber = 2,
+                ShardingMethod = ShardingMethod.Custom
             },
-            CancellationToken.None);
+            CancellationToken.None)).EnsureSuccess();
 
-        var createShardKeyResult = await _qdrantHttpClient.CreateShardKey(
+        // configure collection manual sharding to ensure consistent results
+
+        var allPeers = (await _qdrantHttpClient.GetClusterInfo(CancellationToken.None))
+            .EnsureSuccess().AllPeerIds;
+
+        var createFirstShardKey = await _qdrantHttpClient.CreateShardKey(
             TestCollectionName,
-            "test",
+            TestShardKey1,
             CancellationToken.None,
             shardsNumber: 1,
-            replicationFactor: 1);
+            replicationFactor: 1,
+            placement: [allPeers.First()]);
 
-        createShardKeyResult.Status.IsSuccess.Should().BeTrue();
+        var createSecondShardKey = await _qdrantHttpClient.CreateShardKey(
+            TestCollectionName,
+            TestShardKey2,
+            CancellationToken.None,
+            shardsNumber: 1,
+            replicationFactor: 1,
+            placement: [allPeers.Skip(1).First()]);
+
+        createFirstShardKey.Status.IsSuccess.Should().BeTrue();
+        createFirstShardKey.Result.Should().BeTrue();
+
+        createSecondShardKey.Status.IsSuccess.Should().BeTrue();
+        createSecondShardKey.Result.Should().BeTrue();
     }
 
-    // [Test]
-    [Ignore(
-        "this test works locally only once. Then the docker compose restart and volumes drop required"
-        + " this test will work only when cluster is enabled in qdrant-config_node_0.yaml")]
-    public async Task TestCollectionShardDelete()
+    [Test]
+    public async Task TestCollectionDeleteShardKey_ManualPlacement()
     {
-        const uint vectorSize = 10;
-
-        await _qdrantHttpClient.CreateCollection(
+        (await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 10U, isServeVectorsFromDisk: true)
             {
-                OnDiskPayload = true
+                OnDiskPayload = true,
+                WriteConsistencyFactor = 2,
+                ReplicationFactor = 1,
+                ShardNumber = 2,
+                ShardingMethod = ShardingMethod.Custom
             },
-            CancellationToken.None);
+            CancellationToken.None)).EnsureSuccess();
+
+        // configure collection manual sharding to ensure consistent results
+
+        var allPeers = (await _qdrantHttpClient.GetClusterInfo(CancellationToken.None))
+            .EnsureSuccess().AllPeerIds;
+
+        (await _qdrantHttpClient.CreateShardKey(
+            TestCollectionName,
+            TestShardKey1,
+            CancellationToken.None,
+            shardsNumber: 1,
+            replicationFactor: 1,
+            placement: [allPeers.First()])).EnsureSuccess();
+
+        (await _qdrantHttpClient.CreateShardKey(
+            TestCollectionName,
+            TestShardKey2,
+            CancellationToken.None,
+            shardsNumber: 1,
+            replicationFactor: 1,
+            placement: [allPeers.Skip(1).First()])).EnsureSuccess();
 
         var deleteShardKeyResult = await _qdrantHttpClient.DeleteShardKey(
             TestCollectionName,
-            "test",
+            TestShardKey1,
             CancellationToken.None);
 
         deleteShardKeyResult.Status.IsSuccess.Should().BeTrue();
     }
 
-    // [Test]
-    [Ignore(
-        "this test works locally only once. Then the docker compose restart and volumes drop required"
-        + " this test will work only when cluster is enabled in qdrant-config_node_0.yaml")]
-    public async Task TestCollectionRemovePeer()
+    //[Test]
+    [Ignore("This test works only once since for adding peer back the whole cluster should be recreated")]
+    public async Task TestCollectionRemovePeer_RemotePeer()
     {
-        const uint vectorSize = 10;
+        // NOTE: after performing this test - stop all containers, remove volumes
+        // and rerun docker compose up to restore cluster to its 2-node state
 
-        await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true
-            },
+        await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
+
+        var collectionClusteringInfo =
+            await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None);
+
+        var remotePeerId = collectionClusteringInfo.Result.RemoteShards[0].PeerId;
+
+        var deletePeerResult = await _qdrantHttpClient.RemovePeer(
+            remotePeerId,
             CancellationToken.None);
 
-        var clusterInfo = await _qdrantHttpClient.GetClusterInfo(CancellationToken.None);
+        deletePeerResult.Status.IsSuccess.Should().BeFalse();
+        deletePeerResult.Status.GetErrorMessage().Should().Contain("there are shards on it");
 
-        var deleteShardKeyResult = await _qdrantHttpClient.RemovePeer(
-            clusterInfo.Result.PeerId,
-            CancellationToken.None);
+        var forceDeletePeerResult = await _qdrantHttpClient.RemovePeer(
+            remotePeerId,
+            CancellationToken.None,
+            isForceDropOperation: true);
 
-        deleteShardKeyResult.Status.IsSuccess.Should().BeTrue();
+        forceDeletePeerResult.Status.IsSuccess.Should().BeTrue();
+
+        var newCollectionClusteringInfo =
+            (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
+
+        newCollectionClusteringInfo.RemoteShards.Length.Should().Be(0);
     }
 
-    // [Test]
-    [Ignore(
-        "this test works locally only once. Then the docker compose restart and volumes drop required"
-        + " this test will work only when cluster is enabled in qdrant-config_node_0.yaml")]
-    public async Task TestCollectionRecoverRaftStart()
+    [Test]
+    public async Task TestCollectionRecoverRaftStart_Success()
     {
         const uint vectorSize = 10;
 
@@ -302,5 +324,6 @@ public class ClusterTests : QdrantTestsBase
             CancellationToken.None);
 
         recoverCollectionRaftState.Status.IsSuccess.Should().BeTrue();
+        recoverCollectionRaftState.Result.Should().BeTrue();
     }
 }

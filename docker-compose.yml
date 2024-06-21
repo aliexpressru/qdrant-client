@@ -1,12 +1,10 @@
-version: "3.8"
-
 services:
 
   # single node qdrant
 
   qdrant-0:
     container_name: qdrant-0
-    image: qdrant/qdrant:v1.9.2
+    image: qdrant/qdrant:v1.9.5
     entrypoint: ./entrypoint.sh
     command: --uri 'http://qdrant-0:6335'
     volumes:
@@ -23,14 +21,14 @@ services:
           cpus: '4'
           memory: 6G
         reservations:
-          cpus: '1'
+          cpus: '3'
           memory: 2G
 
-  # 3-node qdrant cluster - for cluster tests
+  # 2-node qdrant cluster - for cluster tests
 
   qdrant-1:
     container_name: qdrant-1
-    image: qdrant/qdrant:v1.9.2
+    image: qdrant/qdrant:v1.9.5
     entrypoint: ./entrypoint.sh
     command: --uri 'http://qdrant-1:6335'
     volumes:
@@ -47,12 +45,12 @@ services:
           cpus: '4'
           memory: 6G
         reservations:
-          cpus: '1'
+          cpus: '3'
           memory: 2G
 
   qdrant-2:
     container_name: qdrant-2
-    image: qdrant/qdrant:v1.9.2
+    image: qdrant/qdrant:v1.9.5
     entrypoint: ./entrypoint.sh
     command: --bootstrap 'http://qdrant-1:6335'
     volumes:
@@ -69,27 +67,27 @@ services:
           cpus: '4'
           memory: 6G
         reservations:
-          cpus: '1'
+          cpus: '3'
           memory: 2G
 
-  qdrant-3:
-    container_name: qdrant-3
-    image: qdrant/qdrant:v1.9.2
-    entrypoint: ./entrypoint.sh
-    command: --bootstrap 'http://qdrant-1:6335'
-    volumes:
-      - ./volumes/3/qdrant_storage:/qdrant/storage
-      - ./volumes/3/qdrant_snapshots:/qdrant/snapshots
-      - ./qdrant-config-cluster.yaml:/qdrant/config/production.yaml
-    ports:
-      - "6363:6333"
-      - "6364:6334"
-      - "6365:6335"
-    deploy:
-      resources:
-        limits:
-          cpus: '4'
-          memory: 6G
-        reservations:
-          cpus: '1'
-          memory: 2G
+  # qdrant-3:
+  #   container_name: qdrant-3
+  #   image: qdrant/qdrant:v1.9.5
+  #   entrypoint: ./entrypoint.sh
+  #   command: --bootstrap 'http://qdrant-1:6335'
+  #   volumes:
+  #     - ./volumes/3/qdrant_storage:/qdrant/storage
+  #     - ./volumes/3/qdrant_snapshots:/qdrant/snapshots
+  #     - ./qdrant-config-cluster.yaml:/qdrant/config/production.yaml
+  #   ports:
+  #     - "6363:6333"
+  #     - "6364:6334"
+  #     - "6365:6335"
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '4'
+  #         memory: 6G
+  #       reservations:
+  #         cpus: '1'
+  #         memory: 2G

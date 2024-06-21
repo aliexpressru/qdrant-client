@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       qdrant:
-        image: qdrant/qdrant:v1.9.2
+        image: qdrant/qdrant:v1.9.5
         ports:
           - "6333:6333"
           - "6334:6334"

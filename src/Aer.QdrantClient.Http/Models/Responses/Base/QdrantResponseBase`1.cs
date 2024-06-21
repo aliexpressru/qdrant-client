@@ -18,7 +18,7 @@ public abstract class QdrantResponseBase<TResult> : QdrantResponseBase
     public TResult Result { get; init; }
 
     /// <summary>
-    /// Ensures that the <see cref="QdrantResponseBase.Status"/> indicates successfull response and returns the result.
+    /// Ensures that the <see cref="QdrantResponseBase.Status"/> indicates successful response and returns the <see cref="Result"/>.
     /// Throws <see cref="QdrantUnsuccessfulResponseStatusException"/> if it does not.
     /// </summary>
     /// <exception cref="QdrantUnsuccessfulResponseStatusException">Occurs when <see cref="QdrantResponseBase.Status"/> does not indicate success.</exception>

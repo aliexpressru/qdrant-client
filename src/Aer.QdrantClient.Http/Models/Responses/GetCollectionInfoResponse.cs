@@ -35,12 +35,12 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         public QdrantOptimizerStatusUint OptimizerStatus { get; set; }
 
         /// <summary>
-        /// The indexed vectors count.
+        /// Approximate number of indexed vectors in the collection.
         /// </summary>
         public ulong? IndexedVectorsCount { get; set; }
 
         /// <summary>
-        /// The total points count.
+        /// Approximate number of points (vectors + payloads) in collection.
         /// </summary>
         public ulong? PointsCount { get; set; }
 

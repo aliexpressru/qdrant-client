@@ -25,6 +25,9 @@ public class QdrantTestsBase
     protected const string TestCollectionAlias = "test_collection_alias";
     protected const string TestCollectionAlias2 = "test_collection_alias_2";
 
+    protected const string TestShardKey1 = "shard1";
+    protected const string TestShardKey2 = "shard2";
+
     protected const string TestCollectionName2 = "test_collection_2";
 
     protected const string TestPayloadFieldName = "test_payload_field";
@@ -35,7 +38,6 @@ public class QdrantTestsBase
     private const string ROOT_SOLUTION_DIRECTORY_NAME = "qdrant-client";
     private const string QDRANT_COLLECTIONS_DATA_DIRECTORY_RELATIVE_PATH = "volumes/0/qdrant_storage/collections";
     private const string QDRANT_SNAPSHOTS_DATA_DIRECTORY_RELATIVE_PATH = "volumes/0/qdrant_snapshots";
-
 
     protected void Initialize(bool isDisableAuthorization = false)
     {
@@ -271,6 +273,12 @@ public class QdrantTestsBase
                 .Select(_ => vectorElement)
                 .ToArray();
 
+    /// <summary>
+    /// Returns <see cref="QdrantHttpClient"/> for 2-node cluster.
+    /// </summary>
+    protected QdrantHttpClient GetClusterClient() =>
+        new ("localhost", apiKey: "test", port: 6343, useHttps: false);
+
     internal async Task<(IReadOnlyList<UpsertPointsRequest<TPayload>.UpsertPoint> UpsertPoints,
         Dictionary<ulong, UpsertPointsRequest<TPayload>.UpsertPoint> UpsertPointsByPointIds,
         IReadOnlyList<PointId> UpsertPointIds)> PrepareCollection<TPayload>(
@@ -332,6 +340,77 @@ public class QdrantTestsBase
         await qdrantHttpClient.EnsureCollectionReady(collectionName, CancellationToken.None);
 
         return (upsertPoints, upsertPointsByPointIds, upsertPointIds);
+    }
+
+    protected async Task CreateSmallTestShardedCollection(
+        QdrantHttpClient qdrantHttpClient,
+        string collectionName,
+        uint vectorSize,
+        uint replicationFactor = 1)
+    {
+        (await qdrantHttpClient.CreateCollection(
+            collectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                WriteConsistencyFactor = 2,
+                ReplicationFactor = replicationFactor,
+                ShardNumber = 2,
+                ShardingMethod = ShardingMethod.Custom
+            },
+            CancellationToken.None)).EnsureSuccess();
+
+        // configure collection manual sharding to ensure consistent results
+
+        var allPeers = (await qdrantHttpClient.GetClusterInfo(CancellationToken.None))
+            .EnsureSuccess().AllPeerIds;
+
+        (await qdrantHttpClient.CreateShardKey(
+            collectionName,
+            TestShardKey1,
+            CancellationToken.None,
+            shardsNumber: 1,
+            replicationFactor: replicationFactor,
+            // with manual shard placement we need to manually specify all replica peers,
+            // since qdrant allows having collection replication factor of 2 while having only one peer
+            // for a specific shard. Thus, we need to manually tell it both primary peer and a replica peer
+            placement: replicationFactor == 1 ? [allPeers.First()] : [..allPeers])).EnsureSuccess();
+
+        (await qdrantHttpClient.CreateShardKey(
+            collectionName,
+            TestShardKey2,
+            CancellationToken.None,
+            shardsNumber: 1,
+            replicationFactor: replicationFactor,
+            placement: replicationFactor == 1 ? [allPeers.Skip(1).First()] : [..allPeers])).EnsureSuccess();
+
+        (await qdrantHttpClient.UpsertPoints(
+            collectionName,
+            new UpsertPointsRequest<TestPayload>()
+            {
+                Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                {
+                    new(PointId.NewGuid(), CreateTestFloatVector(vectorSize), "test"),
+                },
+                ShardKey = TestShardKey1
+            },
+            CancellationToken.None)).EnsureSuccess();
+
+        (await qdrantHttpClient.UpsertPoints(
+            collectionName,
+            new UpsertPointsRequest<TestPayload>()
+            {
+                Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                {
+                    new(PointId.NewGuid(), CreateTestFloatVector(vectorSize), "test2"),
+                },
+                ShardKey = TestShardKey2
+            },
+            CancellationToken.None)).EnsureSuccess();
+
+        await qdrantHttpClient.EnsureCollectionReady(collectionName, cancellationToken: CancellationToken.None);
+
+        await Task.Delay(TimeSpan.FromSeconds(1));
     }
 
     private void AddTestLogger(ServiceCollection services)
