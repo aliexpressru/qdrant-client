@@ -5,6 +5,7 @@ using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
+using Aer.QdrantClient.Tests.Infrastructure;
 using Aer.QdrantClient.Tests.Model;
 using Microsoft.Extensions.Logging;
 
@@ -497,5 +498,70 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
                 }
             }
         }
+    }
+
+    [Test]
+    public async Task TestReplicateShardsToClusterNode_RespectReplicationFactor()
+    {
+        var replicationFactor = 2;
+        await CreateSmallTestShardedCollection(
+            _qdrantHttpClient,
+            TestCollectionName,
+            10U,
+            replicationFactor: (uint) replicationFactor);
+
+        var peerInfo =
+            (await _qdrantHttpClient.GetPeerInfoByUriSubstring("http://qdrant-1", CancellationToken.None))
+            .EnsureSuccess();
+
+        var targetPeerId = peerInfo.PeerId;
+
+        var testLogger = new TestMicrosoftLogger();
+
+        var replicateCollectionResponse =
+            await _qdrantHttpClient.ReplicateShardsToPeer(
+                "http://qdrant-1",
+                CancellationToken.None,
+                logger: testLogger,
+                collectionNamesToReplicate: TestCollectionName,
+                isIgnoreReplicationFactor: false);
+
+        await _qdrantHttpClient.EnsureCollectionReady(
+            TestCollectionName,
+            CancellationToken.None,
+            isCheckShardTransfersCompleted: true);
+
+        replicateCollectionResponse.Status.IsSuccess.Should().BeTrue();
+        replicateCollectionResponse.Result.Should().BeTrue();
+
+        var replicatedCollectionClusteringInfo =
+            (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
+            .EnsureSuccess();
+
+        // when isIgnoreReplicationFactor is false the shard does not get replicated
+        // so the number of shards on the target peer does not change
+
+        if (replicatedCollectionClusteringInfo.PeerId == targetPeerId)
+        {
+            // means we got response from target peer
+
+            replicatedCollectionClusteringInfo.RemoteShards.Length.Should().Be(replicationFactor);
+            replicatedCollectionClusteringInfo.LocalShards.Length.Should().Be(replicationFactor);
+        }
+        else
+        {
+            // means we got response from source peer
+
+            replicatedCollectionClusteringInfo.LocalShards.Length.Should().Be(replicationFactor);
+            replicatedCollectionClusteringInfo.RemoteShards.Length.Should().Be(replicationFactor);
+        }
+
+        testLogger.WrittenEvents.Should().Contain(
+            m => m.message.Contains("Collection 'test_collection' shard 1 already replicated 2 times")
+        );
+
+        testLogger.WrittenEvents.Should().Contain(
+            m => m.message.Contains("Collection 'test_collection' shard 2 already replicated 2 times")
+        );
     }
 }

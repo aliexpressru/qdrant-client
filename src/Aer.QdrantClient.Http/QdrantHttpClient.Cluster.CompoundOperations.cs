@@ -122,7 +122,8 @@ public partial class QdrantHttpClient
                         effectiveSourceShardReplicationFactor >= collectionTargetReplicationFactor;
 
                     // target peer either does not have any shards on it or does not have the source shard
-                    var targetPeerDoesNotHaveSourceShard = !collectionShardsPerPeers.ContainsKey(targetPeerId)
+                    var targetPeerDoesNotHaveSourceShard =
+                        !collectionShardsPerPeers.ContainsKey(targetPeerId)
                         || !collectionShardsPerPeers[targetPeerId].Contains(sourceShardId);
 
                     if (!isSourceShardReplicationFactorReached
@@ -151,12 +152,10 @@ public partial class QdrantHttpClient
                         {
                             // means collection replication factor reached
                             logger?.LogInformation(
-                                "Collection '{CollectionName}' shard {ShardId} already replicated {EffectiveReplicationFactor} times, which is target collection replication factor, or target peer {TargetPeerId} ({PeerUri}) already contains this shard",
+                                "Collection '{CollectionName}' shard {ShardId} already replicated {EffectiveReplicationFactor} times, which is target collection replication factor. Shard won't be replicated",
                                 collectionName,
                                 sourceShardId,
-                                effectiveSourceShardReplicationFactor,
-                                targetPeerId,
-                                peerUriPerPeerId[targetPeerId]
+                                effectiveSourceShardReplicationFactor
                             );
                         }
 
@@ -164,7 +163,7 @@ public partial class QdrantHttpClient
                         {
                             // shard already exists on target peer
                             logger?.LogInformation(
-                                "Collection '{CollectionName}' shard {ShardId} already exists on a target peer {TargetPeerId} ({PeerUri})",
+                                "Collection '{CollectionName}' shard {ShardId} already exists on a target peer {TargetPeerId} ({PeerUri}). Shard won't be replicated",
                                 collectionName,
                                 sourceShardId,
                                 targetPeerId,
