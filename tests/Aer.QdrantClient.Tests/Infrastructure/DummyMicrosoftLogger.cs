@@ -1,14 +1,13 @@
-﻿using Aer.QdrantClient.Tests.Infrastructure.Abstractions;
+﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
 namespace Aer.QdrantClient.Tests.Infrastructure;
 
-internal class TestMicrosoftLogger : ILogger, ITestLogger
+internal class DummyMicrosoftLogger : ILogger
 {
     private class MicrosoftLoggerScopeMock<TState> : IDisposable
     {
-        // ReSharper disable once MemberCanBePrivate.Local
-        // ReSharper disable once UnusedAutoPropertyAccessor.Local
+        [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
         public TState ScopeState { get; }
 
         public MicrosoftLoggerScopeMock(TState scopeState)
