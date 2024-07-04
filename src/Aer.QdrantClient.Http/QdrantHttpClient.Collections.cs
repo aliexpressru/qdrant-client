@@ -3,6 +3,7 @@ using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
+using CommunityToolkit.Diagnostics;
 
 namespace Aer.QdrantClient.Http;
 
@@ -12,7 +13,7 @@ public partial class QdrantHttpClient
     /// <summary>
     /// Create collection.
     /// </summary>
-    /// <param name="collectionName">Collection name.</param>
+    /// <param name="collectionName">Collection name. Must be maximum 255 characters long.</param>
     /// <param name="request">The collection creation request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
@@ -22,9 +23,13 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         TimeSpan? timeout = null)
     {
-        if (request == null)
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (collectionName.Length is 0 or > 255)
         {
-            throw new ArgumentNullException(nameof(request));
+            throw new QdrantInvalidCollectionNameException(
+                collectionName,
+                $"Collection name should be between 1 and 255 characters long. Length of {collectionName.Length} is found.");
         }
 
         EnsureQdrantNameCorrect(collectionName);

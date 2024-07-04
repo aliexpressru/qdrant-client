@@ -43,7 +43,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
         var collectionPeerInfoAct =
             async () => await _qdrantHttpClient.GetPeerInfoByUriSubstring("://", CancellationToken.None);
 
-        await collectionPeerInfoAct.Should().ThrowAsync<QdrantMoreThanOneNodeFoundForUriSubstringException>();
+        await collectionPeerInfoAct.Should().ThrowAsync<QdrantMoreThanOnePeerFoundForUriSubstringException>();
     }
 
     [Test]

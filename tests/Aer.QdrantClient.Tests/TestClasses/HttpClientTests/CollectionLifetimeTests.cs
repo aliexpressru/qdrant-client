@@ -1,4 +1,5 @@
 using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -95,6 +96,23 @@ internal class CollectionLifetimeTests : QdrantTestsBase
 
         collectionCreationResult.Should().NotBeNull();
         collectionCreationResult.Result.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task TestCreateCollection_VeryLongName()
+    {
+        var veryLongCollectionName = new string('t', 1024);
+
+        var collectionCreationAct = () => _qdrantHttpClient.CreateCollection(
+            veryLongCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        await collectionCreationAct.Should().ThrowAsync<QdrantInvalidCollectionNameException>()
+            .Where(e => e.Message.Contains("1024"));
     }
 
     [Test]

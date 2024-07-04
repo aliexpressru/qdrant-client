@@ -4,7 +4,7 @@ using System.Net;
 namespace Aer.QdrantClient.Http.Exceptions;
 
 /// <summary>
-/// Represents an exception which happens if communicating with Qdrant back-end failed.
+/// Represents an exception which happens if communicating with qdrant back-end failed.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class QdrantCommunicationException : Exception

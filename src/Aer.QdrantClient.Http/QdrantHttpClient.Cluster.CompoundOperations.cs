@@ -508,8 +508,8 @@ public partial class QdrantHttpClient
     /// </summary>
     /// <param name="clusterNodeUriSubstring">Cluster node uri substring to get peer info for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <exception cref="QdrantNoNodesFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
-    /// <exception cref="QdrantMoreThanOneNodeFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
+    /// <exception cref="QdrantNoPeersFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
+    /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
     public async Task<GetPeerResponse>
         GetPeerInfoByUriSubstring(
             string clusterNodeUriSubstring,
@@ -529,7 +529,7 @@ public partial class QdrantHttpClient
 
         if (candidatePeersIds.Count == 0)
         {
-            throw new QdrantNoNodesFoundForUriSubstringException(
+            throw new QdrantNoPeersFoundForUriSubstringException(
                 clusterNodeUriSubstring,
                 peerIdByNodeUrl
             );
@@ -537,7 +537,7 @@ public partial class QdrantHttpClient
 
         if (candidatePeersIds.Count > 1)
         {
-            throw new QdrantMoreThanOneNodeFoundForUriSubstringException(
+            throw new QdrantMoreThanOnePeerFoundForUriSubstringException(
                 clusterNodeUriSubstring,
                 candidatePeersIds);
         }

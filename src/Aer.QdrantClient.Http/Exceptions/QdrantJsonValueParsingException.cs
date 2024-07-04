@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Aer.QdrantClient.Http.Exceptions;
 
 /// <summary>
-/// Represents an exception which happens when the Qdrant response specific JSON value can't be parsed.
+/// Represents an exception which happens when the qdrant response specific JSON value can't be parsed.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class QdrantJsonValueParsingException : Exception

@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 namespace Aer.QdrantClient.Http.Exceptions;
 
 /// <summary>
-/// Represents an exception which happens when the Qdrant payload is found to be of invalid type.
+/// Represents an exception which happens when the qdrant payload is found to be of invalid type.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class QdrantInvalidPayloadTypeException : Exception

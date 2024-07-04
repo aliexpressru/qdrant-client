@@ -4,7 +4,7 @@ using Aer.QdrantClient.Http.Models.Requests.Public;
 namespace Aer.QdrantClient.Http.Exceptions;
 
 /// <summary>
-/// Represents an exception which happens if qdarnt batched operations request
+/// Represents an exception which happens if qdrant batched operations request
 /// such as <see cref="BatchUpdatePointsRequest"/> or <see cref="UpdateCollectionAliasesRequest"/> operations list is empty.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]

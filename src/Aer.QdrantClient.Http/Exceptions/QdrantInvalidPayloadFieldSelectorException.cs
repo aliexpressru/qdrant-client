@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Aer.QdrantClient.Http.Exceptions;
 
 /// <summary>
-/// Represents an exception which happens if trying to pass invalid payload proerty selctor to a filter builder method.
+/// Represents an exception which happens if trying to pass invalid payload property selector to a filter builder method.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class QdrantInvalidPayloadFieldSelectorException : Exception
