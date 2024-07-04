@@ -300,8 +300,6 @@ public class QdrantTestsBase
             },
             CancellationToken.None);
 
-        //Func<int, TPayload> payloadInitializer = payloadInitializerFunction ?? (i => new TestPayload(){Integer = i});
-
         var upsertPoints = new List<UpsertPointsRequest<TPayload>.UpsertPoint>();
         var upsertPointIds = new List<PointId>();
 

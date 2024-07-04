@@ -95,7 +95,7 @@ public class CollectionAliasTests : QdrantTestsBase
         updateAliasesResult.Status.IsSuccess.Should().BeTrue();
         updateAliasesResult.Result.Should().BeTrue();
 
-        var allAliases = await _qdrantHttpClient.ListCollectionAliases(CancellationToken.None);
+        var allAliases = await _qdrantHttpClient.ListAllAliases(CancellationToken.None);
 
         allAliases.Status.IsSuccess.Should().BeTrue();
         allAliases.Result.Aliases.Length.Should().Be(2);
@@ -112,7 +112,7 @@ public class CollectionAliasTests : QdrantTestsBase
             _qdrantHttpClient,
             TestCollectionName2);
 
-        // create 2 aliases for one collection
+        // create same alias for two different collections
 
         var updateAliasesResult = await _qdrantHttpClient.UpdateCollectionsAliases(
             UpdateCollectionAliasesRequest.Create()
@@ -123,13 +123,51 @@ public class CollectionAliasTests : QdrantTestsBase
         updateAliasesResult.Status.IsSuccess.Should().BeTrue();
         updateAliasesResult.Result.Should().BeTrue();
 
-        var allAliases = await _qdrantHttpClient.ListCollectionAliases(CancellationToken.None);
+        var allAliases = await _qdrantHttpClient.ListAllAliases(CancellationToken.None);
 
         allAliases.Status.IsSuccess.Should().BeTrue();
 
         allAliases.Result.Aliases.Length.Should().Be(1);
         allAliases.Result.Aliases[0].CollectionName.Should().Be(TestCollectionName2);
         allAliases.Result.Aliases[0].AliasName.Should().Be(TestCollectionAlias);
+    }
+
+    [Test]
+    public async Task CreateAlias_SameAliasForDifferentCollections_TwoDifferentOperations_LastOneWins()
+    {
+        await PrepareCollection<TestPayload>(
+            _qdrantHttpClient,
+            TestCollectionName);
+
+        await PrepareCollection<TestPayload>(
+            _qdrantHttpClient,
+            TestCollectionName2);
+
+        // create alias for the first collection
+        var updateAliasesResult = await _qdrantHttpClient.UpdateCollectionsAliases(
+            UpdateCollectionAliasesRequest.Create()
+                .CreateAlias(TestCollectionName, TestCollectionAlias),
+            CancellationToken.None);
+
+        updateAliasesResult.EnsureSuccess().Should().BeTrue();
+
+        var allAliases = (await _qdrantHttpClient.ListAllAliases(CancellationToken.None)).EnsureSuccess();
+
+        allAliases.Aliases.Length.Should().Be(1);
+        allAliases.CollectionNamesByAliases[TestCollectionAlias].Should().Be(TestCollectionName);
+
+        // create the same alias for the second collection
+        updateAliasesResult = await _qdrantHttpClient.UpdateCollectionsAliases(
+            UpdateCollectionAliasesRequest.Create()
+                .CreateAlias(TestCollectionName2, TestCollectionAlias),
+            CancellationToken.None);
+
+        updateAliasesResult.EnsureSuccess().Should().BeTrue();
+
+        allAliases = (await _qdrantHttpClient.ListAllAliases(CancellationToken.None)).EnsureSuccess();
+
+        allAliases.Aliases.Length.Should().Be(1);
+        allAliases.CollectionNamesByAliases[TestCollectionAlias].Should().Be(TestCollectionName2);
     }
 
     [Test]
@@ -166,7 +204,7 @@ public class CollectionAliasTests : QdrantTestsBase
 
         // list all aliases
 
-        var listAllCollectionAliasesResult = await _qdrantHttpClient.ListCollectionAliases(CancellationToken.None);
+        var listAllCollectionAliasesResult = await _qdrantHttpClient.ListAllAliases(CancellationToken.None);
 
         listAllCollectionAliasesResult.Status.IsSuccess.Should().BeTrue();
         listAllCollectionAliasesResult.Result.Aliases.Length.Should().Be(2);
@@ -225,7 +263,7 @@ public class CollectionAliasTests : QdrantTestsBase
         updateAliasesResult.Result.Should().BeTrue();
 
         // list aliases
-        var listAllCollectionAliasesResult = await _qdrantHttpClient.ListCollectionAliases(CancellationToken.None);
+        var listAllCollectionAliasesResult = await _qdrantHttpClient.ListAllAliases(CancellationToken.None);
 
         listAllCollectionAliasesResult.Status.IsSuccess.Should().BeTrue();
         listAllCollectionAliasesResult.Result.Aliases.Length.Should().Be(1);
@@ -236,7 +274,7 @@ public class CollectionAliasTests : QdrantTestsBase
         deleteCollection.EnsureSuccess();
 
         // list aliases again
-        listAllCollectionAliasesResult = await _qdrantHttpClient.ListCollectionAliases(CancellationToken.None);
+        listAllCollectionAliasesResult = await _qdrantHttpClient.ListAllAliases(CancellationToken.None);
 
         listAllCollectionAliasesResult.Status.IsSuccess.Should().BeTrue();
         listAllCollectionAliasesResult.Result.Aliases.Length.Should().Be(0);
@@ -278,7 +316,7 @@ public class CollectionAliasTests : QdrantTestsBase
 
         // get all aliases
         getAllAliasesResponse =
-            await _qdrantHttpClient.ListCollectionAliases(CancellationToken.None);
+            await _qdrantHttpClient.ListAllAliases(CancellationToken.None);
 
         getAllAliasesResponse.EnsureSuccess();
 
@@ -323,7 +361,7 @@ public class CollectionAliasTests : QdrantTestsBase
         updateAliasesResult.EnsureSuccess();
 
         getAllAliasesResponse =
-            await _qdrantHttpClient.ListCollectionAliases(CancellationToken.None);
+            await _qdrantHttpClient.ListAllAliases(CancellationToken.None);
 
         getAllAliasesResponse.Result.Aliases.Length.Should().Be(1);
         getAllAliasesResponse.Result.Aliases[0].AliasName.Should().Be(TestCollectionAlias2);
@@ -355,7 +393,7 @@ public class CollectionAliasTests : QdrantTestsBase
         updateAliasesResult.EnsureSuccess();
 
         var getAllAliasesResponse =
-            await _qdrantHttpClient.ListCollectionAliases(CancellationToken.None);
+            await _qdrantHttpClient.ListAllAliases(CancellationToken.None);
 
         getAllAliasesResponse.EnsureSuccess();
         getAllAliasesResponse.Result.Aliases.Length.Should().Be(1);
@@ -382,7 +420,7 @@ public class CollectionAliasTests : QdrantTestsBase
         updateAliasesResult.Status.IsSuccess.Should().BeTrue();
 
         var getAllAliasesResponse =
-            await _qdrantHttpClient.ListCollectionAliases(CancellationToken.None);
+            await _qdrantHttpClient.ListAllAliases(CancellationToken.None);
 
         getAllAliasesResponse.EnsureSuccess();
         getAllAliasesResponse.Result.Aliases.Length.Should().Be(0);
@@ -412,12 +450,74 @@ public class CollectionAliasTests : QdrantTestsBase
         updateAliasesResult.Status.IsSuccess.Should().BeTrue();
 
         var getAllAliasesResponse =
-            await _qdrantHttpClient.ListCollectionAliases(CancellationToken.None);
+            await _qdrantHttpClient.ListAllAliases(CancellationToken.None);
 
         getAllAliasesResponse.EnsureSuccess();
         getAllAliasesResponse.Result.Aliases.Length.Should().Be(1);
 
         getAllAliasesResponse.Result.Aliases[0].CollectionName.Should().Be(TestCollectionName2);
         getAllAliasesResponse.Result.Aliases[0].AliasName.Should().Be(lastAliasName);
+    }
+
+    [Test]
+    public async Task ListAliases()
+    {
+        await PrepareCollection<TestPayload>(
+            _qdrantHttpClient,
+            TestCollectionName);
+
+        await PrepareCollection<TestPayload>(
+            _qdrantHttpClient,
+            TestCollectionName2);
+
+        Dictionary<string, List<string>> collectionAliases = new()
+        {
+            [TestCollectionName] = ["alias 1-1", "alias 1-2", "alias 1-3"],
+            [TestCollectionName2] = ["alias 2-1", "alias 2-2", "alias 2-3"]
+        };
+
+        var allAliasesCount = collectionAliases.Values.Sum(v => v.Count);
+
+        var request = UpdateCollectionAliasesRequest.Create();
+
+        foreach (var (collection, aliases) in collectionAliases)
+        {
+            foreach (var alias in aliases)
+            {
+                request.CreateAlias(collection, alias);
+            }
+        }
+
+        var updateAliasesResult = await _qdrantHttpClient.UpdateCollectionsAliases(
+            request,
+            CancellationToken.None);
+
+        updateAliasesResult.EnsureSuccess();
+
+        var allAliases = (await _qdrantHttpClient.ListAllAliases(CancellationToken.None)).EnsureSuccess();
+
+        allAliases.Aliases.Length.Should().Be(allAliasesCount);
+
+        allAliases.CollectionNamesByAliases.Count.Should().Be(allAliasesCount);
+
+        foreach (var (collection, aliases) in collectionAliases)
+        {
+            var expectedCollectionName = collection;
+            foreach (var expectedAlias in aliases)
+            {
+                allAliases.CollectionNamesByAliases.Should().ContainKey(expectedAlias);
+                var gotCollectionName = allAliases.CollectionNamesByAliases[expectedAlias];
+
+                gotCollectionName.Should().Be(expectedCollectionName);
+            }
+        }
+
+        allAliases.CollectionAliases.Count.Should().Be(collectionAliases.Count);
+
+        foreach (var (collection, expectedAliases) in collectionAliases)
+        {
+            allAliases.CollectionAliases.Contains(collection).Should().BeTrue();
+            allAliases.CollectionAliases[collection].Should().BeEquivalentTo(expectedAliases);
+        }
     }
 }

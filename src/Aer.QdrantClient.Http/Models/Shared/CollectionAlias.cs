@@ -1,10 +1,12 @@
-﻿// ReSharper disable UnusedMember.Global
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
 /// Represents a collection alias information.
 /// </summary>
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public class CollectionAlias
 {
     /// <summary>

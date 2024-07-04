@@ -154,7 +154,7 @@ public partial class QdrantHttpClient
     /// Get list of all existing collections aliases.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    public async Task<ListCollectionAliasesResponse> ListCollectionAliases(CancellationToken cancellationToken)
+    public async Task<ListCollectionAliasesResponse> ListAllAliases(CancellationToken cancellationToken)
     {
         var url = "/aliases";
 

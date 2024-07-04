@@ -1,14 +1,13 @@
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Models.Responses.Base;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Aer.QdrantClient.Http.Models.Responses;
 
 /// <summary>
 /// Represents the result of listing existing collection names.
 /// </summary>
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class ListCollectionsResponse : QdrantResponseBase<ListCollectionsResponse.CollectionNamesUnit>
 {
     /// <summary>
@@ -22,7 +21,7 @@ public sealed class ListCollectionsResponse : QdrantResponseBase<ListCollections
         public CollectionName[] Collections { get; set; }
 
         /// <summary>
-        /// Represents one existing collecton name.
+        /// Represents one existing collection name.
         /// </summary>
         /// <param name="Name">The name of the collection.</param>
 
