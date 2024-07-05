@@ -25,13 +25,6 @@ public partial class QdrantHttpClient
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        if (collectionName.Length is 0 or > 255)
-        {
-            throw new QdrantInvalidCollectionNameException(
-                collectionName,
-                $"Collection name should be between 1 and 255 characters long. Length of {collectionName.Length} is found.");
-        }
-
         EnsureQdrantNameCorrect(collectionName);
 
         var timeoutValue = GetTimeoutValueOrDefault(timeout);

@@ -45,9 +45,9 @@ internal class CollectionLifetimeTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        await createCollectionAct.Should().ThrowAsync<InvalidOperationException>();
+        await createCollectionAct.Should().ThrowAsync<QdrantInvalidEntityNameException>();
 
-        await createCollectionAct2.Should().ThrowAsync<InvalidOperationException>();
+        await createCollectionAct2.Should().ThrowAsync<QdrantInvalidEntityNameException>();
     }
 
     [Test]
@@ -111,7 +111,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        await collectionCreationAct.Should().ThrowAsync<QdrantInvalidCollectionNameException>()
+        await collectionCreationAct.Should().ThrowAsync<QdrantInvalidEntityNameException>()
             .Where(e => e.Message.Contains("1024"));
     }
 

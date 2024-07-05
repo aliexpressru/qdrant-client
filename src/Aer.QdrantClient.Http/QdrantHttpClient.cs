@@ -411,13 +411,21 @@ public partial class QdrantHttpClient
     {
         if (qdrantEntityName is null or {Length: 0})
         {
-            throw new InvalidOperationException("Qdrant entity name name should not be null or empty");
+            throw new QdrantInvalidEntityNameException(qdrantEntityName, "Entity name name should not be null or empty");
+        }
+
+        if (qdrantEntityName.Length is 0 or > 255)
+        {
+            throw new QdrantInvalidEntityNameException(
+                qdrantEntityName,
+                $"Entity name should be between 1 and 255 characters long. Length of {qdrantEntityName.Length} is found.");
         }
 
         if (_invalidQdrantNameSymbols.Any(qdrantEntityName.Contains))
         {
-            throw new InvalidOperationException(
-                $"Qdrant entity name {qdrantEntityName} can't contain [{string.Join(",", _invalidQdrantNameSymbols)}] symbols");
+            throw new QdrantInvalidEntityNameException(
+                qdrantEntityName,
+                $"Entity name can't contain [{string.Join(",", _invalidQdrantNameSymbols)}] symbols");
         }
     }
 
