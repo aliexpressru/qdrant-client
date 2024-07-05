@@ -246,6 +246,39 @@ public class CollectionAliasTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task CreateAlias_RestrictedSymbols_Success()
+    {
+        await PrepareCollection<TestPayload>(
+            _qdrantHttpClient,
+            TestCollectionName);
+
+        await PrepareCollection<TestPayload>(
+            _qdrantHttpClient,
+            TestCollectionName2);
+
+        var testAlias1 = "test/alias";
+        var testAlias2 = "test alias";
+
+        // create aliases with restricted symbols
+
+        var updateAliasesResult = await _qdrantHttpClient.UpdateCollectionsAliases(
+            UpdateCollectionAliasesRequest.Create()
+                .CreateAlias(TestCollectionName, testAlias1)
+                .CreateAlias(TestCollectionName2, testAlias2),
+            CancellationToken.None);
+
+        updateAliasesResult.EnsureSuccess();
+
+        var listAllCollectionAliasesResult = (await _qdrantHttpClient.ListAllAliases(CancellationToken.None)).EnsureSuccess();
+
+        listAllCollectionAliasesResult.CollectionNamesByAliases.Should().ContainKey(testAlias1);
+        listAllCollectionAliasesResult.CollectionNamesByAliases.Should().ContainKey(testAlias2);
+
+        listAllCollectionAliasesResult.CollectionAliases[TestCollectionName].Count().Should().Be(1);
+        listAllCollectionAliasesResult.CollectionAliases[TestCollectionName2].Count().Should().Be(1);
+    }
+
+    [Test]
     public async Task CreateAlias_DeleteCollection_AliasShouldBeDeleted()
     {
         await PrepareCollection<TestPayload>(
