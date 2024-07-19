@@ -214,10 +214,27 @@ public class QdrantTestsBase
         await qdrantHttpClient.DeleteAllCollectionSnapshots(TestCollectionName2, CancellationToken.None);
     }
 
-    protected float[] CreateTestFloatVector(uint vectorLength)
+    protected float[] CreateTestVector(uint vectorLength, VectorDataType vectorDataType)
+    {
+        return vectorDataType switch
+        {
+            VectorDataType.Float32 => CreateTestFloat32Vector(vectorLength),
+            VectorDataType.Float16 => CreateTestFloat16Vector(vectorLength),
+            VectorDataType.Uint8 => CreateTestByteVector(vectorLength),
+            _ => throw new ArgumentOutOfRangeException(nameof(vectorDataType), vectorDataType, null)
+        };
+    }
+
+    protected float[] CreateTestFloat32Vector(uint vectorLength)
         =>
             Enumerable.Range(0, (int)vectorLength)
                 .Select(_ => float.CreateTruncating(Random.Shared.NextDouble()))
+                .ToArray();
+
+    protected float[] CreateTestFloat16Vector(uint vectorLength)
+        =>
+            Enumerable.Range(0, (int) vectorLength)
+                .Select(_ => (float)Half.CreateTruncating(Random.Shared.NextDouble()))
                 .ToArray();
 
     protected float[] CreateTestByteVector(uint vectorLength)
@@ -228,7 +245,7 @@ public class QdrantTestsBase
 
     protected (uint[] Indices, float[] Values) CreateTestSparseVector(uint vectorLength, uint numberOfNonZeroIndices)
     {
-        var values = CreateTestFloatVector(numberOfNonZeroIndices);
+        var values = CreateTestFloat32Vector(numberOfNonZeroIndices);
 
         var indices = Enumerable.Range(0, (int) vectorLength)
             .Select(_ => (uint) Random.Shared.Next((int) vectorLength + 1))
@@ -314,7 +331,7 @@ public class QdrantTestsBase
             upsertPoints.Add(
                 new(
                     pointId,
-                    CreateTestFloatVector(vectorSize),
+                    CreateTestFloat32Vector(vectorSize),
                     (TPayload)payload
                 )
             );
@@ -388,7 +405,7 @@ public class QdrantTestsBase
             {
                 Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
                 {
-                    new(PointId.NewGuid(), CreateTestFloatVector(vectorSize), "test"),
+                    new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), "test"),
                 },
                 ShardKey = TestShardKey1
             },
@@ -400,7 +417,7 @@ public class QdrantTestsBase
             {
                 Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
                 {
-                    new(PointId.NewGuid(), CreateTestFloatVector(vectorSize), "test2"),
+                    new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), "test2"),
                 },
                 ShardKey = TestShardKey2
             },

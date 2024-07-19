@@ -19,13 +19,27 @@ internal class SparseVectorConfigurationJsonConverter : JsonConverter<SparseVect
 
         try
         {
-            var sparseVectorConfigurationObject =
+            var sparseVectorIndexConfigurationObject =
                 configurationObject["index"].AsObject();
 
-            var onDiskPayload = sparseVectorConfigurationObject["on_disk"]!.GetValue<bool>();
-            var fullScanThreshold = sparseVectorConfigurationObject["full_scan_threshold"]?.GetValue<ulong?>();
+            var onDiskPayload = sparseVectorIndexConfigurationObject["on_disk"]!.GetValue<bool>();
+            var fullScanThreshold = sparseVectorIndexConfigurationObject["full_scan_threshold"]?.GetValue<ulong?>();
 
-            var ret = new SparseVectorConfiguration(onDiskPayload, fullScanThreshold);
+            var vectorDataType = ParseEnumOrDefault(
+                sparseVectorIndexConfigurationObject["datatype"],
+                VectorDataType.Float32,
+                "sparse vector data type");
+
+            var sparseVectorModifier = ParseEnumOrDefault(
+                configurationObject["modifier"],
+                SparseVectorModifier.None,
+                "sparse vector modifier");
+
+            var ret = new SparseVectorConfiguration(
+                onDiskPayload,
+                fullScanThreshold,
+                vectorDataType,
+                sparseVectorModifier);
 
             return ret;
         }
@@ -39,6 +53,24 @@ internal class SparseVectorConfigurationJsonConverter : JsonConverter<SparseVect
             throw new QdrantJsonParsingException(
                 $"Can't deserialize sparse vector configuration {configurationObject.ToJsonString()}. Exception : {ex}");
         }
+    }
+
+    private TEnum ParseEnumOrDefault<TEnum>(
+        JsonNode objectToParse,
+        TEnum defaultValue,
+        string enumName)
+        where TEnum : struct
+    {
+        var enumValueString = objectToParse?.GetValue<string>();
+
+        var ret = string.IsNullOrEmpty(enumValueString)
+            ? defaultValue
+            : Enum.TryParse<TEnum>(enumValueString, ignoreCase: true, out var parsedEnumValue)
+                ? parsedEnumValue
+                : throw new QdrantJsonParsingException(
+                    $"Can't deserialize {enumName} {enumValueString}");
+
+        return ret;
     }
 
     public override void Write(Utf8JsonWriter writer, SparseVectorConfiguration value, JsonSerializerOptions options)
@@ -55,8 +87,14 @@ internal class SparseVectorConfigurationJsonConverter : JsonConverter<SparseVect
                     writer.WritePropertyName("full_scan_threshold");
                     writer.WriteNumberValue(value.FullScanThreshold.Value);
                 }
+
+                writer.WritePropertyName("datatype");
+                JsonSerializer.Serialize(writer, value.VectorDataType, JsonSerializerConstants.SerializerOptions);
             }
             writer.WriteEndObject();
+
+            writer.WritePropertyName("modifier");
+            JsonSerializer.Serialize(writer, value.Modifier, JsonSerializerConstants.SerializerOptions);
         }
         writer.WriteEndObject();
     }

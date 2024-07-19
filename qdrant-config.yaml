@@ -72,6 +72,27 @@ storage:
     # If null - allow unlimited transfers.
     #outgoing_shard_transfers_limit: 1
 
+  # uncomment to configure s3 snapshots storage
+
+  # snapshots_config:
+  #   # Use 's3' to store snapshots on S3
+  #   snapshots_storage: s3
+
+  #   s3_config:
+  #     # Bucket name
+  #     bucket: your_bucket_here
+
+  #     # Bucket region (e.g. eu-central-1)
+  #     region: your_bucket_region_here
+
+  #     # Storage access key
+  #     # Can be specified either here or in the `AWS_ACCESS_KEY_ID` environment variable.
+  #     access_key: your_access_key_here
+
+  #     # Storage secret key
+  #     # Can be specified either here or in the `AWS_SECRET_ACCESS_KEY` environment variable.
+  #     secret_key: your_secret_key_here
+
   optimizers:
     # The minimal fraction of deleted vectors in a segment, required to perform segment optimization
     deleted_threshold: 0.2
@@ -105,9 +126,9 @@ storage:
     # Note: 1Kb = 1 vector of size 256
     # If not set, mmap will not be used.
     # Set to 1 to switch memory loading off
-    # if you have a balanced use scenario - set mmap threshold the same as indexing_threshold (default is 20000). 
+    # if you have a balanced use scenario - set mmap threshold the same as indexing_threshold (default is 20000).
     #   In this case the optimizer will not make any extra runs and will optimize all thresholds at once.
-    # if you have a high write load and low RAM - set mmap threshold lower than indexing_threshold to e.g. 10000. 
+    # if you have a high write load and low RAM - set mmap threshold lower than indexing_threshold to e.g. 10000.
     #   In this case the optimizer will convert the segments to mmap storage first and will only apply indexing after that.
     memmap_threshold_kb: 5000000
 
@@ -196,7 +217,7 @@ service:
   #
   # Uncomment to enable.
   api_key: test
-   
+
   # Set an api-key for read-only operations.
   # If set, all requests must include a header with the api-key.
   # example header: `api-key: <API-KEY>`

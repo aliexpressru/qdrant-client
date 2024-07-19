@@ -7,9 +7,10 @@ namespace Aer.QdrantClient.Http.Infrastructure.Json;
 internal static class JsonSerializerConstants
 {
     private static readonly JTokenJsonConverter _jTokenJsonConverter = new();
-    public static readonly JsonNamingPolicy NamingStrategy = JsonNamingPolicy.SnakeCaseLower;
 
-    public static readonly JsonConverter EnumConverter = new JsonStringEnumConverter(NamingStrategy);
+    public static JsonNamingPolicy NamingStrategy { get; } = JsonNamingPolicy.SnakeCaseLower;
+
+    public static JsonConverter EnumConverter { get; } = new JsonStringEnumConverter(NamingStrategy);
 
     public static JsonSerializerOptions SerializerOptions { get; } = new()
     {

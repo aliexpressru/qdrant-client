@@ -21,23 +21,28 @@ public abstract class VectorBase
     /// For <see cref="Vector"/> instance gets a vector itself,
     /// for <see cref="NamedVectors"/> gets the vector named <see cref="DefaultVectorName"/>
     /// for <see cref="SparseVector"/> throws an exception.
+    /// for <see cref="MultiVector"/> throws an exception.
     /// </summary>
     [JsonIgnore]
     public abstract float[] Default { get; }
 
     /// <summary>
     /// <c>true</c> if this instance represents a named vector collection.
-    /// <c>false</c> if this instance represents either a single unnamed vector or a sparse vector.
     /// </summary>
     [JsonIgnore]
     public bool IsNamedVectors => this is NamedVectors;
 
     /// <summary>
     /// <c>true</c> if this instance represents a sparse vector.
-    /// <c>false</c> if this instance represents either a named vectors collection or a single unnamed vector.
     /// </summary>
     [JsonIgnore]
     public bool IsSparseVector => this is SparseVector;
+
+    /// <summary>
+    /// <c>true</c> if this instance represents a multivector.
+    /// </summary>
+    [JsonIgnore]
+    public bool IsMultivector => this is MultiVector;
 
     /// <summary>
     /// Gets the named vector value if this instance is named vector collection

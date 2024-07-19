@@ -34,7 +34,7 @@ public class PointsRecommendTests : QdrantTestsBase
         var recommendPointInNonexistentCollectionResult
             = await _qdrantHttpClient.RecommendPoints(
                 TestCollectionName,
-                RecommendPointsRequest.ByVectorExamples(new[] {CreateTestFloatVector(10)}, 10),
+                RecommendPointsRequest.ByVectorExamples(new[] {CreateTestFloat32Vector(10)}, 10),
                 CancellationToken.None);
 
         recommendPointInNonexistentCollectionResult.Status.IsSuccess.Should().BeFalse();
@@ -57,7 +57,7 @@ public class PointsRecommendTests : QdrantTestsBase
         var recommendNonexistentPointResult
             = await _qdrantHttpClient.RecommendPoints(
                 TestCollectionName,
-                RecommendPointsRequest.ByVectorExamples(new[] {CreateTestFloatVector(10)}, 10),
+                RecommendPointsRequest.ByVectorExamples(new[] {CreateTestFloat32Vector(10)}, 10),
                 CancellationToken.None);
 
         recommendNonexistentPointResult.Status.IsSuccess.Should().BeTrue();
@@ -78,7 +78,7 @@ public class PointsRecommendTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var vector1Vector2Vector = CreateTestFloatVector(vectorSize);
+        var vector1Vector2Vector = CreateTestFloat32Vector(vectorSize);
 
         var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>(){
             new(
@@ -99,7 +99,7 @@ public class PointsRecommendTests : QdrantTestsBase
                 }),
             new(
                 PointId.Integer(3),
-                CreateTestFloatVector(vectorSize),
+                CreateTestFloat32Vector(vectorSize),
                 new TestPayload()
                 {
                     Integer = 3,
@@ -153,7 +153,7 @@ public class PointsRecommendTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var vector1Vector2Vector = CreateTestFloatVector(vectorSize);
+        var vector1Vector2Vector = CreateTestFloat32Vector(vectorSize);
 
         var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
         {
@@ -175,7 +175,7 @@ public class PointsRecommendTests : QdrantTestsBase
                 }),
             new(
                 PointId.Integer(3),
-                CreateTestFloatVector(vectorSize),
+                CreateTestFloat32Vector(vectorSize),
                 new TestPayload()
                 {
                     Integer = 3,

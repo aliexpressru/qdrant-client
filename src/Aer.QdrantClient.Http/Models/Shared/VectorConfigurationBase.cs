@@ -52,6 +52,11 @@ public abstract class VectorConfigurationBase
         /// </summary>
         public VectorDataType Datatype { get; set; }
 
+        /// <summary>
+        /// The multivector configuration.
+        /// </summary>
+        public MultivectorConfiguration MultivectorConfig { get; set; }
+
         [JsonConstructor]
         internal SingleVectorConfiguration()
         { }

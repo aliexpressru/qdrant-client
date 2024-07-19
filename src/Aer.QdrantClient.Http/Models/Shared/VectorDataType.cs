@@ -14,6 +14,11 @@ public enum VectorDataType
     Float32,
 
     /// <summary>
+    /// Vectors are stored as half-precision floating point numbers, 2 bytes.
+    /// </summary>
+    Float16,
+
+    /// <summary>
     /// Vectors are stored as unsigned 8-bit integers, 1byte. Vector elements are expected to be in range [0, 255].
     /// </summary>
     Uint8

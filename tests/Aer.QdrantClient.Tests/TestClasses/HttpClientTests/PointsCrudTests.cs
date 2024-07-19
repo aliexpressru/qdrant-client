@@ -185,7 +185,7 @@ internal class PointsCrudTests : QdrantTestsBase
                     {
                         new(
                             PointId.Integer(1),
-                            CreateTestFloatVector(1),
+                            CreateTestFloat32Vector(1),
                             "test"
                         )
                     }
@@ -210,7 +210,7 @@ internal class PointsCrudTests : QdrantTestsBase
                     {
                         new(
                             PointId.Integer(1),
-                            CreateTestFloatVector(1),
+                            CreateTestFloat32Vector(1),
                             "test"
                         )
                     }
@@ -262,20 +262,29 @@ internal class PointsCrudTests : QdrantTestsBase
     #region Upsert/Read/Delete operations tests
 
     [Test]
-    public async Task UpsertPoint()
+    [TestCase(VectorDataType.Float32)]
+    [TestCase(VectorDataType.Uint8)]
+    [TestCase(VectorDataType.Float16)]
+    public async Task UpsertPoint(VectorDataType vectorDataType)
     {
         var vectorSize = 10U;
 
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                vectorSize,
+                isServeVectorsFromDisk: true,
+                vectorDataType: vectorDataType)
             {
                 OnDiskPayload = true
             },
             CancellationToken.None);
 
         var testPointId = PointId.NewGuid();
-        var testVector = CreateTestFloatVector(vectorSize);
+
+        var testVector = CreateTestVector(vectorSize, vectorDataType);
+
         TestPayload testPayload = "test";
 
         var upsertPointsResult
@@ -325,7 +334,7 @@ internal class PointsCrudTests : QdrantTestsBase
             CancellationToken.None);
 
         var testPointId = PointId.NewGuid();
-        var testVector = CreateTestFloatVector(vectorSize);
+        var testVector = CreateTestFloat32Vector(vectorSize);
 
         JsonObject testPayload = new JsonObject()
         {
@@ -381,7 +390,7 @@ internal class PointsCrudTests : QdrantTestsBase
             CancellationToken.None);
 
         var testPointId = PointId.NewGuid();
-        var testVector = CreateTestFloatVector(vectorSize);
+        var testVector = CreateTestFloat32Vector(vectorSize);
 
         JObject testPayload = new JObject()
         {
@@ -437,7 +446,7 @@ internal class PointsCrudTests : QdrantTestsBase
             CancellationToken.None);
 
         var testPointId = PointId.NewGuid();
-        var testVector = CreateTestFloatVector(vectorSize);
+        var testVector = CreateTestFloat32Vector(vectorSize);
 
         JsonObject testPayload = new JsonObject()
         {
@@ -492,7 +501,7 @@ internal class PointsCrudTests : QdrantTestsBase
             CancellationToken.None);
 
         var testPointId = PointId.NewGuid();
-        var testVector = CreateTestFloatVector(vectorSize);
+        var testVector = CreateTestFloat32Vector(vectorSize);
 
         var upsertPointsResult
             = await _qdrantHttpClient.UpsertPoints(
@@ -537,7 +546,7 @@ internal class PointsCrudTests : QdrantTestsBase
             CancellationToken.None);
 
         var testPointId = PointId.NewGuid();
-        var testVector = CreateTestFloatVector(vectorSize);
+        var testVector = CreateTestFloat32Vector(vectorSize);
         TestPayload testPayload = "test";
 
         var upsertPointsResult
@@ -585,7 +594,7 @@ internal class PointsCrudTests : QdrantTestsBase
             CancellationToken.None);
 
         var testPointId = PointId.NewGuid();
-        var testVector = CreateTestFloatVector(vectorSize);
+        var testVector = CreateTestFloat32Vector(vectorSize);
 
         TestPayload testPayload = "test";
         testPayload.Integer = 1567;
@@ -729,7 +738,7 @@ internal class PointsCrudTests : QdrantTestsBase
                 {
                     Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
                     {
-                        new(PointId.NewGuid(), CreateTestFloatVector(vectorSize), "test")
+                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), "test")
                     }
                 },
                 CancellationToken.None,
@@ -761,7 +770,7 @@ internal class PointsCrudTests : QdrantTestsBase
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
-                    CreateTestFloatVector(vectorSize),
+                    CreateTestFloat32Vector(vectorSize),
                     i
                 )
             );
@@ -1112,9 +1121,9 @@ internal class PointsCrudTests : QdrantTestsBase
                     Vectors = new Dictionary<string, VectorBase>()
                     {
                         // here and further on float[] will be implicitly converted to Vector
-                        ["Vector_1"] = CreateTestFloatVector(100U),
-                        ["Vector_2"] = CreateTestFloatVector(5U),
-                        ["Vector_3"] = CreateTestFloatVector(50U),
+                        ["Vector_1"] = CreateTestFloat32Vector(100U),
+                        ["Vector_2"] = CreateTestFloat32Vector(5U),
+                        ["Vector_3"] = CreateTestFloat32Vector(50U),
                     }
                 },
                 payload : 1);
@@ -1125,8 +1134,8 @@ internal class PointsCrudTests : QdrantTestsBase
             {
                 Vectors = new Dictionary<string, VectorBase>()
                 {
-                    ["Vector_2"] = CreateTestFloatVector(5U),
-                    ["Vector_3"] = CreateTestFloatVector(50U),
+                    ["Vector_2"] = CreateTestFloat32Vector(5U),
+                    ["Vector_3"] = CreateTestFloat32Vector(50U),
                 }
             },
             payload: 2);
@@ -1137,7 +1146,7 @@ internal class PointsCrudTests : QdrantTestsBase
             {
                 Vectors = new Dictionary<string, VectorBase>()
                 {
-                    ["Vector_1"] = CreateTestFloatVector(100U),
+                    ["Vector_1"] = CreateTestFloat32Vector(100U),
                 }
             },
             payload: 3);
@@ -1235,7 +1244,7 @@ internal class PointsCrudTests : QdrantTestsBase
                     {
                         // here and further on float[] will be implicitly converted to Vector
                         [VectorBase.DefaultVectorName] = CreateTestByteVector(100U),
-                        ["Vector_2"] = CreateTestFloatVector(5U),
+                        ["Vector_2"] = CreateTestFloat32Vector(5U),
                     }
                 },
                 payload : 1);
@@ -1257,7 +1266,7 @@ internal class PointsCrudTests : QdrantTestsBase
             {
                 Vectors = new Dictionary<string, VectorBase>()
                 {
-                    ["Vector_2"] = CreateTestFloatVector(5U),
+                    ["Vector_2"] = CreateTestFloat32Vector(5U),
                 }
             },
             payload: 3);
@@ -1449,7 +1458,7 @@ internal class PointsCrudTests : QdrantTestsBase
                 {
                     Vectors = new Dictionary<string, VectorBase>()
                     {
-                        ["Vector_1"] = CreateTestFloatVector(100U),
+                        ["Vector_1"] = CreateTestFloat32Vector(100U),
                         ["Vector_2"] = CreateTestSparseVector(50U, 5),
                     }
                 },
@@ -1461,7 +1470,7 @@ internal class PointsCrudTests : QdrantTestsBase
             {
                 Vectors = new Dictionary<string, VectorBase>()
                 {
-                    ["Vector_1"] = CreateTestFloatVector(100U),
+                    ["Vector_1"] = CreateTestFloat32Vector(100U),
                     ["Vector_2"] = CreateTestSparseVector(50U, 7),
                 }
             },
@@ -1524,6 +1533,18 @@ internal class PointsCrudTests : QdrantTestsBase
                 }
             }
         }
+    }
+
+    [Test]
+    public async Task UpsertPoints_MultiVectors_OnlyMulti()
+    {
+
+    }
+
+    [Test]
+    public async Task UpsertPoints_MultiVectors_MixedMultiAndNamed()
+    {
+        
     }
 
     [Test]

@@ -32,7 +32,7 @@ internal class PointsSearchTests : QdrantTestsBase
         var searchPointInNonexistentCollectionResult
             = await _qdrantHttpClient.SearchPoints(
                 TestCollectionName,
-                new SearchPointsRequest(CreateTestFloatVector(10), 10),
+                new SearchPointsRequest(CreateTestFloat32Vector(10), 10),
                 CancellationToken.None);
 
         searchPointInNonexistentCollectionResult.Status.IsSuccess.Should().BeFalse();
@@ -55,7 +55,7 @@ internal class PointsSearchTests : QdrantTestsBase
         var searchForNonexistentPointResult
             = await _qdrantHttpClient.SearchPoints(
                 TestCollectionName,
-                new SearchPointsRequest(CreateTestFloatVector(10), 10),
+                new SearchPointsRequest(CreateTestFloat32Vector(10), 10),
                 CancellationToken.None);
 
         searchForNonexistentPointResult.Status.IsSuccess.Should().BeTrue();
@@ -412,7 +412,7 @@ internal class PointsSearchTests : QdrantTestsBase
 
         // using the same vector since we are comparing filter return values
 
-        var singleVector = CreateTestFloatVector(vectorSize);
+        var singleVector = CreateTestFloat32Vector(vectorSize);
 
         for (int i = 0; i < vectorCount; i++)
         {
@@ -511,7 +511,7 @@ internal class PointsSearchTests : QdrantTestsBase
 
         // using the same vector since we are comparing filter return values
 
-        var singleVector = CreateTestFloatVector(vectorSize);
+        var singleVector = CreateTestFloat32Vector(vectorSize);
 
         for (int i = 0; i < vectorCount; i++)
         {

@@ -59,7 +59,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
-                    CreateTestFloatVector(vectorSize),
+                    CreateTestFloat32Vector(vectorSize),
                     i
                 )
             );
@@ -108,7 +108,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
-                    CreateTestFloatVector(vectorSize),
+                    CreateTestFloat32Vector(vectorSize),
                     i
                 )
             );
@@ -158,7 +158,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
-                    CreateTestFloatVector(vectorSize),
+                    CreateTestFloat32Vector(vectorSize),
                     i
                 )
             );
@@ -211,7 +211,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
-                    CreateTestFloatVector(vectorSize),
+                    CreateTestFloat32Vector(vectorSize),
                     new TestPayload()
                     {
                         Integer = i+1,
