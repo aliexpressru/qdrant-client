@@ -1,7 +1,5 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
@@ -9,6 +7,8 @@ namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 /// <summary>
 /// Represents a named vectors collection.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class NamedVectors : VectorBase
 {
     /// <summary>
@@ -17,6 +17,11 @@ public sealed class NamedVectors : VectorBase
     public required Dictionary<string, VectorBase> Vectors { init; get; } = new();
 
     /// <inheritdoc/>
+    [JsonIgnore]
+    public override VectorKind VectorKind => VectorKind.Named;
+
+    /// <inheritdoc/>
+    [JsonIgnore]
     public override float[] Default
     {
         get

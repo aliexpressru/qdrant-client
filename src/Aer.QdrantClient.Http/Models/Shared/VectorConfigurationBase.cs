@@ -70,6 +70,7 @@ public abstract class VectorConfigurationBase
         /// <param name="vectorHnswConfiguration">Custom params for HNSW index. If none - values from collection configuration are used.</param>
         /// <param name="vectorQuantizationConfiguration">Custom params for quantization. If none - values from collection configuration are used.</param>
         /// <param name="vectorDataType">The datatype that should be used to represent vectors in the storage.</param>
+        /// <param name="multivectorConfiguration">The multivector configuration.</param>
         [SetsRequiredMembers]
         public SingleVectorConfiguration(
             VectorDistanceMetric vectorDistanceMetric,
@@ -77,7 +78,8 @@ public abstract class VectorConfigurationBase
             bool isServeVectorsFromDisk,
             HnswConfiguration vectorHnswConfiguration = null,
             QuantizationConfiguration vectorQuantizationConfiguration = null,
-            VectorDataType vectorDataType = VectorDataType.Float32)
+            VectorDataType vectorDataType = VectorDataType.Float32,
+            MultivectorConfiguration multivectorConfiguration = null)
         {
             Distance = vectorDistanceMetric.ToString();
             Size = vectorSize;
@@ -85,6 +87,7 @@ public abstract class VectorConfigurationBase
             HnswConfig = vectorHnswConfiguration;
             QuantizationConfig = vectorQuantizationConfiguration;
             Datatype = vectorDataType;
+            MultivectorConfig = multivectorConfiguration;
         }
     }
 

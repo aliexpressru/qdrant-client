@@ -1,7 +1,4 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
@@ -9,6 +6,8 @@ namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 /// <summary>
 /// Represents a sparse vector.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class SparseVector : VectorBase
 {
     /// <summary>
@@ -20,6 +19,10 @@ public sealed class SparseVector : VectorBase
     /// Gets the values of the non-zero sparse vector elements.
     /// </summary>
     public float[] Values { get; init; }
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    public override VectorKind VectorKind => VectorKind.Sparse;
 
     /// <inheritdoc/>
     [JsonIgnore]

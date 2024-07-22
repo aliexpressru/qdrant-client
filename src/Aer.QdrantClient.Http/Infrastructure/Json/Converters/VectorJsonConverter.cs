@@ -14,26 +14,62 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
         {
             case JsonTokenType.StartArray:
             {
-                var vectorValuesJArray = JsonNode.Parse(ref reader);
+                var vectorValuesJArray = JsonNode.Parse(ref reader)?.AsArray();
 
-                var vectorValuesArray =
-                    vectorValuesJArray.Deserialize<float[]>(JsonSerializerConstants.SerializerOptions);
+                // vectorValuesJArray can either contain a multivector or a single vector
 
-                return new Vector()
+                if (vectorValuesJArray is null or {Count: 0})
                 {
-                    VectorValues = vectorValuesArray
-                };
+                    throw new QdrantJsonParsingException(
+                        $"Unable to deserialize Qdrant vector value as {typeToConvert}. The vector value is missing");
+                }
+
+                // here we are certain that parsed valuer is existing non-empty array
+                // check first value - if it is JArray itself - we are dealing with multivector
+                // if it is a float value - we are deserializing a single vector
+
+                var firstJArrayValueKind = vectorValuesJArray[0]!.GetValueKind();
+
+                switch (firstJArrayValueKind)
+                {
+                    case JsonValueKind.Number:
+                        var vectorValuesArray =
+                            vectorValuesJArray.Deserialize<float[]>(JsonSerializerConstants.SerializerOptions);
+
+                        return new Vector()
+                        {
+                            VectorValues = vectorValuesArray
+                        };
+
+                    case JsonValueKind.Array:
+                        var multiVectorValuesArray =
+                            vectorValuesJArray.Deserialize<float[][]>(JsonSerializerConstants.SerializerOptions);
+
+                        return new MultiVector()
+                        {
+                            Vectors =multiVectorValuesArray
+                        };
+
+                    case JsonValueKind.Undefined:
+                    case JsonValueKind.Object:
+                    case JsonValueKind.String:
+                    case JsonValueKind.True:
+                    case JsonValueKind.False:
+                    case JsonValueKind.Null:
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
 
             case JsonTokenType.StartObject:
             {
-                // means named vectors collection:
+                // means named vectors collection or a sparse vector:
 
                 // name - vector name
                 // value can be either a simple vector
                 // "vector1" : [0.0, 0.1, 0.2], "vector2" " [10, 11, 12]
 
-                // or it can be a sparse vector
+                // sparse vector
                 // "vector1" : {"indices": [6, 7], "values": [1.0, 2.0]}
 
                 var namedVectorsJObject = JsonNode.Parse(ref reader);
@@ -82,10 +118,9 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
         {
             case Vector v:
                 JsonSerializer.Serialize(writer, v.VectorValues, JsonSerializerConstants.SerializerOptions);
-
                 return;
+
             case NamedVectors nv:
-            {
                 writer.WriteStartObject();
                 {
                     // named vector contains either Vector or SparseVector as value
@@ -108,9 +143,12 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
                     }
                 }
                 writer.WriteEndObject();
-
                 return;
-            }
+
+            case MultiVector mv:
+                JsonSerializer.Serialize(writer, mv.Vectors, JsonSerializerConstants.SerializerOptions);
+                return;
+
             default:
                 throw new QdrantJsonSerializationException($"Can't serialize {value} vector of type {value.GetType()}");
         }

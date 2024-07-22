@@ -1,15 +1,16 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-// ReSharper disable MemberCanBeProtected.Global
-
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
 /// <summary>
-/// Represents a base class for either a single vector or a colection of named vectors.
+/// Represents a base class for all vector types.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
+[SuppressMessage("ReSharper", "UnusedMemberInSuper.Global")]
 public abstract class VectorBase
 {
     /// <summary>
@@ -18,10 +19,16 @@ public abstract class VectorBase
     public const string DefaultVectorName = "default";
 
     /// <summary>
+    /// Gets the kind of the vector that is represented by this <see cref="VectorBase"/> instance.
+    /// </summary>
+    [JsonIgnore]
+    public abstract VectorKind VectorKind { get; }
+
+    /// <summary>
     /// For <see cref="Vector"/> instance gets a vector itself,
     /// for <see cref="NamedVectors"/> gets the vector named <see cref="DefaultVectorName"/>
     /// for <see cref="SparseVector"/> throws an exception.
-    /// for <see cref="MultiVector"/> throws an exception.
+    /// for <see cref="MultiVector"/> gets the first vector component.
     /// </summary>
     [JsonIgnore]
     public abstract float[] Default { get; }
@@ -85,6 +92,13 @@ public abstract class VectorBase
     public SparseVector AsSparseVector() => this as SparseVector
         ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(SparseVector)}");
 
+    /// <summary>
+    /// Converts this instance into an instance of <see cref="MultiVector"/> type which represents a multivector.
+    /// </summary>
+    /// <exception cref="InvalidCastException">Occurs when this instance is not a multivector.</exception>
+    public MultiVector AsMultiVector() => this as MultiVector
+        ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(MultiVector)}");
+
     #region Operators
 
     /// <summary>
@@ -106,7 +120,7 @@ public abstract class VectorBase
 
     /// <summary>
     /// Implicitly converts a dictionary of type <see cref="Dictionary{TKey,TValue}"/> to a vector instance.
-    /// Dictionary key must be <see cref="string"/>, dictionary value must be array of <see cref="float"/>.
+    /// Dictionary key must be <see cref="string"/>, dictionary value must be an array of <see cref="float"/>.
     /// </summary>
     /// <param name="namedVectors">The named vectors.</param>
     public static implicit operator VectorBase(Dictionary<string, float[]> namedVectors)

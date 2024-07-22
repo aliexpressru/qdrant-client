@@ -1538,13 +1538,91 @@ internal class PointsCrudTests : QdrantTestsBase
     [Test]
     public async Task UpsertPoints_MultiVectors_OnlyMulti()
     {
+        uint vectorLength = 10;
 
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                vectorLength,
+                isServeVectorsFromDisk: true,
+                multivectorConfiguration: new())
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        UpsertPointsRequest<TestPayload>.UpsertPoint firstPoint =
+            new(
+                id: 1,
+                vector : new MultiVector(){
+                    Vectors = [
+                        CreateTestVector(vectorLength, VectorDataType.Float32),
+                        CreateTestVector(vectorLength, VectorDataType.Float32),
+                    ]
+                },
+                payload : 1);
+
+        UpsertPointsRequest<TestPayload>.UpsertPoint secondPoint = new(
+            id: 2,
+            vector: new MultiVector()
+            {
+                Vectors =
+                [
+                    CreateTestVector(vectorLength, VectorDataType.Float32),
+                    CreateTestVector(vectorLength, VectorDataType.Float32),
+                    CreateTestVector(vectorLength, VectorDataType.Float32),
+                ]
+            },
+            payload: 2);
+
+        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>(){
+            firstPoint,
+            secondPoint,
+        };
+
+        var upsertPointsResult
+            = await _qdrantHttpClient.UpsertPoints(
+                TestCollectionName,
+                new UpsertPointsRequest<TestPayload>()
+                {
+                    Points = upsertPoints
+                },
+                CancellationToken.None);
+
+        var readPointsResult = await _qdrantHttpClient.GetPoints(
+            TestCollectionName,
+            upsertPoints.Select(p=>p.Id),
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true);
+
+        upsertPointsResult.Status.IsSuccess.Should().BeTrue();
+        upsertPointsResult.Result.Status.Should()
+            .BeOneOf(QdrantOperationStatus.Completed);
+
+        readPointsResult.Status.IsSuccess.Should().BeTrue();
+        readPointsResult.Result.Length.Should().Be(upsertPoints.Count);
+
+        foreach (var upsertPoint in upsertPoints)
+        {
+            var readPoint =
+                readPointsResult.Result.Single(p => p.Id.Equals(upsertPoint.Id));
+
+            readPoint.Vector.VectorKind.Should().Be(VectorKind.Multi);
+
+            var readPointVectors = readPoint.Vector.AsMultiVector();
+
+            readPointVectors.Vectors.Should().BeEquivalentTo(upsertPoint.Vector.AsMultiVector().Vectors);
+        }
     }
 
     [Test]
     public async Task UpsertPoints_MultiVectors_MixedMultiAndNamed()
     {
-        
+
     }
 
     [Test]

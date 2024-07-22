@@ -20,7 +20,7 @@ public partial class QdrantHttpClient
     /// <param name="collectionName">Name of the collection to delete points from.</param>
     /// <param name="pointIds">The point ids to delete.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="shardSelector">The shard selector. If set prefoms operation only on specified shard(s).</param>
+    /// <param name="shardSelector">The shard selector. If set, performs operation only on specified shard(s).</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="ordering">The delete operation ordering settings.</param>
     public async Task<PointsOperationResponse> DeletePoints(
@@ -547,7 +547,7 @@ public partial class QdrantHttpClient
     }
 
     /// <summary>
-    /// Retrieve closest points based on vector similarity and given filtering conditions.
+    /// Retrieve the closest points based on vector similarity and given filtering conditions.
     /// </summary>
     /// <param name="collectionName">Name of the collection to search in.</param>
     /// <param name="searchPointsBatchedRequest">The search points request.</param>
