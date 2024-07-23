@@ -13,7 +13,7 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
         switch (reader.TokenType)
         {
             case JsonTokenType.StartArray:
-            {
+
                 var vectorValuesJArray = JsonNode.Parse(ref reader)?.AsArray();
 
                 // vectorValuesJArray can either contain a multivector or a single vector
@@ -24,9 +24,9 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
                         $"Unable to deserialize Qdrant vector value as {typeToConvert}. The vector value is missing");
                 }
 
-                // here we are certain that parsed valuer is existing non-empty array
+                // here we are certain that parsed value is a non-null non-empty array
                 // check first value - if it is JArray itself - we are dealing with multivector
-                // if it is a float value - we are deserializing a single vector
+                // if it is a number value - we are deserializing a single vector
 
                 var firstJArrayValueKind = vectorValuesJArray[0]!.GetValueKind();
 
@@ -47,7 +47,7 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
 
                         return new MultiVector()
                         {
-                            Vectors =multiVectorValuesArray
+                            Vectors = multiVectorValuesArray
                         };
 
                     case JsonValueKind.Undefined:
@@ -59,54 +59,56 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-            }
 
             case JsonTokenType.StartObject:
-            {
-                // means named vectors collection or a sparse vector:
+
+                // means named vectors collection or a sparse vector
 
                 // name - vector name
                 // value can be either a simple vector
                 // "vector1" : [0.0, 0.1, 0.2], "vector2" " [10, 11, 12]
-
-                // sparse vector
+                // or a sparse vector
                 // "vector1" : {"indices": [6, 7], "values": [1.0, 2.0]}
 
                 var namedVectorsJObject = JsonNode.Parse(ref reader);
 
-                var namedVectorsObject = namedVectorsJObject.Deserialize<Dictionary<string, JsonNode>>(
-                    JsonSerializerConstants.SerializerOptions);
+                var namedVectorsObject = namedVectorsJObject
+                    .Deserialize<Dictionary<string, JsonNode>>(JsonSerializerConstants.SerializerOptions);
 
                 var vectors = new Dictionary<string, VectorBase>();
 
                 foreach (var (vectorName, vector) in namedVectorsObject)
                 {
-                    if (vector is JsonArray singleVectorValues)
+                    switch (vector)
                     {
-                        vectors.Add(
-                            vectorName,
-                            new Vector()
-                            {
-                                VectorValues = singleVectorValues.GetValues<float>().ToArray()
-                            });
-                    }
-                    else if(vector is JsonObject sparseVectorValues)
-                    {
-                        var sparseVector =
-                            sparseVectorValues.Deserialize<SparseVector>(JsonSerializerConstants.SerializerOptions);
+                        case JsonArray singleVectorValues:
+                            vectors.Add(
+                                vectorName,
+                                new Vector()
+                                {
+                                    VectorValues = singleVectorValues.GetValues<float>().ToArray()
+                                }
+                            );
+                            break;
 
-                        vectors.Add(vectorName, sparseVector);
-                    }
-                    else
-                    {
-                        throw new QdrantJsonParsingException(
-                            $"Unable to deserialize Qdrant vector value. Unexpected vector representation : {vector.GetType()}");
+                        case JsonObject sparseVectorValues:
+                            var sparseVector = sparseVectorValues
+                                .Deserialize<SparseVector>(JsonSerializerConstants.SerializerOptions);
+
+                            vectors.Add(vectorName, sparseVector);
+                            break;
+
+                        default:
+                            throw new QdrantJsonParsingException(
+                                $"Unable to deserialize Qdrant vector value. Unexpected vector representation : {vector.GetType()}");
                     }
                 }
 
-                return new NamedVectors() {Vectors = vectors};
-            }
-
+                return new NamedVectors()
+                {
+                    Vectors = vectors
+                };
+            
             default:
                 throw new QdrantJsonParsingException("Unable to deserialize Qdrant vector value");
         }
@@ -122,26 +124,26 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
 
             case NamedVectors nv:
                 writer.WriteStartObject();
+            {
+                // named vector contains either Vector or SparseVector as value
+
+                foreach (var (vectorName, vector) in nv.Vectors)
                 {
-                    // named vector contains either Vector or SparseVector as value
+                    writer.WritePropertyName(vectorName);
 
-                    foreach (var (vectorName, vector) in nv.Vectors)
+                    if (vector.IsSparseVector)
                     {
-                        writer.WritePropertyName(vectorName);
-
-                        if (vector.IsSparseVector)
-                        {
-                            var sparseVector = vector.AsSparseVector();
-                            JsonSerializer.Serialize(writer, sparseVector, JsonSerializerConstants.SerializerOptions);
-                        }
-                        else
-                        {
-                            // means this vector is a non-sparse one
-                            var singleVector = vector.AsSingleVector();
-                            JsonSerializer.Serialize(writer, singleVector.VectorValues, JsonSerializerConstants.SerializerOptions);
-                        }
+                        var sparseVector = vector.AsSparseVector();
+                        JsonSerializer.Serialize(writer, sparseVector, JsonSerializerConstants.SerializerOptions);
+                    }
+                    else
+                    {
+                        // means this vector is a non-sparse one
+                        var singleVector = vector.AsSingleVector();
+                        JsonSerializer.Serialize(writer, singleVector.VectorValues, JsonSerializerConstants.SerializerOptions);
                     }
                 }
+            }
                 writer.WriteEndObject();
                 return;
 
