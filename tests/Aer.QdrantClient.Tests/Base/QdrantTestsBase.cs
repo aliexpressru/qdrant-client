@@ -27,6 +27,7 @@ public class QdrantTestsBase
 
     protected const string TestShardKey1 = "shard1";
     protected const string TestShardKey2 = "shard2";
+    protected const int TestShardKeyInt1 = 1;
 
     protected const string TestCollectionName2 = "test_collection_2";
 

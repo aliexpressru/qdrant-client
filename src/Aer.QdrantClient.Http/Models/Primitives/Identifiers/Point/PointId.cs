@@ -1,13 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Exceptions;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
 
 namespace Aer.QdrantClient.Http.Models.Primitives;
 
 /// <summary>
 /// Represents integer or string point identifier.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public abstract class PointId : IEquatable<PointId>
 {
     /// <summary>
@@ -124,6 +123,51 @@ public abstract class PointId : IEquatable<PointId>
     /// <inheritdoc/>
     public virtual bool Equals(PointId other)
         => EqualsCore(other);
+
+    /// <summary>
+    /// Determines whether point id <paramref name="x"/> equals point id <paramref name="y"/>.
+    /// </summary>
+    /// <param name="x">First point id to compare.</param>
+    /// <param name="y">Second point id to compare.</param>
+    public static bool operator ==(PointId x, PointId y)
+    {
+        if (x is null
+            && y is null)
+        {
+            return true;
+        }
+
+        if (x is null || y is null)
+        {
+            // here x or y is not null
+            return false;
+        }
+
+        return x.Equals(y);
+    }
+
+    /// <summary>
+    /// Determines whether point id <paramref name="x"/> is not equal to the point id <paramref name="y"/>.
+    /// </summary>
+    /// <param name="x">First point id to compare.</param>
+    /// <param name="y">Second point id to compare.</param>
+    public static bool operator !=(PointId x, PointId y)
+    {
+        if (x is null
+            && y is null)
+        {
+            return false;
+        }
+
+        if (x is null
+            || y is null)
+        {
+            // here x or y is not null
+            return true;
+        }
+
+        return !x.Equals(y);
+    }
 
     /// <inheritdoc/>
     public override bool Equals(object obj)
