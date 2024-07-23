@@ -21,7 +21,7 @@ public class Point
     /// Gets or sets the point vector.
     /// </summary>
     [JsonConverter(typeof(VectorJsonConverter))]
-    public required VectorBase Vector{ get; init; }
+    public VectorBase Vector{ get; init; }
 
     /// <summary>
     /// Gets or sets the point payload.
