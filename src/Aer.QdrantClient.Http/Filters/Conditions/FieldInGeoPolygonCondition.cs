@@ -35,7 +35,7 @@ internal class FieldInGeoPolygonCondition : FilterConditionBase
                         jsonWriter.WriteStartObject();
                         {
                             jsonWriter.WriteNumber("lat", exteriorPolygonPoint.Latitude);
-                            jsonWriter.WriteNumber("lon", exteriorPolygonPoint.Longtitude);
+                            jsonWriter.WriteNumber("lon", exteriorPolygonPoint.Longitude);
                         }
                         jsonWriter.WriteEndObject();
                     }
@@ -63,7 +63,7 @@ internal class FieldInGeoPolygonCondition : FilterConditionBase
                                 jsonWriter.WriteStartObject();
                                 {
                                     jsonWriter.WriteNumber("lat", interiorPolygonPoint.Latitude);
-                                    jsonWriter.WriteNumber("lon", interiorPolygonPoint.Longtitude);
+                                    jsonWriter.WriteNumber("lon", interiorPolygonPoint.Longitude);
                                 }
                                 jsonWriter.WriteEndObject();
                             }

@@ -1,13 +1,13 @@
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Exceptions;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
 
 namespace Aer.QdrantClient.Http.Models.Primitives;
 
 /// <summary>
 /// Represents integer or string point identifier.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public abstract class SearchGroupId : IEquatable<SearchGroupId>
 {
     #region Nested classes
@@ -15,12 +15,12 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
     /// <summary>
     /// Integer search group identifier.
     /// </summary>
-    public class IntegerSearchGroupId : SearchGroupId
+    private class IntegerSearchGroupId : SearchGroupId
     {
         /// <summary>
         /// The identifier value.
         /// </summary>
-        public long Id { get; }
+        private readonly long _id;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GuidPointId"/> class.
@@ -28,19 +28,19 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
         /// <param name="id">The identifier value.</param>
         public IntegerSearchGroupId(long id)
         {
-            Id = id;
+            _id = id;
         }
 
         /// <inheritdoc/>
         public override object ToJson()
-            => Id.ToString();
+            => _id.ToString();
 
         /// <inheritdoc/>
         public override ulong AsInteger()
             => throw new QdrantSearchGroupIdConversionException(GetType().FullName, typeof(int).FullName);
 
         /// <inheritdoc/>
-        public override string AsString() => Id.ToString();
+        public override string AsString() => _id.ToString();
 
         /// <inheritdoc/>
         protected override bool EqualsCore(SearchGroupId other)
@@ -60,27 +60,27 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
                 return false;
             }
 
-            return Id == ((IntegerSearchGroupId) other).Id;
+            return _id == ((IntegerSearchGroupId) other)._id;
         }
 
         /// <inheritdoc/>
         protected override int GetHashCodeCore()
-            => Id.GetHashCode();
+            => _id.GetHashCode();
 
         /// <inheritdoc />
         public override string ToString()
-            => Id.ToString();
+            => _id.ToString();
     }
 
     /// <summary>
     /// string search group identifier.
     /// </summary>
-    public class StringSearchGroupId : SearchGroupId
+    private class StringSearchGroupId : SearchGroupId
     {
         /// <summary>
         /// The identifier value.
         /// </summary>
-        public string Id { get; }
+        private readonly string _id;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GuidPointId"/> class.
@@ -88,18 +88,18 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
         /// <param name="id">The identifier value.</param>
         public StringSearchGroupId(string id)
         {
-            Id = id;
+            _id = id;
         }
 
         /// <inheritdoc/>
-        public override object ToJson() => Id;
+        public override object ToJson() => _id;
 
         /// <inheritdoc/>
         public override ulong AsInteger()
             => throw new QdrantSearchGroupIdConversionException(GetType().FullName, typeof(int).FullName);
 
         /// <inheritdoc/>
-        public override string AsString() => Id;
+        public override string AsString() => _id;
 
         /// <inheritdoc/>
         protected override bool EqualsCore(SearchGroupId other)
@@ -119,15 +119,15 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
                 return false;
             }
 
-            return Id == ((StringSearchGroupId) other).Id;
+            return _id == ((StringSearchGroupId) other)._id;
         }
 
         /// <inheritdoc/>
         protected override int GetHashCodeCore()
-            => Id.GetHashCode();
+            => _id.GetHashCode();
 
         /// <inheritdoc />
-        public override string ToString() => Id;
+        public override string ToString() => _id;
     }
 
     #endregion

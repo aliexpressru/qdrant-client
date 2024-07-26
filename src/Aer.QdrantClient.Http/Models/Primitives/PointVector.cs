@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
@@ -7,6 +8,7 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 /// <summary>
 /// Represents a single point with associated vector.
 /// </summary>
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public class PointVector
 {
     /// <summary>

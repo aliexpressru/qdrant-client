@@ -103,7 +103,8 @@ public class CollectionParametersTests : QdrantTestsBase
             ["Vector_4"] = new VectorConfigurationBase.SingleVectorConfiguration(
                 VectorDistanceMetric.Manhattan,
                 50,
-                isServeVectorsFromDisk: true),
+                isServeVectorsFromDisk: true,
+                multivectorConfiguration: new MultivectorConfiguration(MultivectorComparator.MaxSim))
         };
 
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(

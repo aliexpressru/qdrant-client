@@ -1,16 +1,15 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
-using Aer.QdrantClient.Http.Models.Shared;
 
-namespace Aer.QdrantClient.Http.Models.Requests.Public;
+namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 /// <summary>
 /// Represents a grouped search lookup parameters.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class LookupSearchParameters
 {
     /// <summary>

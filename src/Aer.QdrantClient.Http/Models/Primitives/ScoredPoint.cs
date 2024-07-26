@@ -11,10 +11,10 @@ public sealed class ScoredPoint : Point
     /// <summary>
     /// Point version.
     /// </summary>
-    public int Version { get; set; }
+    public int Version { get; init; }
 
     /// <summary>
     /// Points vector distance to the query vector.
     /// </summary>
-    public float Score { get; set; }
+    public float Score { get; init; }
 }

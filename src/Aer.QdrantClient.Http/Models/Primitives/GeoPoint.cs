@@ -11,24 +11,24 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 public class GeoPoint
 {
     /// <summary>
-    /// The longtitude.
+    /// The longitude.
     /// </summary>
-    public required double Longtitude { get; set; }
+    public required double Longitude { get; init; }
 
     /// <summary>
     /// The latitude.
     /// </summary>
-    public required double Latitude { get; set; }
+    public required double Latitude { get; init; }
 
     /// <summary>
     /// Initializes new instance of <see cref="GeoPoint"/> with given coordinates.
     /// </summary>
     /// <param name="latitude">The point latitude.</param>
-    /// <param name="longtitude">The point longtitude.</param>
+    /// <param name="longitude">The point longitude.</param>
     [SetsRequiredMembers]
-    public GeoPoint(double latitude, double longtitude)
+    public GeoPoint(double latitude, double longitude)
     {
-        Longtitude = longtitude;
+        Longitude = longitude;
         Latitude = latitude;
     }
 }

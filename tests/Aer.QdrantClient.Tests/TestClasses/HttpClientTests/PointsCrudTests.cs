@@ -6,6 +6,7 @@ using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Requests.Public;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Helpers;
@@ -977,7 +978,7 @@ internal class PointsCrudTests : QdrantTestsBase
 
             foreach (var vectorName in vectorNames)
             {
-                var pointVector = namedPointVectors[vectorName].AsSingleVector().Default;
+                var pointVector = namedPointVectors[vectorName].AsDenseVector().Default;
                 pointVector.Should().NotBeNullOrEmpty();
             }
         }
@@ -1071,7 +1072,7 @@ internal class PointsCrudTests : QdrantTestsBase
                 {
                     namedPointVectors.Vectors.ContainsKey(vectorName).Should().BeTrue();
 
-                    var pointVector = namedPointVectors[vectorName].AsSingleVector().Default;
+                    var pointVector = namedPointVectors[vectorName].AsDenseVector().Default;
                     pointVector.Should().NotBeNullOrEmpty();
                 }
                 else
@@ -1200,7 +1201,7 @@ internal class PointsCrudTests : QdrantTestsBase
                     continue;
                 }
 
-                var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsSingleVector().Default;
+                var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsDenseVector().Default;
                 var upsertPointNamedVectorValue = upsertPointVector.Value;
 
                 readPointNamedVectorValue.Should().Equal(upsertPointNamedVectorValue);
@@ -1311,7 +1312,7 @@ internal class PointsCrudTests : QdrantTestsBase
             {
                 readPointVectors.ContainsVector(upsertPointVector.Key).Should().BeTrue();
 
-                var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsSingleVector().Default;
+                var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsDenseVector().Default;
                 var upsertPointNamedVectorValue = upsertPointVector.Value;
 
                 readPointNamedVectorValue.Should().Equal(upsertPointNamedVectorValue);
@@ -1517,7 +1518,7 @@ internal class PointsCrudTests : QdrantTestsBase
 
                 if (readPointVectors[upsertPointVector.Key].VectorKind != VectorKind.Sparse)
                 {
-                    var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsSingleVector().Default;
+                    var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsDenseVector().Default;
                     var upsertPointNamedVectorValue = upsertPointVector.Value;
 
                     readPointNamedVectorValue.Should().Equal(upsertPointNamedVectorValue);
@@ -1724,9 +1725,9 @@ internal class PointsCrudTests : QdrantTestsBase
                     readPointSparseVectorValue.Indices.Should().Equal(upsertPointSparseVectorValue.Indices);
                     readPointSparseVectorValue.Values.Should().Equal(upsertPointSparseVectorValue.Values);
                 }
-                else if (readPointVectorKind == VectorKind.Single)
+                else if (readPointVectorKind == VectorKind.Dense)
                 {
-                    var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsSingleVector().Default;
+                    var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsDenseVector().Default;
                     var upsertPointNamedVectorValue = upsertPointVector.Value;
 
                     readPointNamedVectorValue.Should().Equal(upsertPointNamedVectorValue);
@@ -1788,7 +1789,7 @@ internal class PointsCrudTests : QdrantTestsBase
 
         UpsertPointsRequest<TestPayload>.UpsertPoint thirdPoint = new(
             id: 3,
-            vector: new Vector(){
+            vector: new DenseVector(){
                 VectorValues = CreateTestVector(vectorLength, VectorDataType.Float16)
             },
             payload: 3);
@@ -1836,13 +1837,13 @@ internal class PointsCrudTests : QdrantTestsBase
 
                 readPointVector.Vectors.Should().BeEquivalentTo(upsertPoint.Vector.AsMultiVector().Vectors);
             }
-            else if (upsertPoint.Vector.VectorKind == VectorKind.Single)
+            else if (upsertPoint.Vector.VectorKind == VectorKind.Dense)
             {
                 // readPoint is read as single component vector multivector (!) so compare Default vector
                 readPoint.Vector.VectorKind.Should().Be(VectorKind.Multi);
                 var readPointVector = readPoint.Vector.AsMultiVector();
 
-                readPointVector.Default.Should().BeEquivalentTo(upsertPoint.Vector.AsSingleVector().VectorValues);
+                readPointVector.Default.Should().BeEquivalentTo(upsertPoint.Vector.AsDenseVector().VectorValues);
             }
             else
             {

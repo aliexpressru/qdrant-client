@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-namespace Aer.QdrantClient.Http.Models.Shared;
+namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 /// <summary>
 /// The selector for the field that the results should be ordered by.

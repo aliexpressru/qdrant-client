@@ -1,11 +1,11 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
+﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Aer.QdrantClient.Http.Models.Shared;
+namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 /// <summary>
 /// Represents a returned point payload selector.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public abstract class PayloadPropertiesSelector
 {
     internal class AllPayloadPropertiesSelector : PayloadPropertiesSelector

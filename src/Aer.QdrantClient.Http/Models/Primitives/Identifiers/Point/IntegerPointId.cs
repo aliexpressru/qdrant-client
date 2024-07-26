@@ -1,13 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Exceptions;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
 
 namespace Aer.QdrantClient.Http.Models.Primitives;
 
 /// <summary>
 /// Integer point identifier.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class IntegerPointId : PointId
 {
     /// <summary>

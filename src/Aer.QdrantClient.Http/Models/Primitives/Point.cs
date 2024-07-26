@@ -27,16 +27,16 @@ public class Point
     /// Gets or sets the point payload.
     /// </summary>
     [JsonConverter(typeof(PayloadJsonConverter))]
-    public Payload Payload { get; set; }
+    public Payload Payload { get; init; }
 
     /// <summary>
     /// Gets or sets the point shard key.
     /// </summary>
     [JsonConverter(typeof(ShardKeyJsonConverter))]
-    public ShardKey ShardKey { get; set; }
+    public ShardKey ShardKey { get; init; }
 
     /// <summary>
     /// Order-by value. Represents an order of the point if order-by selector is used.
     /// </summary>
-    public double OrderValue { get; set; }
+    public double OrderValue { get; init; }
 }

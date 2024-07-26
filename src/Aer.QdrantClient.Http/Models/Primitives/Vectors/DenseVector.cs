@@ -4,11 +4,11 @@ using System.Text.Json.Serialization;
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
 /// <summary>
-/// Represents a single unnamed vector.
+/// Represents a dense vector.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public sealed class Vector : VectorBase
+public sealed class DenseVector : VectorBase
 {
     /// <summary>
     /// The vector values array.
@@ -17,7 +17,7 @@ public sealed class Vector : VectorBase
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public override VectorKind VectorKind => VectorKind.Single;
+    public override VectorKind VectorKind => VectorKind.Dense;
 
     /// <inheritdoc/>
     [JsonIgnore]

@@ -6,9 +6,9 @@
 public enum VectorKind
 {
     /// <summary>
-    /// Simple single float vector.
+    /// Dense float vector.
     /// </summary>
-    Single,
+    Dense,
 
     /// <summary>
     /// A dictionary of named vectors by names.

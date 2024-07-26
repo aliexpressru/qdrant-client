@@ -5,8 +5,9 @@ using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
+using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Responses;
-using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http;
 
@@ -822,6 +823,90 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             discoverPointsBatchedRequest,
+            cancellationToken,
+            retryCount,
+            retryDelay,
+            onRetry);
+
+        return response;
+    }
+
+    /// <summary>
+    /// Universally query points. This endpoint covers all capabilities of search, recommend, discover, filters.
+    /// But also enables hybrid and multi-stage queries.
+    /// </summary>
+    /// <param name="collectionName">Name of the collection to search in.</param>
+    /// <param name="queryPointsRequest">The universal query API request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="consistency">The consistency settings.</param>
+    /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// </param>
+    public async Task<QueryPointsResponse> QueryPoints(
+        string collectionName,
+        QueryPointsRequest queryPointsRequest,
+        CancellationToken cancellationToken,
+        ReadPointsConsistency consistency = null,
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int> onRetry = null)
+    {
+        var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
+
+        var url =
+            $"/collections/{collectionName}/points/query?consistency={consistencyValue}&timeout={GetTimeoutValueOrDefault(timeout)}";
+
+        var response = await ExecuteRequest<QueryPointsRequest, QueryPointsResponse>(
+            url,
+            HttpMethod.Post,
+            queryPointsRequest,
+            cancellationToken,
+            retryCount,
+            retryDelay,
+            onRetry);
+
+        return response;
+    }
+
+    /// <summary>
+    /// Universally query points in batch. This endpoint covers all capabilities of search, recommend, discover, filters.
+    /// But also enables hybrid and multi-stage queries.
+    /// </summary>
+    /// <param name="collectionName">Name of the collection to search in.</param>
+    /// <param name="queryPointsRequest">The universal query API request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="consistency">The consistency settings.</param>
+    /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// </param>
+    public async Task<QueryPointsBatchedResponse> QueryPointsBatched(
+        string collectionName,
+        QueryPointsBatchedRequest queryPointsRequest,
+        CancellationToken cancellationToken,
+        ReadPointsConsistency consistency = null,
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int> onRetry = null)
+    {
+        var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
+
+        var url =
+            $"/collections/{collectionName}/points/query/batch?consistency={consistencyValue}&timeout={GetTimeoutValueOrDefault(timeout)}";
+
+        var response = await ExecuteRequest<QueryPointsBatchedRequest, QueryPointsBatchedResponse>(
+            url,
+            HttpMethod.Post,
+            queryPointsRequest,
             cancellationToken,
             retryCount,
             retryDelay,
