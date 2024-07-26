@@ -37,6 +37,33 @@ public sealed class SparseVector : VectorBase
     /// </summary>
     /// <param name="indices">The indices of non-zero vector elements.</param>
     /// <param name="values">The non-zero vector elements.</param>
+    [JsonConstructor]
+    public SparseVector(HashSet<uint> indices, float[] values)
+    {
+        if (indices is not {Count: > 0})
+        {
+            throw new ArgumentException($"{nameof(indices)} array can't be empty", nameof(indices));
+        }
+
+        if (values is not {Length: > 0})
+        {
+            throw new ArgumentException($"{nameof(values)} array can't be empty", nameof(values));
+        }
+
+        if (indices.Count != values.Length)
+        {
+            throw new ArgumentException($"{nameof(indices)} and {nameof(values)} arrays must be the same length");
+        }
+
+        Indices = indices;
+        Values = values;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="SparseVector"/> from indices and values.
+    /// </summary>
+    /// <param name="indices">The indices of non-zero vector elements.</param>
+    /// <param name="values">The non-zero vector elements.</param>
     public SparseVector(uint[] indices, float[] values)
     {
         if (indices is not {Length: > 0})
