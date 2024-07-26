@@ -215,7 +215,9 @@ public class QdrantTestsBase
         await qdrantHttpClient.DeleteAllCollectionSnapshots(TestCollectionName2, CancellationToken.None);
     }
 
-    protected float[] CreateTestVector(uint vectorLength, VectorDataType vectorDataType)
+    protected float[] CreateTestVector(
+        uint vectorLength,
+        VectorDataType vectorDataType = VectorDataType.Float32)
     {
         return vectorDataType switch
         {
@@ -226,37 +228,55 @@ public class QdrantTestsBase
         };
     }
 
-    protected float[] CreateTestFloat32Vector(uint vectorLength)
+    protected (uint[] Indices, float[] Values) CreateTestSparseVector(
+        uint vectorLength,
+        uint numberOfNonZeroIndices,
+        VectorDataType vectorDataType = VectorDataType.Float32)
+    {
+        var values = CreateTestVector(numberOfNonZeroIndices, vectorDataType);
+
+        var indices = Enumerable.Range(0, (int) vectorLength)
+            .Select(_ => (uint) Random.Shared.Next((int) vectorLength + 1))
+            .Distinct()
+            .Take((int) numberOfNonZeroIndices)
+            .OrderBy(v => v)
+            .ToArray();
+
+        return (indices, values);
+    }
+
+    protected float[][] CreateTestMultivector(
+        uint vectorLength,
+        uint componentVectorCount,
+        VectorDataType vectorDataType)
+    {
+        var ret = new float[componentVectorCount][];
+
+        for (int i = 0; i < componentVectorCount; i++)
+        {
+            ret[i] = CreateTestVector(vectorLength, vectorDataType);
+        }
+
+        return ret;
+    }
+
+    private float[] CreateTestFloat32Vector(uint vectorLength)
         =>
             Enumerable.Range(0, (int)vectorLength)
                 .Select(_ => float.CreateTruncating(Random.Shared.NextDouble()))
                 .ToArray();
 
-    protected float[] CreateTestFloat16Vector(uint vectorLength)
+    private float[] CreateTestFloat16Vector(uint vectorLength)
         =>
             Enumerable.Range(0, (int) vectorLength)
                 .Select(_ => (float)Half.CreateTruncating(Random.Shared.NextDouble()))
                 .ToArray();
 
-    protected float[] CreateTestByteVector(uint vectorLength)
+    private float[] CreateTestByteVector(uint vectorLength)
         =>
             Enumerable.Range(0, (int) vectorLength)
                 .Select(_ => (float)byte.CreateTruncating(Random.Shared.Next()))
                 .ToArray();
-
-    protected (uint[] Indices, float[] Values) CreateTestSparseVector(uint vectorLength, uint numberOfNonZeroIndices)
-    {
-        var values = CreateTestFloat32Vector(numberOfNonZeroIndices);
-
-        var indices = Enumerable.Range(0, (int) vectorLength)
-            .Select(_ => (uint) Random.Shared.Next((int) vectorLength + 1))
-            .Distinct()
-            .Take((int)numberOfNonZeroIndices)
-            .OrderBy(v=>v)
-            .ToArray();
-
-        return (indices, values);
-    }
 
     protected VectorBase CreateTestNamedVectors(uint vectorLength, int namedVectorsCount)
     {

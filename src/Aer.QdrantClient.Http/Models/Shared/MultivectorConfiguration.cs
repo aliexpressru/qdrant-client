@@ -20,7 +20,7 @@ public class MultivectorConfiguration
     /// </summary>
     /// <param name="comparator">The comparator to be used with multivector component vectors.</param>
     [SetsRequiredMembers]
-    public MultivectorConfiguration(MultivectorComparator comparator = MultivectorComparator.MaxSim)
+    public MultivectorConfiguration(MultivectorComparator comparator)
     {
         Comparator = comparator;
     }

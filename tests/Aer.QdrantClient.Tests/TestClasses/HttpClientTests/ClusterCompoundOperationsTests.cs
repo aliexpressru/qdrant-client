@@ -100,7 +100,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
-                    CreateTestFloat32Vector(vectorSize),
+                    CreateTestVector(vectorSize),
                     i
                 )
             );

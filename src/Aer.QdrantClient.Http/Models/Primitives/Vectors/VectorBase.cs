@@ -34,24 +34,6 @@ public abstract class VectorBase
     public abstract float[] Default { get; }
 
     /// <summary>
-    /// <c>true</c> if this instance represents a named vector collection.
-    /// </summary>
-    [JsonIgnore]
-    public bool IsNamedVectors => this is NamedVectors;
-
-    /// <summary>
-    /// <c>true</c> if this instance represents a sparse vector.
-    /// </summary>
-    [JsonIgnore]
-    public bool IsSparseVector => this is SparseVector;
-
-    /// <summary>
-    /// <c>true</c> if this instance represents a multivector.
-    /// </summary>
-    [JsonIgnore]
-    public bool IsMultivector => this is MultiVector;
-
-    /// <summary>
     /// Gets the named vector value if this instance is named vector collection
     /// or throws if it is the single vector instance.
     /// </summary>
@@ -188,6 +170,17 @@ public abstract class VectorBase
     /// </summary>
     /// <param name="vector">Instance to get single vector from.</param>
     public static implicit operator float[](VectorBase vector) => vector?.Default;
+
+    /// <summary>
+    /// Implicitly converts a jagged array of floats to a multivector instance.
+    /// </summary>
+    /// <param name="multiVectorComponentVectors">The multivector component vecvtors.</param>
+    public static implicit operator VectorBase(float[][] multiVectorComponentVectors)
+        =>
+            new MultiVector()
+            {
+                Vectors = multiVectorComponentVectors
+            };
 
     #endregion
 }

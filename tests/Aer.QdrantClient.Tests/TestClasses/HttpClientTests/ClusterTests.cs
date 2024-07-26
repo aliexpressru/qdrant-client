@@ -232,12 +232,12 @@ public class ClusterTests : QdrantTestsBase
 
         UpsertPointsRequest<TestPayload>.UpsertPoint firstShardPoint = new(
             id: 1,
-            vector: CreateTestVector(vectorSize, VectorDataType.Float32),
+            vector: CreateTestVector(vectorSize),
             payload: 1);
 
         UpsertPointsRequest<TestPayload>.UpsertPoint secondShardPoint = new(
             id: 2,
-            vector: CreateTestVector(vectorSize, VectorDataType.Float32),
+            vector: CreateTestVector(vectorSize),
             payload: 2);
 
         var upsertOnFirstShardResponse = await _qdrantHttpClient.UpsertPoints(

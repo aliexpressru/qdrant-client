@@ -36,12 +36,12 @@ public class PointsDiscoverTests : QdrantTestsBase
                     new[]
                     {
                         new KeyValuePair<float[], float[]>(
-                            CreateTestFloat32Vector(10),
-                            CreateTestFloat32Vector(10)
+                            CreateTestVector(10),
+                            CreateTestVector(10)
                         )
                     },
                     limit: 10,
-                    target: CreateTestFloat32Vector(10)),
+                    target: CreateTestVector(10)),
                 CancellationToken.None);
 
         discoverPointInNonexistentCollectionResult.Status.IsSuccess.Should().BeFalse();
@@ -68,12 +68,12 @@ public class PointsDiscoverTests : QdrantTestsBase
                     new[]
                     {
                         new KeyValuePair<float[], float[]>(
-                            CreateTestFloat32Vector(10),
-                            CreateTestFloat32Vector(10)
+                            CreateTestVector(10),
+                            CreateTestVector(10)
                         )
                     },
                     limit: 10,
-                    target: CreateTestFloat32Vector(10)),
+                    target: CreateTestVector(10)),
                 CancellationToken.None);
 
         discoverNonexistentPointResult.Status.IsSuccess.Should().BeTrue();
@@ -97,7 +97,7 @@ public class PointsDiscoverTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var vector1Vector2Vector = CreateTestFloat32Vector(vectorSize);
+        var vector1Vector2Vector = CreateTestVector(vectorSize);
 
         var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>(){
             new(
@@ -118,7 +118,7 @@ public class PointsDiscoverTests : QdrantTestsBase
                 }),
             new(
                 PointId.Integer(3),
-                CreateTestFloat32Vector(vectorSize),
+                CreateTestVector(vectorSize),
                 new TestPayload()
                 {
                     Integer = 3,
@@ -177,7 +177,7 @@ public class PointsDiscoverTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var vector1Vector2Vector = CreateTestFloat32Vector(vectorSize);
+        var vector1Vector2Vector = CreateTestVector(vectorSize);
 
         var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
         {
@@ -199,7 +199,7 @@ public class PointsDiscoverTests : QdrantTestsBase
                 }),
             new(
                 PointId.Integer(3),
-                CreateTestFloat32Vector(vectorSize),
+                CreateTestVector(vectorSize),
                 new TestPayload()
                 {
                     Integer = 3,
