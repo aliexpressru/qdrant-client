@@ -160,6 +160,15 @@ public abstract class VectorBase
         => new SparseVector(sparseVectorComponents.Indices, sparseVectorComponents.Values);
 
     /// <summary>
+    /// Implicitly converts an indices-values tuple to a vector instance.
+    /// Indices must be unique.
+    /// Values and Indices must be the same length.
+    /// </summary>
+    /// <param name="sparseVectorComponents">The sparse vector components.</param>
+    public static implicit operator VectorBase((HashSet<uint> Indices, float[] Values) sparseVectorComponents)
+        => new SparseVector(sparseVectorComponents.Indices, sparseVectorComponents.Values);
+
+    /// <summary>
     /// Implicitly converts the <see cref="VectorBase"/> instance to an array of <see cref="float"/> values.
     /// Returns <see cref="Default"/> vector.
     /// </summary>
