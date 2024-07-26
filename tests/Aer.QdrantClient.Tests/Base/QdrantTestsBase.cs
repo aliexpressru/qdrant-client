@@ -123,7 +123,8 @@ public class QdrantTestsBase
                         }
                         else
                         {
-                            TestContext.Write($"The expected qdrant collection data directory '{qdrantCollectionsDataDirectoryPath}' does not exist check the path");
+                            TestContext.Write(
+                                $"The expected qdrant collection data directory '{qdrantCollectionsDataDirectoryPath}' does not exist check the path");
                             break;
                         }
 
@@ -156,9 +157,10 @@ public class QdrantTestsBase
                         {
                             Directory.Delete(collectionDataDirectory.FullName, recursive: true);
                         }
-                        catch(Exception e)
+                        catch (Exception e)
                         {
-                            TestContext.Write($"Can't delete collection data directory '{collectionDataDirectory.FullName}' : {e}");
+                            TestContext.Write(
+                                $"Can't delete collection data directory '{collectionDataDirectory.FullName}' : {e}");
                             // ignore
                         }
                     }
@@ -181,7 +183,8 @@ public class QdrantTestsBase
                         }
                         catch (Exception e)
                         {
-                            TestContext.Write($"Can't delete collection snapshot directory '{collectionSnapshotDirectory.FullName}' : {e}");
+                            TestContext.Write(
+                                $"Can't delete collection snapshot directory '{collectionSnapshotDirectory.FullName}' : {e}");
                             // ignore
                         }
                     }
@@ -189,7 +192,7 @@ public class QdrantTestsBase
 
                 wasException = false;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 TestContext.Write($"Exception happened during collection deletion {e}");
                 // ignore and retry
@@ -207,6 +210,8 @@ public class QdrantTestsBase
     private async Task DeleteCollectionsAndSnapshots(QdrantHttpClient qdrantClient = null)
     {
         var qdrantHttpClient = qdrantClient ?? ServiceProvider.GetRequiredService<QdrantHttpClient>();
+
+        await qdrantHttpClient.SetLockOptions(areWritesDisabled: false, "", CancellationToken.None);
 
         await qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None);
         await qdrantHttpClient.DeleteCollection(TestCollectionName2, CancellationToken.None);
@@ -262,20 +267,20 @@ public class QdrantTestsBase
 
     private float[] CreateTestFloat32Vector(uint vectorLength)
         =>
-            Enumerable.Range(0, (int)vectorLength)
+            Enumerable.Range(0, (int) vectorLength)
                 .Select(_ => float.CreateTruncating(Random.Shared.NextDouble()))
                 .ToArray();
 
     private float[] CreateTestFloat16Vector(uint vectorLength)
         =>
             Enumerable.Range(0, (int) vectorLength)
-                .Select(_ => (float)Half.CreateTruncating(Random.Shared.NextDouble()))
+                .Select(_ => (float) Half.CreateTruncating(Random.Shared.NextDouble()))
                 .ToArray();
 
     private float[] CreateTestByteVector(uint vectorLength)
         =>
             Enumerable.Range(0, (int) vectorLength)
-                .Select(_ => (float)byte.CreateTruncating(Random.Shared.Next()))
+                .Select(_ => (float) byte.CreateTruncating(Random.Shared.Next()))
                 .ToArray();
 
     protected VectorBase CreateTestNamedVectors(uint vectorLength, int namedVectorsCount)
@@ -315,19 +320,22 @@ public class QdrantTestsBase
     /// Returns <see cref="QdrantHttpClient"/> for 2-node cluster.
     /// </summary>
     protected QdrantHttpClient GetClusterClient() =>
-        new ("localhost", apiKey: "test", port: 6343, useHttps: false);
+        new("localhost", apiKey: "test", port: 6343, useHttps: false);
 
-    internal async Task<(IReadOnlyList<UpsertPointsRequest<TPayload>.UpsertPoint> UpsertPoints,
-        Dictionary<ulong, UpsertPointsRequest<TPayload>.UpsertPoint> UpsertPointsByPointIds,
-        IReadOnlyList<PointId> UpsertPointIds)> PrepareCollection<TPayload>(
-        QdrantHttpClient qdrantHttpClient,
-        string collectionName,
-        VectorDistanceMetric distanceMetric = VectorDistanceMetric.Dot,
-        uint vectorSize = 10U,
-        int vectorCount = 10,
-        Func<int, TPayload> payloadInitializerFunction = null,
-        QuantizationConfiguration quantizationConfig = null)
-    where TPayload : Payload, new()
+    internal async Task<
+            (IReadOnlyList<UpsertPointsRequest<TPayload>.UpsertPoint> UpsertPoints,
+            Dictionary<ulong, UpsertPointsRequest<TPayload>.UpsertPoint> UpsertPointsByPointIds,
+            IReadOnlyList<PointId> UpsertPointIds)
+        >
+        PrepareCollection<TPayload>(
+            QdrantHttpClient qdrantHttpClient,
+            string collectionName,
+            VectorDistanceMetric distanceMetric = VectorDistanceMetric.Dot,
+            uint vectorSize = 10U,
+            int vectorCount = 10,
+            Func<int, TPayload> payloadInitializerFunction = null,
+            QuantizationConfiguration quantizationConfig = null)
+        where TPayload : Payload, new()
     {
         await qdrantHttpClient.CreateCollection(
             collectionName,
@@ -353,7 +361,7 @@ public class QdrantTestsBase
                 new(
                     pointId,
                     CreateTestFloat32Vector(vectorSize),
-                    (TPayload)payload
+                    (TPayload) payload
                 )
             );
 
@@ -410,7 +418,9 @@ public class QdrantTestsBase
             // with manual shard placement we need to manually specify all replica peers,
             // since qdrant allows having collection replication factor of 2 while having only one peer
             // for a specific shard. Thus, we need to manually tell it both primary peer and a replica peer
-            placement: replicationFactor == 1 ? [allPeers.First()] : [..allPeers])).EnsureSuccess();
+            placement: replicationFactor == 1
+                ? [allPeers.First()]
+                : [..allPeers])).EnsureSuccess();
 
         (await qdrantHttpClient.CreateShardKey(
             collectionName,
@@ -418,7 +428,9 @@ public class QdrantTestsBase
             CancellationToken.None,
             shardsNumber: 1,
             replicationFactor: replicationFactor,
-            placement: replicationFactor == 1 ? [allPeers.Skip(1).First()] : [..allPeers])).EnsureSuccess();
+            placement: replicationFactor == 1
+                ? [allPeers.Skip(1).First()]
+                : [..allPeers])).EnsureSuccess();
 
         (await qdrantHttpClient.UpsertPoints(
             collectionName,

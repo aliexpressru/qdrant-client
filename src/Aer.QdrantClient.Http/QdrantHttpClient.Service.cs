@@ -100,4 +100,40 @@ public partial class QdrantHttpClient
 
         return response;
     }
+
+    /// <summary>
+    /// Retrieves a report of performance issues and configuration suggestions.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    [Experimental("QD0001")]
+    public async Task<ReportIssuesResponse> ReportIssues(CancellationToken cancellationToken)
+    {
+        var url = "/issues";
+
+        var response = await ExecuteRequest<ReportIssuesResponse>(
+            url,
+            HttpMethod.Get,
+            cancellationToken,
+            retryCount: 0);
+
+        return response;
+    }
+
+    /// <summary>
+    /// Removes all issues reported so far.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    [Experimental("QD0002")]
+    public async Task<ClearReportedIssuesResponse> ClearIssues(CancellationToken cancellationToken)
+    {
+        var url = "/issues";
+
+        var response = await ExecuteRequest<ClearReportedIssuesResponse>(
+            url,
+            HttpMethod.Delete,
+            cancellationToken,
+            retryCount: 0);
+
+        return response;
+    }
 }

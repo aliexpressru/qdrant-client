@@ -2,13 +2,21 @@ log_level: DEBUG
 
 storage:
 
-  async_scorer: true
-
   # Where to store all the data
   storage_path: ./storage
 
   # Where to store snapshots
   snapshots_path: ./snapshots
+
+  # uncomment to configure s3 snapshots storage
+  snapshots_config:
+    # "local" or "s3" - where to store snapshots
+    snapshots_storage: local
+    # s3_config:
+    #   bucket: ""
+    #   region: ""
+    #   access_key: ""
+    #   secret_key: ""
 
   # Where to store temporary files
   # If null, temporary snapshot are stored in: storage/snapshots_temp/
@@ -72,27 +80,11 @@ storage:
     # If null - allow unlimited transfers.
     #outgoing_shard_transfers_limit: 1
 
-  # uncomment to configure s3 snapshots storage
-
-  # snapshots_config:
-  #   # Use 's3' to store snapshots on S3
-  #   snapshots_storage: s3
-
-  #   s3_config:
-  #     # Bucket name
-  #     bucket: your_bucket_here
-
-  #     # Bucket region (e.g. eu-central-1)
-  #     region: your_bucket_region_here
-
-  #     # Storage access key
-  #     # Can be specified either here or in the `AWS_ACCESS_KEY_ID` environment variable.
-  #     access_key: your_access_key_here
-
-  #     # Storage secret key
-  #     # Can be specified either here or in the `AWS_SECRET_ACCESS_KEY` environment variable.
-  #     secret_key: your_secret_key_here
-
+    # Enable async scorer which uses io_uring when rescoring.
+    # Only supported on Linux, must be enabled in your kernel.
+    # See: <https://qdrant.tech/articles/io_uring/#and-what-about-qdrant>
+    async_scorer: true
+    
   optimizers:
     # The minimal fraction of deleted vectors in a segment, required to perform segment optimization
     deleted_threshold: 0.2
@@ -148,6 +140,18 @@ storage:
     # If 0 - no optimization threads, optimizations will be disabled.
     max_optimization_threads: 1
 
+  # This section has the same options as 'optimizers' above. All values specified here will overwrite the collections
+  # optimizers configs regardless of the config above and the options specified at collection creation.
+  #optimizers_overwrite:
+  #  deleted_threshold: 0.2
+  #  vacuum_min_vector_number: 1000
+  #  default_segment_number: 0
+  #  max_segment_size_kb: null
+  #  memmap_threshold_kb: null
+  #  indexing_threshold_kb: 20000
+  #  flush_interval_sec: 5
+  #  max_optimization_threads: null
+
   # Default parameters of HNSW Index. Could be overridden for each collection or named vector individually
   hnsw_index:
     # Number of edges per node in the index graph. Larger the value - more accurate the search, more space required.
@@ -175,6 +179,25 @@ storage:
   # If stream_records or snapshot - prefer this specific method.
   # More info: https://qdrant.tech/documentation/guides/distributed_deployment/#shard-transfer-method
   shard_transfer_method: null
+
+  # Default parameters for collections
+  collection:
+    # Number of replicas of each shard that network tries to maintain
+    replication_factor: 1
+
+    # How many replicas should apply the operation for us to consider it successful
+    write_consistency_factor: 1
+
+    # Default parameters for vectors.
+    vectors:
+      # Whether vectors should be stored in memory or on disk.
+      on_disk: null
+
+    # shard_number_per_node: 1
+
+    # Default quantization configuration.
+    # More info: https://qdrant.tech/documentation/guides/quantization
+    quantization: null
 
 service:
   # Maximum size of POST data in a single request in megabytes
@@ -228,6 +251,12 @@ service:
   #
   # Uncomment to enable.
   # read_only_api_key: your_secret_read_only_api_key_here
+
+  # Uncomment to enable JWT Role Based Access Control (RBAC).
+  # If enabled, you can generate JWT tokens with fine-grained rules for access control.
+  # Use generated token instead of API key.
+  #
+  # jwt_rbac: true
 
 cluster:
   # Use `enabled: true` to run Qdrant in distributed deployment mode

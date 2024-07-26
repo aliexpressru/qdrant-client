@@ -1,8 +1,10 @@
-﻿using Aer.QdrantClient.Http;
+﻿using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
+using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
@@ -145,5 +147,62 @@ public class ServiceMethodsTests : QdrantTestsBase
             requiredNumberOfGreenCollectionResponses: 3);
 
         await act.Should().NotThrowAsync();
+    }
+
+    [Test]
+    public async Task TestStorageLock()
+    {
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+
+        var lockReason = "Writes disabled";
+
+        var setLockOptionsResult =
+            await _qdrantHttpClient.SetLockOptions(areWritesDisabled: true, lockReason, CancellationToken.None);
+
+        setLockOptionsResult.Status.IsSuccess.Should().BeTrue();
+        setLockOptionsResult.Result.Write.Should().BeFalse();
+
+        var upsertPointsAct = async ()=> await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest<TestPayload>()
+            {
+                Points =
+                [
+                    new UpsertPointsRequest<TestPayload>.UpsertPoint(67, CreateTestVector(10), 67)
+                ]
+            },
+            CancellationToken.None);
+
+        // the fact that locked collection throws unauthorized status code is freaking me out!
+
+        await upsertPointsAct.Should().ThrowAsync<QdrantUnauthorizedAccessException>()
+                .Where(e => e.Message.Contains(lockReason));
+
+        var setNewLockOptionsResult =
+            await _qdrantHttpClient.SetLockOptions(areWritesDisabled: false, lockReason, CancellationToken.None);
+
+        setNewLockOptionsResult.Status.IsSuccess.Should().BeTrue();
+
+        // returns previous lock options
+        setLockOptionsResult.Result.Write.Should().BeFalse();
+
+        await upsertPointsAct.Should().NotThrowAsync();
+    }
+
+    [Test]
+    [Experimental("QD0001")]
+    public async Task TestReportIssues()
+    {
+        var issuesReportResult =
+            await _qdrantHttpClient.ReportIssues(CancellationToken.None);
+
+        issuesReportResult.Status.IsSuccess.Should().BeTrue();
+        issuesReportResult.Result.Issues.Should().BeEmpty();
+
+        var issuesClearResult =
+            await _qdrantHttpClient.ClearIssues(CancellationToken.None);
+
+        issuesClearResult.Status.IsSuccess.Should().BeTrue();
+        issuesClearResult.Result.Should().BeTrue();
     }
 }
