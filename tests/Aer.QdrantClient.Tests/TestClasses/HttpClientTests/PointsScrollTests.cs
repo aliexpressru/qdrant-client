@@ -382,6 +382,8 @@ internal class PointsScrollTests : QdrantTestsBase
 
             readPointPayload.FloatingPointNumber.Should().BeLessOrEqualTo(previousDouble);
 
+            readPoint.OrderValue.Should().NotBe(0);
+
             previousDouble = readPointPayload.FloatingPointNumber!.Value;
         }
 
@@ -416,6 +418,8 @@ internal class PointsScrollTests : QdrantTestsBase
             readPointPayload.DateTimeValue.Should().Be(expectedPoint.Payload.DateTimeValue);
 
             readPointPayload.DateTimeValue.Should().BeBefore(previousDateTime);
+
+            readPoint.OrderValue.Should().NotBe(0);
 
             previousDateTime = readPointPayload.DateTimeValue!.Value;
         }
@@ -503,6 +507,8 @@ internal class PointsScrollTests : QdrantTestsBase
 
             readPointPayload.Integer.Should().BeGreaterThanOrEqualTo(previousInteger);
 
+            readPoint.OrderValue.Should().NotBe(0);
+
             previousInteger = readPointPayload.Integer!.Value;
         }
 
@@ -540,6 +546,8 @@ internal class PointsScrollTests : QdrantTestsBase
             readPointPayload.DateTimeValue.Should().Be(expectedPoint.Payload.DateTimeValue);
 
             readPointPayload.FloatingPointNumber.Should().BeLessOrEqualTo(previousDouble);
+
+            readPoint.OrderValue.Should().NotBe(0);
 
             previousDouble = readPointPayload.FloatingPointNumber!.Value;
         }
@@ -579,6 +587,8 @@ internal class PointsScrollTests : QdrantTestsBase
             readPointPayload.DateTimeValue.Should().Be(expectedPoint.Payload.DateTimeValue);
 
             readPointPayload.DateTimeValue.Should().BeBefore(previousDateTime);
+
+            readPoint.OrderValue.Should().NotBe(0);
 
             previousDateTime = readPointPayload.DateTimeValue!.Value;
         }

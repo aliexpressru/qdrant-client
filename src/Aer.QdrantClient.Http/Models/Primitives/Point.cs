@@ -34,4 +34,9 @@ public class Point
     /// </summary>
     [JsonConverter(typeof(ShardKeyJsonConverter))]
     public ShardKey ShardKey { get; set; }
+
+    /// <summary>
+    /// Order-by value. Represents an order of the point if order-by selector is used.
+    /// </summary>
+    public double OrderValue { get; set; }
 }

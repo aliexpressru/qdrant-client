@@ -229,23 +229,6 @@ public partial class QdrantHttpClient
                 retryDelay,
                 onRetry);
 
-    private Task<TResponse> ExecuteRequestExperimental<TResponse>(
-        string url,
-        HttpMethod method,
-        CancellationToken cancellationToken,
-        uint retryCount,
-        TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
-        =>
-            ExecuteRequestExperimentalCore<TResponse>(
-                url,
-                method,
-                () => new(method, url),
-                cancellationToken,
-                retryCount,
-                retryDelay,
-                onRetry);
-
     private Task<TResponse> ExecuteRequest<TRequest, TResponse>(
         string url,
         HttpMethod method,
@@ -414,83 +397,6 @@ public partial class QdrantHttpClient
                 errorResponse.Time = -1;
 
                 return errorResponse;
-            }
-        }
-
-        var deserializedObject =
-            JsonSerializer.Deserialize<TResponse>(result, JsonSerializerConstants.SerializerOptions);
-
-        return deserializedObject;
-    }
-
-    private async Task<TResponse> ExecuteRequestExperimentalCore<TResponse>(
-        string url,
-        HttpMethod httpMethod,
-        // We are using func to create message since sending one instance of HttpRequestMessage several times is not allowed.
-        Func<HttpRequestMessage> createMessage,
-        CancellationToken cancellationToken,
-        uint retryCount,
-        TimeSpan? retryDelay,
-        Action<Exception, TimeSpan, int> onRetry = null)
-    {
-        var getResponse =
-            async () => await _apiClient.SendAsync(createMessage(), cancellationToken);
-
-        if (retryCount > 0)
-        {
-            getResponse = () => Policy
-                .Handle<HttpRequestException>(
-                    e => e.StatusCode is null
-                        ||
-                        (e.StatusCode is { } statusCode && !_specialStatusCodes.Contains(statusCode))
-                )
-                .WaitAndRetryAsync(
-                    (int) retryCount,
-                    _ => retryDelay ?? _defaultPointsReadRetryDelay,
-                    onRetry: (exception, currentRetryDelay, retryNumber, _) =>
-                    {
-                        onRetry?.Invoke(exception, currentRetryDelay, retryNumber);
-                    }
-                )
-                .ExecuteAsync(() => _apiClient.SendAsync(createMessage(), cancellationToken));
-        }
-
-        var response = await getResponse();
-
-        var result = await response.Content.ReadAsStringAsync(cancellationToken);
-
-        if (!response.IsSuccessStatusCode
-            && !_specialStatusCodes.Contains(response.StatusCode))
-        {
-            throw new QdrantCommunicationException(
-                httpMethod.Method,
-                url,
-                response.StatusCode,
-                response.ReasonPhrase,
-                result);
-        }
-
-        // handle unauthorized codes
-        if (_unauthorizedStatusCodes.Contains(response.StatusCode))
-        {
-            throw new QdrantUnauthorizedAccessException(result);
-        }
-
-        // in case of bad request the result may be in the form of a single string
-        // thus the following parsing may fail
-
-        if (response.StatusCode == HttpStatusCode.BadRequest)
-        {
-            try
-            {
-                var badRequestResult =
-                    JsonSerializer.Deserialize<TResponse>(result, JsonSerializerConstants.SerializerOptions);
-
-                return badRequestResult;
-            }
-            catch (JsonException jex)
-            {
-                throw new QdrantCommunicationException(httpMethod.Method, url, response.StatusCode, jex.Message, result);
             }
         }
 

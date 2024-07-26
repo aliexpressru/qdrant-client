@@ -34,7 +34,7 @@ public abstract class DiscoverPointsByRequest
         public List<DiscoveryContextUnit> Context { get; }
 
         /// <summary>
-        /// The one discovery context positive-nragtive pair.
+        /// The one discovery context positive-negative pair.
         /// </summary>
         public class DiscoveryContextUnit
         {
@@ -69,10 +69,10 @@ public abstract class DiscoverPointsByRequest
         {
             Target = target;
 
-            var gotCount = positiveNegativeContextPairs.TryGetNonEnumeratedCount(out var contextPaitCount);
+            var gotCount = positiveNegativeContextPairs.TryGetNonEnumeratedCount(out var contextPairCount);
 
             Context = gotCount
-                ? new(contextPaitCount)
+                ? new(contextPairCount)
                 : [];
 
             foreach (var (positivePoint, negativePoint) in positiveNegativeContextPairs)
@@ -95,7 +95,7 @@ public abstract class DiscoverPointsByRequest
         public List<DiscoveryContextUnit> Context { get; }
 
         /// <summary>
-        /// The one discovery context positive-nragtive pair.
+        /// The one discovery context positive-negative pair.
         /// </summary>
         public class DiscoveryContextUnit
         {
@@ -128,10 +128,10 @@ public abstract class DiscoverPointsByRequest
         {
             Target = target;
 
-            var gotCount = positiveNegativeContextPairs.TryGetNonEnumeratedCount(out var contextPaitCount);
+            var gotCount = positiveNegativeContextPairs.TryGetNonEnumeratedCount(out var contextPairCount);
 
             Context = gotCount
-                ? new(contextPaitCount)
+                ? new(contextPairCount)
                 : [];
 
             foreach (var (positivePoint, negativePoint) in positiveNegativeContextPairs)

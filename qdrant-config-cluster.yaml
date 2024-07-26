@@ -81,7 +81,7 @@ storage:
     # Enable async scorer which uses io_uring when rescoring.
     # Only supported on Linux, must be enabled in your kernel.
     # See: <https://qdrant.tech/articles/io_uring/#and-what-about-qdrant>
-    async_scorer: true
+    #async_scorer: true
     
   optimizers:
     # The minimal fraction of deleted vectors in a segment, required to perform segment optimization
