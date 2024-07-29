@@ -22,7 +22,7 @@ public sealed class NamedVectors : VectorBase
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public override float[] Default
+    public override VectorBase Default
     {
         get
         {
@@ -30,7 +30,7 @@ public sealed class NamedVectors : VectorBase
 
             if (Vectors.TryGetValue(DefaultVectorName, out VectorBase defaultVector))
             {
-                return defaultVector.Default;
+                return defaultVector;
             }
 
             throw new QdrantDefaultVectorNotFoundException(DefaultVectorName);

@@ -20,7 +20,7 @@ public class MultiVector : VectorBase
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public override float[] Default
+    public override VectorBase Default
         =>
             Vectors.Length > 0
                 ? Vectors[0]

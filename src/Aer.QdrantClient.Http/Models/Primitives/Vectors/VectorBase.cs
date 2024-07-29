@@ -31,7 +31,7 @@ public abstract class VectorBase
     /// for <see cref="MultiVector"/> gets the first vector component.
     /// </summary>
     [JsonIgnore]
-    public abstract float[] Default { get; }
+    public abstract VectorBase Default { get; }
 
     /// <summary>
     /// Gets the named vector value if this instance is named vector collection
@@ -129,6 +129,27 @@ public abstract class VectorBase
 
     /// <summary>
     /// Implicitly converts a dictionary of type <see cref="Dictionary{TKey,TValue}"/> to a vector instance.
+    /// Dictionary key must be <see cref="string"/>, dictionary value must be an array of <see cref="VectorBase"/>.
+    /// </summary>
+    /// <param name="namedVectors">The named vectors.</param>
+    public static implicit operator VectorBase(Dictionary<string, VectorBase> namedVectors)
+    {
+        if (namedVectors is null or {Count: 0})
+        {
+            throw new ArgumentNullException(nameof(namedVectors));
+        }
+
+        return new NamedVectors()
+        {
+            Vectors = namedVectors
+                .ToDictionary(
+                    nv => nv.Key,
+                    nv => nv.Value)
+        };
+    }
+
+    /// <summary>
+    /// Implicitly converts a dictionary of type <see cref="Dictionary{TKey,TValue}"/> to a vector instance.
     /// Dictionary key must be a <see cref="string"/>, dictionary value must be an indices-values tuple.
     /// </summary>
     /// <param name="namedSparseVectors">The named sparse vectors.</param>
@@ -173,7 +194,18 @@ public abstract class VectorBase
     /// Returns <see cref="Default"/> vector.
     /// </summary>
     /// <param name="vector">Instance to get single vector from.</param>
-    public static implicit operator float[](VectorBase vector) => vector?.Default;
+    public static explicit operator float[](VectorBase vector)
+    {
+        return vector switch
+        {
+            DenseVector denseVector => denseVector.VectorValues,
+            MultiVector multiVector => multiVector.Default.AsDenseVector().VectorValues,
+            NamedVectors namedVectors => (float[]) namedVectors.Default,
+            SparseVector =>
+                throw new NotSupportedException("Conversion from sparse vector to float[] is not supported since sparse vector is a multi-component value"),
+            _ => throw new ArgumentOutOfRangeException(nameof(vector))
+        };
+    }
 
     /// <summary>
     /// Implicitly converts a jagged array of floats to a multivector instance.

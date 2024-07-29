@@ -289,20 +289,27 @@ public class QdrantTestsBase
 
         foreach (var vectorName in CreateVectorNames(namedVectorsCount))
         {
-            var vector = Enumerable.Range(0, (int) vectorLength)
-                .Select(_ => float.CreateTruncating(Random.Shared.NextDouble()))
-                .ToArray();
-
+            var vector = CreateTestVector(vectorLength);
             namedVectors.Add(vectorName, vector);
         }
 
         return namedVectors;
     }
 
-    protected List<string> CreateVectorNames(int vectorCount)
+    protected List<string> CreateVectorNames(int vectorCount, bool addDefaultVector = false)
     {
         List<string> ret = new(vectorCount);
-        for (int i = 0; i < vectorCount; i++)
+
+        if (addDefaultVector)
+        {
+            ret.Add(VectorBase.DefaultVectorName);
+        }
+
+        for (int i = 0;
+             i < (addDefaultVector
+                 ? vectorCount - 1
+                 : vectorCount);
+             i++)
         {
             ret.Add($"Vector_{i}");
         }

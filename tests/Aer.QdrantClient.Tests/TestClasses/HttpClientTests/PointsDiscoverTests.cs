@@ -1,7 +1,9 @@
 ﻿using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Model;
@@ -32,14 +34,13 @@ public class PointsDiscoverTests : QdrantTestsBase
         var discoverPointInNonexistentCollectionResult
             = await _qdrantHttpClient.DiscoverPoints(
                 TestCollectionName,
-                DiscoverPointsRequest.ByVectorExamples(
-                    new[]
-                    {
-                        new KeyValuePair<float[], float[]>(
+                new DiscoverPointsRequest(
+                    [
+                        new KeyValuePair<PointIdOrQueryVector, PointIdOrQueryVector>(
                             CreateTestVector(10),
                             CreateTestVector(10)
                         )
-                    },
+                    ],
                     limit: 10,
                     target: CreateTestVector(10)),
                 CancellationToken.None);
@@ -64,14 +65,13 @@ public class PointsDiscoverTests : QdrantTestsBase
         var discoverNonexistentPointResult
             = await _qdrantHttpClient.DiscoverPoints(
                 TestCollectionName,
-                DiscoverPointsRequest.ByVectorExamples(
-                    new[]
-                    {
-                        new KeyValuePair<float[], float[]>(
+                new DiscoverPointsRequest(
+                    [
+                        new KeyValuePair<PointIdOrQueryVector, PointIdOrQueryVector>(
                             CreateTestVector(10),
                             CreateTestVector(10)
                         )
-                    },
+                    ],
                     limit: 10,
                     target: CreateTestVector(10)),
                 CancellationToken.None);
@@ -99,7 +99,8 @@ public class PointsDiscoverTests : QdrantTestsBase
 
         var vector1Vector2Vector = CreateTestVector(vectorSize);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>(){
+        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+        {
             new(
                 PointId.Integer(1),
                 vector1Vector2Vector,
@@ -140,23 +141,24 @@ public class PointsDiscoverTests : QdrantTestsBase
         var positiveExamplePointId = upsertPoints[0].Id;
         var vectorToAvoidPointId = upsertPoints.Last().Id;
 
-        var recommendedPoints = await _qdrantHttpClient.DiscoverPoints(
+        var discoveredPoints = await _qdrantHttpClient.DiscoverPoints(
             TestCollectionName,
-            DiscoverPointsRequest.ByPointIds(
-                positiveNegativeContextPairs: new[]{
-                    new KeyValuePair<PointId, PointId>(positiveExamplePointId, vectorToAvoidPointId)
-                },
+            new DiscoverPointsRequest(
+                positiveNegativeContextPairs:
+                [
+                    new KeyValuePair<PointIdOrQueryVector, PointIdOrQueryVector>(positiveExamplePointId, vectorToAvoidPointId)
+                ],
                 limit: 1,
                 target: PointId.Integer(1),
                 withVector: true,
                 withPayload: true),
             CancellationToken.None);
 
-        recommendedPoints.Status.IsSuccess.Should().BeTrue();
-        recommendedPoints.Result.Length.Should().Be(1);
-        recommendedPoints.Result.First().Id.Should().Be(upsertPoints[1].Id);
+        discoveredPoints.Status.IsSuccess.Should().BeTrue();
+        discoveredPoints.Result.Length.Should().Be(1);
+        discoveredPoints.Result.First().Id.Should().Be(upsertPoints[1].Id);
 
-        recommendedPoints.Result.Should()
+        discoveredPoints.Result.Should()
             .AllSatisfy(p => p.Vector.Should().NotBeNull())
             .And.AllSatisfy(p => p.Payload.Should().NotBeNull());
     }
@@ -221,31 +223,146 @@ public class PointsDiscoverTests : QdrantTestsBase
         var positiveExampleVector = vector1Vector2Vector;
         var vectorToAvoid = upsertPoints.Last().Vector.Default;
 
-        var request = DiscoverPointsRequest.ByVectorExamples(
-            positiveNegativeContextPairs: new[]
-            {
-                new KeyValuePair<float[], float[]>(positiveExampleVector, vectorToAvoid)
-            },
+        var request = new DiscoverPointsRequest(
+            positiveNegativeContextPairs:
+            [
+                new KeyValuePair<PointIdOrQueryVector, PointIdOrQueryVector>(positiveExampleVector, vectorToAvoid)
+            ],
             limit: 2,
             target: vector1Vector2Vector,
             withVector: true,
             withPayload: true);
 
-        var recommendedPoints = await _qdrantHttpClient.DiscoverPoints(
+        var discoveredPoints = await _qdrantHttpClient.DiscoverPoints(
             TestCollectionName,
             request,
             CancellationToken.None);
 
-        recommendedPoints.Status.IsSuccess.Should().BeTrue();
-        recommendedPoints.Result.Length.Should().Be(2); // recommend two first upsert points
+        discoveredPoints.Status.IsSuccess.Should().BeTrue();
+        discoveredPoints.Result.Length.Should().Be(2); // recommend two first upsert points
 
-        var orderedResults = recommendedPoints.Result
+        var orderedResults = discoveredPoints.Result
             .OrderBy(p => p.Id.AsInteger()).ToList();
 
         orderedResults[0].Id.Should().Be(upsertPoints[0].Id);
         orderedResults[1].Id.Should().Be(upsertPoints[1].Id);
 
-        recommendedPoints.Result.Should()
+        discoveredPoints.Result.Should()
+            .AllSatisfy(p => p.Vector.Should().NotBeNull())
+            .And.AllSatisfy(p => p.Payload.Should().NotBeNull());
+    }
+
+    [Test]
+    public async Task DiscoverPoints_OnePoint_ByExample_SparseVector()
+    {
+        var vectorSize = 10U;
+
+        Dictionary<string, SparseVectorConfiguration> sparseVectors = new()
+        {
+            [VectorBase.DefaultVectorName] = new(onDisk: true, fullScanThreshold: 1000),
+            ["Vector_2"] = new(onDisk: true), // default sparse vector configuration
+        };
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(sparseVectorsConfiguration: sparseVectors)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var vector1Vector2Vector = CreateTestSparseVector(vectorSize, 2);
+
+        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+        {
+            new(
+                PointId.Integer(1),
+                vector: new NamedVectors()
+                {
+                    Vectors = new Dictionary<string, VectorBase>()
+                    {
+                        [VectorBase.DefaultVectorName] = vector1Vector2Vector,
+                        ["Vector_2"] = CreateTestSparseVector(vectorSize, 5),
+                    }
+                },
+                new TestPayload()
+                {
+                    Integer = 1,
+                    Text = "1"
+                }),
+            new(
+                PointId.Integer(2), // same vector but with different id, this one and a previous one should be recommended
+                vector: new NamedVectors()
+                {
+                    Vectors = new Dictionary<string, VectorBase>()
+                    {
+                        [VectorBase.DefaultVectorName] = vector1Vector2Vector,
+                        ["Vector_2"] = CreateTestSparseVector(vectorSize, 5),
+                    }
+                },
+                new TestPayload()
+                {
+                    Integer = 2,
+                    Text = "2"
+                }),
+            new(
+                PointId.Integer(3),
+                vector: new NamedVectors()
+                {
+                    Vectors = new Dictionary<string, VectorBase>()
+                    {
+                        [VectorBase.DefaultVectorName] = CreateTestSparseVector(vectorSize, 5),
+                        ["Vector_2"] = CreateTestSparseVector(vectorSize, 5)
+                    }
+                },
+                new TestPayload()
+                {
+                    Integer = 3,
+                    Text = "3"
+                }
+            )
+        };
+
+        await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest<TestPayload>()
+            {
+                Points = upsertPoints
+            },
+            CancellationToken.None);
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        var positiveExampleVector = vector1Vector2Vector;
+        var vectorToAvoid = upsertPoints.Last().Vector.Default;
+
+        var request = new DiscoverPointsRequest(
+            positiveNegativeContextPairs:
+            [
+                new KeyValuePair<PointIdOrQueryVector, PointIdOrQueryVector>(positiveExampleVector, vectorToAvoid)
+            ],
+            limit: 2,
+            target: vector1Vector2Vector,
+            withVector: true,
+            withPayload: true){
+            Using = VectorBase.DefaultVectorName
+        };
+
+        var discoveredPoints = await _qdrantHttpClient.DiscoverPoints(
+            TestCollectionName,
+            request,
+            CancellationToken.None);
+
+        discoveredPoints.Status.IsSuccess.Should().BeTrue();
+        discoveredPoints.Result.Length.Should().Be(2); // recommend two first upsert points
+
+        var orderedResults = discoveredPoints.Result
+            .OrderBy(p => p.Id.AsInteger()).ToList();
+
+        orderedResults[0].Id.Should().Be(upsertPoints[0].Id);
+        orderedResults[1].Id.Should().Be(upsertPoints[1].Id);
+
+        discoveredPoints.Result.Should()
             .AllSatisfy(p => p.Vector.Should().NotBeNull())
             .And.AllSatisfy(p => p.Payload.Should().NotBeNull());
     }
@@ -300,26 +417,28 @@ public class PointsDiscoverTests : QdrantTestsBase
         var positiveExamplePointId = upsertPoints[1].Id;
         var negativeExamplePointId = upsertPoints[2].Id;
 
-        var recommendedPoints = await _qdrantHttpClient.DiscoverPoints(
+        var discoveredPoints = await _qdrantHttpClient.DiscoverPoints(
             TestCollectionName,
-            DiscoverPointsRequest.ByPointIds(
-                positiveNegativeContextPairs: new[]
-                    {new KeyValuePair<PointId, PointId>(positiveExamplePointId, negativeExamplePointId)},
+            new DiscoverPointsRequest(
+                positiveNegativeContextPairs:
+                [
+                    new KeyValuePair<PointIdOrQueryVector, PointIdOrQueryVector>(positiveExamplePointId, negativeExamplePointId)
+                ],
                 limit: (uint) vectorCount,
                 target: targetPointId,
                 withVector: true,
                 withPayload: true),
             CancellationToken.None);
 
-        recommendedPoints.Status.IsSuccess.Should().BeTrue();
-        recommendedPoints.Result.Length.Should().Be(vectorCount-3); // all vectors except the three example ones
-        recommendedPoints.Result.Should().AllSatisfy(
+        discoveredPoints.Status.IsSuccess.Should().BeTrue();
+        discoveredPoints.Result.Length.Should().Be(vectorCount-3); // all vectors except the three example ones
+        discoveredPoints.Result.Should().AllSatisfy(
             p =>
                 p.Id.Should().NotBe(targetPointId)
                     .And.NotBe(negativeExamplePointId)
         );
 
-        recommendedPoints.Result.Should()
+        discoveredPoints.Result.Should()
             .AllSatisfy(p => p.Vector.Should().NotBeNull())
             .And.AllSatisfy(p => p.Payload.Should().NotBeNull());
     }
@@ -374,19 +493,22 @@ public class PointsDiscoverTests : QdrantTestsBase
 
         await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
 
-        var recommendedPoints = await _qdrantHttpClient.DiscoverPoints(
+        var discoveredPoints = await _qdrantHttpClient.DiscoverPoints(
             TestCollectionName,
-            DiscoverPointsRequest.ByVectorExamples(
-                positiveNegativeContextPairs: new[]{new KeyValuePair<float[], float[]>(positiveVector, negativeVector)},
+            new DiscoverPointsRequest(
+                positiveNegativeContextPairs:
+                [
+                    new KeyValuePair<PointIdOrQueryVector, PointIdOrQueryVector>(positiveVector, negativeVector)
+                ],
                 limit: (uint) vectorCount,
                 withVector: true,
                 withPayload: true),
             CancellationToken.None);
 
-        recommendedPoints.Status.IsSuccess.Should().BeTrue();
-        recommendedPoints.Result.Length.Should().Be(vectorCount); // all points since we supplied all the existing vectors
+        discoveredPoints.Status.IsSuccess.Should().BeTrue();
+        discoveredPoints.Result.Length.Should().Be(vectorCount); // all points since we supplied all the existing vectors
 
-        recommendedPoints.Result.Should()
+        discoveredPoints.Result.Should()
             .AllSatisfy(p => p.Vector.Should().NotBeNull())
             .And.AllSatisfy(p => p.Payload.Should().NotBeNull());
     }
@@ -441,28 +563,34 @@ public class PointsDiscoverTests : QdrantTestsBase
 
         await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
 
-        var request1 = DiscoverPointsRequest.ByVectorExamples(
-            positiveNegativeContextPairs: new[] {new KeyValuePair<float[], float[]>(positiveVector, negativeVector)},
+        var request1 = new DiscoverPointsRequest(
+            positiveNegativeContextPairs:
+            [
+                new KeyValuePair<PointIdOrQueryVector, PointIdOrQueryVector>(positiveVector, negativeVector)
+            ],
             (uint) vectorCount,
             withVector: true,
             withPayload: true);
 
-        var request2 = DiscoverPointsRequest.ByVectorExamples(
-            positiveNegativeContextPairs: new[] {new KeyValuePair<float[], float[]>(negativeVector, positiveVector)},
+        var request2 = new DiscoverPointsRequest(
+            positiveNegativeContextPairs:
+            [
+                new KeyValuePair<PointIdOrQueryVector, PointIdOrQueryVector>(negativeVector, positiveVector)
+            ],
             (uint) vectorCount,
             withVector: true,
             withPayload: true);
 
-        var recommendedPoints = await _qdrantHttpClient.DiscoverPointsBatched(
+        var discoveredPoints = await _qdrantHttpClient.DiscoverPointsBatched(
             TestCollectionName,
             new DiscoverPointsBatchedRequest(request1, request2),
             CancellationToken.None);
 
-        recommendedPoints.Status.IsSuccess.Should().BeTrue();
+        discoveredPoints.Status.IsSuccess.Should().BeTrue();
 
-        recommendedPoints.Result.Length.Should().Be(2); // two requests in a batch
+        discoveredPoints.Result.Length.Should().Be(2); // two requests in a batch
 
-        foreach (var pointsForRequestInBatch in recommendedPoints.Result)
+        foreach (var pointsForRequestInBatch in discoveredPoints.Result)
         {
             pointsForRequestInBatch.Length.Should()
                 .Be(vectorCount); // all points since we supplied all the existing vectors minus one filtered out

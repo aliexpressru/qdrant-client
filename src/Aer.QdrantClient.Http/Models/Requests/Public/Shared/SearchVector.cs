@@ -66,7 +66,7 @@ public abstract class SearchVector
         public string Name { get; }
 
         [JsonConverter(typeof(VectorJsonConverter))]
-        public SparseVector Vector { get; }
+        public VectorBase Vector { get; }
 
         public NamedSparseSearchVector(string name, SparseVector vector)
         {
@@ -152,7 +152,7 @@ public abstract class SearchVector
 
                 return firstVector.Value.VectorKind switch
                 {
-                    VectorKind.Dense => new NamedDenseSearchVector(firstVector.Key, (DenseVector) firstVector.Value),
+                    VectorKind.Dense => new NamedDenseSearchVector(firstVector.Key, firstVector.Value.AsDenseVector().VectorValues),
                     VectorKind.Sparse => new NamedSparseSearchVector(firstVector.Key, (SparseVector) firstVector.Value),
                     _ => throw GetException(vector.GetType())
                 };

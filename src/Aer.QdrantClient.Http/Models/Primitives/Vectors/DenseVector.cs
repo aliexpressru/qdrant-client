@@ -21,7 +21,7 @@ public sealed class DenseVector : VectorBase
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public override float[] Default => VectorValues;
+    public override VectorBase Default => this;
 
     /// <inheritdoc/>
     public override VectorBase this[string vectorName]

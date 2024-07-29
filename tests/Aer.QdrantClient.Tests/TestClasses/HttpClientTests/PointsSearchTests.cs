@@ -1,6 +1,7 @@
 using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -197,6 +198,92 @@ internal class PointsSearchTests : QdrantTestsBase
                 },
                 CancellationToken.None);
 
+        searchResult.Status.IsSuccess.Should().BeTrue();
+
+        searchResult.Result.Length.Should().Be(5);
+
+        foreach (var readPoint in searchResult.Result)
+        {
+            var readPointId = readPoint.Id.AsInteger();
+
+            var expectedPoint = upsertPointsByPointIds[readPointId];
+
+            expectedPoint.Id.AsInteger().Should().Be(readPointId);
+
+            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
+            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
+            readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+        }
+    }
+
+    [Test]
+    public async Task SearchPoints_NamedVectors_SparseVectors_WithoutFilter()
+    {
+        var vectorSize = 10U;
+        var vectorCount = 10;
+
+        Dictionary<string, SparseVectorConfiguration> sparseVectors = new()
+        {
+            [VectorBase.DefaultVectorName] = new(onDisk: true, fullScanThreshold: 1000),
+        };
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(sparseVectors)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+
+        for (int i = 0; i < vectorCount; i++)
+        {
+            upsertPoints.Add(
+                new(
+                    PointId.Integer(i),
+                    vector: new NamedVectors()
+                    {
+                        Vectors = new Dictionary<string, VectorBase>()
+                        {
+                            [VectorBase.DefaultVectorName] = CreateTestSparseVector(vectorSize, 5)
+                        }
+                    },
+                    new TestPayload()
+                    {
+                        Integer = i,
+                        Text = i.ToString()
+                    })
+            );
+        }
+
+        Dictionary<ulong, UpsertPointsRequest<TestPayload>.UpsertPoint> upsertPointsByPointIds =
+            upsertPoints.ToDictionary(p => p.Id.AsInteger());
+
+        var upsertPointsResult
+            = await _qdrantHttpClient.UpsertPoints(
+                TestCollectionName,
+                new UpsertPointsRequest<TestPayload>()
+                {
+                    Points = upsertPoints
+                },
+                CancellationToken.None);
+
+        upsertPointsResult.EnsureSuccess();
+
+        var searchResult =
+            await _qdrantHttpClient.SearchPoints(
+                TestCollectionName,
+                new SearchPointsRequest(
+                    upsertPoints[0].Vector, // implicitly convert named vector with one name to NamedSearchVector
+                    5)
+                {
+                    WithVector = true,
+                    WithPayload = PayloadPropertiesSelector.All
+                },
+                CancellationToken.None);
 
         searchResult.Status.IsSuccess.Should().BeTrue();
 

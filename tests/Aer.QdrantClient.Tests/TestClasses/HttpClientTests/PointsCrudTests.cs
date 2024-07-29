@@ -313,7 +313,8 @@ internal class PointsCrudTests : QdrantTestsBase
         readPointsResult.Result.Should().NotBeNull();
 
         readPointsResult.Result.Id.ObjectId.Should().Be(testPointId.ObjectId);
-        readPointsResult.Result.Vector.Default.Should().BeEquivalentTo(testVector);
+        readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
+            .Should().BeEquivalentTo(testVector);
         var readTestPayload = readPointsResult.Result.Payload.As<TestPayload>();
 
         readTestPayload.Integer.Should().Be(testPayload.Integer);
@@ -368,7 +369,8 @@ internal class PointsCrudTests : QdrantTestsBase
         readPointsResult.Result.Should().NotBeNull();
 
         readPointsResult.Result.Id.ObjectId.Should().Be(testPointId.ObjectId);
-        readPointsResult.Result.Vector.Default.Should().BeEquivalentTo(testVector);
+        readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
+            .Should().BeEquivalentTo(testVector);
         var readTestPayload = readPointsResult.Result.Payload.As<JsonObject>();
 
         readTestPayload.Should().NotBeNull();
@@ -424,7 +426,8 @@ internal class PointsCrudTests : QdrantTestsBase
         readPointsResult.Result.Should().NotBeNull();
 
         readPointsResult.Result.Id.ObjectId.Should().Be(testPointId.ObjectId);
-        readPointsResult.Result.Vector.Default.Should().BeEquivalentTo(testVector);
+        readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
+            .Should().BeEquivalentTo(testVector);
         var readTestPayload = readPointsResult.Result.Payload.As<JsonObject>();
 
         readTestPayload.Should().NotBeNull();
@@ -480,7 +483,8 @@ internal class PointsCrudTests : QdrantTestsBase
         readPointsResult.Result.Should().NotBeNull();
 
         readPointsResult.Result.Id.ObjectId.Should().Be(testPointId.ObjectId);
-        readPointsResult.Result.Vector.Default.Should().BeEquivalentTo(testVector);
+        readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
+            .Should().BeEquivalentTo(testVector);
 
         var readTestPayload = readPointsResult.Result.Payload.As<JsonObject>();
 
@@ -529,7 +533,8 @@ internal class PointsCrudTests : QdrantTestsBase
         readPointsResult.Result.Should().NotBeNull();
 
         readPointsResult.Result.Id.AsString().Should().Be(testPointId.AsString());
-        readPointsResult.Result.Vector.Default.Should().BeEquivalentTo(testVector);
+        readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
+            .Should().BeEquivalentTo(testVector);
         readPointsResult.Result.Payload.Should().BeNull();
     }
 
@@ -978,8 +983,8 @@ internal class PointsCrudTests : QdrantTestsBase
 
             foreach (var vectorName in vectorNames)
             {
-                var pointVector = namedPointVectors[vectorName].AsDenseVector().Default;
-                pointVector.Should().NotBeNullOrEmpty();
+                namedPointVectors[vectorName].AsDenseVector().VectorValues
+                    .Should().NotBeNullOrEmpty();
             }
         }
     }
@@ -1072,8 +1077,8 @@ internal class PointsCrudTests : QdrantTestsBase
                 {
                     namedPointVectors.Vectors.ContainsKey(vectorName).Should().BeTrue();
 
-                    var pointVector = namedPointVectors[vectorName].AsDenseVector().Default;
-                    pointVector.Should().NotBeNullOrEmpty();
+                    namedPointVectors[vectorName].AsDenseVector().VectorValues
+                        .Should().NotBeNullOrEmpty();
                 }
                 else
                 {
@@ -1201,8 +1206,8 @@ internal class PointsCrudTests : QdrantTestsBase
                     continue;
                 }
 
-                var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsDenseVector().Default;
-                var upsertPointNamedVectorValue = upsertPointVector.Value;
+                var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsDenseVector().VectorValues;
+                var upsertPointNamedVectorValue = upsertPointVector.Value.AsDenseVector().VectorValues;
 
                 readPointNamedVectorValue.Should().Equal(upsertPointNamedVectorValue);
             }
@@ -1312,8 +1317,8 @@ internal class PointsCrudTests : QdrantTestsBase
             {
                 readPointVectors.ContainsVector(upsertPointVector.Key).Should().BeTrue();
 
-                var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsDenseVector().Default;
-                var upsertPointNamedVectorValue = upsertPointVector.Value;
+                var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsDenseVector().VectorValues;
+                var upsertPointNamedVectorValue = upsertPointVector.Value.AsDenseVector().VectorValues;
 
                 readPointNamedVectorValue.Should().Equal(upsertPointNamedVectorValue);
             }
@@ -1518,8 +1523,8 @@ internal class PointsCrudTests : QdrantTestsBase
 
                 if (readPointVectors[upsertPointVector.Key].VectorKind != VectorKind.Sparse)
                 {
-                    var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsDenseVector().Default;
-                    var upsertPointNamedVectorValue = upsertPointVector.Value;
+                    var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsDenseVector().VectorValues;
+                    var upsertPointNamedVectorValue = upsertPointVector.Value.AsDenseVector().VectorValues;
 
                     readPointNamedVectorValue.Should().Equal(upsertPointNamedVectorValue);
                 }
@@ -1727,8 +1732,8 @@ internal class PointsCrudTests : QdrantTestsBase
                 }
                 else if (readPointVectorKind == VectorKind.Dense)
                 {
-                    var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsDenseVector().Default;
-                    var upsertPointNamedVectorValue = upsertPointVector.Value;
+                    var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsDenseVector().VectorValues;
+                    var upsertPointNamedVectorValue = upsertPointVector.Value.AsDenseVector().VectorValues;
 
                     readPointNamedVectorValue.Should().Equal(upsertPointNamedVectorValue);
                 }
@@ -1843,7 +1848,8 @@ internal class PointsCrudTests : QdrantTestsBase
                 readPoint.Vector.VectorKind.Should().Be(VectorKind.Multi);
                 var readPointVector = readPoint.Vector.AsMultiVector();
 
-                readPointVector.Default.Should().BeEquivalentTo(upsertPoint.Vector.AsDenseVector().VectorValues);
+                readPointVector.Default.AsDenseVector().VectorValues
+                    .Should().BeEquivalentTo(upsertPoint.Vector.AsDenseVector().VectorValues);
             }
             else
             {
@@ -2438,13 +2444,14 @@ internal class PointsCrudTests : QdrantTestsBase
         pointsThatShouldBeUpdated.Should().AllSatisfy(
             p =>
             {
-                p.Vector.Default.Should().BeEquivalentTo(vectorToUpdateTo);
+                p.Vector.Default.AsDenseVector().VectorValues
+                    .Should().BeEquivalentTo(vectorToUpdateTo);
             });
 
         pointsThatShouldNotBeUpdated.Should().AllSatisfy(
             p =>
             {
-                p.Vector.Default.Should().NotBeEquivalentTo(vectorToUpdateTo);
+                p.Vector.Default.AsDenseVector().VectorValues.Should().NotBeEquivalentTo(vectorToUpdateTo);
             });
     }
 

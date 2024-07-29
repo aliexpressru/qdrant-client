@@ -27,10 +27,7 @@ public sealed class SparseVector : VectorBase
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public override float[] Default
-        =>
-            throw new NotSupportedException(
-                $"Getting default vector from sparse vector {GetType()} is not supported since sparse vector is a two-component value");
+    public override VectorBase Default => this;
 
     /// <summary>
     /// Initializes a new instance of <see cref="SparseVector"/> from indices and values.

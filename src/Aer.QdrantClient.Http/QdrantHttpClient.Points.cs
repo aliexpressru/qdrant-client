@@ -765,7 +765,7 @@ public partial class QdrantHttpClient
     /// </param>
     public async Task<SearchPointsResponse> DiscoverPoints(
         string collectionName,
-        DiscoverPointsByRequest discoverPointsRequest,
+        DiscoverPointsRequest discoverPointsRequest,
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
         TimeSpan? timeout = null,
@@ -778,7 +778,7 @@ public partial class QdrantHttpClient
         var url =
             $"/collections/{collectionName}/points/discover?consistency={consistencyValue}&timeout={GetTimeoutValueOrDefault(timeout)}";
 
-        var response = await ExecuteRequest<DiscoverPointsByRequest, SearchPointsResponse>(
+        var response = await ExecuteRequest<DiscoverPointsRequest, SearchPointsResponse>(
             url,
             HttpMethod.Post,
             discoverPointsRequest,

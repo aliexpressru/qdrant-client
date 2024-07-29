@@ -292,7 +292,8 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             .Payload.Should().BeNull();
 
         readAllPoints.Result.Single(p => p.Id.Equals(pointToUpdateVectorFor))
-            .Vector.Default.Should().BeEquivalentTo(vectorToUpdateTo);
+            .Vector.Default.AsDenseVector().VectorValues
+            .Should().BeEquivalentTo(vectorToUpdateTo);
     }
 
     [Test]
