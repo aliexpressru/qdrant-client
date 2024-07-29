@@ -36,7 +36,7 @@ internal class FieldMatchCondition<T> : FilterConditionBase
                     ? "text"
                     : "value");
 
-            JsonSerializer.Serialize(jsonWriter, _value, JsonSerializerConstants.SerializerOptions);
+            JsonSerializer.Serialize(jsonWriter, _value, JsonSerializerConstants.DefaultSerializerOptions);
         }
         jsonWriter.WriteEndObject();
     }

@@ -22,6 +22,8 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
         /// </summary>
         private readonly long _id;
 
+        internal override object ObjectId { get; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="GuidPointId"/> class.
         /// </summary>
@@ -29,11 +31,8 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
         public IntegerSearchGroupId(long id)
         {
             _id = id;
+            ObjectId = _id.ToString();
         }
-
-        /// <inheritdoc/>
-        public override object ToJson()
-            => _id.ToString();
 
         /// <inheritdoc/>
         public override ulong AsInteger()
@@ -64,12 +63,10 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
         }
 
         /// <inheritdoc/>
-        protected override int GetHashCodeCore()
-            => _id.GetHashCode();
+        protected override int GetHashCodeCore() => _id.GetHashCode();
 
         /// <inheritdoc />
-        public override string ToString()
-            => _id.ToString();
+        public override string ToString() => _id.ToString();
     }
 
     /// <summary>
@@ -82,6 +79,8 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
         /// </summary>
         private readonly string _id;
 
+        internal override object ObjectId { get; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="GuidPointId"/> class.
         /// </summary>
@@ -89,10 +88,8 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
         public StringSearchGroupId(string id)
         {
             _id = id;
+            ObjectId = _id;
         }
-
-        /// <inheritdoc/>
-        public override object ToJson() => _id;
 
         /// <inheritdoc/>
         public override ulong AsInteger()
@@ -133,9 +130,9 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
     #endregion
 
     /// <summary>
-    /// Convert identifier to API request JSON representation.
+    /// Gets the identifier in representation suitable for API request.
     /// </summary>
-    public abstract object ToJson();
+    internal abstract object ObjectId { get; }
 
     /// <summary>
     /// Gets the current SearchGroupId identifier value as integer. Throws if the SearchGroupId is not <see cref="IntegerSearchGroupId"/>.

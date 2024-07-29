@@ -89,12 +89,12 @@ internal class SparseVectorConfigurationJsonConverter : JsonConverter<SparseVect
                 }
 
                 writer.WritePropertyName("datatype");
-                JsonSerializer.Serialize(writer, value.VectorDataType, JsonSerializerConstants.SerializerOptions);
+                JsonSerializer.Serialize(writer, value.VectorDataType, JsonSerializerConstants.DefaultSerializerOptions);
             }
             writer.WriteEndObject();
 
             writer.WritePropertyName("modifier");
-            JsonSerializer.Serialize(writer, value.Modifier, JsonSerializerConstants.SerializerOptions);
+            JsonSerializer.Serialize(writer, value.Modifier, JsonSerializerConstants.DefaultSerializerOptions);
         }
         writer.WriteEndObject();
     }

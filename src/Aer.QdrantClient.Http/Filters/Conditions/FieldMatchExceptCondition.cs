@@ -29,7 +29,7 @@ internal class FieldMatchExceptCondition<T> : FilterConditionBase
         jsonWriter.WriteStartObject();
         {
             jsonWriter.WritePropertyName("except");
-            JsonSerializer.Serialize(jsonWriter, _exceptValues, JsonSerializerConstants.SerializerOptions);
+            JsonSerializer.Serialize(jsonWriter, _exceptValues, JsonSerializerConstants.DefaultSerializerOptions);
         }
         jsonWriter.WriteEndObject();
     }

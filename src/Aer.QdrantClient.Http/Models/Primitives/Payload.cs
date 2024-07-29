@@ -23,7 +23,7 @@ public class Payload
     /// <typeparam name="T">The type of the deserialized payload object.</typeparam>
     public T As<T>()
         where T : class
-        => RawPayload?.Deserialize<T>(JsonSerializerConstants.SerializerOptions);
+        => RawPayload?.Deserialize<T>(JsonSerializerConstants.DefaultSerializerOptions);
 
     /// <summary>
     /// Returns raw json string representation.
@@ -33,8 +33,8 @@ public class Payload
         =>
             RawPayload?.ToJsonString(
                 isFormatPayloadJson
-                    ? JsonSerializerConstants.IndentedSerializerOptions
-                    : JsonSerializerConstants.SerializerOptions);
+                    ? JsonSerializerConstants.DefaultIndentedSerializerOptions
+                    : JsonSerializerConstants.DefaultSerializerOptions);
 
     /// <inheritdoc/>
     public override string ToString() => ToString(false);

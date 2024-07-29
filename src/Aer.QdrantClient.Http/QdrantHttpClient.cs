@@ -258,7 +258,7 @@ public partial class QdrantHttpClient
             var contentJson =
                 // check whether the requestContent is already a serialized string
                 requestContent as string
-                ?? JsonSerializer.Serialize(requestContent, JsonSerializerConstants.SerializerOptions);
+                ?? JsonSerializer.Serialize(requestContent, JsonSerializerConstants.DefaultSerializerOptions);
 
             var requestData = new StringContent(contentJson, Encoding.UTF8, "application/json");
 
@@ -380,7 +380,7 @@ public partial class QdrantHttpClient
             try
             {
                 var badRequestResult =
-                    JsonSerializer.Deserialize<TResponse>(result, JsonSerializerConstants.SerializerOptions);
+                    JsonSerializer.Deserialize<TResponse>(result, JsonSerializerConstants.DefaultSerializerOptions);
 
                 return badRequestResult;
             }
@@ -401,7 +401,7 @@ public partial class QdrantHttpClient
         }
 
         var deserializedObject =
-            JsonSerializer.Deserialize<TResponse>(result, JsonSerializerConstants.SerializerOptions);
+            JsonSerializer.Deserialize<TResponse>(result, JsonSerializerConstants.DefaultSerializerOptions);
 
         return deserializedObject;
     }

@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
-using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public;
@@ -10,75 +9,21 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// <summary>
 /// Represents the recommend points request.
 /// </summary>
-[JsonDerivedType(typeof(RecommendPointsByIdRequest))]
-[JsonDerivedType(typeof(RecommendPointsByExampleRequest))]
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
-[SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public abstract class RecommendPointsByRequest
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+public class RecommendPointsByRequest
 {
-    #region Nested classes
+    /// <summary>
+    /// The vectors to recommend closest to.
+    /// </summary>
+    [JsonConverter(typeof(PointIdOrQueryVectorCollectionJsonConverter))]
+    public ICollection<PointIdOrQueryVector> Positive { get; }
 
-    internal sealed class RecommendPointsByIdRequest : RecommendPointsByRequest
-    {
-        /// <summary>
-        /// Look for vectors closest to those.
-        /// </summary>
-        [JsonConverter(typeof(PointIdCollectionJsonConverter))]
-        public IEnumerable<PointId> Positive { get; }
-
-        /// <summary>
-        /// Try to avoid vectors like this.
-        /// </summary>
-        [JsonConverter(typeof(PointIdCollectionJsonConverter))]
-        public IEnumerable<PointId> Negative { get; }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="RecommendPointsByRequest.RecommendPointsByIdRequest"/>.
-        /// </summary>
-        /// <param name="positive">Recommend points closest to specified vectors.</param>
-        /// <param name="negative">Optional vectors to avoid similarity with.</param>
-        /// <param name="limit">Maximal number of points to return.</param>
-        public RecommendPointsByIdRequest(
-            IEnumerable<PointId> positive,
-            IEnumerable<PointId> negative,
-            uint limit) : base(limit)
-        {
-            Positive = positive;
-            Negative = negative;
-        }
-    }
-
-    internal sealed class RecommendPointsByExampleRequest : RecommendPointsByRequest
-    {
-        /// <summary>
-        /// Look for vectors closest to those.
-        /// </summary>
-        public IEnumerable<float[]> Positive { get; }
-
-        /// <summary>
-        /// Try to avoid vectors like this.
-        /// </summary>
-        public IEnumerable<float[]> Negative { get; }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="RecommendPointsByRequest.RecommendPointsByExampleRequest"/>.
-        /// </summary>
-        /// <param name="positive">Recommend points closest to specified vectors.</param>
-        /// <param name="negative">Optional vectors to avoid similarity with.</param>
-        /// <param name="limit">Maximal number of points to return.</param>
-        public RecommendPointsByExampleRequest(
-            IEnumerable<float[]> positive,
-            IEnumerable<float[]> negative,
-            uint limit) : base(limit)
-        {
-            Positive = positive;
-            Negative = negative;
-        }
-    }
-
-    #endregion
+    /// <summary>
+    /// The vectors to avoid proximity to.
+    /// </summary>
+    [JsonConverter(typeof(PointIdOrQueryVectorCollectionJsonConverter))]
+    public ICollection<PointIdOrQueryVector> Negative { get; }
 
     /// <summary>
     /// How to use positive and negative examples to find the results.
@@ -149,11 +94,30 @@ public abstract class RecommendPointsByRequest
     public ShardSelector ShardKey { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RecommendPointsByRequest"/> class.
+    /// Initializes a new instance of the <see cref="RecommendPointsByRequest"/> class with vector examples.
     /// </summary>
-    /// <param name="limit">Maximal number of recommended points to return.</param>
-    protected internal RecommendPointsByRequest(uint limit)
+    /// <param name="positiveVectorExamples">Recommend points closest to specified vectors.</param>
+    /// <param name="limit">Maximal number of points to return.</param>
+    /// <param name="negativeVectorExamples">Optional vectors to avoid similarity with.</param>
+    /// <param name="withVector">Whether the vector, all named vectors or only selected named vectors should be returned with the response.</param>
+    /// <param name="withPayload">Whether the whole payload or only selected payload properties should be returned with the response.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
+    public RecommendPointsByRequest(
+        ICollection<PointIdOrQueryVector> positiveVectorExamples,
+        uint limit,
+        ICollection<PointIdOrQueryVector> negativeVectorExamples = null,
+        VectorSelector withVector = null,
+        PayloadPropertiesSelector withPayload = null,
+        ShardSelector shardSelector = null)
     {
+        Positive = positiveVectorExamples;
         Limit = limit;
+        Negative = negativeVectorExamples;
+        WithVector = withVector;
+        WithPayload = withPayload;
+        ShardKey = shardSelector;
     }
 }

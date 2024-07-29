@@ -21,7 +21,7 @@ internal class VectorSelectorJsonConverter : JsonConverter<VectorSelector>
 
                 return;
             case VectorSelector.IncludeNamedVectorsSelector ivs:
-                JsonSerializer.Serialize(writer, ivs.IncludedVectorNames, JsonSerializerConstants.SerializerOptions);
+                JsonSerializer.Serialize(writer, ivs.IncludedVectorNames, JsonSerializerConstants.DefaultSerializerOptions);
 
                 return;
             default:

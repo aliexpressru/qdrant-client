@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
@@ -58,4 +59,23 @@ public class PointIdOrQueryVector
     /// </summary>
     /// <param name="queryVector">The query vector to convert.</param>
     public static implicit operator PointIdOrQueryVector(QueryVector queryVector) => new(queryVector);
+
+    /// <summary>
+    /// Implicitly converts <see cref="float"/> dense vector components array to <see cref="PointIdOrQueryVector"/>.
+    /// </summary>
+    /// <param name="vector">The vector components.</param>
+    public static implicit operator PointIdOrQueryVector(float[] vector) => new(vector);
+
+    /// <summary>
+    /// Implicitly converts the sparse vector components array to <see cref="PointIdOrQueryVector"/>.
+    /// </summary>
+    /// <param name="sparseVectorComponents">The sparse vector components.</param>
+    public static implicit operator PointIdOrQueryVector((uint[] Indices, float[] Values) sparseVectorComponents) =>
+        new(sparseVectorComponents);
+
+    /// <summary>
+    /// Implicitly converts the <see cref="VectorBase"/> to <see cref="PointIdOrQueryVector"/>.
+    /// </summary>
+    /// <param name="vector">The vector to convert.</param>
+    public static implicit operator PointIdOrQueryVector(VectorBase vector) => new(vector);
 }

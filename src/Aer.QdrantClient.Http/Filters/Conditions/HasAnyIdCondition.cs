@@ -35,7 +35,7 @@ internal class HasAnyIdCondition : FilterConditionBase
 
         foreach (var pointId in _pointIds)
         {
-            JsonSerializer.Serialize(jsonWriter, pointId.ToJson(), JsonSerializerConstants.SerializerOptions);
+            JsonSerializer.Serialize(jsonWriter, pointId.ObjectId, JsonSerializerConstants.DefaultSerializerOptions);
         }
 
         jsonWriter.WriteEndArray();

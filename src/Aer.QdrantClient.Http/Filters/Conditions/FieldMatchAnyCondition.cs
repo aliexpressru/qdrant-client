@@ -21,7 +21,7 @@ internal class FieldMatchAnyCondition<T> : FilterConditionBase
 
         jsonWriter.WritePropertyName("any");
 
-        JsonSerializer.Serialize(jsonWriter, _any, JsonSerializerConstants.SerializerOptions);
+        JsonSerializer.Serialize(jsonWriter, _any, JsonSerializerConstants.DefaultSerializerOptions);
 
         jsonWriter.WriteEndObject();
     }

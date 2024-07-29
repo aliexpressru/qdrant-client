@@ -25,7 +25,7 @@ internal class PayloadPropertiesSelectorJsonConverter : JsonConverter<PayloadPro
 
                 writer.WritePropertyName("include");
 
-                JsonSerializer.Serialize(writer, ips.IncludedPayloadProperties, JsonSerializerConstants.SerializerOptions);
+                JsonSerializer.Serialize(writer, ips.IncludedPayloadProperties, JsonSerializerConstants.DefaultSerializerOptions);
 
                 writer.WriteEndObject();
 
@@ -35,7 +35,7 @@ internal class PayloadPropertiesSelectorJsonConverter : JsonConverter<PayloadPro
 
                 writer.WritePropertyName("exclude");
 
-                JsonSerializer.Serialize(writer, eps.ExcludedPayloadProperties, JsonSerializerConstants.SerializerOptions);
+                JsonSerializer.Serialize(writer, eps.ExcludedPayloadProperties, JsonSerializerConstants.DefaultSerializerOptions);
 
                 writer.WriteEndObject();
 

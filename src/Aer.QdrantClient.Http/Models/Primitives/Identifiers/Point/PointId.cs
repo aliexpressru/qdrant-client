@@ -10,10 +10,7 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public abstract class PointId : IEquatable<PointId>
 {
-    /// <summary>
-    /// Convert identifier to API request JSON representation.
-    /// </summary>
-    public abstract object ToJson();
+    internal abstract object ObjectId { get; }
 
     /// <summary>
     /// Gets the current PointId identifier value as integer. Throws if the PointId is not <see cref="IntegerPointId"/>.
@@ -193,5 +190,6 @@ public abstract class PointId : IEquatable<PointId>
 
     /// <inheritdoc/>
     public override int GetHashCode() => GetHashCodeCore();
+
     #endregion
 }

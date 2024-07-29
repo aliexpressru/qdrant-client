@@ -9,6 +9,8 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class GuidPointId : PointId
 {
+    internal override object ObjectId { get; }
+
     /// <summary>
     /// The identifier value.
     /// </summary>
@@ -21,11 +23,8 @@ public class GuidPointId : PointId
     public GuidPointId(Guid id)
     {
         Id = id;
+        ObjectId = id.ToString();
     }
-
-    /// <inheritdoc/>
-    public override object ToJson()
-        => Id.ToString();
 
     /// <inheritdoc/>
     public override ulong AsInteger()

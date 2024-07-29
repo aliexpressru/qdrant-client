@@ -20,7 +20,7 @@ internal class ShardSelectorJsonConverter : JsonConverter<ShardSelector>
             {
                 if (iss.ShardKeyValues is {Length: > 1})
                 {
-                    JsonSerializer.Serialize(writer, iss.ShardKeyValues, JsonSerializerConstants.SerializerOptions);
+                    JsonSerializer.Serialize(writer, iss.ShardKeyValues, JsonSerializerConstants.DefaultSerializerOptions);
                 }
                 else
                 {
@@ -34,7 +34,7 @@ internal class ShardSelectorJsonConverter : JsonConverter<ShardSelector>
             {
                 if (sss.ShardKeyValues is {Length: > 1})
                 {
-                    JsonSerializer.Serialize(writer, sss.ShardKeyValues, JsonSerializerConstants.SerializerOptions);
+                    JsonSerializer.Serialize(writer, sss.ShardKeyValues, JsonSerializerConstants.DefaultSerializerOptions);
                 }
                 else
                 {

@@ -17,11 +17,11 @@ internal class QueryVectorJsonConverter : JsonConverter<QueryVector>
         switch (value)
         {
             case QueryVector.DenseQueryVector dv:
-                JsonSerializer.Serialize(writer, dv.Vector, JsonSerializerConstants.SerializerOptions);
+                JsonSerializer.Serialize(writer, dv.Vector, JsonSerializerConstants.DefaultSerializerOptions);
 
                 return;
             case QueryVector.SparseQueryVector sv:
-                JsonSerializer.Serialize(writer, sv.Vector, JsonSerializerConstants.IndentedSerializerOptions);
+                JsonSerializer.Serialize(writer, sv.Vector, JsonSerializerConstants.DefaultIndentedSerializerOptions);
 
                 return;
             default:

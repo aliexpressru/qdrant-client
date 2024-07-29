@@ -17,21 +17,21 @@ internal class SearchVectorJsonConverter : JsonConverter<SearchVector>
         switch (value)
         {
             case SearchVector.DenseSearchVector uv:
-                JsonSerializer.Serialize(writer, uv.Vector, JsonSerializerConstants.SerializerOptions);
+                JsonSerializer.Serialize(writer, uv.Vector, JsonSerializerConstants.DefaultSerializerOptions);
 
                 return;
             case SearchVector.NamedDenseSearchVector nv:
-                JsonSerializer.Serialize(writer, nv, JsonSerializerConstants.SerializerOptions);
+                JsonSerializer.Serialize(writer, nv, JsonSerializerConstants.DefaultSerializerOptions);
 
                 return;
 
             case SearchVector.SparseSearchVector usv:
-                JsonSerializer.Serialize(writer, usv.Vector, JsonSerializerConstants.IndentedSerializerOptions);
+                JsonSerializer.Serialize(writer, usv.Vector, JsonSerializerConstants.DefaultIndentedSerializerOptions);
 
                 return;
 
             case SearchVector.NamedSparseSearchVector nsv:
-                JsonSerializer.Serialize(writer, nsv, JsonSerializerConstants.IndentedSerializerOptions);
+                JsonSerializer.Serialize(writer, nsv, JsonSerializerConstants.DefaultIndentedSerializerOptions);
 
                 return;
 

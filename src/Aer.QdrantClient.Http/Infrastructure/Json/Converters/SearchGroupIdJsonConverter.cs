@@ -12,13 +12,13 @@ internal class SearchGroupIdJsonConverter : JsonConverter<SearchGroupId>
         switch (reader.TokenType)
         {
             case JsonTokenType.String:
-            {
-                var groupId = reader.GetString();
+                var stringGroupId = reader.GetString();
+                return SearchGroupId.String(stringGroupId);
 
-                return SearchGroupId.String(groupId);
-            }
             case JsonTokenType.Number:
-                return SearchGroupId.Integer(reader.GetInt64());
+                var intGroupId = reader.GetInt64();
+                return SearchGroupId.Integer(intGroupId);
+
             default:
                 throw new QdrantJsonValueParsingException(reader.GetString());
         }
@@ -26,6 +26,6 @@ internal class SearchGroupIdJsonConverter : JsonConverter<SearchGroupId>
 
     public override void Write(Utf8JsonWriter writer, SearchGroupId value, JsonSerializerOptions options)
     {
-        JsonSerializer.Serialize(writer, value.ToJson(), JsonSerializerConstants.SerializerOptions);
+        JsonSerializer.Serialize(writer, value.ObjectId, JsonSerializerConstants.DefaultSerializerOptions);
     }
 }

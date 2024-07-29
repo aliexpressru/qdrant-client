@@ -292,7 +292,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
         readPointsResult.Status.IsSuccess.Should().BeTrue();
         readPointsResult.Result.Should().NotBeNull();
 
-        readPointsResult.Result.Id.ToJson().Should().Be(testPointId.ToJson());
+        readPointsResult.Result.Id.ObjectId.Should().Be(testPointId.ObjectId);
         readPointsResult.Result.Vector.Default.Should().BeEquivalentTo(testVector);
         var readTestPayload = readPointsResult.Result.Payload.As<TestPayload>();
 

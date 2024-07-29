@@ -54,7 +54,7 @@ internal class QdrantCollectionOptimizerStatusJsonConverter : JsonConverter<GetC
                 return new GetCollectionInfoResponse.QdrantOptimizerStatusUint(
                     QdrantOptimizerStatus.Unknown)
                 {
-                    RawStatusString = statusObject?.ToJsonString(JsonSerializerConstants.IndentedSerializerOptions)
+                    RawStatusString = statusObject?.ToJsonString(JsonSerializerConstants.DefaultIndentedSerializerOptions)
                 };
             }
 
@@ -65,6 +65,6 @@ internal class QdrantCollectionOptimizerStatusJsonConverter : JsonConverter<GetC
 
     public override void Write(Utf8JsonWriter writer, GetCollectionInfoResponse.QdrantOptimizerStatusUint value, JsonSerializerOptions options)
     {
-        JsonSerializer.Serialize(writer, value, JsonSerializerConstants.SerializerOptions);
+        JsonSerializer.Serialize(writer, value, JsonSerializerConstants.DefaultSerializerOptions);
     }
 }

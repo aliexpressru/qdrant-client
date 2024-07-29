@@ -31,15 +31,15 @@ internal class QuantizationConfigurationJsonConverter : JsonConverter<Quantizati
         {
             case QuantizationConfiguration.ScalarQuantizationConfiguration.QuantizationMethodName:
                 ret = quantizationConfigurationObject.Deserialize<QuantizationConfiguration.ScalarQuantizationConfiguration>(
-                    JsonSerializerConstants.SerializerOptions);
+                    JsonSerializerConstants.DefaultSerializerOptions);
                 break;
             case QuantizationConfiguration.ProductQuantizationConfiguration.QuantizationMethodName:
                 ret = quantizationConfigurationObject.Deserialize<QuantizationConfiguration.ProductQuantizationConfiguration>(
-                    JsonSerializerConstants.SerializerOptions);
+                    JsonSerializerConstants.DefaultSerializerOptions);
                 break;
             case QuantizationConfiguration.BinaryQuantizationConfiguration.QuantizationMethodName:
                 ret = quantizationConfigurationObject.Deserialize<QuantizationConfiguration.BinaryQuantizationConfiguration>(
-                    JsonSerializerConstants.SerializerOptions);
+                    JsonSerializerConstants.DefaultSerializerOptions);
                 break;
             default:
                 throw new InvalidOperationException($"Unknown quantization method name {quantizationMethodName}");
@@ -65,19 +65,19 @@ internal class QuantizationConfigurationJsonConverter : JsonConverter<Quantizati
                 case QuantizationConfiguration.ScalarQuantizationConfiguration sc:
                     writer.WritePropertyName(QuantizationConfiguration.ScalarQuantizationConfiguration.QuantizationMethodName);
 
-                    JsonSerializer.Serialize(writer, sc, JsonSerializerConstants.SerializerOptions);
+                    JsonSerializer.Serialize(writer, sc, JsonSerializerConstants.DefaultSerializerOptions);
 
                     break;
                 case QuantizationConfiguration.ProductQuantizationConfiguration pc:
                     writer.WritePropertyName(QuantizationConfiguration.ProductQuantizationConfiguration.QuantizationMethodName);
 
-                    JsonSerializer.Serialize(writer, pc, JsonSerializerConstants.SerializerOptions);
+                    JsonSerializer.Serialize(writer, pc, JsonSerializerConstants.DefaultSerializerOptions);
 
                     break;
                 case QuantizationConfiguration.BinaryQuantizationConfiguration bc:
                     writer.WritePropertyName(QuantizationConfiguration.BinaryQuantizationConfiguration.QuantizationMethodName);
 
-                    JsonSerializer.Serialize(writer, bc, JsonSerializerConstants.SerializerOptions);
+                    JsonSerializer.Serialize(writer, bc, JsonSerializerConstants.DefaultSerializerOptions);
 
                     break;
                 default:

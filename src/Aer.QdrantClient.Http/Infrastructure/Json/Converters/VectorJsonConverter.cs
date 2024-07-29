@@ -33,7 +33,7 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
                 var namedVectorsJObject = JsonNode.Parse(ref reader);
 
                 var namedVectorsObject = namedVectorsJObject
-                    .Deserialize<Dictionary<string, JsonNode>>(JsonSerializerConstants.SerializerOptions);
+                    .Deserialize<Dictionary<string, JsonNode>>(JsonSerializerConstants.DefaultSerializerOptions);
 
                 var vectors = new Dictionary<string, VectorBase>();
 
@@ -50,7 +50,7 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
 
                         case JsonObject sparseVectorValues:
                             var sparseVector = sparseVectorValues
-                                .Deserialize<SparseVector>(JsonSerializerConstants.SerializerOptions);
+                                .Deserialize<SparseVector>(JsonSerializerConstants.DefaultSerializerOptions);
 
                             vectors.Add(vectorName, sparseVector);
                             break;
@@ -76,22 +76,22 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
         switch (value)
         {
             case DenseVector v:
-                JsonSerializer.Serialize(writer, v.VectorValues, JsonSerializerConstants.SerializerOptions);
+                JsonSerializer.Serialize(writer, v.VectorValues, JsonSerializerConstants.DefaultSerializerOptions);
                 return;
 
             case SparseVector sv:
                 writer.WriteStartObject();
             {
                 writer.WritePropertyName("indices");
-                JsonSerializer.Serialize(writer, sv.Indices, JsonSerializerConstants.SerializerOptions);
+                JsonSerializer.Serialize(writer, sv.Indices, JsonSerializerConstants.DefaultSerializerOptions);
                 writer.WritePropertyName("values");
-                JsonSerializer.Serialize(writer, sv.Values, JsonSerializerConstants.SerializerOptions);
+                JsonSerializer.Serialize(writer, sv.Values, JsonSerializerConstants.DefaultSerializerOptions);
             }
                 writer.WriteEndObject();
                 return;
 
             case MultiVector mv:
-                JsonSerializer.Serialize(writer, mv.Vectors, JsonSerializerConstants.SerializerOptions);
+                JsonSerializer.Serialize(writer, mv.Vectors, JsonSerializerConstants.DefaultSerializerOptions);
                 return;
 
             case NamedVectors nv:
@@ -111,7 +111,7 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
                             JsonSerializer.Serialize(
                                 writer,
                                 singleVector.VectorValues,
-                                JsonSerializerConstants.SerializerOptions);
+                                JsonSerializerConstants.DefaultSerializerOptions);
 
                             break;
                         case VectorKind.Sparse:
@@ -120,7 +120,7 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
                             JsonSerializer.Serialize(
                                 writer,
                                 sparseVector,
-                                JsonSerializerConstants.SerializerOptions);
+                                JsonSerializerConstants.DefaultSerializerOptions);
 
                             break;
                         case VectorKind.Multi:
@@ -130,7 +130,7 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
                             JsonSerializer.Serialize(
                                 writer,
                                 multiVector.Vectors,
-                                JsonSerializerConstants.SerializerOptions);
+                                JsonSerializerConstants.DefaultSerializerOptions);
 
                             break;
 
@@ -171,7 +171,7 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
         {
             case JsonValueKind.Number:
                 var vectorValuesArray =
-                    vectorValuesJArray.Deserialize<float[]>(JsonSerializerConstants.SerializerOptions);
+                    vectorValuesJArray.Deserialize<float[]>(JsonSerializerConstants.DefaultSerializerOptions);
 
                 return new DenseVector()
                 {
@@ -180,7 +180,7 @@ internal class VectorJsonConverter : JsonConverter<VectorBase>
 
             case JsonValueKind.Array:
                 var multiVectorValuesArray =
-                    vectorValuesJArray.Deserialize<float[][]>(JsonSerializerConstants.SerializerOptions);
+                    vectorValuesJArray.Deserialize<float[][]>(JsonSerializerConstants.DefaultSerializerOptions);
 
                 return new MultiVector()
                 {
