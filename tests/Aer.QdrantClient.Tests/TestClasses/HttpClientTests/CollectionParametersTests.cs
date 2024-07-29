@@ -1,5 +1,6 @@
 ﻿using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
@@ -51,10 +52,6 @@ public class CollectionParametersTests : QdrantTestsBase
 
         // upsert points
 
-        var testPointId = PointId.NewGuid();
-        var testVector = CreateTestVector(vectorSize, vectorDataType);
-        TestPayload testPayload = "test";
-
         var upsertPointsResult
             = await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
@@ -62,7 +59,10 @@ public class CollectionParametersTests : QdrantTestsBase
                 {
                     Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
                     {
-                        new(testPointId, testVector, testPayload)
+                        new(
+                            PointId.NewGuid(),
+                            CreateTestVector(vectorSize, vectorDataType),
+                            "test")
                     }
                 },
                 CancellationToken.None);
@@ -81,6 +81,94 @@ public class CollectionParametersTests : QdrantTestsBase
         // todo: check other collection parameters
 
         collectionInfo.Config.Params.Vectors.AsSingleVectorConfiguration().Datatype.Should().Be(vectorDataType);
+    }
+
+    [Test]
+    [TestCase(VectorDataType.Float32)]
+    [TestCase(VectorDataType.Uint8)]
+    [TestCase(VectorDataType.Float16)]
+    public async Task TestCreateCollection_NamedVectors_CheckParameters(VectorDataType vectorDataType)
+    {
+        uint vectorSize = 10U;
+
+        var createCollectionRequest = new CreateCollectionRequest(
+            new Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration>()
+            {
+                ["Vector_1"] = new(
+                    VectorDistanceMetric.Dot,
+                    vectorSize,
+                    isServeVectorsFromDisk: true,
+                    vectorDataType: vectorDataType,
+                    multivectorConfiguration: new MultivectorConfiguration(MultivectorComparator.MaxSim)
+                )
+            },
+            new Dictionary<string, SparseVectorConfiguration>()
+            {
+                [VectorBase.DefaultVectorName] = new(
+                    vectorDataType: vectorDataType,
+                    onDisk: true,
+                    fullScanThreshold: 100,
+                    sparseVectorValueModifier: SparseVectorModifier.Idf)
+            }
+        );
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            createCollectionRequest,
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        // upsert points
+
+        var upsertPointsResult
+            = await _qdrantHttpClient.UpsertPoints(
+                TestCollectionName,
+                new UpsertPointsRequest<TestPayload>()
+                {
+                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    {
+                        new(
+                            PointId.NewGuid(),
+                            new NamedVectors()
+                            {
+                                Vectors = new Dictionary<string, VectorBase>()
+                                {
+                                    [VectorBase.DefaultVectorName] = CreateTestSparseVector(vectorSize, 2, vectorDataType),
+                                    ["Vector_1"] = CreateTestVector(vectorSize, vectorDataType)
+                                }
+                            },
+                            "test")
+                    }
+                },
+                CancellationToken.None);
+
+        upsertPointsResult.EnsureSuccess();
+
+        // check parameters
+
+        var createdCollectionInfoResponse =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        createdCollectionInfoResponse.EnsureSuccess();
+
+        var collectionInfo = createdCollectionInfoResponse.Result;
+
+        // todo: check other collection parameters
+
+        collectionInfo.Config.Params.SparseVectors.Should().ContainKey(VectorBase.DefaultVectorName);
+        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].VectorDataType.Should().Be(vectorDataType);
+        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].OnDisk.Should().Be(true);
+        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].FullScanThreshold.Should().Be(100);
+        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].Modifier.Should().Be(SparseVectorModifier.Idf);
+
+        var multipleVectorsConfiguration =
+            collectionInfo.Config.Params.Vectors.AsMultipleVectorsConfiguration();
+
+        multipleVectorsConfiguration.NamedVectors.Count.Should().Be(1);
+        multipleVectorsConfiguration.NamedVectors["Vector_1"].MultivectorConfig.Should().NotBeNull();
+        multipleVectorsConfiguration.NamedVectors["Vector_1"].MultivectorConfig.Comparator.Should()
+            .Be(MultivectorComparator.MaxSim);
     }
 
     [Test]
