@@ -638,7 +638,7 @@ public partial class QdrantHttpClient
     /// </param>
     public async Task<SearchPointsResponse> RecommendPoints(
         string collectionName,
-        RecommendPointsByRequest recommendPointsRequest,
+        RecommendPointsRequest recommendPointsRequest,
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
@@ -649,7 +649,7 @@ public partial class QdrantHttpClient
 
         var url = $"/collections/{collectionName}/points/recommend?consistency={consistencyValue}";
 
-        var response = await ExecuteRequest<RecommendPointsByRequest, SearchPointsResponse>(
+        var response = await ExecuteRequest<RecommendPointsRequest, SearchPointsResponse>(
             url,
             HttpMethod.Post,
             recommendPointsRequest,
@@ -715,7 +715,7 @@ public partial class QdrantHttpClient
     /// </param>
     public async Task<SearchPointsGroupedResponse> RecommendPointsGrouped(
         string collectionName,
-        RecommendPointsByGroupedRequest recommendPointsGroupedRequest,
+        RecommendPointsGroupedRequest recommendPointsGroupedRequest,
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
@@ -726,7 +726,7 @@ public partial class QdrantHttpClient
 
         var url = $"/collections/{collectionName}/points/recommend/groups?consistency={consistencyValue}";
 
-        var response = await ExecuteRequest<RecommendPointsByGroupedRequest, SearchPointsGroupedResponse>(
+        var response = await ExecuteRequest<RecommendPointsGroupedRequest, SearchPointsGroupedResponse>(
             url,
             HttpMethod.Post,
             recommendPointsGroupedRequest,

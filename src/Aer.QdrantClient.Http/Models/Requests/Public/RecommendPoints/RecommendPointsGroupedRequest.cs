@@ -8,7 +8,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public sealed class RecommendPointsByGroupedRequest : RecommendPointsByRequest
+public sealed class RecommendPointsGroupedRequest : RecommendPointsRequest
 {
     /// <summary>
     /// Payload field to group by, must be a string or number field.
@@ -28,7 +28,7 @@ public sealed class RecommendPointsByGroupedRequest : RecommendPointsByRequest
     public LookupSearchParameters WithLookup { set; get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RecommendPointsByGroupedRequest"/> class.
+    /// Initializes a new instance of the <see cref="RecommendPointsGroupedRequest"/> class.
     /// </summary>
     /// <param name="positiveVectorExamples">Recommend points closest to specified vectors.</param>
     /// <param name="groupBy">Payload field to group by, must be a string or number field.</param>
@@ -41,7 +41,7 @@ public sealed class RecommendPointsByGroupedRequest : RecommendPointsByRequest
     /// The shard selector. If set performs operation on specified shard(s).
     /// If not set - performs operation on all shards.
     /// </param>
-    public RecommendPointsByGroupedRequest(
+    public RecommendPointsGroupedRequest(
         ICollection<PointIdOrQueryVector> positiveVectorExamples,
         string groupBy,
         uint groupsLimit,

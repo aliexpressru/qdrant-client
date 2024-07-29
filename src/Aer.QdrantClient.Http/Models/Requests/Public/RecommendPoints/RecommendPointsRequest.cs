@@ -11,7 +11,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class RecommendPointsByRequest
+public class RecommendPointsRequest
 {
     /// <summary>
     /// The vectors to recommend closest to.
@@ -94,7 +94,7 @@ public class RecommendPointsByRequest
     public ShardSelector ShardKey { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RecommendPointsByRequest"/> class with vector examples.
+    /// Initializes a new instance of the <see cref="RecommendPointsRequest"/> class with vector examples.
     /// </summary>
     /// <param name="positiveVectorExamples">Recommend points closest to specified vectors.</param>
     /// <param name="limit">Maximal number of points to return.</param>
@@ -105,7 +105,7 @@ public class RecommendPointsByRequest
     /// The shard selector. If set performs operation on specified shard(s).
     /// If not set - performs operation on all shards.
     /// </param>
-    public RecommendPointsByRequest(
+    public RecommendPointsRequest(
         ICollection<PointIdOrQueryVector> positiveVectorExamples,
         uint limit,
         ICollection<PointIdOrQueryVector> negativeVectorExamples = null,
