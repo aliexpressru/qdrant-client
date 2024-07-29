@@ -19,7 +19,7 @@ public class PrefetchPoints
     /// <summary>
     /// Query to perform. If missing without prefetches, returns points ordered by their IDs.
     /// </summary>
-    public PointsQueryBase Query { get; set; }
+    public PointsQuery Query { get; set; }
 
     /// <summary>
     /// Define which vector name to use for querying. If missing, the default vector is used.

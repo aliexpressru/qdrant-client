@@ -8,10 +8,16 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 /// <summary>
 /// Query to perform.
 /// </summary>
+[JsonDerivedType(typeof(SpecificPointQuery))]
 [JsonDerivedType(typeof(NearestPointsQuery))]
-public abstract class PointsQueryBase
+[JsonDerivedType(typeof(RecommendPointsQuery))]
+[JsonDerivedType(typeof(DiscoverPointsQuery))]
+[JsonDerivedType(typeof(ContextQuery))]
+[JsonDerivedType(typeof(OrderByQuery))]
+[JsonDerivedType(typeof(FusionQuery))]
+public abstract class PointsQuery
 {
-    internal sealed class SpecificPointQuery : PointsQueryBase
+    internal sealed class SpecificPointQuery : PointsQuery
     {
         /// <summary>
         /// The point id to get point for.
@@ -20,7 +26,7 @@ public abstract class PointsQueryBase
         public PointId PointId { get; set; }
     }
 
-    internal sealed class NearestPointsQuery : PointsQueryBase
+    internal sealed class NearestPointsQuery : PointsQuery
     {
         /// <summary>
         /// Look for vectors closest to this.
@@ -29,7 +35,7 @@ public abstract class PointsQueryBase
         public PointIdOrQueryVector PointIdOrQueryVector { get; init; }
     }
 
-    internal sealed class RecommendPointsQuery : PointsQueryBase
+    internal sealed class RecommendPointsQuery : PointsQuery
     {
         [JsonConverter(typeof(PointIdOrQueryVectorCollectionJsonConverter))]
         public IEnumerable<PointIdOrQueryVector> Positive { set; get; }
@@ -43,20 +49,22 @@ public abstract class PointsQueryBase
         public RecommendStrategy Strategy { set; get; }
     }
 
-    internal sealed class DiscoverPointsQuery : PointsQueryBase
+    internal sealed class DiscoverPointsQuery : PointsQuery
     {
         [JsonConverter(typeof(PointIdOrQueryVectorJsonConverter))]
         public PointIdOrQueryVector Target { set; get; }
 
-        public List<ContextPair> Context { get; set; }
+        [JsonConverter(typeof(PointsDiscoveryContextCollectionJsonConverter))]
+        public ICollection<PointsDiscoveryContext> Context { get; set; }
     }
 
-    internal sealed class ContextQuery : PointsQueryBase
+    internal sealed class ContextQuery : PointsQuery
     {
-        public List<ContextPair> ContextPairs { get; set; }
+        [JsonConverter(typeof(PointsDiscoveryContextCollectionJsonConverter))]
+        public ICollection<PointsDiscoveryContext> Context { get; set; }
     }
 
-    internal sealed class OrderByQuery : PointsQueryBase
+    internal sealed class OrderByQuery : PointsQuery
     {
         /// <summary>
         /// Order the records by a selected payload field.
@@ -65,7 +73,7 @@ public abstract class PointsQueryBase
         public OrderBySelector OrderBy { get; set; }
     }
 
-    internal sealed class FusionQuery : PointsQueryBase
+    internal sealed class FusionQuery : PointsQuery
     {
         public FusionAlgorithm Fusion { get; } = FusionAlgorithm.Rrf;
     }
