@@ -8,13 +8,6 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 /// <summary>
 /// Query to perform.
 /// </summary>
-[JsonDerivedType(typeof(SpecificPointQuery))]
-[JsonDerivedType(typeof(NearestPointsQuery))]
-[JsonDerivedType(typeof(RecommendPointsQuery))]
-[JsonDerivedType(typeof(DiscoverPointsQuery))]
-[JsonDerivedType(typeof(ContextQuery))]
-[JsonDerivedType(typeof(OrderByQuery))]
-[JsonDerivedType(typeof(FusionQuery))]
 public abstract class PointsQuery
 {
     internal sealed class SpecificPointQuery : PointsQuery
@@ -23,7 +16,7 @@ public abstract class PointsQuery
         /// The point id to get point for.
         /// </summary>
         [JsonConverter(typeof(PointIdJsonConverter))]
-        public PointId PointId { get; set; }
+        public PointId PointId { get; init; }
     }
 
     internal sealed class NearestPointsQuery : PointsQuery
@@ -32,16 +25,16 @@ public abstract class PointsQuery
         /// Look for vectors closest to this.
         /// </summary>
         [JsonConverter(typeof(PointIdOrQueryVectorJsonConverter))]
-        public PointIdOrQueryVector PointIdOrQueryVector { get; init; }
+        public PointIdOrQueryVector Nearest { get; init; }
     }
 
     internal sealed class RecommendPointsQuery : PointsQuery
     {
         [JsonConverter(typeof(PointIdOrQueryVectorCollectionJsonConverter))]
-        public IEnumerable<PointIdOrQueryVector> Positive { set; get; }
+        public IEnumerable<PointIdOrQueryVector> Positive { get; init; }
 
         [JsonConverter(typeof(PointIdOrQueryVectorCollectionJsonConverter))]
-        public IEnumerable<PointIdOrQueryVector> Negative { set; get; }
+        public IEnumerable<PointIdOrQueryVector> Negative { get; init; }
 
         /// <summary>
         /// How to use positive and negative examples to find the results.
@@ -52,16 +45,16 @@ public abstract class PointsQuery
     internal sealed class DiscoverPointsQuery : PointsQuery
     {
         [JsonConverter(typeof(PointIdOrQueryVectorJsonConverter))]
-        public PointIdOrQueryVector Target { set; get; }
+        public PointIdOrQueryVector Target { get; init; }
 
         [JsonConverter(typeof(PointsDiscoveryContextCollectionJsonConverter))]
-        public ICollection<PointsDiscoveryContext> Context { get; set; }
+        public ICollection<PointsDiscoveryContext> Context { get; } = new List<PointsDiscoveryContext>();
     }
 
     internal sealed class ContextQuery : PointsQuery
     {
         [JsonConverter(typeof(PointsDiscoveryContextCollectionJsonConverter))]
-        public ICollection<PointsDiscoveryContext> Context { get; set; }
+        public ICollection<PointsDiscoveryContext> Context { get; } = new List<PointsDiscoveryContext>();
     }
 
     internal sealed class OrderByQuery : PointsQuery
@@ -70,7 +63,7 @@ public abstract class PointsQuery
         /// Order the records by a selected payload field.
         /// </summary>
         /// <remarks>When you use the <see cref="OrderBySelector"/> parameter, pagination is disabled.</remarks>
-        public OrderBySelector OrderBy { get; set; }
+        public OrderBySelector OrderBy { get; init; }
     }
 
     internal sealed class FusionQuery : PointsQuery
