@@ -19,7 +19,6 @@ public class PrefetchPoints
     /// <summary>
     /// Query to perform. If missing without prefetches, returns points ordered by their IDs.
     /// </summary>
-    [JsonConverter(typeof(PointsQueryJsonConverter))]
     public PointsQuery Query { get; set; }
 
     /// <summary>

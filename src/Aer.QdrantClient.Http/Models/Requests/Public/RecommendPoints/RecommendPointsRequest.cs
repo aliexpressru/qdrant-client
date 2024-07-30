@@ -28,7 +28,7 @@ public class RecommendPointsRequest
     /// <summary>
     /// How to use positive and negative examples to find the results.
     /// </summary>
-    public RecommendStrategy Strategy { set; get; }
+    public RecommendStrategy? Strategy { set; get; }
 
     /// <summary>
     /// Look only for points which satisfy the filter conditions.

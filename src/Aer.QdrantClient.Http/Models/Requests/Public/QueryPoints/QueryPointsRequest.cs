@@ -20,12 +20,11 @@ public class QueryPointsRequest
     /// <summary>
     /// Sub-requests to perform first. If present, the query will be performed on the results of the prefetch(es).
     /// </summary>
-    public List<PrefetchPoints> Prefetch { get; set; } = new();
+    public ICollection<PrefetchPoints> Prefetch { get; set; }
 
     /// <summary>
     /// Query to perform. If missing without prefetches, returns points ordered by their IDs.
     /// </summary>
-    [JsonConverter(typeof(PointsQueryJsonConverter))]
     public PointsQuery Query { get; set; }
 
     /// <summary>
