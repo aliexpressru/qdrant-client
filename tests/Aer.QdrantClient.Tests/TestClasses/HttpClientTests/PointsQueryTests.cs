@@ -1,6 +1,8 @@
 ﻿using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
+using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Model;
 
@@ -22,6 +24,39 @@ public class PointsQueryTests : QdrantTestsBase
     public async Task BeforeEachTest()
     {
         await ResetStorage();
+    }
+
+    [Test]
+    public async Task PrefetchWithoutQuery()
+    {
+        await PrepareCollection<TestPayload>(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorCount: 10);
+
+        var nearestPointsResponse = await _qdrantHttpClient.QueryPoints(
+            TestCollectionName,
+            new QueryPointsRequest()
+            {
+                Prefetch =
+                [
+                    new PrefetchPoints()
+                    {
+                        Filter = Q<TestPayload>.BeInRange(
+                            p => p.Integer,
+                            greaterThanOrEqual: 0,
+                            lessThanOrEqual: 2)
+                    }
+                ],
+                WithPayload = true,
+                WithVector = true,
+                Limit = 10
+            },
+            CancellationToken.None);
+
+        nearestPointsResponse.Status.IsSuccess.Should().BeFalse();
+        nearestPointsResponse.Status.GetErrorMessage().Should().Contain(
+            "A query is needed to merge the prefetches. Can't have prefetches without defining a query.");
     }
 
     [Test]
@@ -104,5 +139,100 @@ public class PointsQueryTests : QdrantTestsBase
             p =>
                 p.Payload.As<TestPayload>().Integer.Should().BeInRange(0, 2)
         );
+    }
+
+    [Test]
+    public async Task Fusion()
+    {
+        var vectorCount = 10;
+
+        var (_, upsertPointsByPointIds, _) =
+            await PrepareCollection<TestPayload>(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorCount: vectorCount);
+
+        var nearestPointsResponse = await _qdrantHttpClient.QueryPoints(
+            TestCollectionName,
+            new QueryPointsRequest()
+            {
+                Prefetch =
+                [
+                    new PrefetchPoints()
+                    {
+                        Filter = Q<TestPayload>.BeInRange(
+                            p => p.Integer,
+                            greaterThanOrEqual: 0,
+                            lessThanOrEqual: 2),
+                        Limit = 10
+                    },
+                    new PrefetchPoints()
+                    {
+                        Query = PointsQuery.CreateFindNearestPointsQuery(upsertPointsByPointIds.First().Value.Id),
+                        Limit = 5
+                    }
+                ],
+                Query = PointsQuery.CreateFusionQuery(),
+                WithPayload = true,
+                WithVector = true
+            },
+            CancellationToken.None);
+
+        nearestPointsResponse.Status.IsSuccess.Should().BeTrue();
+        // first prefetch returns 3 points
+        // second prefetch returns up to 5 points
+        nearestPointsResponse.Result.Points.Length.Should().BeInRange(5, 8);
+    }
+
+    [Test]
+    public async Task OrderByPoints()
+    {
+        var vectorCount = 10;
+
+        await PrepareCollection<TestPayload>(
+            _qdrantHttpClient,
+            TestCollectionName,
+            vectorCount: vectorCount);
+
+        // order by does not work without indexes
+        await _qdrantHttpClient.CreatePayloadIndex(
+            TestCollectionName,
+            "integer",
+            PayloadIndexedFieldType.Integer,
+            CancellationToken.None,
+            isWaitForResult: true);
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        var orderedPointsResponse = await _qdrantHttpClient.QueryPoints(
+            TestCollectionName,
+            new QueryPointsRequest()
+            {
+                Prefetch =
+                [
+                    new PrefetchPoints()
+                    {
+                        Query = PointsQuery.CreateOrderByQuery(
+                            OrderBySelector<TestPayload>.Desc(p => p.Integer)),
+                        Limit = 2
+                    }
+                ],
+                Query = PointsQuery.CreateOrderByQuery(
+                    OrderBySelector<TestPayload>.Asc(p => p.Integer)),
+                WithPayload = true,
+                WithVector = true
+            },
+            CancellationToken.None);
+
+        orderedPointsResponse.Status.IsSuccess.Should().BeTrue();
+        orderedPointsResponse.Result.Points.Length.Should().Be(2);
+
+        var orderedPoints = orderedPointsResponse.Result.Points.OrderBy(p => p.Score).ToList();
+
+        var firstPoint = orderedPoints.First();
+        var secondPoint = orderedPoints.Skip(1).First();
+
+        firstPoint.Payload.As<TestPayload>().Integer!.Value
+            .Should().BeLessThan(secondPoint.Payload.As<TestPayload>().Integer!.Value);
     }
 }

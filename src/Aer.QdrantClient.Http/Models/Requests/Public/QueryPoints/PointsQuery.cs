@@ -25,7 +25,7 @@ public abstract class PointsQuery
         [JsonConverter(typeof(PointIdOrQueryVectorJsonConverter))]
         public PointIdOrQueryVector Nearest { get; }
 
-        public NearestPointsQuery(PointIdOrQueryVector nearest)
+        internal NearestPointsQuery(PointIdOrQueryVector nearest)
         {
             Nearest = nearest;
         }
@@ -49,7 +49,7 @@ public abstract class PointsQuery
 
         public RecommendPointsQueryUnit Recommend { get; }
 
-        public RecommendPointsQuery(
+        internal RecommendPointsQuery(
             IEnumerable<PointIdOrQueryVector> positive,
             IEnumerable<PointIdOrQueryVector> negative,
             RecommendStrategy? strategy
@@ -77,7 +77,7 @@ public abstract class PointsQuery
 
         public DiscoverPointsQueryUnit Discover { get; }
 
-        public DiscoverPointsQuery(PointIdOrQueryVector target, ICollection<PointsDiscoveryContext> context)
+        internal DiscoverPointsQuery(PointIdOrQueryVector target, ICollection<PointsDiscoveryContext> context)
         {
             Discover = new DiscoverPointsQueryUnit()
             {
@@ -92,7 +92,7 @@ public abstract class PointsQuery
         [JsonConverter(typeof(PointsDiscoveryContextCollectionJsonConverter))]
         public ICollection<PointsDiscoveryContext> Context { get; }
 
-        public ContextQuery(ICollection<PointsDiscoveryContext> context)
+        internal ContextQuery(ICollection<PointsDiscoveryContext> context)
         {
             Context = context;
         }
@@ -106,7 +106,7 @@ public abstract class PointsQuery
         /// <remarks>When you use the <see cref="OrderBySelector"/> parameter, pagination is disabled.</remarks>
         public OrderBySelector OrderBy { get; }
 
-        public OrderByQuery(OrderBySelector orderBy)
+        internal OrderByQuery(OrderBySelector orderBy)
         {
             OrderBy = orderBy;
         }
@@ -116,7 +116,7 @@ public abstract class PointsQuery
     {
         public FusionAlgorithm Fusion { get; }
 
-        public FusionQuery(FusionAlgorithm fusionAlgorithm)
+        internal FusionQuery(FusionAlgorithm fusionAlgorithm)
         {
             Fusion = fusionAlgorithm;
         }

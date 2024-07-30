@@ -8,6 +8,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 /// The selector for the field that the results should be ordered by.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public class OrderBySelector
 {
     /// <summary>
