@@ -7,7 +7,7 @@ using Aer.QdrantClient.Http.Infrastructure.Json;
 namespace Aer.QdrantClient.Http.Infrastructure.Helpers;
 
 /// <summary>
-/// Helper class fro working with reflection and expressions.
+/// Helper class for working with reflection and expressions.
 /// </summary>
 internal static class ReflectionHelper
 {
@@ -16,7 +16,7 @@ internal static class ReflectionHelper
     /// </summary>
     /// <typeparam name="TPayload">The type of the payload to get property from.</typeparam>
     /// <typeparam name="TProperty">The type of the property to get.</typeparam>
-    /// <param name="payloadMemberSelectorExpression">The property slector expression.</param>
+    /// <param name="payloadMemberSelectorExpression">The property selector expression.</param>
     public static string GetPayloadFieldName<TPayload, TProperty>(
         Expression<Func<TPayload, TProperty>> payloadMemberSelectorExpression)
     {
@@ -41,7 +41,7 @@ internal static class ReflectionHelper
     }
 
     /// <summary>
-    /// Colelcts the property names from the expression call chain.
+    /// Collects the property names from the expression call chain.
     /// </summary>
     /// <param name="expression">The expression to collect property names from.</param>
     /// <param name="propertyNamesCallChain">The output names in calling order from first to last.</param>
@@ -75,14 +75,14 @@ internal static class ReflectionHelper
             throw new InvalidOperationException("Trying to get property name from non-property member");
         }
 
-        var customPorpertyJsonNameAttribute = propertyInfo.GetCustomAttribute<JsonPropertyNameAttribute>();
+        var customPropertyJsonNameAttribute = propertyInfo.GetCustomAttribute<JsonPropertyNameAttribute>();
 
-        if (customPorpertyJsonNameAttribute is not null
-            && !string.IsNullOrEmpty(customPorpertyJsonNameAttribute.Name))
+        if (customPropertyJsonNameAttribute is not null
+            && !string.IsNullOrEmpty(customPropertyJsonNameAttribute.Name))
         {
             // means that JsonPropertyAttribute is set and its PropertyName is set
             return JsonSerializerConstants.NamingStrategy.ConvertName(
-                customPorpertyJsonNameAttribute.Name
+                customPropertyJsonNameAttribute.Name
             );
         }
 

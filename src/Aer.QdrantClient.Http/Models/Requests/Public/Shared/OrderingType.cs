@@ -1,6 +1,4 @@
-// ReSharper disable UnusedMember.Global
-
-namespace Aer.QdrantClient.Http.Models.Shared;
+namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 /// <summary>
 /// Represents the operation ordering guarantee.

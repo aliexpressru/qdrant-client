@@ -1,4 +1,4 @@
-﻿namespace Aer.QdrantClient.Http.Models.Shared;
+﻿namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 /// <summary>
 /// Represents recommend points strategy. Affects the recommendation output.

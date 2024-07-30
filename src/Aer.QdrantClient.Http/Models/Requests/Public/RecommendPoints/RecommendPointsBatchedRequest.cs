@@ -16,14 +16,14 @@ public sealed class RecommendPointsBatchedRequest
     /// <summary>
     /// The individual recommend requests to execute as batch.
     /// </summary>
-    public RecommendPointsByRequest[] Searches { get; }
+    public RecommendPointsRequest[] Searches { get; }
 
     /// <summary>
     /// Initializes new instance of <see cref="RecommendPointsBatchedRequest"/>
     /// </summary>
     /// <param name="searches">The individual recommend requests to execute as batch.</param>
     /// <exception cref="ArgumentNullException">Happens when <paramref name="searches"/> is <c>null</c>.</exception>
-    public RecommendPointsBatchedRequest(params RecommendPointsByRequest[] searches)
+    public RecommendPointsBatchedRequest(params RecommendPointsRequest[] searches)
     {
         Searches = searches ?? throw new ArgumentNullException(nameof(searches));
     }

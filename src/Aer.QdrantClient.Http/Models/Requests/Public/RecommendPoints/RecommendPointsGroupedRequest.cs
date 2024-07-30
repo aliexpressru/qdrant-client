@@ -1,54 +1,34 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Aer.QdrantClient.Http.Models.Primitives;
-using Aer.QdrantClient.Http.Models.Shared;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public;
 
 /// <summary>
-/// Represents a class for building instances of <see cref="RecommendPointsByGroupedRequest"/> grouped point recommendation requests.
+/// Represents the recommend points grouped by specified field request.
 /// </summary>
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
-[SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public class RecommendPointsGroupedRequest
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+public sealed class RecommendPointsGroupedRequest : RecommendPointsRequest
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="RecommendPointsByGroupedRequest"/> class.
+    /// Payload field to group by, must be a string or number field.
+    /// If the field contains more than 1 value, all values will be used for grouping.
+    /// One point can be in multiple groups.
     /// </summary>
-    /// <param name="positiveVectorExamples">Recommend points closest to specified vectors.</param>
-    /// <param name="groupBy">Payload field to group by, must be a string or number field.</param>
-    /// <param name="groupsLimit">Maximum amount of groups to return.</param>
-    /// <param name="groupSize">Maximum amount of points to return per group.</param>
-    /// <param name="negativeVectorExamples">Optional vectors to avoid similarity with.</param>
-    /// <param name="withVector">Whether the vector, all named vectors or only selected named vectors should be returned with the response.</param>
-    /// <param name="withPayload">Whether the whole payload or only selected payload properties should be returned with the response.</param>
-    public static RecommendPointsByGroupedRequest ByPointIds(
-        IEnumerable<PointId> positiveVectorExamples,
-        string groupBy,
-        uint groupsLimit,
-        uint groupSize,
-        IEnumerable<PointId> negativeVectorExamples = null,
-        VectorSelector withVector = null,
-        PayloadPropertiesSelector withPayload = null)
-    {
-        var ret = new RecommendPointsByGroupedRequest.RecommendPointsByIdGroupedRequest(
-            positiveVectorExamples,
-            negativeVectorExamples,
-            groupBy,
-            groupsLimit,
-            groupSize
-        )
-        {
-            WithVector = withVector ?? VectorSelector.None,
-            WithPayload = withPayload
-        };
-
-        return ret;
-    }
+    public string GroupBy { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RecommendPointsByGroupedRequest"/> class.
+    /// Maximum amount of points to return per group.
+    /// </summary>
+    public uint GroupSize { get; }
+
+    /// <summary>
+    /// Look for points in another collection using the group ids.
+    /// </summary>
+    public LookupSearchParameters WithLookup { set; get; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RecommendPointsGroupedRequest"/> class.
     /// </summary>
     /// <param name="positiveVectorExamples">Recommend points closest to specified vectors.</param>
     /// <param name="groupBy">Payload field to group by, must be a string or number field.</param>
@@ -57,26 +37,28 @@ public class RecommendPointsGroupedRequest
     /// <param name="negativeVectorExamples">Optional vectors to avoid similarity with.</param>
     /// <param name="withVector">Whether the vector, all named vectors or only selected named vectors should be returned with the response.</param>
     /// <param name="withPayload">Whether the whole payload or only selected payload properties should be returned with the response.</param>
-    public static RecommendPointsByGroupedRequest ByVectorExamples(
-        IEnumerable<float[]> positiveVectorExamples,
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
+    public RecommendPointsGroupedRequest(
+        ICollection<PointIdOrQueryVector> positiveVectorExamples,
         string groupBy,
         uint groupsLimit,
         uint groupSize,
-        IEnumerable<float[]> negativeVectorExamples = null,
+        ICollection<PointIdOrQueryVector> negativeVectorExamples = null,
         VectorSelector withVector = null,
-        PayloadPropertiesSelector withPayload = null)
+        PayloadPropertiesSelector withPayload = null,
+        ShardSelector shardSelector = null
+    ) : base(
+        positiveVectorExamples,
+        groupsLimit,
+        negativeVectorExamples,
+        withVector,
+        withPayload,
+        shardSelector)
     {
-        var ret = new RecommendPointsByGroupedRequest.RecommendPointsByExampleGroupedRequest(
-            positiveVectorExamples,
-            negativeVectorExamples,
-            groupBy,
-            groupsLimit,
-            groupSize)
-        {
-            WithVector = withVector ?? VectorSelector.None,
-            WithPayload = withPayload
-        };
-
-        return ret;
+        GroupBy = groupBy;
+        GroupSize = groupSize;
     }
 }

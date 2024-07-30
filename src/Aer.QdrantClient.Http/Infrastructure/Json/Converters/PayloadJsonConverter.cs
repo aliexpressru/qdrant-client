@@ -30,6 +30,6 @@ internal class PayloadJsonConverter : JsonConverter<Payload>
         }
 
         // just serialize as object
-        JsonSerializer.Serialize(writer, value, JsonSerializerConstants.SerializerOptions);
+        JsonSerializer.Serialize(writer, value, JsonSerializerConstants.DefaultSerializerOptions);
     }
 }

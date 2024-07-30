@@ -49,7 +49,7 @@ internal class QdrantStatusJsonConverter : JsonConverter<QdrantStatus>
 
                 return new QdrantStatus(QdrantOperationStatusType.Unknown)
                 {
-                    RawStatusString = statusObject?.ToJsonString(JsonSerializerConstants.IndentedSerializerOptions)
+                    RawStatusString = statusObject?.ToJsonString(JsonSerializerConstants.DefaultIndentedSerializerOptions)
                 };
             }
 
@@ -60,6 +60,6 @@ internal class QdrantStatusJsonConverter : JsonConverter<QdrantStatus>
 
     public override void Write(Utf8JsonWriter writer, QdrantStatus value, JsonSerializerOptions options)
     {
-        JsonSerializer.Serialize(writer, value, JsonSerializerConstants.SerializerOptions);
+        JsonSerializer.Serialize(writer, value, JsonSerializerConstants.DefaultSerializerOptions);
     }
 }

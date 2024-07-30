@@ -3,7 +3,6 @@ using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
-using CommunityToolkit.Diagnostics;
 
 namespace Aer.QdrantClient.Http;
 

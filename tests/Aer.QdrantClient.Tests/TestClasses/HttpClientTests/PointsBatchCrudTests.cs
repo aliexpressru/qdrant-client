@@ -3,6 +3,7 @@ using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests.Public;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Helpers;
@@ -59,7 +60,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
-                    CreateTestFloatVector(vectorSize),
+                    CreateTestVector(vectorSize),
                     i
                 )
             );
@@ -108,7 +109,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
-                    CreateTestFloatVector(vectorSize),
+                    CreateTestVector(vectorSize),
                     i
                 )
             );
@@ -158,7 +159,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
-                    CreateTestFloatVector(vectorSize),
+                    CreateTestVector(vectorSize),
                     i
                 )
             );
@@ -211,7 +212,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
-                    CreateTestFloatVector(vectorSize),
+                    CreateTestVector(vectorSize),
                     new TestPayload()
                     {
                         Integer = i+1,
@@ -291,7 +292,8 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             .Payload.Should().BeNull();
 
         readAllPoints.Result.Single(p => p.Id.Equals(pointToUpdateVectorFor))
-            .Vector.Default.Should().BeEquivalentTo(vectorToUpdateTo);
+            .Vector.Default.AsDenseVector().VectorValues
+            .Should().BeEquivalentTo(vectorToUpdateTo);
     }
 
     [Test]

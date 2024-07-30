@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
-using Aer.QdrantClient.Http.Models.Shared;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -25,7 +25,7 @@ internal class PayloadPropertiesSelectorJsonConverter : JsonConverter<PayloadPro
 
                 writer.WritePropertyName("include");
 
-                JsonSerializer.Serialize(writer, ips.IncludedPayloadProperties, JsonSerializerConstants.SerializerOptions);
+                JsonSerializer.Serialize(writer, ips.IncludedPayloadProperties, JsonSerializerConstants.DefaultSerializerOptions);
 
                 writer.WriteEndObject();
 
@@ -35,7 +35,7 @@ internal class PayloadPropertiesSelectorJsonConverter : JsonConverter<PayloadPro
 
                 writer.WritePropertyName("exclude");
 
-                JsonSerializer.Serialize(writer, eps.ExcludedPayloadProperties, JsonSerializerConstants.SerializerOptions);
+                JsonSerializer.Serialize(writer, eps.ExcludedPayloadProperties, JsonSerializerConstants.DefaultSerializerOptions);
 
                 writer.WriteEndObject();
 

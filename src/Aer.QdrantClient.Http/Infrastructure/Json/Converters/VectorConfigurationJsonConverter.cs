@@ -19,7 +19,7 @@ internal class VectorConfigurationJsonConverter : JsonConverter<VectorConfigurat
             // determine which vector configuration we are reading
 
             var namedVectorsConfigurations = configurationObject.Deserialize<
-                Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration>>(JsonSerializerConstants.SerializerOptions);
+                Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration>>(JsonSerializerConstants.DefaultSerializerOptions);
 
             return new VectorConfigurationBase.NamedVectorsConfiguration(namedVectorsConfigurations);
         }
@@ -31,7 +31,7 @@ internal class VectorConfigurationJsonConverter : JsonConverter<VectorConfigurat
             {
                 var singleVectorConfiguration =
                     configurationObject.Deserialize<VectorConfigurationBase.SingleVectorConfiguration>(
-                        JsonSerializerConstants.SerializerOptions);
+                        JsonSerializerConstants.DefaultSerializerOptions);
 
                 return singleVectorConfiguration;
             }
@@ -47,10 +47,10 @@ internal class VectorConfigurationJsonConverter : JsonConverter<VectorConfigurat
         switch (value)
         {
             case VectorConfigurationBase.SingleVectorConfiguration sv:
-                JsonSerializer.Serialize(writer, sv, JsonSerializerConstants.SerializerOptions);
+                JsonSerializer.Serialize(writer, sv, JsonSerializerConstants.DefaultSerializerOptions);
                 return;
             case VectorConfigurationBase.NamedVectorsConfiguration nv:
-                JsonSerializer.Serialize(writer, nv.NamedVectors, JsonSerializerConstants.SerializerOptions);
+                JsonSerializer.Serialize(writer, nv.NamedVectors, JsonSerializerConstants.DefaultSerializerOptions);
                 return;
             default:
                 throw new QdrantJsonSerializationException($"Can't serialize {value} vector configuration of type {value.GetType()}");

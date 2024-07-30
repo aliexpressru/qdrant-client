@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
-using Aer.QdrantClient.Http.Models.Shared;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -20,7 +20,7 @@ internal class ShardSelectorJsonConverter : JsonConverter<ShardSelector>
             {
                 if (iss.ShardKeyValues is {Length: > 1})
                 {
-                    JsonSerializer.Serialize(writer, iss.ShardKeyValues, JsonSerializerConstants.SerializerOptions);
+                    JsonSerializer.Serialize(writer, iss.ShardKeyValues, JsonSerializerConstants.DefaultSerializerOptions);
                 }
                 else
                 {
@@ -34,7 +34,7 @@ internal class ShardSelectorJsonConverter : JsonConverter<ShardSelector>
             {
                 if (sss.ShardKeyValues is {Length: > 1})
                 {
-                    JsonSerializer.Serialize(writer, sss.ShardKeyValues, JsonSerializerConstants.SerializerOptions);
+                    JsonSerializer.Serialize(writer, sss.ShardKeyValues, JsonSerializerConstants.DefaultSerializerOptions);
                 }
                 else
                 {

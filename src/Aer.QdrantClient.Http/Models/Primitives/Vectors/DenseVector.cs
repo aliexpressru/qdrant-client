@@ -1,13 +1,14 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
 /// <summary>
-/// Represents a single unnamed vector.
+/// Represents a dense vector.
 /// </summary>
-public sealed class Vector : VectorBase
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+public sealed class DenseVector : VectorBase
 {
     /// <summary>
     /// The vector values array.
@@ -15,7 +16,12 @@ public sealed class Vector : VectorBase
     public float[] VectorValues { internal init; get; }
 
     /// <inheritdoc/>
-    public override float[] Default => VectorValues;
+    [JsonIgnore]
+    public override VectorKind VectorKind => VectorKind.Dense;
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    public override VectorBase Default => this;
 
     /// <inheritdoc/>
     public override VectorBase this[string vectorName]

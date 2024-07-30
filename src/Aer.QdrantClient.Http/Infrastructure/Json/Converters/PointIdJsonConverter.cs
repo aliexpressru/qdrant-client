@@ -12,13 +12,13 @@ internal class PointIdJsonConverter : JsonConverter<PointId>
         switch (reader.TokenType)
         {
             case JsonTokenType.String:
-            {
-                var parsedGuid = reader.GetGuid();
+                var guidId = reader.GetGuid();
+                return PointId.Guid(guidId);
 
-                return PointId.Guid(parsedGuid);
-            }
             case JsonTokenType.Number:
-                return PointId.Integer(reader.GetInt64());
+                var intId = reader.GetInt64();
+                return PointId.Integer(intId);
+
             default:
                 throw new QdrantJsonValueParsingException(reader.GetString());
         }
@@ -26,6 +26,6 @@ internal class PointIdJsonConverter : JsonConverter<PointId>
 
     public override void Write(Utf8JsonWriter writer, PointId value, JsonSerializerOptions options)
     {
-        JsonSerializer.Serialize(writer, value.ToJson(), JsonSerializerConstants.SerializerOptions);
+        JsonSerializer.Serialize(writer, value.ObjectId, JsonSerializerConstants.DefaultSerializerOptions);
     }
 }

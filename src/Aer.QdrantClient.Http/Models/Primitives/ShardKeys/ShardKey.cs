@@ -1,8 +1,11 @@
-﻿namespace Aer.QdrantClient.Http.Models.Primitives;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Aer.QdrantClient.Http.Models.Primitives;
 
 /// <summary>
 /// Represents a point shard key value.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public abstract class ShardKey
 {
     /// <summary>

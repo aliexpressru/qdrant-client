@@ -1,61 +1,121 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Aer.QdrantClient.Http.Models.Primitives;
-using Aer.QdrantClient.Http.Models.Shared;
+using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Filters;
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
 
 /// <summary>
-/// Represents a builder class for building instances of <see cref="DiscoverPointsByRequest"/> point discovery requests.
+/// Represents a discovery API request.
 /// </summary>
-[SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public static class DiscoverPointsRequest
+[SuppressMessage("ReSharper", "CollectionNeverQueried.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+public class DiscoverPointsRequest
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="DiscoverPointsByRequest"/> class with point id vector target and context.
+    /// Pairs of positive - negative examples to constrain the search.
     /// </summary>
-    /// <param name="positiveNegativeContextPairs">Pairs of positive - negative examples to constrain the search.</param>
-    /// <param name="limit">Maximal number of nearest points to return.</param>
-    /// <param name="target">Look for vectors closest to this.</param>
-    /// <param name="withVector">Whether the vector, all named vectors or only selected named vectors should be returned with the response.</param>
-    /// <param name="withPayload">Whether the whole payload or only selected payload properties should be returned with the response.</param>
-    public static DiscoverPointsByRequest ByPointIds(
-        IEnumerable<KeyValuePair<PointId, PointId>> positiveNegativeContextPairs,
-        uint limit,
-        PointId target = null,
-        VectorSelector withVector = null,
-        PayloadPropertiesSelector withPayload = null)
-    {
-        var ret = new DiscoverPointsByRequest.DiscoverPointsByIdRequest(target, positiveNegativeContextPairs, limit)
-        {
-            WithVector = withVector ?? VectorSelector.None,
-            WithPayload = withPayload
-        };
-
-        return ret;
-    }
+    [JsonConverter(typeof(PointsDiscoveryContextCollectionJsonConverter))]
+    public ICollection<PointsDiscoveryContext> Context { get; } = new List<PointsDiscoveryContext>();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DiscoverPointsByRequest"/> class with raw vector target and context.
+    /// Look for vectors closest to this.
+    /// </summary>
+    [JsonConverter(typeof(PointIdOrQueryVectorJsonConverter))]
+    public PointIdOrQueryVector Target { get; }
+
+    /// <summary>
+    /// Look only for points which satisfy the filter conditions.
+    /// </summary>
+    [JsonConverter(typeof(QdrantFilterJsonConverter))]
+    public QdrantFilter Filter { get; set; }
+
+    /// <summary>
+    /// Additional search parameters.
+    /// </summary>
+    public VectorSearchParameters Params { get; set; }
+
+    /// <summary>
+    /// Max number of results to return.
+    /// </summary>
+    public uint Limit { get; }
+
+    /// <summary>
+    /// Offset of the first result to return. May be used to paginate results.
+    /// Large offset values may cause performance issues.
+    /// </summary>
+    public uint Offset { get; set; } = 0;
+
+    /// <summary>
+    /// Whether the whole payload or only selected payload properties should be returned with the response.
+    /// </summary>
+    [JsonConverter(typeof(PayloadPropertiesSelectorJsonConverter))]
+    public PayloadPropertiesSelector WithPayload { set; get; }
+
+    /// <summary>
+    /// Whether the vector, all named vectors or only selected named vectors should be returned with the response.
+    /// </summary>
+    [JsonConverter(typeof(VectorSelectorJsonConverter))]
+    public VectorSelector WithVector { get; set; }
+
+    /// <summary>
+    /// Define a minimal score threshold for the result.
+    /// If defined, less similar results will not be returned.
+    /// Score of the returned result might be higher or smaller than the
+    /// threshold depending on the Distance function used. E.g. for
+    /// cosine similarity only higher scores will be returned.
+    /// </summary>
+    public float? ScoreThreshold { get; set; }
+
+    /// <summary>
+    /// Name of the vector that should be used to calculate recommendations.
+    /// Only for collections with multiple named vectors.
+    /// If not provided, the default vector field will be used.
+    /// </summary>
+    public string Using { get; set; }
+
+    /// <summary>
+    /// The location used to lookup vectors. If not specified - use current collection.
+    /// </summary>
+    /// <remarks>The other collection should have the same vector size as the current collection.</remarks>
+    public VectorsLookupLocation LookupFrom { set; get; }
+
+    /// <summary>
+    /// The shard selector to perform operation only on specified shards.
+    /// If not set - perform operation on all shards.
+    /// </summary>
+    [JsonConverter(typeof(ShardSelectorJsonConverter))]
+    public ShardSelector ShardKey { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DiscoverPointsRequest"/> class.
     /// </summary>
     /// <param name="positiveNegativeContextPairs">Pairs of positive - negative examples to constrain the search.</param>
     /// <param name="limit">Maximal number of nearest points to return.</param>
     /// <param name="target">Look for vectors closest to this.</param>
     /// <param name="withVector">Whether the vector, all named vectors or only selected named vectors should be returned with the response.</param>
     /// <param name="withPayload">Whether the whole payload or only selected payload properties should be returned with the response.</param>
-    public static DiscoverPointsByRequest ByVectorExamples(
-        IEnumerable<KeyValuePair<float[], float[]>> positiveNegativeContextPairs,
+    public DiscoverPointsRequest(
+        IEnumerable<KeyValuePair<PointIdOrQueryVector, PointIdOrQueryVector>> positiveNegativeContextPairs,
         uint limit,
-        float[] target = null,
+        PointIdOrQueryVector target = null,
         VectorSelector withVector = null,
         PayloadPropertiesSelector withPayload = null)
     {
-        var ret = new DiscoverPointsByRequest.DiscoverPointsByExampleRequest(target, positiveNegativeContextPairs, limit)
-        {
-            WithVector = withVector ?? VectorSelector.None,
-            WithPayload = withPayload
-        };
+        Target = target;
+        WithVector = withVector;
+        WithPayload = withPayload;
+        Limit = limit;
 
-        return ret;
+        foreach (var pointsDiscoveryContextPair in positiveNegativeContextPairs)
+        {
+            var discoveryContext = new PointsDiscoveryContext(
+                pointsDiscoveryContextPair.Key,
+                pointsDiscoveryContextPair.Value);
+
+            Context.Add(discoveryContext);
+        }
     }
 }

@@ -8,6 +8,9 @@ namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 internal class PointIdCollectionJsonConverter : JsonConverter<IEnumerable<PointId>>
 {
+    private static readonly JsonSerializerOptions _serializerOptions =
+        JsonSerializerConstants.CreateSerializerOptions(new PointIdJsonConverter());
+
     public override IEnumerable<PointId> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.Null)
@@ -42,9 +45,9 @@ internal class PointIdCollectionJsonConverter : JsonConverter<IEnumerable<PointI
     {
         writer.WriteStartArray();
 
-        foreach (var typedValue in value)
+        foreach (var pointId in value)
         {
-            JsonSerializer.Serialize(writer, typedValue.ToJson(), JsonSerializerConstants.SerializerOptions);
+            JsonSerializer.Serialize(writer, pointId, _serializerOptions);
         }
 
         writer.WriteEndArray();

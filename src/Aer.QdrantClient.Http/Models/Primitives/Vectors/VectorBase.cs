@@ -1,15 +1,16 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-// ReSharper disable MemberCanBeProtected.Global
-
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
 /// <summary>
-/// Represents a base class for either a single vector or a colection of named vectors.
+/// Represents a base class for all vector types.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
+[SuppressMessage("ReSharper", "UnusedMemberInSuper.Global")]
 public abstract class VectorBase
 {
     /// <summary>
@@ -18,26 +19,19 @@ public abstract class VectorBase
     public const string DefaultVectorName = "default";
 
     /// <summary>
-    /// For <see cref="Vector"/> instance gets a vector itself,
+    /// Gets the kind of the vector that is represented by this <see cref="VectorBase"/> instance.
+    /// </summary>
+    [JsonIgnore]
+    public abstract VectorKind VectorKind { get; }
+
+    /// <summary>
+    /// For <see cref="DenseVector"/> instance gets a vector itself,
     /// for <see cref="NamedVectors"/> gets the vector named <see cref="DefaultVectorName"/>
     /// for <see cref="SparseVector"/> throws an exception.
+    /// for <see cref="MultiVector"/> gets the first vector component.
     /// </summary>
     [JsonIgnore]
-    public abstract float[] Default { get; }
-
-    /// <summary>
-    /// <c>true</c> if this instance represents a named vector collection.
-    /// <c>false</c> if this instance represents either a single unnamed vector or a sparse vector.
-    /// </summary>
-    [JsonIgnore]
-    public bool IsNamedVectors => this is NamedVectors;
-
-    /// <summary>
-    /// <c>true</c> if this instance represents a sparse vector.
-    /// <c>false</c> if this instance represents either a named vectors collection or a single unnamed vector.
-    /// </summary>
-    [JsonIgnore]
-    public bool IsSparseVector => this is SparseVector;
+    public abstract VectorBase Default { get; }
 
     /// <summary>
     /// Gets the named vector value if this instance is named vector collection
@@ -67,11 +61,11 @@ public abstract class VectorBase
         ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(NamedVectors)}");
 
     /// <summary>
-    /// Converts this instance into an instance of <see cref="Vector"/> type which represents a single unnamed vector.
+    /// Converts this instance into an instance of <see cref="DenseVector"/> type which represents a single unnamed vector.
     /// </summary>
     /// <exception cref="InvalidCastException">Occurs when this instance is not a single unnamed vector.</exception>
-    public Vector AsSingleVector() => this as Vector
-        ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(Vector)}");
+    public DenseVector AsDenseVector() => this as DenseVector
+        ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(DenseVector)}");
 
     /// <summary>
     /// Converts this instance into an instance of <see cref="SparseVector"/> type which represents a sparse vector.
@@ -79,6 +73,13 @@ public abstract class VectorBase
     /// <exception cref="InvalidCastException">Occurs when this instance is not a sparse vector.</exception>
     public SparseVector AsSparseVector() => this as SparseVector
         ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(SparseVector)}");
+
+    /// <summary>
+    /// Converts this instance into an instance of <see cref="MultiVector"/> type which represents a multivector.
+    /// </summary>
+    /// <exception cref="InvalidCastException">Occurs when this instance is not a multivector.</exception>
+    public MultiVector AsMultiVector() => this as MultiVector
+        ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(MultiVector)}");
 
     #region Operators
 
@@ -93,7 +94,7 @@ public abstract class VectorBase
             throw new ArgumentNullException(nameof(vectorValues));
         }
 
-        return new Vector()
+        return new DenseVector()
         {
             VectorValues = vectorValues
         };
@@ -101,7 +102,7 @@ public abstract class VectorBase
 
     /// <summary>
     /// Implicitly converts a dictionary of type <see cref="Dictionary{TKey,TValue}"/> to a vector instance.
-    /// Dictionary key must be <see cref="string"/>, dictionary value must be array of <see cref="float"/>.
+    /// Dictionary key must be <see cref="string"/>, dictionary value must be an array of <see cref="float"/>.
     /// </summary>
     /// <param name="namedVectors">The named vectors.</param>
     public static implicit operator VectorBase(Dictionary<string, float[]> namedVectors)
@@ -116,13 +117,34 @@ public abstract class VectorBase
             Vectors = namedVectors
                 .ToDictionary(
                     nv => nv.Key,
-                    nv => (VectorBase) new Vector()
+                    nv => (VectorBase) new DenseVector()
                     {
                         VectorValues = nv.Value is null or {Length: 0}
                             ? throw new InvalidOperationException(
                                 $"Can't create named vector {nv.Key} with null or empty vector value")
                             : nv.Value
                     })
+        };
+    }
+
+    /// <summary>
+    /// Implicitly converts a dictionary of type <see cref="Dictionary{TKey,TValue}"/> to a vector instance.
+    /// Dictionary key must be <see cref="string"/>, dictionary value must be an array of <see cref="VectorBase"/>.
+    /// </summary>
+    /// <param name="namedVectors">The named vectors.</param>
+    public static implicit operator VectorBase(Dictionary<string, VectorBase> namedVectors)
+    {
+        if (namedVectors is null or {Count: 0})
+        {
+            throw new ArgumentNullException(nameof(namedVectors));
+        }
+
+        return new NamedVectors()
+        {
+            Vectors = namedVectors
+                .ToDictionary(
+                    nv => nv.Key,
+                    nv => nv.Value)
         };
     }
 
@@ -143,32 +165,58 @@ public abstract class VectorBase
             Vectors = namedSparseVectors
                 .ToDictionary(
                     nv => nv.Key,
-                    nv => (VectorBase) new SparseVector()
-                    {
-                        Indices = nv.Value.Indices?.ToHashSet(),
-                        Values = nv.Value.Values
-                    })
+                    nv =>
+                        (VectorBase) new SparseVector(nv.Value.Indices, nv.Value.Values)
+                )
         };
     }
 
     /// <summary>
     /// Implicitly converts an indices-values tuple to a vector instance.
+    /// Indices must be unique.
+    /// Values and Indices must be the same length.
     /// </summary>
     /// <param name="sparseVectorComponents">The sparse vector components.</param>
     public static implicit operator VectorBase((uint[] Indices, float[] Values) sparseVectorComponents)
-        =>
-            new SparseVector()
-            {
-                Indices = sparseVectorComponents.Indices?.ToHashSet(),
-                Values = sparseVectorComponents.Values
-            };
+        => new SparseVector(sparseVectorComponents.Indices, sparseVectorComponents.Values);
+
+    /// <summary>
+    /// Implicitly converts an indices-values tuple to a vector instance.
+    /// Indices must be unique.
+    /// Values and Indices must be the same length.
+    /// </summary>
+    /// <param name="sparseVectorComponents">The sparse vector components.</param>
+    public static implicit operator VectorBase((HashSet<uint> Indices, float[] Values) sparseVectorComponents)
+        => new SparseVector(sparseVectorComponents.Indices, sparseVectorComponents.Values);
 
     /// <summary>
     /// Implicitly converts the <see cref="VectorBase"/> instance to an array of <see cref="float"/> values.
     /// Returns <see cref="Default"/> vector.
     /// </summary>
     /// <param name="vector">Instance to get single vector from.</param>
-    public static implicit operator float[](VectorBase vector) => vector?.Default;
+    public static explicit operator float[](VectorBase vector)
+    {
+        return vector switch
+        {
+            DenseVector denseVector => denseVector.VectorValues,
+            MultiVector multiVector => multiVector.Default.AsDenseVector().VectorValues,
+            NamedVectors namedVectors => (float[]) namedVectors.Default,
+            SparseVector =>
+                throw new NotSupportedException("Conversion from sparse vector to float[] is not supported since sparse vector is a multi-component value"),
+            _ => throw new ArgumentOutOfRangeException(nameof(vector))
+        };
+    }
+
+    /// <summary>
+    /// Implicitly converts a jagged array of floats to a multivector instance.
+    /// </summary>
+    /// <param name="multiVectorComponentVectors">The multivector component vectors.</param>
+    public static implicit operator VectorBase(float[][] multiVectorComponentVectors)
+        =>
+            new MultiVector()
+            {
+                Vectors = multiVectorComponentVectors
+            };
 
     #endregion
 }

@@ -1,6 +1,4 @@
-﻿namespace Aer.QdrantClient.Http.Models.Shared;
-
-// ReSharper disable UnusedMember.Global
+﻿namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 /// <summary>
 /// The type of the preset consistency.

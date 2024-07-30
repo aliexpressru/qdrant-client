@@ -16,14 +16,14 @@ public class DiscoverPointsBatchedRequest
     /// <summary>
     /// The individual recommend requests to execute as batch.
     /// </summary>
-    public DiscoverPointsByRequest[] Searches { get; }
+    public DiscoverPointsRequest[] Searches { get; }
 
     /// <summary>
     /// Initializes new instance of <see cref="DiscoverPointsBatchedRequest"/>
     /// </summary>
     /// <param name="searches">The individual discover requests to execute as batch.</param>
     /// <exception cref="ArgumentNullException">Happens when <paramref name="searches"/> is <c>null</c>.</exception>
-    public DiscoverPointsBatchedRequest(params DiscoverPointsByRequest[] searches)
+    public DiscoverPointsBatchedRequest(params DiscoverPointsRequest[] searches)
     {
         Searches = searches ?? throw new ArgumentNullException(nameof(searches));
     }

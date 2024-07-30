@@ -1,16 +1,14 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Aer.QdrantClient.Http.Models.Primitives;
 
 /// <summary>
 /// Represents a single Qdrant point.
 /// </summary>
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public class Point
 {
     /// <summary>
@@ -23,17 +21,22 @@ public class Point
     /// Gets or sets the point vector.
     /// </summary>
     [JsonConverter(typeof(VectorJsonConverter))]
-    public required VectorBase Vector{ get; init; }
+    public VectorBase Vector{ get; init; }
 
     /// <summary>
     /// Gets or sets the point payload.
     /// </summary>
     [JsonConverter(typeof(PayloadJsonConverter))]
-    public Payload Payload { get; set; }
+    public Payload Payload { get; init; }
 
     /// <summary>
     /// Gets or sets the point shard key.
     /// </summary>
     [JsonConverter(typeof(ShardKeyJsonConverter))]
-    public ShardKey ShardKey { get; set; }
+    public ShardKey ShardKey { get; init; }
+
+    /// <summary>
+    /// Order-by value. Represents an order of the point if order-by selector is used.
+    /// </summary>
+    public double OrderValue { get; init; }
 }

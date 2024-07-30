@@ -1,7 +1,8 @@
 ﻿using Aer.QdrantClient.Http;
-using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Requests.Public;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Model;
@@ -189,9 +190,11 @@ public class ClusterTests : QdrantTestsBase
     [Test]
     public async Task TestCollectionCreateShardKey_ManualPlacement()
     {
+        var vectorSize = 10U;
+
         (await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 10U, isServeVectorsFromDisk: true)
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
             {
                 OnDiskPayload = true,
                 WriteConsistencyFactor = 2,
@@ -216,7 +219,7 @@ public class ClusterTests : QdrantTestsBase
 
         var createSecondShardKey = await _qdrantHttpClient.CreateShardKey(
             TestCollectionName,
-            TestShardKey2,
+            TestShardKeyInt1,
             CancellationToken.None,
             shardsNumber: 1,
             replicationFactor: 1,
@@ -227,6 +230,66 @@ public class ClusterTests : QdrantTestsBase
 
         createSecondShardKey.Status.IsSuccess.Should().BeTrue();
         createSecondShardKey.Result.Should().BeTrue();
+
+        UpsertPointsRequest<TestPayload>.UpsertPoint firstShardPoint = new(
+            id: 1,
+            vector: CreateTestVector(vectorSize),
+            payload: 1);
+
+        UpsertPointsRequest<TestPayload>.UpsertPoint secondShardPoint = new(
+            id: 2,
+            vector: CreateTestVector(vectorSize),
+            payload: 2);
+
+        var upsertOnFirstShardResponse = await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest<TestPayload>()
+            {
+                Points =
+                [
+                    firstShardPoint
+                ],
+                ShardKey = TestShardKey1
+            },
+            CancellationToken.None);
+
+        var upsertOnSecondShardResponse = await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest<TestPayload>()
+            {
+                Points =
+                [
+                    secondShardPoint
+                ],
+                ShardKey = TestShardKeyInt1
+            },
+            CancellationToken.None);
+
+        upsertOnFirstShardResponse.Status.IsSuccess.Should().BeTrue();
+        upsertOnSecondShardResponse.Status.IsSuccess.Should().BeTrue();
+
+        var readPoints = (await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            QdrantFilter.Empty,
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true,
+            limit: 2)).EnsureSuccess();
+
+        readPoints.Points.Length.Should().Be(2);
+
+        var firstReadPoint = readPoints.Points.Single(p => p.Id == firstShardPoint.Id);
+        var secondReadPoint = readPoints.Points.Single(p => p.Id == secondShardPoint.Id);
+
+        firstReadPoint.Payload.As<int>().Should().Be(firstShardPoint.Payload.As<int>());
+        firstReadPoint.Vector.Default.Should().BeEquivalentTo(firstShardPoint.Vector.Default);
+        firstReadPoint.ShardKey.IsString().Should().BeTrue();
+        firstReadPoint.ShardKey.GetString().Should().Be(TestShardKey1);
+
+        secondReadPoint.Payload.As<int>().Should().Be(secondShardPoint.Payload.As<int>());
+        secondReadPoint.Vector.Default.Should().BeEquivalentTo(secondShardPoint.Vector.Default);
+        secondReadPoint.ShardKey.IsInteger().Should().BeTrue();
+        secondReadPoint.ShardKey.GetInteger().Should().Be(TestShardKeyInt1);
     }
 
     [Test]

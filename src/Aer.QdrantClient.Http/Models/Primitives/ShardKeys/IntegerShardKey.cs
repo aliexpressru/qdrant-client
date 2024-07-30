@@ -1,7 +1,7 @@
 ﻿namespace Aer.QdrantClient.Http.Models.Primitives;
 
 /// <summary>
-/// Represemts an integer shard key value.
+/// Represents an integer shard key value.
 /// </summary>
 internal class IntegerShardKey : ShardKey
 {
@@ -11,7 +11,7 @@ internal class IntegerShardKey : ShardKey
     public ulong ShardKeyValue { get; }
 
     /// <summary>
-    /// Initializes new istance of <see cref="ShardKey"/> using integer shard key.
+    /// Initializes new instance of <see cref="ShardKey"/> using integer shard key.
     /// </summary>
     /// <param name="shardKeyValue">The shard key value.</param>
     public IntegerShardKey(ulong shardKeyValue)

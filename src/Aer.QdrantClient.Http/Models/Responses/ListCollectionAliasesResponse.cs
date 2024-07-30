@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Models.Responses.Base;
-using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
 
@@ -9,6 +8,7 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public sealed class ListCollectionAliasesResponse : QdrantResponseBase<ListCollectionAliasesResponse.CollectionAliasesResult>
 {
     /// <summary>
@@ -33,5 +33,21 @@ public sealed class ListCollectionAliasesResponse : QdrantResponseBase<ListColle
         /// </summary>
         public Dictionary<string, string> CollectionNamesByAliases =>
             Aliases?.ToDictionary(a => a.AliasName, a => a.CollectionName);
+    }
+
+    /// <summary>
+    /// Represents a collection alias information.
+    /// </summary>
+    public class CollectionAlias
+    {
+        /// <summary>
+        /// The collection alias.
+        /// </summary>
+        public string AliasName { set; get; }
+
+        /// <summary>
+        /// The collection original name.
+        /// </summary>
+        public string CollectionName { set; get; }
     }
 }

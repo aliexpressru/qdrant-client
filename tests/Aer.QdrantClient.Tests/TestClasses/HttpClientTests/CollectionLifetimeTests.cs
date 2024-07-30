@@ -116,7 +116,10 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_WithSparseVectors()
+    [TestCase(VectorDataType.Float32)]
+    [TestCase(VectorDataType.Uint8)]
+    [TestCase(VectorDataType.Float16)]
+    public async Task TestCreateCollection_WithSparseVectors(VectorDataType vectorDataType)
     {
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -124,7 +127,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
             {
                 OnDiskPayload = true,
                 SparseVectors = new Dictionary<string, SparseVectorConfiguration>(){
-                    ["test"] = new (onDisk: true, fullScanThreshold: 5000)
+                    ["test"] = new (onDisk: true, fullScanThreshold: 5000, vectorDataType: vectorDataType)
                 }
             },
             CancellationToken.None);
@@ -245,7 +248,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
         createCollectionResult.EnsureSuccess();
 
         var testPointId = PointId.Integer(1);
-        var testVector = CreateTestFloatVector(vectorSize);
+        var testVector = CreateTestVector(vectorSize);
         TestPayload testPayload = "test";
 
         await _qdrantHttpClient.UpsertPoints(
@@ -289,8 +292,9 @@ internal class CollectionLifetimeTests : QdrantTestsBase
         readPointsResult.Status.IsSuccess.Should().BeTrue();
         readPointsResult.Result.Should().NotBeNull();
 
-        readPointsResult.Result.Id.ToJson().Should().Be(testPointId.ToJson());
-        readPointsResult.Result.Vector.Default.Should().BeEquivalentTo(testVector);
+        readPointsResult.Result.Id.ObjectId.Should().Be(testPointId.ObjectId);
+        readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
+            .Should().BeEquivalentTo(testVector);
         var readTestPayload = readPointsResult.Result.Payload.As<TestPayload>();
 
         readTestPayload.Integer.Should().Be(testPayload.Integer);

@@ -1,5 +1,6 @@
 ﻿using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
@@ -26,7 +27,10 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_CheckParameters()
+    [TestCase(VectorDataType.Float32)]
+    [TestCase(VectorDataType.Uint8)]
+    [TestCase(VectorDataType.Float16)]
+    public async Task TestCreateCollection_CheckParameters(VectorDataType vectorDataType)
     {
         uint vectorSize = 10U;
 
@@ -35,7 +39,7 @@ public class CollectionParametersTests : QdrantTestsBase
                 VectorDistanceMetric.Dot,
                 vectorSize,
                 isServeVectorsFromDisk: true,
-                vectorDataType: VectorDataType.Uint8
+                vectorDataType: vectorDataType
             )
         );
 
@@ -48,10 +52,6 @@ public class CollectionParametersTests : QdrantTestsBase
 
         // upsert points
 
-        var testPointId = PointId.NewGuid();
-        var testVector = CreateTestFloatVector(vectorSize);
-        TestPayload testPayload = "test";
-
         var upsertPointsResult
             = await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
@@ -59,7 +59,10 @@ public class CollectionParametersTests : QdrantTestsBase
                 {
                     Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
                     {
-                        new(testPointId, testVector, testPayload)
+                        new(
+                            PointId.NewGuid(),
+                            CreateTestVector(vectorSize, vectorDataType),
+                            "test")
                     }
                 },
                 CancellationToken.None);
@@ -77,7 +80,95 @@ public class CollectionParametersTests : QdrantTestsBase
 
         // todo: check other collection parameters
 
-        collectionInfo.Config.Params.Vectors.AsSingleVectorConfiguration().Datatype.Should().Be(VectorDataType.Uint8);
+        collectionInfo.Config.Params.Vectors.AsSingleVectorConfiguration().Datatype.Should().Be(vectorDataType);
+    }
+
+    [Test]
+    [TestCase(VectorDataType.Float32)]
+    [TestCase(VectorDataType.Uint8)]
+    [TestCase(VectorDataType.Float16)]
+    public async Task TestCreateCollection_NamedVectors_CheckParameters(VectorDataType vectorDataType)
+    {
+        uint vectorSize = 10U;
+
+        var createCollectionRequest = new CreateCollectionRequest(
+            new Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration>()
+            {
+                ["Vector_1"] = new(
+                    VectorDistanceMetric.Dot,
+                    vectorSize,
+                    isServeVectorsFromDisk: true,
+                    vectorDataType: vectorDataType,
+                    multivectorConfiguration: new MultivectorConfiguration(MultivectorComparator.MaxSim)
+                )
+            },
+            new Dictionary<string, SparseVectorConfiguration>()
+            {
+                [VectorBase.DefaultVectorName] = new(
+                    vectorDataType: vectorDataType,
+                    onDisk: true,
+                    fullScanThreshold: 100,
+                    sparseVectorValueModifier: SparseVectorModifier.Idf)
+            }
+        );
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            createCollectionRequest,
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        // upsert points
+
+        var upsertPointsResult
+            = await _qdrantHttpClient.UpsertPoints(
+                TestCollectionName,
+                new UpsertPointsRequest<TestPayload>()
+                {
+                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    {
+                        new(
+                            PointId.NewGuid(),
+                            new NamedVectors()
+                            {
+                                Vectors = new Dictionary<string, VectorBase>()
+                                {
+                                    [VectorBase.DefaultVectorName] = CreateTestSparseVector(vectorSize, 2, vectorDataType),
+                                    ["Vector_1"] = CreateTestVector(vectorSize, vectorDataType)
+                                }
+                            },
+                            "test")
+                    }
+                },
+                CancellationToken.None);
+
+        upsertPointsResult.EnsureSuccess();
+
+        // check parameters
+
+        var createdCollectionInfoResponse =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        createdCollectionInfoResponse.EnsureSuccess();
+
+        var collectionInfo = createdCollectionInfoResponse.Result;
+
+        // todo: check other collection parameters
+
+        collectionInfo.Config.Params.SparseVectors.Should().ContainKey(VectorBase.DefaultVectorName);
+        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].VectorDataType.Should().Be(vectorDataType);
+        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].OnDisk.Should().Be(true);
+        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].FullScanThreshold.Should().Be(100);
+        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].Modifier.Should().Be(SparseVectorModifier.Idf);
+
+        var multipleVectorsConfiguration =
+            collectionInfo.Config.Params.Vectors.AsMultipleVectorsConfiguration();
+
+        multipleVectorsConfiguration.NamedVectors.Count.Should().Be(1);
+        multipleVectorsConfiguration.NamedVectors["Vector_1"].MultivectorConfig.Should().NotBeNull();
+        multipleVectorsConfiguration.NamedVectors["Vector_1"].MultivectorConfig.Comparator.Should()
+            .Be(MultivectorComparator.MaxSim);
     }
 
     [Test]
@@ -100,7 +191,8 @@ public class CollectionParametersTests : QdrantTestsBase
             ["Vector_4"] = new VectorConfigurationBase.SingleVectorConfiguration(
                 VectorDistanceMetric.Manhattan,
                 50,
-                isServeVectorsFromDisk: true),
+                isServeVectorsFromDisk: true,
+                multivectorConfiguration: new MultivectorConfiguration(MultivectorComparator.MaxSim))
         };
 
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
@@ -133,8 +225,22 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_NamedVectors_SparseVectors()
+    // this ugly string as second test case argument is a workaround for NUnit analyzer that
+    // can't for some reason parse several enum values like this
+    // [TestCase(VectorDataType.Float32, SparseVectorModifier.Idf)]
+    // it parses preceding attribute as having 0 values
+    [TestCase(VectorDataType.Float32, nameof(SparseVectorModifier.Idf))]
+    [TestCase(VectorDataType.Uint8, null)]
+    [TestCase(VectorDataType.Float16, nameof(SparseVectorModifier.None))]
+    public async Task TestCreateCollection_NamedVectors_SparseVectors(
+        VectorDataType vectorDataType,
+        string sparseVectorModifierString)
     {
+        SparseVectorModifier? sparseVectorModifier =
+            sparseVectorModifierString is null
+                ? null
+                : Enum.Parse<SparseVectorModifier>(sparseVectorModifierString, ignoreCase: true);
+
         var sparseVectorName = "Vector_1";
 
         Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration> namedVectors = new()
@@ -142,11 +248,13 @@ public class CollectionParametersTests : QdrantTestsBase
             [sparseVectorName] = new VectorConfigurationBase.SingleVectorConfiguration(
                 VectorDistanceMetric.Dot,
                 100,
-                isServeVectorsFromDisk: true),
+                isServeVectorsFromDisk: true,
+                vectorDataType: vectorDataType),
             ["Vector_2"] = new VectorConfigurationBase.SingleVectorConfiguration(
                 VectorDistanceMetric.Euclid,
                 5,
-                isServeVectorsFromDisk: false),
+                isServeVectorsFromDisk: false,
+                vectorDataType: vectorDataType),
         };
 
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
@@ -156,7 +264,16 @@ public class CollectionParametersTests : QdrantTestsBase
                 OnDiskPayload = true,
                 SparseVectors = new Dictionary<string, SparseVectorConfiguration>()
                 {
-                    [sparseVectorName] = new (onDisk: true, fullScanThreshold: 5000)
+                    [sparseVectorName] = sparseVectorModifierString is not null
+                        ? new(
+                            onDisk: true,
+                            fullScanThreshold: 5000,
+                            vectorDataType: vectorDataType,
+                            sparseVectorModifier.Value)
+                        : new(
+                            onDisk: true,
+                            fullScanThreshold: 5000,
+                            vectorDataType: vectorDataType)
                 }
             },
             CancellationToken.None);
@@ -180,6 +297,16 @@ public class CollectionParametersTests : QdrantTestsBase
         sparseVectorsConfiguration[sparseVectorName].OnDisk.Should().BeTrue();
         sparseVectorsConfiguration[sparseVectorName].FullScanThreshold.Should().NotBeNull();
         sparseVectorsConfiguration[sparseVectorName].FullScanThreshold.Should().Be(5000);
+        sparseVectorsConfiguration[sparseVectorName].VectorDataType.Should().Be(vectorDataType);
+
+        if (sparseVectorModifierString is null)
+        {
+            sparseVectorsConfiguration[sparseVectorName].Modifier.Should().Be(SparseVectorModifier.None);
+        }
+        else
+        {
+            sparseVectorsConfiguration[sparseVectorName].Modifier.Should().Be(sparseVectorModifier);
+        }
     }
 
     [Test]

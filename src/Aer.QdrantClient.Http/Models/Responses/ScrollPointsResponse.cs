@@ -1,17 +1,16 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-
 namespace Aer.QdrantClient.Http.Models.Responses;
 
 /// <summary>
-/// Represents the scoll points operation response.
+/// Represents the scroll points operation response.
 /// </summary>
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class ScrollPointsResponse : QdrantResponseBase<ScrollPointsResponse.ScrollResult>
 {
     /// <summary>
@@ -22,12 +21,12 @@ public sealed class ScrollPointsResponse : QdrantResponseBase<ScrollPointsRespon
         /// <summary>
         /// The point values.
         /// </summary>
-        public Point[] Points { get; set; }
+        public Point[] Points { get; init; }
 
         /// <summary>
         /// The next page offset - used in pagination.
         /// </summary>
         [JsonConverter(typeof(PointIdJsonConverter))]
-        public PointId NextPageOffset { get; set; }
+        public PointId NextPageOffset { get; init; }
     }
 }

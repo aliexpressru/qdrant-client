@@ -3,9 +3,9 @@ using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests.Public;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
-using Aer.QdrantClient.Tests.Helpers;
 using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
@@ -34,7 +34,7 @@ public class PointsRecommendTests : QdrantTestsBase
         var recommendPointInNonexistentCollectionResult
             = await _qdrantHttpClient.RecommendPoints(
                 TestCollectionName,
-                RecommendPointsRequest.ByVectorExamples(new[] {CreateTestFloatVector(10)}, 10),
+                new RecommendPointsRequest([CreateTestVector(10)], 10),
                 CancellationToken.None);
 
         recommendPointInNonexistentCollectionResult.Status.IsSuccess.Should().BeFalse();
@@ -57,7 +57,7 @@ public class PointsRecommendTests : QdrantTestsBase
         var recommendNonexistentPointResult
             = await _qdrantHttpClient.RecommendPoints(
                 TestCollectionName,
-                RecommendPointsRequest.ByVectorExamples(new[] {CreateTestFloatVector(10)}, 10),
+                new RecommendPointsRequest([CreateTestVector(10)], 10),
                 CancellationToken.None);
 
         recommendNonexistentPointResult.Status.IsSuccess.Should().BeTrue();
@@ -78,9 +78,10 @@ public class PointsRecommendTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var vector1Vector2Vector = CreateTestFloatVector(vectorSize);
+        var vector1Vector2Vector = CreateTestVector(vectorSize);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>(){
+        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+        {
             new(
                 PointId.Integer(1),
                 vector1Vector2Vector,
@@ -99,7 +100,7 @@ public class PointsRecommendTests : QdrantTestsBase
                 }),
             new(
                 PointId.Integer(3),
-                CreateTestFloatVector(vectorSize),
+                CreateTestVector(vectorSize),
                 new TestPayload()
                 {
                     Integer = 3,
@@ -121,14 +122,16 @@ public class PointsRecommendTests : QdrantTestsBase
         var positiveExamplePointId = upsertPoints[0].Id;
         var vectorToAvoidPointId = upsertPoints.Last().Id;
 
+        var request = new RecommendPointsRequest(
+            [positiveExamplePointId],
+            1,
+            negativeVectorExamples: [vectorToAvoidPointId],
+            withVector: true,
+            withPayload: true);
+
         var recommendedPoints = await _qdrantHttpClient.RecommendPoints(
             TestCollectionName,
-            RecommendPointsRequest.ByPointIds(
-                positiveExamplePointId.YieldSingle(),
-                1,
-                negativeVectorExamples: vectorToAvoidPointId.YieldSingle(),
-                withVector: true,
-                withPayload: true),
+            request,
             CancellationToken.None);
 
         recommendedPoints.Status.IsSuccess.Should().BeTrue();
@@ -153,7 +156,7 @@ public class PointsRecommendTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var vector1Vector2Vector = CreateTestFloatVector(vectorSize);
+        var vector1Vector2Vector = CreateTestVector(vectorSize);
 
         var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
         {
@@ -175,7 +178,7 @@ public class PointsRecommendTests : QdrantTestsBase
                 }),
             new(
                 PointId.Integer(3),
-                CreateTestFloatVector(vectorSize),
+                CreateTestVector(vectorSize),
                 new TestPayload()
                 {
                     Integer = 3,
@@ -197,10 +200,10 @@ public class PointsRecommendTests : QdrantTestsBase
         var positiveExampleVector = vector1Vector2Vector;
         var vectorToAvoid = upsertPoints.Last().Vector.Default;
 
-        var request = RecommendPointsRequest.ByVectorExamples(
-            positiveExampleVector.YieldSingle(),
+        var request = new RecommendPointsRequest(
+            [positiveExampleVector],
             2,
-            negativeVectorExamples: vectorToAvoid.YieldSingle(),
+            negativeVectorExamples: [vectorToAvoid],
             withVector: true,
             withPayload: true);
 
@@ -273,15 +276,15 @@ public class PointsRecommendTests : QdrantTestsBase
 
         var recommendedPoints = await _qdrantHttpClient.RecommendPoints(
             TestCollectionName,
-            RecommendPointsRequest.ByPointIds(
-                new[]{positiveExamplePointId1, positiveExamplePointId2},
+            new RecommendPointsRequest(
+                [positiveExamplePointId1, positiveExamplePointId2],
                 (uint) vectorCount,
                 withVector: true,
                 withPayload: true),
             CancellationToken.None);
 
         recommendedPoints.Status.IsSuccess.Should().BeTrue();
-        recommendedPoints.Result.Length.Should().Be(vectorCount-2); // all vectors except the two example ones
+        recommendedPoints.Result.Length.Should().Be(vectorCount - 2); // all vectors except the two example ones
         recommendedPoints.Result.Should().AllSatisfy(
             p =>
                 p.Id.Should().NotBe(positiveExamplePointId1)
@@ -342,8 +345,8 @@ public class PointsRecommendTests : QdrantTestsBase
 
         var recommendedPoints = await _qdrantHttpClient.RecommendPoints(
             TestCollectionName,
-            RecommendPointsRequest.ByVectorExamples(
-                new[]{singleVector1, singleVector2},
+            new RecommendPointsRequest(
+                [singleVector1, singleVector2],
                 (uint) vectorCount,
                 withVector: true,
                 withPayload: true),
@@ -403,8 +406,8 @@ public class PointsRecommendTests : QdrantTestsBase
         var positiveExamplePointId2 = upsertPoints[1].Id;
         var filterOutPointId = upsertPoints.Last().Id;
 
-        var request = RecommendPointsRequest.ByPointIds(
-            new[] {positiveExamplePointId1, positiveExamplePointId2},
+        var request = new RecommendPointsRequest(
+            [positiveExamplePointId1, positiveExamplePointId2],
             (uint) vectorCount,
             withVector: true,
             withPayload: true);
@@ -421,12 +424,14 @@ public class PointsRecommendTests : QdrantTestsBase
             CancellationToken.None);
 
         recommendedPoints.Status.IsSuccess.Should().BeTrue();
-        recommendedPoints.Result.Length.Should().Be(vectorCount - 3); // all vectors except the two example ones and one filtered out
+        recommendedPoints.Result.Length.Should()
+            .Be(vectorCount - 3); // all vectors except the two example ones and one filtered out
         recommendedPoints.Result.Should()
-            .AllSatisfy(p =>
-                p.Id.Should().NotBe(positiveExamplePointId1)
-                    .And.NotBe(positiveExamplePointId2)
-                    .And.NotBe(filterOutPointId));
+            .AllSatisfy(
+                p =>
+                    p.Id.Should().NotBe(positiveExamplePointId1)
+                        .And.NotBe(positiveExamplePointId2)
+                        .And.NotBe(filterOutPointId));
 
         recommendedPoints.Result.Should()
             .AllSatisfy(p => p.Vector.Should().NotBeNull())
@@ -480,8 +485,8 @@ public class PointsRecommendTests : QdrantTestsBase
 
         await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
 
-        var request = RecommendPointsRequest.ByVectorExamples(
-            new[] {singleVector1, singleVector2},
+        var request = new RecommendPointsRequest(
+            [singleVector1, singleVector2],
             (uint) vectorCount,
             withVector: true,
             withPayload: true);
@@ -560,29 +565,31 @@ public class PointsRecommendTests : QdrantTestsBase
 
         var filterOutPointId = upsertPoints.Last().Id;
 
-        var request1 = RecommendPointsRequest.ByVectorExamples(
-            new[] {singleVector1},
+        var request1 = new RecommendPointsRequest(
+            [singleVector1],
             (uint) vectorCount,
             withVector: true,
-            withPayload: true);
-
-        request1.Filter = QdrantFilter.Create(
-            Q.MustNot(
-                Q.HaveAnyId(filterOutPointId)
+            withPayload: true)
+        {
+            Filter = QdrantFilter.Create(
+                Q.MustNot(
+                    Q.HaveAnyId(filterOutPointId)
+                )
             )
-        );
+        };
 
-        var request2 = RecommendPointsRequest.ByVectorExamples(
-            new[] {singleVector2},
+        var request2 = new RecommendPointsRequest(
+            [singleVector2],
             (uint) vectorCount,
             withVector: true,
-            withPayload: true);
-
-        request2.Filter = QdrantFilter.Create(
-            Q.MustNot(
-                Q.HaveAnyId(filterOutPointId)
+            withPayload: true)
+        {
+            Filter = QdrantFilter.Create(
+                Q.MustNot(
+                    Q.HaveAnyId(filterOutPointId)
+                )
             )
-        );
+        };
 
         var recommendedPoints = await _qdrantHttpClient.RecommendPointsBatched(
             TestCollectionName,
@@ -637,7 +644,9 @@ public class PointsRecommendTests : QdrantTestsBase
                     vector,
                     new TestPayload()
                     {
-                        Integer = i < 5 ? 1 : 2,
+                        Integer = i < 5
+                            ? 1
+                            : 2,
                         Text = (i + 1).ToString()
                     }
                 )
@@ -654,9 +663,9 @@ public class PointsRecommendTests : QdrantTestsBase
 
         await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
 
-        var request = RecommendPointsGroupedRequest.ByVectorExamples(
-            new[] {singleVector1, singleVector2},
-            groupBy: Q<TestPayload>.GetPayloadFieldName(p=>p.Integer),
+        var request = new RecommendPointsGroupedRequest(
+            [singleVector1, singleVector2],
+            groupBy: Q<TestPayload>.GetPayloadFieldName(p => p.Integer),
             groupsLimit: 2,
             groupSize: 10,
             withVector: true,

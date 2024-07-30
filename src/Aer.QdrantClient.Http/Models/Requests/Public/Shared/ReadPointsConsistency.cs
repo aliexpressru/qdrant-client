@@ -1,12 +1,11 @@
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
+using System.Diagnostics.CodeAnalysis;
 
-namespace Aer.QdrantClient.Http.Models.Shared;
+namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 /// <summary>
 /// Represents the retrieve points request consistency setting.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public abstract class ReadPointsConsistency
 {
     #region Nested classes
@@ -22,7 +21,7 @@ public abstract class ReadPointsConsistency
         public int ConsistencyValue { get; }
 
         /// <summary>
-        /// Initializes a new innstance.
+        /// Initializes a new instance.
         /// </summary>
         /// <param name="consistencyValue">Send N random requests and return points, which present on all of them.</param>
         internal IntegerReadConsistency(int consistencyValue)
@@ -48,7 +47,7 @@ public abstract class ReadPointsConsistency
         public ConsistencyType Consistency { get; }
 
         /// <summary>
-        /// Initializes a new innstance.
+        /// Initializes a new instance.
         /// </summary>
         /// <param name="consistencyType">The type of the preset consistency.</param>
         internal PresetReadConsistency(ConsistencyType consistencyType)

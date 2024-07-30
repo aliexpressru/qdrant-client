@@ -1,22 +1,21 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Aer.QdrantClient.Http.Infrastructure.Json;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
 
 namespace Aer.QdrantClient.Http.Models.Primitives;
 
 /// <summary>
 /// Represents the point payload.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class Payload
 {
     /// <summary>
     /// Gets the raw JSON string for this payload.
     /// </summary>
     /// <remarks>For get responses only.</remarks>
-    public JsonObject RawPayload { get; set; }
+    public JsonObject RawPayload { get; init; }
 
     /// <summary>
     /// Parses the payload as object of specified type.
@@ -24,7 +23,7 @@ public class Payload
     /// <typeparam name="T">The type of the deserialized payload object.</typeparam>
     public T As<T>()
         where T : class
-        => RawPayload?.Deserialize<T>(JsonSerializerConstants.SerializerOptions);
+        => RawPayload?.Deserialize<T>(JsonSerializerConstants.DefaultSerializerOptions);
 
     /// <summary>
     /// Returns raw json string representation.
@@ -34,8 +33,8 @@ public class Payload
         =>
             RawPayload?.ToJsonString(
                 isFormatPayloadJson
-                    ? JsonSerializerConstants.IndentedSerializerOptions
-                    : JsonSerializerConstants.SerializerOptions);
+                    ? JsonSerializerConstants.DefaultIndentedSerializerOptions
+                    : JsonSerializerConstants.DefaultSerializerOptions);
 
     /// <inheritdoc/>
     public override string ToString() => ToString(false);

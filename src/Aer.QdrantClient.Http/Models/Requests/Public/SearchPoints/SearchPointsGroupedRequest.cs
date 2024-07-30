@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Aer.QdrantClient.Http.Models.Shared;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public;
 

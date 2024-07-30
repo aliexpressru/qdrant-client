@@ -1,12 +1,14 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
 /// Represents the collection quantization configuration.
 /// </summary>
+[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[SuppressMessage("ReSharper", "ReplaceAutoPropertyWithComputedProperty")]
 public abstract class QuantizationConfiguration
 {
     #region Quantization types
@@ -18,6 +20,7 @@ public abstract class QuantizationConfiguration
         /// <summary>
         /// The type of the quantized vector components. Currently, Qdrant supports only <c>int8</c>.
         /// </summary>
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
         public string Type { get; } = "int8";
 
         /// <summary>
@@ -51,10 +54,10 @@ public abstract class QuantizationConfiguration
         /// while keeping the search speed. This mode is enabled by setting AlwaysRam to <c>true</c> in the quantization config while using memmap storage
         /// </li>
         /// <li>
-        /// <c>All on Disk</c>- all vectors, original and quantized, are stored on disk.
+        /// <c>All on Disk</c> - all vectors, original and quantized, are stored on disk.
         /// This mode allows to achieve the smallest memory footprint, but at the cost of the search speed.
         /// It is recommended to use this mode if you have a large collection and fast storage (e.g. SSD or NVMe).
-        /// This mode is enabled by setting AlwaysRam to <c>false</c> in the quantization config while using mmap storage
+        /// This mode is enabled by setting AlwaysRam to <c>false</c> in the quantization config while using memmap storage
         /// </li>
         /// </ul>
         /// </remarks>
@@ -91,10 +94,10 @@ public abstract class QuantizationConfiguration
         /// while keeping the search speed. This mode is enabled by setting AlwaysRam to <c>true</c> in the quantization config while using memmap storage
         /// </li>
         /// <li>
-        /// <c>All on Disk</c>- all vectors, original and quantized, are stored on disk.
+        /// <c>All on Disk</c> - all vectors, original and quantized, are stored on disk.
         /// This mode allows to achieve the smallest memory footprint, but at the cost of the search speed.
         /// It is recommended to use this mode if you have a large collection and fast storage (e.g. SSD or NVMe).
-        /// This mode is enabled by setting AlwaysRam to <c>false</c> in the quantization config while using mmap storage
+        /// This mode is enabled by setting AlwaysRam to <c>false</c> in the quantization config while using memmap storage
         /// </li>
         /// </ul>
         /// </remarks>
@@ -125,10 +128,10 @@ public abstract class QuantizationConfiguration
         /// while keeping the search speed. This mode is enabled by setting AlwaysRam to <c>true</c> in the quantization config while using memmap storage
         /// </li>
         /// <li>
-        /// <c>All on Disk</c>- all vectors, original and quantized, are stored on disk.
+        /// <c>All on Disk</c> - all vectors, original and quantized, are stored on disk.
         /// This mode allows to achieve the smallest memory footprint, but at the cost of the search speed.
         /// It is recommended to use this mode if you have a large collection and fast storage (e.g. SSD or NVMe).
-        /// This mode is enabled by setting AlwaysRam to <c>false</c> in the quantization config while using mmap storage
+        /// This mode is enabled by setting AlwaysRam to <c>false</c> in the quantization config while using memmap storage
         /// </li>
         /// </ul>
         /// </remarks>

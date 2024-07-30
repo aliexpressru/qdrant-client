@@ -1,6 +1,7 @@
 # .NET SDK for Qdrant vector database
 
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Faliexpressru%2Fqdrant-client%2Fbadge%3Fref%3Dmain&style=flat)](https://actions-badge.atrox.dev/aliexpressru/qdrant-client/goto?ref=main)
+![Test Status](https://github.com/aliexpressru/qdrant-client/actions/workflows/build_test.yml/badge.svg)
 [![NuGet Release][Qdrant-image]][Qdrant-nuget-url]
 
 .NET SDK for [Qdrant vector database](https://qdrant.tech/).

@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
-using Aer.QdrantClient.Http.Models.Shared;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -16,16 +16,27 @@ internal class SearchVectorJsonConverter : JsonConverter<SearchVector>
     {
         switch (value)
         {
-            case SearchVector.UnnamedSearchVector uv:
-                JsonSerializer.Serialize(writer, uv.Vector, JsonSerializerConstants.SerializerOptions);
+            case SearchVector.DenseSearchVector uv:
+                JsonSerializer.Serialize(writer, uv.Vector, JsonSerializerConstants.DefaultSerializerOptions);
 
                 return;
-            case SearchVector.NamedSearchVector nv:
-                JsonSerializer.Serialize(writer, nv, JsonSerializerConstants.SerializerOptions);
+            case SearchVector.NamedDenseSearchVector nv:
+                JsonSerializer.Serialize(writer, nv, JsonSerializerConstants.DefaultSerializerOptions);
 
                 return;
+
+            case SearchVector.SparseSearchVector usv:
+                JsonSerializer.Serialize(writer, usv.Vector, JsonSerializerConstants.DefaultIndentedSerializerOptions);
+
+                return;
+
+            case SearchVector.NamedSparseSearchVector nsv:
+                JsonSerializer.Serialize(writer, nsv, JsonSerializerConstants.DefaultIndentedSerializerOptions);
+
+                return;
+
             default:
-                throw new QdrantJsonSerializationException($"Can't serialize {value} vector of type {value.GetType()}");
+                throw new QdrantJsonSerializationException($"Can't serialize {value} search vector of type {value.GetType()}");
         }
     }
 }

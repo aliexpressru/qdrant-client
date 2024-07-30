@@ -1,15 +1,16 @@
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Exceptions;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
 
 namespace Aer.QdrantClient.Http.Models.Primitives;
 
 /// <summary>
 /// String point identifier.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class GuidPointId : PointId
 {
+    internal override object ObjectId { get; }
+
     /// <summary>
     /// The identifier value.
     /// </summary>
@@ -22,11 +23,8 @@ public class GuidPointId : PointId
     public GuidPointId(Guid id)
     {
         Id = id;
+        ObjectId = id.ToString();
     }
-
-    /// <inheritdoc/>
-    public override object ToJson()
-        => Id.ToString();
 
     /// <inheritdoc/>
     public override ulong AsInteger()

@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
-using Aer.QdrantClient.Http.Models.Shared;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -21,7 +21,7 @@ internal class VectorSelectorJsonConverter : JsonConverter<VectorSelector>
 
                 return;
             case VectorSelector.IncludeNamedVectorsSelector ivs:
-                JsonSerializer.Serialize(writer, ivs.IncludedVectorNames, JsonSerializerConstants.SerializerOptions);
+                JsonSerializer.Serialize(writer, ivs.IncludedVectorNames, JsonSerializerConstants.DefaultSerializerOptions);
 
                 return;
             default:

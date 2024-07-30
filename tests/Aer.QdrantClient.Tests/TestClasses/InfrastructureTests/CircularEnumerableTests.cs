@@ -4,7 +4,6 @@ namespace Aer.QdrantClient.Tests.TestClasses.InfrastructureTests;
 
 internal class CircularEnumerableTests
 {
-
     [Test]
     public void TestCircularEnumerable_CircularEnumeration()
     {

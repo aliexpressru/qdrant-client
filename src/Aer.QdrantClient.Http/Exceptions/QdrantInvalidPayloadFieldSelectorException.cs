@@ -8,11 +8,11 @@ namespace Aer.QdrantClient.Http.Exceptions;
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class QdrantInvalidPayloadFieldSelectorException : Exception
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantInvalidPayloadFieldSelectorException"/> class.
     /// </summary>
     /// <param name="payloadPropertySelectorExpression">The payload property selector expression.</param>
-    public QdrantInvalidPayloadFieldSelectorException(string payloadPropertySelectorExpression) : base($"Payload property selector expression {payloadPropertySelectorExpression} is invalid")
+    public QdrantInvalidPayloadFieldSelectorException(string payloadPropertySelectorExpression)
+        : base($"Payload property selector expression {payloadPropertySelectorExpression} is invalid")
     { }
 }
