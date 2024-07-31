@@ -203,6 +203,7 @@ public abstract class VectorBase
             NamedVectors namedVectors => (float[]) namedVectors.Default,
             SparseVector =>
                 throw new NotSupportedException("Conversion from sparse vector to float[] is not supported since sparse vector is a multi-component value"),
+            null => null,
             _ => throw new ArgumentOutOfRangeException(nameof(vector))
         };
     }

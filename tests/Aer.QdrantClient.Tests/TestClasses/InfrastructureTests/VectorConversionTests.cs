@@ -27,6 +27,8 @@ internal class VectorConversionTests : QdrantTestsBase
 
         VectorBase multivector = CreateTestMultivector((uint) vectorLength, 2, VectorDataType.Float32);
 
+        VectorBase nullVector = null;
+
         denseVector.VectorKind.Should().Be(VectorKind.Dense);
         float[] denseVectorRaw = (float[]) denseVector;
         denseVectorRaw.Length.Should().Be(vectorLength);
@@ -45,5 +47,9 @@ internal class VectorConversionTests : QdrantTestsBase
         multivector.Default.VectorKind.Should().Be(VectorKind.Dense);
         float[] multivectorRaw = (float[]) multivector.Default;
         multivectorRaw.Length.Should().Be(vectorLength);
+
+        // ReSharper disable once ExpressionIsAlwaysNull
+        float[] nullVectorRaw = (float[]) nullVector;
+        nullVectorRaw.Should().BeNull();
     }
 }
