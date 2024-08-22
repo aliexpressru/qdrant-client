@@ -1,5 +1,3 @@
-// ReSharper disable UnusedMember.Global
-
 namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
@@ -22,7 +20,7 @@ public enum VectorDistanceMetric
     Dot,
 
     /// <summary>
-    /// Eucludean vector distance metric.
+    /// Euclidean vector distance metric.
     /// </summary>
     Euclid,
 

@@ -80,7 +80,11 @@ public class CollectionParametersTests : QdrantTestsBase
 
         // todo: check other collection parameters
 
-        collectionInfo.Config.Params.Vectors.AsSingleVectorConfiguration().Datatype.Should().Be(vectorDataType);
+        var singleVectorConfig = collectionInfo.Config.Params.Vectors.AsSingleVectorConfiguration();
+
+        singleVectorConfig.Datatype.Should().Be(vectorDataType);
+        singleVectorConfig.DistanceMetric.Should().Be(VectorDistanceMetric.Dot);
+
     }
 
     [Test]

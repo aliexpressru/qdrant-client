@@ -26,6 +26,12 @@ public abstract class VectorConfigurationBase
         public required string Distance { get; init; }
 
         /// <summary>
+        /// The distance metric used to build collection index.
+        /// </summary>
+        [JsonIgnore]
+        public VectorDistanceMetric DistanceMetric => Enum.Parse<VectorDistanceMetric>(Distance, ignoreCase: true);
+
+        /// <summary>
         /// The vector elements count - vector dimensions.
         /// </summary>
         public required ulong Size { get; init; }
