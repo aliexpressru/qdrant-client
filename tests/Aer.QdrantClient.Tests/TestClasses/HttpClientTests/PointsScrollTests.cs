@@ -1,6 +1,7 @@
 using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Filters.Builders;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
@@ -104,8 +105,9 @@ internal class PointsScrollTests : QdrantTestsBase
     [Test]
     public async Task ScrollPoints_WithFilter()
     {
-        //NOTE: there is no point of testing this with every possible filter
-        //since we are testing this library, not the Qdrant engine
+        // NOTE: there is no point of testing this with every possible filter
+        // since we are testing this library, not the Qdrant engine
+        // we are adding tests for specific filters as needed
         var vectorSize = 10U;
         var vectorCount = 10;
 
@@ -192,6 +194,89 @@ internal class PointsScrollTests : QdrantTestsBase
             readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
             readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
         }
+    }
+
+    [Test]
+    public async Task ScrollPoints_WithFilter_ArrayPayloadProperty()
+    {
+        var vectorSize = 10U;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        List<UpsertPointsRequest<TestComplexPayload>.UpsertPoint> upsertPoints = [
+            new(
+                PointId.Integer((ulong) 1),
+                CreateTestVector(vectorSize),
+                new TestComplexPayload()
+                {
+                    Array = [1, 2, 3],
+                    StringArray = ["a", "b", "c"]
+                }
+            ),
+            new(
+                PointId.Integer((ulong) 2),
+                CreateTestVector(vectorSize),
+                new TestComplexPayload()
+                {
+                    Array = [3, 4, 5],
+                    StringArray = ["c", "d", "e"]
+                }
+            ),
+            new(
+                PointId.Integer((ulong) 3),
+                CreateTestVector(vectorSize),
+                new TestComplexPayload()
+                {
+                    Array = [7, 8, 9],
+                    StringArray = ["f", "g", "h"]
+                }
+            )
+        ];
+
+        (await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest<TestComplexPayload>()
+            {
+                Points = upsertPoints
+            },
+            CancellationToken.None)).EnsureSuccess();
+
+        (await _qdrantHttpClient.CreatePayloadIndex(
+            TestCollectionName,
+            ReflectionHelper.GetPayloadFieldName<TestComplexPayload, string[]>(p => p.StringArray),
+            PayloadIndexedFieldType.Keyword,
+            CancellationToken.None,
+            isWaitForResult: true)).EnsureSuccess();
+
+        (await _qdrantHttpClient.CreatePayloadIndex(
+            TestCollectionName,
+            ReflectionHelper.GetPayloadFieldName<TestComplexPayload, int[]>(p => p.Array),
+            PayloadIndexedFieldType.Integer,
+            CancellationToken.None,
+            isWaitForResult: true)).EnsureSuccess();
+
+        var readPointsResult = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            Q.Must(
+                Q<TestComplexPayload>.MatchValue(p => p.StringArray, "c")
+                & Q<TestComplexPayload>.MatchValue(p => p.Array, 3)
+            ),
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true);
+
+        readPointsResult.Status.IsSuccess.Should().BeTrue();
+        // since we have 2 points that have both "c" and 3 in array elements;
+        readPointsResult.Result.Points.Length.Should().Be(2);
+
+        readPointsResult.Result.Points.Should()
+            .AllSatisfy(p => p.Payload.As<TestComplexPayload>().StringArray.Contains("c").Should().BeTrue());
     }
 
     [Test]

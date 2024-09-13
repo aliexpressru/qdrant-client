@@ -13,6 +13,8 @@ internal class TestComplexPayload : Payload
 
     public int[] Array { set; get; }
 
+    public string[] StringArray { set; get; }
+
     public GeoPoint Location { get; set; }
 
     public NestedClass Nested { get; set; }
