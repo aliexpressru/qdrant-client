@@ -20,5 +20,10 @@ public enum QdrantCollectionStatus
     /// <summary>
     /// Means the optimization is still running.
     /// </summary>
-    Yellow
+    Yellow,
+
+    /// <summary>
+    /// Means optimizations are pending after restart.
+    /// </summary>
+    Grey
 }

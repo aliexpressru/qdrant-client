@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
@@ -8,6 +9,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 /// <summary>
 /// Represents a universal query API request.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class QueryPointsRequest
 {
     /// <summary>
@@ -25,7 +27,7 @@ public class QueryPointsRequest
     /// <summary>
     /// Query to perform. If missing without prefetches, returns points ordered by their IDs.
     /// </summary>
-    public PointsQuery Query { get; set; }
+    public PointsQuery Query { get; }
 
     /// <summary>
     /// Define which vector name to use for querying. If missing, the default vector is used.
@@ -55,7 +57,7 @@ public class QueryPointsRequest
     /// <summary>
     /// Max number of results to return.
     /// </summary>
-    public uint Limit { get; set; } = 10;
+    public uint Limit { get; set; }
 
     /// <summary>
     /// Offset of the first result to return. May be used to paginate results.
@@ -80,4 +82,29 @@ public class QueryPointsRequest
     /// </summary>
     /// <remarks>The other collection should have the same vector size as the current collection.</remarks>
     public VectorsLookupLocation LookupFrom { set; get; }
+
+    /// <summary>
+    /// Initializes new instance of <see cref="QueryPointsRequest"/>
+    /// </summary>
+    /// <param name="query">The universal points query.</param>
+    /// <param name="limit">Maximal number of nearest points to return.</param>
+    /// <param name="withVector">Whether the vector, all named vectors or only selected named vectors should be returned with the response.</param>
+    /// <param name="withPayload">Whether the whole payload or only selected payload properties should be returned with the response.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
+    public QueryPointsRequest(
+        PointsQuery query,
+        uint limit = 10,
+        VectorSelector withVector = null,
+        PayloadPropertiesSelector withPayload = null,
+        ShardSelector shardSelector = null)
+    {
+        Query = query;
+        Limit = limit;
+        WithVector = withVector;
+        WithPayload = withPayload;
+        ShardKey = shardSelector;
+    }
 }

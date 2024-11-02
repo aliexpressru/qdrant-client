@@ -31,12 +31,11 @@ public class PointsQueryTests : QdrantTestsBase
     {
         await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
-                TestCollectionName,
-                vectorCount: 10);
+                TestCollectionName);
 
         var nearestPointsResponse = await _qdrantHttpClient.QueryPoints(
             TestCollectionName,
-            new QueryPointsRequest()
+            new QueryPointsRequest(query: null)
             {
                 Prefetch =
                 [
@@ -62,19 +61,15 @@ public class PointsQueryTests : QdrantTestsBase
     [Test]
     public async Task FindNearestPoints()
     {
-        var vectorCount = 10;
-
         var (_, upsertPointsByPointIds, _) =
             await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
-                TestCollectionName,
-                vectorCount: vectorCount);
+                TestCollectionName);
 
         var nearestPointsByPointIdResponse = await _qdrantHttpClient.QueryPoints(
             TestCollectionName,
-            new QueryPointsRequest()
+            new QueryPointsRequest(PointsQuery.CreateFindNearestPointsQuery(upsertPointsByPointIds.First().Value.Id))
             {
-                Query = PointsQuery.CreateFindNearestPointsQuery(upsertPointsByPointIds.First().Value.Id),
                 WithPayload = true,
                 WithVector = true,
                 Limit = 2
@@ -83,9 +78,8 @@ public class PointsQueryTests : QdrantTestsBase
 
         var nearestPointsByVectorResponse = await _qdrantHttpClient.QueryPoints(
             TestCollectionName,
-            new QueryPointsRequest()
+            new QueryPointsRequest(PointsQuery.CreateFindNearestPointsQuery(upsertPointsByPointIds.First().Value.Vector))
             {
-                Query = PointsQuery.CreateFindNearestPointsQuery(upsertPointsByPointIds.First().Value.Vector),
                 WithPayload = true,
                 WithVector = true,
                 Limit = 2
@@ -102,17 +96,14 @@ public class PointsQueryTests : QdrantTestsBase
     [Test]
     public async Task FindNearestPoints_WithPrefetch()
     {
-        var vectorCount = 10;
-
         var (_, upsertPointsByPointIds, _) =
             await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
-                TestCollectionName,
-                vectorCount: vectorCount);
+                TestCollectionName);
 
         var nearestPointsResponse = await _qdrantHttpClient.QueryPoints(
             TestCollectionName,
-            new QueryPointsRequest()
+            new QueryPointsRequest(PointsQuery.CreateFindNearestPointsQuery(upsertPointsByPointIds.First().Value.Id))
             {
                 Prefetch =
                 [
@@ -124,7 +115,6 @@ public class PointsQueryTests : QdrantTestsBase
                             lessThanOrEqual: 2)
                     }
                 ],
-                Query = PointsQuery.CreateFindNearestPointsQuery(upsertPointsByPointIds.First().Value.Id),
                 WithPayload = true,
                 WithVector = true,
                 Limit = 10
@@ -142,19 +132,18 @@ public class PointsQueryTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task Fusion()
+    [TestCase(FusionAlgorithm.Rrf)]
+    [TestCase(FusionAlgorithm.Dbsf)]
+    public async Task Fusion(FusionAlgorithm fusionAlgorithm)
     {
-        var vectorCount = 10;
-
         var (_, upsertPointsByPointIds, _) =
             await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
-                TestCollectionName,
-                vectorCount: vectorCount);
+                TestCollectionName);
 
         var nearestPointsResponse = await _qdrantHttpClient.QueryPoints(
             TestCollectionName,
-            new QueryPointsRequest()
+            new QueryPointsRequest(PointsQuery.CreateFusionQuery(fusionAlgorithm))
             {
                 Prefetch =
                 [
@@ -172,7 +161,6 @@ public class PointsQueryTests : QdrantTestsBase
                         Limit = 5
                     }
                 ],
-                Query = PointsQuery.CreateFusionQuery(),
                 WithPayload = true,
                 WithVector = true
             },
@@ -185,14 +173,32 @@ public class PointsQueryTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task Sample()
+    {
+        await PrepareCollection<TestPayload>(
+                _qdrantHttpClient,
+                TestCollectionName);
+
+        var sampleRandomPointsResponse = await _qdrantHttpClient.QueryPoints(
+            TestCollectionName,
+            new QueryPointsRequest(PointsQuery.CreateSampleQuery())
+            {
+                WithPayload = true,
+                WithVector = true,
+                Limit = 3
+            },
+            CancellationToken.None);
+
+        sampleRandomPointsResponse.Status.IsSuccess.Should().BeTrue();
+        sampleRandomPointsResponse.Result.Points.Length.Should().Be(3);
+    }
+
+    [Test]
     public async Task OrderByPoints()
     {
-        var vectorCount = 10;
-
         await PrepareCollection<TestPayload>(
             _qdrantHttpClient,
-            TestCollectionName,
-            vectorCount: vectorCount);
+            TestCollectionName);
 
         // order by does not work without indexes
         await _qdrantHttpClient.CreatePayloadIndex(
@@ -206,7 +212,7 @@ public class PointsQueryTests : QdrantTestsBase
 
         var orderedPointsResponse = await _qdrantHttpClient.QueryPoints(
             TestCollectionName,
-            new QueryPointsRequest()
+            new QueryPointsRequest(PointsQuery.CreateOrderByQuery(OrderBySelector<TestPayload>.Asc(p => p.Integer)))
             {
                 Prefetch =
                 [
@@ -217,8 +223,6 @@ public class PointsQueryTests : QdrantTestsBase
                         Limit = 2
                     }
                 ],
-                Query = PointsQuery.CreateOrderByQuery(
-                    OrderBySelector<TestPayload>.Asc(p => p.Integer)),
                 WithPayload = true,
                 WithVector = true
             },
@@ -234,5 +238,103 @@ public class PointsQueryTests : QdrantTestsBase
 
         firstPoint.Payload.As<TestPayload>().Integer!.Value
             .Should().BeLessThan(secondPoint.Payload.As<TestPayload>().Integer!.Value);
+    }
+
+    [Test]
+    public async Task QueryPointsBatched()
+    {
+        var (_, upsertPointsByPointIds, upsertPointIds) =
+            await PrepareCollection<TestPayload>(
+                _qdrantHttpClient,
+                TestCollectionName);
+
+        var queryResponse = await _qdrantHttpClient.QueryPointsBatched(
+            TestCollectionName,
+            new QueryPointsBatchedRequest(
+                new QueryPointsRequest(PointsQuery.CreateFindNearestPointsQuery(upsertPointIds[0]))
+                {
+                    Filter =
+                        Q.Must(
+                            Q<TestPayload>.BeInRange(p => p.Integer, greaterThanOrEqual: 0)
+                        ),
+                    WithPayload = true,
+                    WithVector = true,
+                    Limit = 5
+                },
+                new QueryPointsRequest(PointsQuery.CreateFindNearestPointsQuery(upsertPointIds[1]))
+                {
+                    Filter =
+                        Q.Must(
+                            Q<TestPayload>.BeInRange(p => p.Integer, greaterThanOrEqual: 0)
+                        ),
+                    WithPayload = true,
+                    WithVector = true,
+                    Limit = 5
+                }
+            ),
+            CancellationToken.None);
+
+        queryResponse.Status.IsSuccess.Should().BeTrue();
+        queryResponse.Result.Length.Should().Be(2);
+
+        foreach (var readPointsForOneRequestInBatch in queryResponse.Result)
+        {
+            readPointsForOneRequestInBatch.Points.Length.Should().Be(5);
+
+            foreach (var readPoint in readPointsForOneRequestInBatch.Points)
+            {
+                var readPointId = readPoint.Id.AsInteger();
+
+                var expectedPoint = upsertPointsByPointIds[readPointId];
+
+                expectedPoint.Id.AsInteger().Should().Be(readPointId);
+
+                readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
+                readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should()
+                    .Be(expectedPoint.Payload.FloatingPointNumber);
+                readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+            }
+        }
+    }
+
+    [Test]
+    public async Task QueryPointsGrouped()
+    {
+        var vectorCount = 10;
+
+        var (upsertPoints, _, _) =
+            await PrepareCollection(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorCount: vectorCount,
+                payloadInitializerFunction: i => new TestPayload()
+                {
+                    Integer = i < 5
+                        ? 1
+                        : 2,
+                    Text = (i + 1).ToString()
+                });
+
+        var queryResponse = await _qdrantHttpClient.QueryPointsGrouped(
+            TestCollectionName,
+            new QueryPointsGroupedRequest(
+                PointsQuery.CreateFindNearestPointsQuery(upsertPoints[0].Vector),
+                groupBy: Q<TestPayload>.GetPayloadFieldName(p => p.Integer),
+                groupsLimit: 2,
+                groupSize: 10,
+                withVector: true,
+                withPayload: true),
+            CancellationToken.None);
+
+        queryResponse.Status.IsSuccess.Should().BeTrue();
+        queryResponse.Result.Groups.Length.Should().Be(2); // 2 possible values of Integer payload property
+
+        queryResponse.Result.Groups.Should()
+            .AllSatisfy(g => g.Hits.Length.Should().Be(vectorCount / 2))
+            .And.AllSatisfy(
+                g => g.Hits.Should()
+                    .AllSatisfy(h => h.Payload.Should().NotBeNull())
+                    .And.AllSatisfy(h => h.Vector.Should().NotBeNull())
+            );
     }
 }

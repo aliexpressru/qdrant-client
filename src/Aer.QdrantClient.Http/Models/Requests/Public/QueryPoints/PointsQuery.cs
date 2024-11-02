@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
+using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
@@ -14,6 +15,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 [JsonDerivedType(typeof(ContextQuery))]
 [JsonDerivedType(typeof(OrderByQuery))]
 [JsonDerivedType(typeof(FusionQuery))]
+[JsonDerivedType(typeof(SampleQuery))]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public abstract class PointsQuery
 {
@@ -122,6 +124,11 @@ public abstract class PointsQuery
         }
     }
 
+    internal sealed class SampleQuery : PointsQuery
+    {
+        public string Sample { get; } = "random";
+    }
+
     /// <summary>
     /// Creates a "find nearest points" query.
     /// </summary>
@@ -174,4 +181,9 @@ public abstract class PointsQuery
     /// <param name="fusionAlgorithm">The type of the algorithm used to combine prefetch results.</param>
     public static PointsQuery CreateFusionQuery(FusionAlgorithm fusionAlgorithm = FusionAlgorithm.Rrf)
         => new FusionQuery(fusionAlgorithm);
+
+    /// <summary>
+    /// Creates a "random sample" query.
+    /// </summary>
+    public static PointsQuery CreateSampleQuery() => new SampleQuery();
 }

@@ -111,6 +111,134 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task TestCreateIndex_OnDisk()
+    {
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var createCollectionIndexResult =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                PayloadIndexedFieldType.Uuid,
+                CancellationToken.None,
+                isWaitForResult: true,
+                onDisk: true);
+
+        createCollectionIndexResult.Status.IsSuccess.Should().BeTrue();
+        createCollectionIndexResult.Result.Should().NotBeNull();
+
+        var collectionInfo = (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
+
+        collectionInfo.PayloadSchema.Count.Should().Be(1);
+        collectionInfo.PayloadSchema.Should().ContainKey(TestPayloadFieldName);
+
+        collectionInfo.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Uuid);
+        collectionInfo.PayloadSchema[TestPayloadFieldName].Params.OnDisk.Should().Be(true);
+    }
+
+    [Test]
+    public async Task TestCreateIndex_MultiTenant()
+    {
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                HnswConfig = new HnswConfiguration()
+                {
+                    PayloadM = 16,
+                    M = 0
+                }
+            },
+            CancellationToken.None);
+
+        var createCollectionTenantIndexResult =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                PayloadIndexedFieldType.Keyword,
+                CancellationToken.None,
+                isWaitForResult: true,
+                isTenant: true);
+
+        var createCollectionIndexResult =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName2,
+                PayloadIndexedFieldType.Integer,
+                CancellationToken.None,
+                isWaitForResult: true);
+
+        createCollectionTenantIndexResult.Status.IsSuccess.Should().BeTrue();
+        createCollectionTenantIndexResult.Result.Should().NotBeNull();
+
+        createCollectionIndexResult.Status.IsSuccess.Should().BeTrue();
+        createCollectionIndexResult.Result.Should().NotBeNull();
+
+        var collectionInfo =
+            (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
+
+        collectionInfo.PayloadSchema.Count.Should().Be(2);
+        collectionInfo.PayloadSchema.Should()
+            .ContainKey(TestPayloadFieldName)
+            .And.ContainKey(TestPayloadFieldName2);
+
+        collectionInfo.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Keyword);
+        collectionInfo.PayloadSchema[TestPayloadFieldName].Params.OnDisk.Should().Be(false);
+        collectionInfo.PayloadSchema[TestPayloadFieldName].Params.IsTenant.Should().Be(true);
+
+        collectionInfo.PayloadSchema[TestPayloadFieldName2].DataType.Should().Be(PayloadIndexedFieldType.Integer);
+        collectionInfo.PayloadSchema[TestPayloadFieldName2].Params.OnDisk.Should().Be(false);
+        collectionInfo.PayloadSchema[TestPayloadFieldName2].Params.IsTenant.Should().Be(false);
+    }
+
+    [Test]
+    public async Task TestCreateIndex_Principal()
+    {
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                HnswConfig = new HnswConfiguration()
+                {
+                    PayloadM = 16,
+                    M = 0
+                }
+            },
+            CancellationToken.None);
+
+        var createCollectionPrincipalIndexResult =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                PayloadIndexedFieldType.Integer,
+                CancellationToken.None,
+                isWaitForResult: true,
+                isPrincipal: true);
+
+        createCollectionPrincipalIndexResult.Status.IsSuccess.Should().BeTrue();
+        createCollectionPrincipalIndexResult.Result.Should().NotBeNull();
+
+        var collectionInfo =
+            (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
+
+        collectionInfo.PayloadSchema.Count.Should().Be(1);
+        collectionInfo.PayloadSchema.Should().ContainKey(TestPayloadFieldName);
+
+        collectionInfo.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Integer);
+        collectionInfo.PayloadSchema[TestPayloadFieldName].Params.OnDisk.Should().Be(false);
+        collectionInfo.PayloadSchema[TestPayloadFieldName].Params.IsTenant.Should().Be(false);
+        collectionInfo.PayloadSchema[TestPayloadFieldName].Params.IsPrincipal.Should().Be(true);
+    }
+
+    [Test]
     public async Task TestCreateIndex_TwoFields()
     {
         await _qdrantHttpClient.CreateCollection(

@@ -28,12 +28,12 @@ public sealed class CreateCollectionRequest
         /// <summary>
         /// Creates a new instance of <see cref="InitFromCollection"/> with specified collection name.
         /// </summary>
-        /// <param name="sourceColelctionName">The name of the colelction to copy data from.</param>
-        public static InitFromCollection ByName(string sourceColelctionName)
+        /// <param name="sourceCollectionName">The name of the collection to copy data from.</param>
+        public static InitFromCollection ByName(string sourceCollectionName)
         {
             return new InitFromCollection()
             {
-                Collection = sourceColelctionName
+                Collection = sourceCollectionName
             };
         }
     }
@@ -54,7 +54,7 @@ public sealed class CreateCollectionRequest
 
     /// <summary>
     /// The sharding method. Set to <see cref="ShardingMethod.Custom"/>
-    /// to configure use cusom sharing configuration.
+    /// to configure use custom sharing configuration.
     /// </summary>
     /// <remarks>
     /// In this mode, the <see cref="ShardNumber"/> means the number of shards per shard key,
@@ -117,7 +117,7 @@ public sealed class CreateCollectionRequest
     /// <param name="vectorHnswConfiguration">Custom params for HNSW index. If none - values from collection configuration are used.</param>
     /// <param name="vectorQuantizationConfiguration">Custom params for quantization. If none - values from collection configuration are used.</param>
     /// <param name="vectorDataType">The datatype that should be used to represent vectors in the storage.</param>
-    /// <param name="multivectorConfiguration">The multivector configuration.</param>
+    /// <param name="multivectorConfiguration">The multi-vector configuration.</param>
     public CreateCollectionRequest(
         VectorDistanceMetric vectorDistanceMetric,
         ulong vectorSize,
@@ -143,7 +143,7 @@ public sealed class CreateCollectionRequest
         {
             if (multivectorConfiguration is not null)
             {
-                throw new InvalidOperationException("Can't use multivector with named vectors");
+                throw new InvalidOperationException("Can't use multi-vector with named vectors");
             }
 
             Vectors = new VectorConfigurationBase.NamedVectorsConfiguration(

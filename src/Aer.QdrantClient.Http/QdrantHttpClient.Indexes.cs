@@ -21,12 +21,44 @@ public partial class QdrantHttpClient
     /// <param name="payloadFieldType">Type of the indexed payload field.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
+    /// <param name="onDisk">
+    /// If set to <c>true</c> the payload will be stored on-disk instead of in-memory.
+    /// On-disk payload index might affect cold requests latency, as it requires additional disk I/O operations.
+    /// </param>
+    /// <param name="isTenant">Set to <c>true</c> to enable tenant index for specified payload field.</param>
+    /// <param name="isPrincipal">
+    /// Set to <c>true</c> to enable principal index for specified payload field.
+    /// The principal index is used to optimize storage for faster search,
+    /// assuming that the search request is primarily filtered by the principal field.
+    /// </param>
+    /// <remarks>
+    /// Payload index on-disk storage is currently supported for the following types:
+    /// <see cref="PayloadIndexedFieldType.Keyword"/>,
+    /// <see cref="PayloadIndexedFieldType.Integer"/>,
+    /// <see cref="PayloadIndexedFieldType.Float"/>,
+    /// <see cref="PayloadIndexedFieldType.Datetime"/>,
+    /// <see cref="PayloadIndexedFieldType.Uuid"/>,
+    /// <see cref="PayloadIndexedFieldType.Text"/>,
+    /// <see cref="PayloadIndexedFieldType.Geo"/>.
+    ///
+    /// Tenant optimization is supported for the following datatypes:
+    /// <see cref="PayloadIndexedFieldType.Keyword"/>,
+    /// <see cref="PayloadIndexedFieldType.Uuid"/>
+    ///
+    /// Principal optimization is supported for following types:
+    /// <see cref="PayloadIndexedFieldType.Integer"/>,
+    /// <see cref="PayloadIndexedFieldType.Float"/>,
+    /// <see cref="PayloadIndexedFieldType.Datetime"/>
+    /// </remarks>
     public async Task<PayloadIndexOperationResponse> CreatePayloadIndex(
         string collectionName,
         string payloadFieldName,
         PayloadIndexedFieldType payloadFieldType,
         CancellationToken cancellationToken,
-        bool isWaitForResult = false)
+        bool isWaitForResult = false,
+        bool onDisk = false,
+        bool isTenant = false,
+        bool isPrincipal = false)
     {
         EnsureQdrantNameCorrect(collectionName);
         EnsureQdrantNameCorrect(payloadFieldName);
@@ -37,7 +69,7 @@ public partial class QdrantHttpClient
                 $"Direct creation of the text type indexes (fulltext search indexes) is not supported. To create fulltext index please use {nameof(CreateFullTextPayloadIndex)} method");
         }
 
-        var index = new CreatePayloadIndexRequest(payloadFieldName, payloadFieldType);
+        var index = new CreatePayloadIndexRequest(payloadFieldName, payloadFieldType, onDisk, isTenant, isPrincipal);
 
         var url = $"/collections/{collectionName}/index?wait={ToUrlQueryString(isWaitForResult)}";
 

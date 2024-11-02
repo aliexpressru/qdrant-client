@@ -1,5 +1,3 @@
-// ReSharper disable UnusedMember.Global
-
 namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
@@ -35,5 +33,11 @@ public enum PayloadIndexedFieldType
     /// <summary>
     /// The fulltext type. Used only for a fulltext indexes.
     /// </summary>
-    Text
+    Text,
+
+    /// <summary>
+    /// The UUID type. Functionally, it works the same as keyword, internally stores parsed UUID values.
+    /// Usage of uuid index type is recommended in payload-heavy collections to save RAM and improve search performance.
+    /// </summary>
+    Uuid
 }

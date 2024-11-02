@@ -282,12 +282,15 @@ public class ClusterTests : QdrantTestsBase
         var secondReadPoint = readPoints.Points.Single(p => p.Id == secondShardPoint.Id);
 
         firstReadPoint.Payload.As<int>().Should().Be(firstShardPoint.Payload.As<int>());
-        firstReadPoint.Vector.Default.Should().BeEquivalentTo(firstShardPoint.Vector.Default);
+
+        // manual cast to eliminate cyclic reference
+        // Default = {Cyclic reference to type Aer.QdrantClient.Http.Models.Primitives.Vectors.DenseVector detected},
+        firstReadPoint.Vector.Default.AsDenseVector().VectorValues.Should().BeEquivalentTo(firstShardPoint.Vector.Default.AsDenseVector().VectorValues);
         firstReadPoint.ShardKey.IsString().Should().BeTrue();
         firstReadPoint.ShardKey.GetString().Should().Be(TestShardKey1);
 
         secondReadPoint.Payload.As<int>().Should().Be(secondShardPoint.Payload.As<int>());
-        secondReadPoint.Vector.Default.Should().BeEquivalentTo(secondShardPoint.Vector.Default);
+        secondReadPoint.Vector.Default.AsDenseVector().VectorValues.Should().BeEquivalentTo(secondShardPoint.Vector.Default.AsDenseVector().VectorValues);
         secondReadPoint.ShardKey.IsInteger().Should().BeTrue();
         secondReadPoint.ShardKey.GetInteger().Should().Be(TestShardKeyInt1);
     }

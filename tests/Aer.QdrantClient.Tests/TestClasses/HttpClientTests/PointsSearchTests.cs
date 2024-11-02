@@ -742,9 +742,7 @@ internal class PointsSearchTests : QdrantTestsBase
             await _qdrantHttpClient.SearchPointsBatched(
                 TestCollectionName,
                 new SearchPointsBatchedRequest(
-                    new SearchPointsRequest(
-                        upsertPoints[0].Vector,
-                        5)
+                    new SearchPointsRequest(upsertPoints[0].Vector, 5)
                     {
                         WithVector = true,
                         WithPayload = PayloadPropertiesSelector.All,
@@ -753,9 +751,7 @@ internal class PointsSearchTests : QdrantTestsBase
                                 Q<TestPayload>.BeInRange(p => p.Integer, greaterThanOrEqual: 0)
                             )
                     },
-                    new SearchPointsRequest(
-                        upsertPoints[1].Vector,
-                        5)
+                    new SearchPointsRequest(upsertPoints[1].Vector, 5)
                     {
                         WithVector = true,
                         WithPayload = PayloadPropertiesSelector.All,

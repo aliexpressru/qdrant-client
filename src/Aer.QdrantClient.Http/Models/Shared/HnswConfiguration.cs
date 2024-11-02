@@ -11,11 +11,13 @@ public class HnswConfiguration
 {
     /// <summary>
     /// Number of edges per node in the index graph. Larger the value - more accurate the search, more space required.
+    /// Set this value to 0 to optimize index creation for multi-tenant usage. This disables building global index for the whole collection.
     /// </summary>
     public ulong? M { set; get; }
 
     /// <summary>
     /// Number of edges per node in the payload index graph. Larger the value - more accurate the search, more space required.
+    /// When optimizing for multi-tenant usage - set this value to non-zero.
     /// </summary>
     public ulong? PayloadM { set; get; }
 

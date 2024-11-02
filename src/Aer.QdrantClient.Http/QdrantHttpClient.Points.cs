@@ -146,7 +146,7 @@ public partial class QdrantHttpClient
 
         var response = await ExecuteRequest<OverwritePointsPayloadRequest<TPayload>, PointsOperationResponse>(
             url,
-            HttpMethod.Put,
+            HttpMethod.Post,
             overwritePointsPayload,
             cancellationToken,
             retryCount: 0);
@@ -904,6 +904,49 @@ public partial class QdrantHttpClient
             $"/collections/{collectionName}/points/query/batch?consistency={consistencyValue}&timeout={GetTimeoutValueOrDefault(timeout)}";
 
         var response = await ExecuteRequest<QueryPointsBatchedRequest, QueryPointsBatchedResponse>(
+            url,
+            HttpMethod.Post,
+            queryPointsRequest,
+            cancellationToken,
+            retryCount,
+            retryDelay,
+            onRetry);
+
+        return response;
+    }
+
+    /// <summary>
+    /// Universally query points and group results by a specified payload field.
+    /// This endpoint covers all capabilities of search, recommend, discover, filters.
+    /// But also enables hybrid and multi-stage queries.
+    /// </summary>
+    /// <param name="collectionName">Name of the collection to search in.</param>
+    /// <param name="queryPointsRequest">The universal query API request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="consistency">The consistency settings.</param>
+    /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// </param>
+    public async Task<SearchPointsGroupedResponse> QueryPointsGrouped(
+        string collectionName,
+        QueryPointsGroupedRequest queryPointsRequest,
+        CancellationToken cancellationToken,
+        ReadPointsConsistency consistency = null,
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int> onRetry = null)
+    {
+        var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
+
+        var url =
+            $"/collections/{collectionName}/points/query/groups?consistency={consistencyValue}&timeout={GetTimeoutValueOrDefault(timeout)}";
+
+        var response = await ExecuteRequest<QueryPointsGroupedRequest, SearchPointsGroupedResponse>(
             url,
             HttpMethod.Post,
             queryPointsRequest,

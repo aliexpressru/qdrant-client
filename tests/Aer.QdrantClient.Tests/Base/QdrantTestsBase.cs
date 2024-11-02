@@ -40,6 +40,9 @@ public class QdrantTestsBase
     private const string QDRANT_COLLECTIONS_DATA_DIRECTORY_RELATIVE_PATH = "volumes/0/qdrant_storage/collections";
     private const string QDRANT_SNAPSHOTS_DATA_DIRECTORY_RELATIVE_PATH = "volumes/0/qdrant_snapshots";
 
+    // shared random with constant seed to make tests repeatable
+    public static readonly Random Random = new(1567);
+
     protected void Initialize(bool isDisableAuthorization = false)
     {
         Environment.SetEnvironmentVariable(
@@ -241,7 +244,7 @@ public class QdrantTestsBase
         var values = CreateTestVector(numberOfNonZeroIndices, vectorDataType);
 
         var indices = Enumerable.Range(0, (int) vectorLength)
-            .Select(_ => (uint) Random.Shared.Next((int) vectorLength + 1))
+            .Select(_ => (uint) Random.Next((int) vectorLength + 1))
             .Distinct()
             .Take((int) numberOfNonZeroIndices)
             .OrderBy(v => v)
@@ -268,19 +271,19 @@ public class QdrantTestsBase
     private float[] CreateTestFloat32Vector(uint vectorLength)
         =>
             Enumerable.Range(0, (int) vectorLength)
-                .Select(_ => float.CreateTruncating(Random.Shared.NextDouble()))
+                .Select(_ => float.CreateTruncating(Random.NextDouble()))
                 .ToArray();
 
     private float[] CreateTestFloat16Vector(uint vectorLength)
         =>
             Enumerable.Range(0, (int) vectorLength)
-                .Select(_ => (float) Half.CreateTruncating(Random.Shared.NextDouble()))
+                .Select(_ => (float) Half.CreateTruncating(Random.NextDouble()))
                 .ToArray();
 
     private float[] CreateTestByteVector(uint vectorLength)
         =>
             Enumerable.Range(0, (int) vectorLength)
-                .Select(_ => (float) byte.CreateTruncating(Random.Shared.Next()))
+                .Select(_ => (float) byte.CreateTruncating(Random.Next()))
                 .ToArray();
 
     protected VectorBase CreateTestNamedVectors(uint vectorLength, int namedVectorsCount)

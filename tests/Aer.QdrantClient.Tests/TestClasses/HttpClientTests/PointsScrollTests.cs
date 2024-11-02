@@ -367,8 +367,8 @@ internal class PointsScrollTests : QdrantTestsBase
                 vectorCount: vectorCount,
                 payloadInitializerFunction: i => new TestPayload
                 {
-                    Integer = Random.Shared.Next(1, 101),
-                    FloatingPointNumber = Math.Round(Random.Shared.NextDouble(), 2, MidpointRounding.AwayFromZero),
+                    Integer = Random.Next(1, 101),
+                    FloatingPointNumber = Math.Round(Random.NextDouble(), 2, MidpointRounding.AwayFromZero),
                     DateTimeValue = startDateTimeValue.AddDays(i)
                 });
 

@@ -3,9 +3,10 @@
 namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 
 /// <summary>
-/// Represents a universal query API request.
+/// Represents a universal query API batched request.
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class QueryPointsBatchedRequest
 {
     /// <summary>

@@ -238,6 +238,21 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// Whether to convert tokens to lowercase before indexing. For full-text index only.
             /// </summary>
             public bool IsLowercase { set; get; }
+
+            /// <summary>
+            /// Whether the payload index is stored on-disk instead of in-memory.
+            /// </summary>
+            public bool OnDisk { set; get; }
+
+            /// <summary>
+            /// Whether the field index is a tenant index.
+            /// </summary>
+            public bool IsTenant { set; get; }
+
+            /// <summary>
+            /// Whether the field index is a principal index.
+            /// </summary>
+            public bool IsPrincipal { set; get; }
         }
     }
 }
