@@ -98,6 +98,10 @@ public partial class QdrantHttpClient
     /// <param name="maximalTokenLength">The maximal word token length.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isLowercasePayloadTokens">If <c>true</c>, lowercase all tokens. Default: <c>true</c>.</param>
+    /// <param name="onDisk">
+    /// If set to <c>true</c> the payload will be stored on-disk instead of in-memory.
+    /// On-disk payload index might affect cold requests latency, as it requires additional disk I/O operations.
+    /// </param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     public async Task<PayloadIndexOperationResponse> CreateFullTextPayloadIndex(
         string collectionName,
@@ -107,6 +111,7 @@ public partial class QdrantHttpClient
         uint? maximalTokenLength,
         CancellationToken cancellationToken,
         bool isLowercasePayloadTokens = true,
+        bool onDisk = false,
         bool isWaitForResult = false)
     {
         EnsureQdrantNameCorrect(collectionName);
@@ -119,7 +124,8 @@ public partial class QdrantHttpClient
                 Tokenizer = payloadTextFieldTokenizerType,
                 MinTokenLen = minimalTokenLength,
                 MaxTokenLen = maximalTokenLength,
-                Lowercase = isLowercasePayloadTokens
+                Lowercase = isLowercasePayloadTokens,
+                OnDisk = onDisk
             });
 
         var url = $"/collections/{collectionName}/index?wait={ToUrlQueryString(isWaitForResult)}";

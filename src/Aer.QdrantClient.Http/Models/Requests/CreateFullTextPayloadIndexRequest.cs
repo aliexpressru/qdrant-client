@@ -43,6 +43,11 @@ internal sealed class CreateFullTextPayloadIndexRequest
         /// If <c>true</c>, lowercase all tokens. Default: <c>true</c>.
         /// </summary>
         public bool Lowercase { get; set; } = true;
+
+        /// <summary>
+        /// If <c>true</c>, store the index on disk. Default: <c>false</c>.
+        /// </summary>
+        public bool OnDisk { get; set; } = false;
     }
 
     #endregion

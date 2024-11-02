@@ -93,7 +93,8 @@ internal class CollectionIndexTests : QdrantTestsBase
                 3,
                 100,
                 CancellationToken.None,
-                isWaitForResult: true);
+                isWaitForResult: true,
+                onDisk: true);
 
         createCollectionIndexResult.Status.IsSuccess.Should().BeTrue();
 
@@ -108,6 +109,7 @@ internal class CollectionIndexTests : QdrantTestsBase
         collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName);
 
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Text);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.OnDisk.Should().Be(true);
     }
 
     [Test]
