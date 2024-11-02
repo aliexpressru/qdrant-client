@@ -146,7 +146,10 @@ public partial class QdrantHttpClient
 
         var response = await ExecuteRequest<OverwritePointsPayloadRequest<TPayload>, PointsOperationResponse>(
             url,
-            HttpMethod.Post,
+            // this is a hack due to update payload part not working when issuing using PUT request
+            overwritePointsPayload.Key is not null
+                ? HttpMethod.Post
+                : HttpMethod.Put,
             overwritePointsPayload,
             cancellationToken,
             retryCount: 0);
