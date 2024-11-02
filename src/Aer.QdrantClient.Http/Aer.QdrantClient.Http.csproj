@@ -15,6 +15,7 @@
     <RepositoryUrl>https://github.com/aliexpressru/qdrant-client</RepositoryUrl>
     <PackageProjectUrl>https://github.com/aliexpressru/qdrant-client</PackageProjectUrl>
     <PackageIcon>qdrant-icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageTags>qdrant;vector;vector-search</PackageTags>
