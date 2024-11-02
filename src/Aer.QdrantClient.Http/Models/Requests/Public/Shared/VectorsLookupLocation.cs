@@ -1,7 +1,10 @@
-﻿namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
+﻿using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
+
+namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 /// <summary>
-/// Reresents the location used to lookup vectors.
+/// Represents the location used to lookup vectors.
 /// </summary>
 public class VectorsLookupLocation
 {
@@ -15,4 +18,10 @@ public class VectorsLookupLocation
     /// If not provided, the default vector field will be used.
     /// </summary>
     public string Vector { set; get; }
+
+    /// <summary>
+    /// Specify in which shards to look for the points, if not specified - look in all shards.
+    /// </summary>
+    [JsonConverter(typeof(ShardSelectorJsonConverter))]
+    public ShardSelector ShardKey { set; get; }
 }
