@@ -1,14 +1,13 @@
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Models.Responses.Base;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Aer.QdrantClient.Http.Models.Responses;
 
 /// <summary>
 /// Represents the count points operation response.
 /// </summary>
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class CountPointsResponse : QdrantResponseBase<CountPointsResponse.CountPointsResult>
 {
     /// <summary>

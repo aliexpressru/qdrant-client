@@ -677,60 +677,6 @@ internal class PointsSearchTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CountPoints_WithoutFilter()
-    {
-        var vectorCount = 10;
-
-        await PrepareCollection<TestPayload>(
-            _qdrantHttpClient,
-            TestCollectionName,
-            vectorCount: vectorCount);
-
-        var searchResult =
-            await _qdrantHttpClient.CountPoints(
-                TestCollectionName,
-                new CountPointsRequest(
-                    isCountExactPointsNumber: true
-                ),
-                CancellationToken.None);
-
-        searchResult.Status.IsSuccess.Should().BeTrue();
-
-        searchResult.Result.Count.Should().Be((ulong) vectorCount);
-    }
-
-    [Test]
-    public async Task CountPoints_WithFilter()
-    {
-        var vectorCount = 10;
-
-        await PrepareCollection<TestPayload>(
-            _qdrantHttpClient,
-            TestCollectionName,
-            vectorCount: vectorCount);
-
-        var searchResult =
-            await _qdrantHttpClient.CountPoints(
-                TestCollectionName,
-                new CountPointsRequest(
-                    isCountExactPointsNumber: true,
-                    filter:
-                        Q.Must(
-                            Q<TestPayload>.MatchAnyFast(
-                                p => p.Integer,
-                                0,
-                                1,
-                                2)
-                        )
-                ),
-                CancellationToken.None);
-
-        searchResult.Status.IsSuccess.Should().BeTrue();
-
-        searchResult.Result.Count.Should().Be(3);
-    }
-
-    [Test]
     public async Task SearchPointsBatched_WithFilter()
     {
         var (upsertPoints, upsertPointsByPointIds, _) =

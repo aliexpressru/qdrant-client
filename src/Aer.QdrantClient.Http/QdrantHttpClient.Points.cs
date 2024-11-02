@@ -508,6 +508,48 @@ public partial class QdrantHttpClient
         return response;
     }
 
+    /// <summary>
+    /// Retrieves facets for the specified payload field.
+    /// </summary>
+    /// <param name="collectionName">Name of the collection to facet count points in.</param>
+    /// <param name="facetCountPointsRequest">The facet count points request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="consistency">The consistency settings.</param>
+    /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// </param>
+    public async Task<FacetCountPointsResponse> FacetCountPoints(
+        string collectionName,
+        FacetCountPointsRequest facetCountPointsRequest,
+        CancellationToken cancellationToken,
+        ReadPointsConsistency consistency = null,
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int> onRetry = null)
+    {
+        var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
+
+        var url =
+            $"/collections/{collectionName}/facet?consistency={consistencyValue}&timeout={GetTimeoutValueOrDefault(timeout)}";
+
+        var response = await ExecuteRequest<FacetCountPointsRequest, FacetCountPointsResponse>(
+            url,
+            HttpMethod.Post,
+            facetCountPointsRequest,
+            cancellationToken,
+            retryCount,
+            retryDelay,
+            onRetry);
+
+        return response;
+
+    }
+
     #endregion
 
     #region Search operations

@@ -44,13 +44,13 @@ public sealed class DeletePointsVectorsRequest
     /// and point ids to delete vectors for.
     /// </summary>
     /// <param name="vectorNamesToDelete">Names of vectors to delete.</param>
-    /// <param name="pointsToDelteVectorsFor">Point ids to delete vectors for.</param>
+    /// <param name="pointsToDeleteVectorsFor">Point ids to delete vectors for.</param>
     public DeletePointsVectorsRequest(
         IEnumerable<string> vectorNamesToDelete,
-        IEnumerable<PointId> pointsToDelteVectorsFor)
+        IEnumerable<PointId> pointsToDeleteVectorsFor)
     {
         Vectors = vectorNamesToDelete;
-        Points = pointsToDelteVectorsFor;
+        Points = pointsToDeleteVectorsFor;
     }
 
     /// <summary>
