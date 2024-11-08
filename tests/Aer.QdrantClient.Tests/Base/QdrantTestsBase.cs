@@ -36,12 +36,13 @@ public class QdrantTestsBase
 
     private static string _collectionsDataDirectoryToClear;
     private static string _snapshotsDataDirectoryToClear;
+
     private const string ROOT_SOLUTION_DIRECTORY_NAME = "qdrant-client";
     private const string QDRANT_COLLECTIONS_DATA_DIRECTORY_RELATIVE_PATH = "volumes/0/qdrant_storage/collections";
     private const string QDRANT_SNAPSHOTS_DATA_DIRECTORY_RELATIVE_PATH = "volumes/0/qdrant_snapshots";
 
     // shared random with constant seed to make tests repeatable
-    public static readonly Random Random = new(1567);
+    protected static readonly Random Random = new(1567);
 
     protected void Initialize(bool isDisableAuthorization = false)
     {
@@ -126,7 +127,7 @@ public class QdrantTestsBase
                         }
                         else
                         {
-                            TestContext.Write(
+                            await TestContext.Out.WriteAsync(
                                 $"The expected qdrant collection data directory '{qdrantCollectionsDataDirectoryPath}' does not exist check the path");
                             break;
                         }
@@ -144,7 +145,7 @@ public class QdrantTestsBase
                         }
                         else
                         {
-                            TestContext.Write(
+                            await TestContext.Out.WriteAsync(
                                 $"The expected qdrant snapshots data directory '{qdrantSnapshotsDataDirectoryPath}' does not exist check the path");
                             break;
                         }
@@ -162,7 +163,7 @@ public class QdrantTestsBase
                         }
                         catch (Exception e)
                         {
-                            TestContext.Write(
+                            await TestContext.Out.WriteAsync(
                                 $"Can't delete collection data directory '{collectionDataDirectory.FullName}' : {e}");
                             // ignore
                         }
@@ -186,7 +187,7 @@ public class QdrantTestsBase
                         }
                         catch (Exception e)
                         {
-                            TestContext.Write(
+                            await TestContext.Out.WriteAsync(
                                 $"Can't delete collection snapshot directory '{collectionSnapshotDirectory.FullName}' : {e}");
                             // ignore
                         }
@@ -197,7 +198,7 @@ public class QdrantTestsBase
             }
             catch (Exception e)
             {
-                TestContext.Write($"Exception happened during collection deletion {e}");
+                await TestContext.Out.WriteAsync($"Exception happened during collection deletion {e}");
                 // ignore and retry
             }
         }

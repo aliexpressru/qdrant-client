@@ -25,7 +25,7 @@ public sealed class SetPointsPayloadRequest<TPayload>
     /// <summary>
     /// Assigns payload to each point in this list.
     /// </summary>
-    [JsonConverter(typeof(PointIdCollectionJsonConverter))]
+    [JsonConverter(typeof(PointIdIEnumerableJsonConverter))]
     public IEnumerable<PointId> Points { get; }
 
     /// <summary>

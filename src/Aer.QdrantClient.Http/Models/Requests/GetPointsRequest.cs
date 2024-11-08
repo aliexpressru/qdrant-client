@@ -17,7 +17,7 @@ internal sealed class GetPointsRequest
     /// <summary>
     /// The points ids to retrieve.
     /// </summary>
-    [JsonConverter(typeof(PointIdCollectionJsonConverter))]
+    [JsonConverter(typeof(PointIdIEnumerableJsonConverter))]
     public IEnumerable<PointId> Ids { get; set; }
 
     /// <summary>

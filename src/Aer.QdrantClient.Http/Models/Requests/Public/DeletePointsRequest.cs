@@ -17,7 +17,7 @@ public sealed class DeletePointsRequest
     /// <summary>
     /// The point identifiers to delete points for.
     /// </summary>
-    [JsonConverter(typeof(PointIdCollectionJsonConverter))]
+    [JsonConverter(typeof(PointIdIEnumerableJsonConverter))]
     public required IEnumerable<PointId> Points { get; set; }
 
     /// <summary>

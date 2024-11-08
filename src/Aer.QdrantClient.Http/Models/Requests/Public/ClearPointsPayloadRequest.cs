@@ -18,7 +18,7 @@ public sealed class ClearPointsPayloadRequest
     /// <summary>
     /// The point identifiers to clear payload for.
     /// </summary>
-    [JsonConverter(typeof(PointIdCollectionJsonConverter))]
+    [JsonConverter(typeof(PointIdIEnumerableJsonConverter))]
     public IEnumerable<PointId> Points { get; }
 
     /// <summary>

@@ -775,4 +775,87 @@ internal class PointsSearchTests : QdrantTestsBase
                     .And.AllSatisfy(h=>h.Vector.Should().NotBeNull())
             );
     }
+
+    [Test]
+    public async Task SearchPoints_DistanceMatrix_Pairs()
+    {
+        var nearestPointsToConsider = 4;
+        var vectorCount = 10;
+
+        await PrepareCollection(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorCount: vectorCount,
+                payloadInitializerFunction: i => new TestPayload()
+                {
+                    Integer = i
+                });
+
+        var searchResult =
+            await _qdrantHttpClient.SearchPointsDistanceMatrixPairs(
+                TestCollectionName,
+                new SearchPointsDistanceMatrixRequest()
+                {
+                    Filter = Q<TestPayload>.BeInRange(p=>p.Integer, greaterThanOrEqual: 2), // total points 10 - 2 = 8
+                    Sample = 10,
+                    Limit = (uint)nearestPointsToConsider
+                },
+                CancellationToken.None);
+
+        searchResult.Status.IsSuccess.Should().BeTrue();
+
+        searchResult.Result.Pairs.Length.Should().Be(nearestPointsToConsider * (vectorCount - 2)); // 2 points filtered out
+
+        foreach (var pointsPairDistance in searchResult.Result.Pairs)
+        {
+            // check points 0 and 1 are excluded by filter
+            pointsPairDistance.A.AsInteger().Should().BeGreaterThan(1);
+            pointsPairDistance.B.AsInteger().Should().BeGreaterThan(1);
+
+            pointsPairDistance.Score.Should().BeGreaterThan(1);
+        }
+    }
+
+    [Test]
+    public async Task SearchPoints_DistanceMatrix_Offsets()
+    {
+        var nearestPointsToConsider = 4;
+        var vectorCount = 10;
+
+        await PrepareCollection(
+            _qdrantHttpClient,
+            TestCollectionName,
+            vectorCount: vectorCount,
+            payloadInitializerFunction: i => new TestPayload()
+            {
+                Integer = i
+            });
+
+        var searchResult =
+            await _qdrantHttpClient.SearchPointsDistanceMatrixOffsets(
+                TestCollectionName,
+                new SearchPointsDistanceMatrixRequest()
+                {
+                    Filter = Q<TestPayload>.BeInRange(p => p.Integer, greaterThanOrEqual: 2), // total points 10 - 2 = 8
+                    Sample = 10,
+                    Limit = (uint)nearestPointsToConsider
+                },
+                CancellationToken.None);
+
+        searchResult.Status.IsSuccess.Should().BeTrue();
+
+        var consideredPointsCount = vectorCount - 2; // 2 points filtered out
+
+        searchResult.Result.Ids.Count.Should().Be(consideredPointsCount);
+
+        var expectedResultsCount = nearestPointsToConsider * consideredPointsCount;
+
+        searchResult.Result.OffsetsCol.Length.Should().Be(expectedResultsCount);
+        searchResult.Result.OffsetsRow.Length.Should().Be(expectedResultsCount);
+
+        searchResult.Result.Scores.Length.Should().Be(expectedResultsCount);
+
+        searchResult.Result.Ids.Should().AllSatisfy(pid=>pid.AsInteger().Should().BeGreaterThan(1));
+        searchResult.Result.Scores.Should().AllSatisfy(s=>s.Should().BeGreaterThan(1));
+    }
 }

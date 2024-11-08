@@ -156,14 +156,14 @@ public class PointsCountTests : QdrantTestsBase
                 TestCollectionName,
                 new FacetCountPointsRequest(
                     Q<TestPayload>.GetPayloadFieldName(p => p.Integer),
-                    filter: Q<TestPayload>.BeInRange(p=>p.Integer, greaterThanOrEqual: 4),
+                    filter: Q<TestPayload>.BeInRange(p => p.Integer, greaterThanOrEqual: 4),
                     limit: 10,
                     exact: true
                 ),
                 CancellationToken.None);
 
         countPointsResult.Status.IsSuccess.Should().BeTrue();
-        countPointsResult.Result.Hits.Length.Should().Be(vectorCount-4); // 0, 1, 2, 3 are less than 4
+        countPointsResult.Result.Hits.Length.Should().Be(vectorCount - 4); // 0, 1, 2, 3 are less than 4
 
         foreach (var fieldFacet in countPointsResult.Result.Hits)
         {

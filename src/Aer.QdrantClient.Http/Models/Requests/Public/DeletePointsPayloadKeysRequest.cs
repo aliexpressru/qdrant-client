@@ -23,7 +23,7 @@ public sealed class DeletePointsPayloadKeysRequest
     /// <summary>
     /// Deletes values from each point in this list.
     /// </summary>
-    [JsonConverter(typeof(PointIdCollectionJsonConverter))]
+    [JsonConverter(typeof(PointIdIEnumerableJsonConverter))]
     public IEnumerable<PointId> Points { get; }
 
     /// <summary>

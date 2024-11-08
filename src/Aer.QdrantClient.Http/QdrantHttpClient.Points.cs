@@ -669,6 +669,87 @@ public partial class QdrantHttpClient
     }
 
     /// <summary>
+    /// Retrieves sparse matrix of pairwise distances between points sampled from the collection. Output is a list of pairs of points and their distances.
+    /// </summary>
+    /// <param name="collectionName">Name of the collection to search in.</param>
+    /// <param name="searchPointsDistanceMatrixRequest">The search points distance matrix request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="consistency">The consistency settings.</param>
+    /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// </param>
+    public async Task<SearchPointsDistanceMatrixPairsResponse> SearchPointsDistanceMatrixPairs(
+        string collectionName,
+        SearchPointsDistanceMatrixRequest searchPointsDistanceMatrixRequest,
+        CancellationToken cancellationToken,
+        ReadPointsConsistency consistency = null,
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int> onRetry = null)
+    {
+        var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
+
+        var url = $"/collections/{collectionName}/points/search/matrix/pairs?consistency={consistencyValue}&timeout={GetTimeoutValueOrDefault(timeout)}";
+
+        var response = await ExecuteRequest<SearchPointsDistanceMatrixRequest, SearchPointsDistanceMatrixPairsResponse>(
+            url,
+            HttpMethod.Post,
+            searchPointsDistanceMatrixRequest,
+            cancellationToken,
+            retryCount,
+            retryDelay,
+            onRetry);
+
+        return response;
+    }
+
+    /// <summary>
+    /// Retrieves sparse matrix of pairwise distances between points sampled from the collection. Output is a form of row and column offsets and list of distances.
+    /// </summary>
+    /// <param name="collectionName">Name of the collection to search in.</param>
+    /// <param name="searchPointsDistanceMatrixRequest">The search points distance matrix request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="consistency">The consistency settings.</param>
+    /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// </param>
+    public async Task<SearchPointsDistanceMatrixOffsetsResponse> SearchPointsDistanceMatrixOffsets(
+        string collectionName,
+        SearchPointsDistanceMatrixRequest searchPointsDistanceMatrixRequest,
+        CancellationToken cancellationToken,
+        ReadPointsConsistency consistency = null,
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int> onRetry = null)
+    {
+        var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
+
+        var url =
+            $"/collections/{collectionName}/points/search/matrix/offsets?consistency={consistencyValue}&timeout={GetTimeoutValueOrDefault(timeout)}";
+
+        var response = await ExecuteRequest<SearchPointsDistanceMatrixRequest, SearchPointsDistanceMatrixOffsetsResponse>(
+            url,
+            HttpMethod.Post,
+            searchPointsDistanceMatrixRequest,
+            cancellationToken,
+            retryCount,
+            retryDelay,
+            onRetry);
+
+        return response;
+    }
+
+    /// <summary>
     /// Look for the points which are closer to stored positive examples and at the same time further to negative examples.
     /// </summary>
     /// <param name="collectionName">Name of the collection to search in.</param>

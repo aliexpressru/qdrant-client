@@ -6,21 +6,21 @@ using Aer.QdrantClient.Http.Models.Primitives;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class PointIdCollectionJsonConverter : JsonConverter<IReadOnlyList<PointId>>
+internal class PointIdIEnumerableJsonConverter : JsonConverter<IEnumerable<PointId>>
 {
     private static readonly JsonSerializerOptions _serializerOptions =
         JsonSerializerConstants.CreateSerializerOptions(new PointIdJsonConverter());
 
-    public override IReadOnlyList<PointId> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override IEnumerable<PointId> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.Null)
         {
-            return [];
+            return Array.Empty<PointId>();
         }
 
         if (reader.TokenType != JsonTokenType.StartArray)
         {
-            throw new QdrantJsonParsingException($"Can't deserialize value {reader.GetString()} as {typeof(IReadOnlyList<PointId>)}");
+            throw new QdrantJsonParsingException($"Can't deserialize value {reader.GetString()} as {typeof(IEnumerable<PointId>)}");
         }
 
         JsonNode array = JsonNode.Parse(ref reader);
@@ -61,7 +61,7 @@ internal class PointIdCollectionJsonConverter : JsonConverter<IReadOnlyList<Poin
         return collection;
     }
 
-    public override void Write(Utf8JsonWriter writer, IReadOnlyList<PointId> value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, IEnumerable<PointId> value, JsonSerializerOptions options)
     {
         writer.WriteStartArray();
 
