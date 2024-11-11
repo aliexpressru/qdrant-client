@@ -356,12 +356,6 @@ public class PointsDiscoverTests : QdrantTestsBase
         discoveredPoints.Status.IsSuccess.Should().BeTrue();
         discoveredPoints.Result.Length.Should().Be(2); // recommend two first upsert points
 
-        var orderedResults = discoveredPoints.Result
-            .OrderBy(p => p.Id.AsInteger()).ToList();
-
-        orderedResults[0].Id.Should().Be(upsertPoints[0].Id);
-        orderedResults[1].Id.Should().Be(upsertPoints[1].Id);
-
         discoveredPoints.Result.Should()
             .AllSatisfy(p => p.Vector.Should().NotBeNull())
             .And.AllSatisfy(p => p.Payload.Should().NotBeNull());

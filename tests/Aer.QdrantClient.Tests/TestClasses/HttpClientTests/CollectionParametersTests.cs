@@ -249,11 +249,6 @@ public class CollectionParametersTests : QdrantTestsBase
 
         Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration> namedVectors = new()
         {
-            [sparseVectorName] = new VectorConfigurationBase.SingleVectorConfiguration(
-                VectorDistanceMetric.Dot,
-                100,
-                isServeVectorsFromDisk: true,
-                vectorDataType: vectorDataType),
             ["Vector_2"] = new VectorConfigurationBase.SingleVectorConfiguration(
                 VectorDistanceMetric.Euclid,
                 5,

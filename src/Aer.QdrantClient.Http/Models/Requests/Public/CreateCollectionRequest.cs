@@ -41,7 +41,7 @@ public sealed class CreateCollectionRequest
     #endregion
 
     /// <summary>
-    /// Gets the vectors configuration.
+    /// Gets the dense vectors configuration.
     /// </summary>
     [JsonConverter(typeof(VectorConfigurationJsonConverter))]
     public VectorConfigurationBase Vectors { get; }
