@@ -94,17 +94,20 @@ public class QueryPointsRequest
     /// The shard selector. If set performs operation on specified shard(s).
     /// If not set - performs operation on all shards.
     /// </param>
+    /// <param name="filter">Look only for points which satisfy the filter conditions.</param>
     public QueryPointsRequest(
         PointsQuery query,
         uint limit = 10,
         VectorSelector withVector = null,
         PayloadPropertiesSelector withPayload = null,
-        ShardSelector shardSelector = null)
+        ShardSelector shardSelector = null,
+        QdrantFilter filter = null)
     {
         Query = query;
         Limit = limit;
         WithVector = withVector;
         WithPayload = withPayload;
         ShardKey = shardSelector;
+        Filter = filter;
     }
 }
