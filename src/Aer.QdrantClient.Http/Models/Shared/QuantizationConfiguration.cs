@@ -9,6 +9,7 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "ReplaceAutoPropertyWithComputedProperty")]
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public abstract class QuantizationConfiguration
 {
     #region Quantization types

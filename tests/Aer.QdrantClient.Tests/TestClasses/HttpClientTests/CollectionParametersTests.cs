@@ -507,4 +507,84 @@ public class CollectionParametersTests : QdrantTestsBase
         vectorsQuantizationConfig.Quantile.Should().Be(0.9f);
         vectorsQuantizationConfig.AlwaysRam.Should().BeTrue();
     }
+
+    [Test]
+    public async Task TestUpdateCollectionParameters_CollectionDoesNotExist()
+    {
+        var updateNoCollectionParametersResult = await _qdrantHttpClient.UpdateCollectionParameters(
+            TestCollectionName,
+            new UpdateCollectionParametersRequest()
+            {
+                OptimizersConfig = new()
+                {
+                    MemmapThreshold = 1
+                }
+            },
+            CancellationToken.None);
+
+        updateNoCollectionParametersResult.Status.Type.Should().Be(QdrantOperationStatusType.Error);
+        updateNoCollectionParametersResult.Status.IsSuccess.Should().BeFalse();
+        updateNoCollectionParametersResult.Status.Error.Should()
+            .Contain(TestCollectionName).And
+            .Contain("doesn't exist");
+
+        updateNoCollectionParametersResult.Result.Should().BeNull();
+    }
+
+    [Test]
+    public async Task TestUpdateCollectionParameters()
+    {
+        // create collection first
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                OptimizersConfig = new OptimizersConfiguration()
+                {
+                    MemmapThreshold = 1000,
+                    MaxOptimizationThreads = 1,
+                    IndexingThreshold = 1
+                },
+                HnswConfig = new HnswConfiguration(){
+                    MaxIndexingThreads = 1
+                }
+            },
+            CancellationToken.None);
+
+        const int newMemmapThreshold = 1;
+        const int newMaxOptimizationThreads = 10;
+        const int newMaxIndexingThreads = 11;
+
+        var updateNoCollectionParametersResult = await _qdrantHttpClient.UpdateCollectionParameters(
+            TestCollectionName,
+            new UpdateCollectionParametersRequest()
+            {
+                OptimizersConfig = new()
+                {
+                    MemmapThreshold = newMemmapThreshold,
+                    MaxOptimizationThreads = newMaxOptimizationThreads
+                },
+                HnswConfig = new HnswConfiguration(){
+                    MaxIndexingThreads = newMaxIndexingThreads
+                }
+            },
+            CancellationToken.None);
+
+        var updatedCollectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        updateNoCollectionParametersResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        updateNoCollectionParametersResult.Status.IsSuccess.Should().BeTrue();
+
+        updateNoCollectionParametersResult.Result.Should().NotBeNull();
+
+        updatedCollectionInfo.Result.Status.Should().Be(QdrantCollectionStatus.Green);
+        updatedCollectionInfo.Result.OptimizerStatus.IsOk.Should().BeTrue();
+
+        updatedCollectionInfo.Result.Config.OptimizerConfig.IndexingThreshold.Should().Be(1); // should not change
+
+        updatedCollectionInfo.Result.Config.OptimizerConfig.MemmapThreshold.Should().Be(newMemmapThreshold);
+        updatedCollectionInfo.Result.Config.OptimizerConfig.MaxOptimizationThreads.Should().Be(newMaxOptimizationThreads);
+        updatedCollectionInfo.Result.Config.HnswConfig.MaxIndexingThreads.Should().Be(newMaxIndexingThreads);
+    }
 }
