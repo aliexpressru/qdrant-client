@@ -179,7 +179,35 @@ public class PointsDiscoverTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var vector1Vector2Vector = CreateTestVector(vectorSize);
+        // use literal values to avoid flaking
+
+        float[] vector1Vector2Vector =
+        [
+            0.366710603F,
+            0.604299128F,
+            0.0822037682F,
+            0.0232334193F,
+            0.684187353F,
+            0.95674789F,
+            0.0108721871F,
+            0.581637084F,
+            0.841619313F,
+            0.106674463F
+        ];
+
+        float[] vector3Vector =
+        [
+            0.748643577F,
+            0.846850276F,
+            0.868468285F,
+            0.70951879F,
+            0.838064849F,
+            0.654611468F,
+            0.565033078F,
+            0.534292579F,
+            0.0964765549F,
+            0.0646425188F
+        ];
 
         var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
         {
@@ -201,7 +229,7 @@ public class PointsDiscoverTests : QdrantTestsBase
                 }),
             new(
                 PointId.Integer(3),
-                CreateTestVector(vectorSize),
+                vector3Vector,
                 new TestPayload()
                 {
                     Integer = 3,
@@ -221,7 +249,7 @@ public class PointsDiscoverTests : QdrantTestsBase
         await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
 
         var positiveExampleVector = vector1Vector2Vector;
-        var vectorToAvoid = upsertPoints.Last().Vector.AsDenseVector().VectorValues;
+        var vectorToAvoid = vector3Vector;
 
         var request = new DiscoverPointsRequest(
             positiveNegativeContextPairs:
