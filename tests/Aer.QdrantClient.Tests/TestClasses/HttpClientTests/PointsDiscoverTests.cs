@@ -362,7 +362,7 @@ public class PointsDiscoverTests : QdrantTestsBase
         await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
 
         var positiveExampleVector = vector1Vector2Vector;
-        var vectorToAvoid = upsertPoints.Last().Vector.AsSparseVector();
+        var vectorToAvoid = upsertPoints.Last().Vector.Default;
 
         var request = new DiscoverPointsRequest(
             positiveNegativeContextPairs:
