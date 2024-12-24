@@ -10,6 +10,9 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public abstract class PointId : IEquatable<PointId>
 {
+    /// <summary>
+    /// Gets this point id as <see cref="System.Object"/>.
+    /// </summary>
     internal abstract object ObjectId { get; }
 
     /// <summary>
@@ -70,11 +73,17 @@ public abstract class PointId : IEquatable<PointId>
     /// Create instance of integer point identifier.
     /// </summary>
     /// <param name="pointId">The point identifier.</param>
+    public static PointId Integer(uint pointId) => new IntegerPointId(pointId);
+
+    /// <summary>
+    /// Create instance of integer point identifier.
+    /// </summary>
+    /// <param name="pointId">The point identifier.</param>
     public static PointId Integer(int pointId)
         => pointId < 0
             ? throw new QdrantInvalidNumericPointIdException(pointId)
             : new IntegerPointId((ulong) pointId);
-
+    
     /// <summary>
     /// Create instance of integer point identifier.
     /// </summary>

@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json.Nodes;
 using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Exceptions;
@@ -285,6 +286,75 @@ internal class PointsCrudTests : QdrantTestsBase
         var testPointId = PointId.NewGuid();
 
         var testVector = CreateTestVector(vectorSize, vectorDataType);
+
+        TestPayload testPayload = "test";
+
+        var upsertPointsResult
+            = await _qdrantHttpClient.UpsertPoints(
+                TestCollectionName,
+                new UpsertPointsRequest<TestPayload>()
+                {
+                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    {
+                        new(testPointId, testVector, testPayload)
+                    }
+                },
+                CancellationToken.None);
+
+        var readPointsResult = await _qdrantHttpClient.GetPoint(
+            TestCollectionName,
+            testPointId,
+            CancellationToken.None);
+
+        upsertPointsResult.Status.IsSuccess.Should().BeTrue();
+        upsertPointsResult.Result.Status.Should()
+            .BeOneOf(QdrantOperationStatus.Completed);
+
+        readPointsResult.Status.IsSuccess.Should().BeTrue();
+        readPointsResult.Result.Should().NotBeNull();
+
+        readPointsResult.Result.Id.ObjectId.Should().Be(testPointId.ObjectId);
+        readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
+            .Should().BeEquivalentTo(testVector);
+        var readTestPayload = readPointsResult.Result.Payload.As<TestPayload>();
+
+        readTestPayload.Integer.Should().Be(testPayload.Integer);
+        readTestPayload.FloatingPointNumber.Should().Be(testPayload.FloatingPointNumber);
+        readTestPayload.Text.Should().Be(testPayload.Text);
+    }
+
+    [Test]
+    [TestCase((int)1)]
+    [TestCase((uint)1)]
+    [TestCase((long)1)]
+    [TestCase((ulong)1)]
+    public async Task UpsertPoint_IntegerId(object pointIdIntegerTypeExample)
+    {
+        var vectorSize = 10U;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                vectorSize,
+                isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        ulong integerPointId = Type.GetTypeCode(pointIdIntegerTypeExample.GetType()) switch
+        {
+            TypeCode.Int32 => int.MaxValue - 10,
+            TypeCode.UInt32 => uint.MaxValue - 10,
+            TypeCode.Int64 => long.MaxValue - 10,
+            TypeCode.UInt64 => ulong.MaxValue - 10,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        var testPointId = PointId.Integer(integerPointId);
+
+        var testVector = CreateTestVector(vectorSize);
 
         TestPayload testPayload = "test";
 

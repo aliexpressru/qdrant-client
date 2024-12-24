@@ -16,7 +16,7 @@ internal class PointIdJsonConverter : JsonConverter<PointId>
                 return PointId.Guid(guidId);
 
             case JsonTokenType.Number:
-                var intId = reader.GetInt64();
+                var intId = reader.GetUInt64();
                 return PointId.Integer(intId);
 
             default:
