@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
+using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters.Conditions;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 
@@ -14,7 +15,7 @@ public sealed class QdrantFilter
 {
     private readonly List<FilterConditionBase> _conditions = [];
 
-    private string _filterString;
+    private string _rawFilterString;
 
     /// <summary>
     /// Returns an empty filter.
@@ -104,7 +105,7 @@ public sealed class QdrantFilter
 
         QdrantFilter ret = new()
         {
-            _filterString = filter
+            _rawFilterString = filter
         };
 
         return ret;
@@ -117,6 +118,11 @@ public sealed class QdrantFilter
     /// <param name="condition">The condition to add to the filter.</param>
     public static QdrantFilter operator +(QdrantFilter filter, FilterConditionBase condition)
     {
+        if (!string.IsNullOrWhiteSpace(filter._rawFilterString))
+        {
+            throw new QdrantFilterException(filter._rawFilterString);
+        }
+
         var isConditionGroup = CheckTopLevelConditionIsGroup(condition);
 
         if (filter is { } existingFilter)
@@ -156,9 +162,9 @@ public sealed class QdrantFilter
     /// <param name="isIndentFilterSyntax">Determines whether the resulting filter string should be indented. Default value <c>false</c>.</param>
     public string ToString(bool isIndentFilterSyntax)
     {
-        if (!string.IsNullOrWhiteSpace(_filterString))
+        if (!string.IsNullOrWhiteSpace(_rawFilterString))
         {
-            return _filterString.ReplaceLineEndings();
+            return _rawFilterString.ReplaceLineEndings();
         }
 
         if (_conditions is null or { Count: 0 })
@@ -202,9 +208,9 @@ public sealed class QdrantFilter
     /// </summary>
     internal void WriteFilterJson(Utf8JsonWriter jsonWriter)
     {
-        if (!string.IsNullOrWhiteSpace(_filterString))
+        if (!string.IsNullOrWhiteSpace(_rawFilterString))
         {
-            jsonWriter.WriteRawValue(_filterString);
+            jsonWriter.WriteRawValue(_rawFilterString);
             return;
         }
 
