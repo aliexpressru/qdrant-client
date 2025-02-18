@@ -1,8 +1,12 @@
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Filters.Conditions;
+using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Tests.Model;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Aer.QdrantClient.Tests.TestClasses.InfrastructureTests;
 
@@ -1583,5 +1587,84 @@ internal class QdrantFilterTests
 
         filter.Should().NotBeNull();
         filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+    }
+
+    [Test]
+    public void TestQdrantFilter_Should_Use_Filter_String_As_Is()
+    {
+        var expectedFilter = """
+                             {
+                               "must": [
+                                 {
+                                   "key": "integer",
+                                   "match": {
+                                     "value": 123
+                                   }
+                                 },
+                                 {
+                                   "key": "text",
+                                   "match": {
+                                     "value": "test_value"
+                                   }
+                                 }
+                               ]
+                             }
+                             """;
+
+        var filter = QdrantFilter.Create(expectedFilter);
+        var filterString = filter.ToString();
+
+        filterString.Should().NotBeNull();
+        filterString.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+    }
+
+    [Test]
+    public void TestQdrantFilter_Should_Serialize_Filter_String_As_Is()
+    {
+        var filterString = """
+                             {
+                               "must": [
+                                 {
+                                   "key": "integer",
+                                   "match": {
+                                     "value": 123
+                                   }
+                                 },
+                                 {
+                                   "key": "text",
+                                   "match": {
+                                     "value": "test_value"
+                                   }
+                                 }
+                               ]
+                             }
+                             """;
+        var expectedFilterRequest = """
+                             {"filter":{
+                               "must": [
+                                 {
+                                   "key": "integer",
+                                   "match": {
+                                     "value": 123
+                                   }
+                                 },
+                                 {
+                                   "key": "text",
+                                   "match": {
+                                     "value": "test_value"
+                                   }
+                                 }
+                               ]
+                             }}
+                             """;
+
+        var filter = QdrantFilter.Create(filterString);
+        var scrollRequest = new ScrollPointsRequest
+        {
+            Filter = filter
+        };
+        var serializedFilter = JsonSerializer.Serialize(scrollRequest, JsonSerializerConstants.DefaultSerializerOptions);
+
+        serializedFilter.Should().BeEquivalentTo(expectedFilterRequest.ReplaceLineEndings());
     }
 }
