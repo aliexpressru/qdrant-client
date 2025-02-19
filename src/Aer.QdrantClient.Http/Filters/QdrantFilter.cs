@@ -120,7 +120,7 @@ public sealed class QdrantFilter
     {
         if (!string.IsNullOrWhiteSpace(filter._rawFilterString))
         {
-            throw new QdrantFilterException(filter._rawFilterString);
+            throw new QdrantFilterModificationForbiddenException(filter._rawFilterString);
         }
 
         var isConditionGroup = CheckTopLevelConditionIsGroup(condition);
@@ -164,7 +164,7 @@ public sealed class QdrantFilter
     {
         if (!string.IsNullOrWhiteSpace(_rawFilterString))
         {
-            return _rawFilterString.ReplaceLineEndings();
+            return _rawFilterString;
         }
 
         if (_conditions is null or { Count: 0 })
