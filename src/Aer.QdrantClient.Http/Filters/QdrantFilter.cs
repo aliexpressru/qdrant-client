@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
+using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters.Conditions;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 
@@ -13,6 +14,8 @@ namespace Aer.QdrantClient.Http.Filters;
 public sealed class QdrantFilter
 {
     private readonly List<FilterConditionBase> _conditions = [];
+
+    private string _rawFilterString;
 
     /// <summary>
     /// Returns an empty filter.
@@ -94,12 +97,32 @@ public sealed class QdrantFilter
     }
 
     /// <summary>
+    /// Creates the qdrant filter instance directly from a filter string.
+    /// </summary>
+    public static QdrantFilter Create(string filter)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(filter);
+
+        QdrantFilter ret = new()
+        {
+            _rawFilterString = filter
+        };
+
+        return ret;
+    }
+
+    /// <summary>
     /// Adds the filter condition to this filter.
     /// </summary>
     /// <param name="filter">The filter to add condition to.</param>
     /// <param name="condition">The condition to add to the filter.</param>
     public static QdrantFilter operator +(QdrantFilter filter, FilterConditionBase condition)
     {
+        if (!string.IsNullOrWhiteSpace(filter?._rawFilterString))
+        {
+            throw new QdrantFilterModificationForbiddenException(filter._rawFilterString);
+        }
+
         var isConditionGroup = CheckTopLevelConditionIsGroup(condition);
 
         if (filter is { } existingFilter)
@@ -139,6 +162,11 @@ public sealed class QdrantFilter
     /// <param name="isIndentFilterSyntax">Determines whether the resulting filter string should be indented. Default value <c>false</c>.</param>
     public string ToString(bool isIndentFilterSyntax)
     {
+        if (!string.IsNullOrWhiteSpace(_rawFilterString))
+        {
+            return _rawFilterString;
+        }
+
         if (_conditions is null or { Count: 0 })
         {
             return string.Empty;
@@ -180,6 +208,12 @@ public sealed class QdrantFilter
     /// </summary>
     internal void WriteFilterJson(Utf8JsonWriter jsonWriter)
     {
+        if (!string.IsNullOrWhiteSpace(_rawFilterString))
+        {
+            jsonWriter.WriteRawValue(_rawFilterString);
+            return;
+        }
+
         if (_conditions.Count == 0)
         {
             jsonWriter.WriteNullValue();

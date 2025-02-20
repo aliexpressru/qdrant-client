@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Filters.Conditions;
@@ -1583,5 +1584,63 @@ internal class QdrantFilterTests
 
         filter.Should().NotBeNull();
         filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+    }
+
+    [Test]
+    public void TestQdrantFilter_Should_Use_Raw_Filter_String_As_Is()
+    {
+        var expectedFilter = """
+                             {
+                               "must": [
+                                 {
+                                   "key": "integer",
+                                   "match": {
+                                     "value": 123
+                                   }
+                                 },
+                                 {
+                                   "key": "text",
+                                   "match": {
+                                     "value": "test_value"
+                                   }
+                                 }
+                               ]
+                             }
+                             """;
+
+        var filter = QdrantFilter.Create(expectedFilter);
+        var filterString = filter.ToString();
+
+        filterString.Should().NotBeNull();
+        filterString.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+    }
+
+    [Test]
+    public void TestQdrantFilter_Should_Throw_Exception_If_Condition_Is_Added_When_Use_Raw_Filter_String()
+    {
+        var expectedFilter = """
+                             {
+                               "must": [
+                                 {
+                                   "key": "integer",
+                                   "match": {
+                                     "value": 123
+                                   }
+                                 },
+                                 {
+                                   "key": "text",
+                                   "match": {
+                                     "value": "test_value"
+                                   }
+                                 }
+                               ]
+                             }
+                             """;
+
+        var filter = QdrantFilter.Create(expectedFilter);
+
+        var func = () => filter += new HasAnyIdCondition(Enumerable.Range(1, 5));
+
+        func.Should().Throw<QdrantFilterModificationForbiddenException>();
     }
 }
