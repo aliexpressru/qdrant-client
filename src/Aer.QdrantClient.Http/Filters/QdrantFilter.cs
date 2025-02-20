@@ -118,7 +118,7 @@ public sealed class QdrantFilter
     /// <param name="condition">The condition to add to the filter.</param>
     public static QdrantFilter operator +(QdrantFilter filter, FilterConditionBase condition)
     {
-        if (!string.IsNullOrWhiteSpace(filter._rawFilterString))
+        if (!string.IsNullOrWhiteSpace(filter?._rawFilterString))
         {
             throw new QdrantFilterModificationForbiddenException(filter._rawFilterString);
         }
