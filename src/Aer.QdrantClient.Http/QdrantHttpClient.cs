@@ -329,8 +329,9 @@ public partial class QdrantHttpClient
         Action<Exception, TimeSpan, int> onRetry = null)
         where TResponse : QdrantResponseBase
     {
+        var requestMessage = createMessage();
         var getResponse =
-            async () => await _apiClient.SendAsync(createMessage(), cancellationToken);
+            async () => await _apiClient.SendAsync(requestMessage, cancellationToken);
 
         if (retryCount > 0)
         {

@@ -88,9 +88,15 @@ public class PointsQueryTests : QdrantTestsBase
 
         nearestPointsByPointIdResponse.Status.IsSuccess.Should().BeTrue();
         nearestPointsByPointIdResponse.Result.Points.Length.Should().Be(2);
+        nearestPointsByPointIdResponse.Result.Points.Should().AllSatisfy(
+            p => p.Score.Should().BeGreaterThan(0)
+        );
 
         nearestPointsByVectorResponse.Status.IsSuccess.Should().BeTrue();
         nearestPointsByVectorResponse.Result.Points.Length.Should().Be(2);
+        nearestPointsByVectorResponse.Result.Points.Should().AllSatisfy(
+            p => p.Score.Should().BeGreaterThan(0)
+        );
     }
 
     [Test]
@@ -125,10 +131,14 @@ public class PointsQueryTests : QdrantTestsBase
         // less than limit since prefetch should eliminate all points but 3
         nearestPointsResponse.Result.Points.Length.Should().Be(2);
 
-        nearestPointsResponse.Result.Points.Should().AllSatisfy(
-            p =>
-                p.Payload.As<TestPayload>().Integer.Should().BeInRange(0, 2)
-        );
+        nearestPointsResponse.Result.Points.Should()
+            .AllSatisfy(
+                p =>
+                    p.Payload.As<TestPayload>().Integer.Should().BeInRange(0, 2)
+            ).And.AllSatisfy(
+                p =>
+                    p.Score.Should().BeGreaterThan(0)
+            );
     }
 
     [Test]
@@ -170,6 +180,10 @@ public class PointsQueryTests : QdrantTestsBase
         // first prefetch returns 3 points
         // second prefetch returns up to 5 points
         nearestPointsResponse.Result.Points.Length.Should().BeInRange(5, 8);
+        
+        nearestPointsResponse.Result.Points.Should().AllSatisfy(
+            p => p.Score.Should().BeGreaterThan(0)
+        );
     }
 
     [Test]
@@ -191,6 +205,10 @@ public class PointsQueryTests : QdrantTestsBase
 
         sampleRandomPointsResponse.Status.IsSuccess.Should().BeTrue();
         sampleRandomPointsResponse.Result.Points.Length.Should().Be(3);
+        sampleRandomPointsResponse.Result.Points.Should().AllSatisfy(
+            // Since we are not using query vector we don't get any scores
+            p => p.Score.Should().Be(0)
+        );
     }
 
     [Test]
@@ -235,6 +253,10 @@ public class PointsQueryTests : QdrantTestsBase
 
         var firstPoint = orderedPoints.First();
         var secondPoint = orderedPoints.Skip(1).First();
+
+        // Since we are not using the query vector we don't get any scores
+        firstPoint.Score.Should().Be(0);
+        secondPoint.Score.Should().Be(0);
 
         firstPoint.Payload.As<TestPayload>().Integer!.Value
             .Should().BeLessThan(secondPoint.Payload.As<TestPayload>().Integer!.Value);
@@ -293,6 +315,8 @@ public class PointsQueryTests : QdrantTestsBase
                 readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should()
                     .Be(expectedPoint.Payload.FloatingPointNumber);
                 readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+                
+                readPoint.Score.Should().BeGreaterThan(0);
             }
         }
     }
@@ -335,6 +359,7 @@ public class PointsQueryTests : QdrantTestsBase
                 g => g.Hits.Should()
                     .AllSatisfy(h => h.Payload.Should().NotBeNull())
                     .And.AllSatisfy(h => h.Vector.Should().NotBeNull())
+                    .And.AllSatisfy(h=>h.Score.Should().BeGreaterThan(0))
             );
     }
 }

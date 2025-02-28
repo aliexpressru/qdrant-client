@@ -89,6 +89,8 @@ internal class PointsSearchTests : QdrantTestsBase
 
         searchResult.Result.Length.Should().Be(1);
 
+        searchResult.Result[0].Score.Should().BeGreaterThan(0);
+
         var readPointId = searchResult.Result[0].Id.AsInteger();
 
         var expectedPayload = upsertPointsByPointIds[readPointId].Payload;
@@ -125,6 +127,8 @@ internal class PointsSearchTests : QdrantTestsBase
 
         foreach (var readPoint in searchResult.Result)
         {
+            readPoint.Score.Should().BeGreaterThan(0);
+            
             var readPointId = readPoint.Id.AsInteger();
 
             var expectedPoint = upsertPointsByPointIds[readPointId];
@@ -204,6 +208,8 @@ internal class PointsSearchTests : QdrantTestsBase
 
         foreach (var readPoint in searchResult.Result)
         {
+            readPoint.Score.Should().BeGreaterThan(0);
+            
             var readPointId = readPoint.Id.AsInteger();
 
             var expectedPoint = upsertPointsByPointIds[readPointId];
@@ -291,6 +297,8 @@ internal class PointsSearchTests : QdrantTestsBase
 
         foreach (var readPoint in searchResult.Result)
         {
+            readPoint.Score.Should().BeGreaterThan(0);
+            
             var readPointId = readPoint.Id.AsInteger();
 
             var expectedPoint = upsertPointsByPointIds[readPointId];
@@ -339,6 +347,7 @@ internal class PointsSearchTests : QdrantTestsBase
 
         foreach (var readPoint in searchResult.Result)
         {
+            readPoint.Score.Should().BeGreaterThan(0);
             var readPointId = readPoint.Id.AsInteger();
 
             var expectedPoint = upsertPointsByPointIds[readPointId];
@@ -382,6 +391,8 @@ internal class PointsSearchTests : QdrantTestsBase
 
         foreach (var readPoint in searchResult.Result)
         {
+            readPoint.Score.Should().BeGreaterThan(0);
+            
             var readPointId = readPoint.Id.AsInteger();
 
             var expectedPoint = upsertPointsByPointIds[readPointId];
@@ -426,6 +437,16 @@ internal class PointsSearchTests : QdrantTestsBase
 
         foreach (var readPoint in searchResult.Result)
         {
+            if (readPoint.Id.Equals(upsertPoints[0].Id))
+            {
+                // The exact point with which we searched for similar will give 0 score 
+                readPoint.Score.Should().Be(0);
+            }
+            else
+            {
+                readPoint.Score.Should().NotBe(0);
+            }
+
             var readPointId = readPoint.Id.AsInteger();
 
             var expectedPoint = upsertPointsByPointIds[readPointId];
@@ -470,6 +491,8 @@ internal class PointsSearchTests : QdrantTestsBase
 
         foreach (var readPoint in searchResult.Result)
         {
+            readPoint.Score.Should().BeGreaterThan(0);
+            
             var readPointId = readPoint.Id.AsInteger();
 
             var expectedPoint = upsertPointsByPointIds[readPointId];
@@ -719,6 +742,8 @@ internal class PointsSearchTests : QdrantTestsBase
 
             foreach (var readPoint in readPointsForOneRequestInBatch)
             {
+                readPoint.Score.Should().BeGreaterThan(0);
+                
                 var readPointId = readPoint.Id.AsInteger();
 
                 var expectedPoint = upsertPointsByPointIds[readPointId];
@@ -773,6 +798,7 @@ internal class PointsSearchTests : QdrantTestsBase
                 g=> g.Hits.Should()
                     .AllSatisfy(h=>h.Payload.Should().NotBeNull())
                     .And.AllSatisfy(h=>h.Vector.Should().NotBeNull())
+                    .And.AllSatisfy(h=>h.Score.Should().BeGreaterThan(0))
             );
     }
 
