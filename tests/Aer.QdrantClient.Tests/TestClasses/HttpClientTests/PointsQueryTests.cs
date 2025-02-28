@@ -142,6 +142,60 @@ public class PointsQueryTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task FindNearestPoints_WithOrderByViaPrefetch()
+    {
+        var (_, upsertPointsByPointIds, _) =
+            await PrepareCollection<TestPayload>(
+                _qdrantHttpClient,
+                TestCollectionName);
+
+        // order by does not work without indexes
+        await _qdrantHttpClient.CreatePayloadIndex(
+            TestCollectionName,
+            "integer",
+            PayloadIndexedFieldType.Integer,
+            CancellationToken.None,
+            isWaitForResult: true);
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        var nearestPointsResponse = await _qdrantHttpClient.QueryPoints(
+            TestCollectionName,
+            new QueryPointsRequest(PointsQuery.CreateOrderByQuery(OrderBySelector.Asc("integer")))
+            {
+                Prefetch =
+                [
+                    new PrefetchPoints()
+                    {
+                        Filter = Q<TestPayload>.BeInRange(
+                            p => p.Integer,
+                            greaterThanOrEqual: 0,
+                            lessThanOrEqual: 2),
+                        Query = PointsQuery.CreateFindNearestPointsQuery(upsertPointsByPointIds.First().Value.Vector),
+                    }
+                ],
+                WithPayload = true,
+                WithVector = true,
+                Limit = 10
+            },
+            CancellationToken.None);
+
+        nearestPointsResponse.Status.IsSuccess.Should().BeTrue();
+        // less than limit since prefetch should eliminate all points but 3
+        nearestPointsResponse.Result.Points.Length.Should().Be(3);
+
+        nearestPointsResponse.Result.Points.Should()
+            .AllSatisfy(
+                p =>
+                    p.Payload.As<TestPayload>().Integer.Should().BeInRange(0, 2)
+            ).And.AllSatisfy(
+                p =>
+                    // Since we are ordering by as the final stage of the multi-stage query we don't get any scores
+                    p.Score.Should().Be(0)
+            );
+    }
+
+    [Test]
     [TestCase(FusionAlgorithm.Rrf)]
     [TestCase(FusionAlgorithm.Dbsf)]
     public async Task Fusion(FusionAlgorithm fusionAlgorithm)
