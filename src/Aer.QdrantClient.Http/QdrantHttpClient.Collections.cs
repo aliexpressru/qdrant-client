@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -80,6 +81,34 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Patch,
             request,
+            cancellationToken,
+            retryCount: 0);
+
+        return response;
+    }
+
+    /// <summary>
+    /// Trigger optimizers on existing collection.
+    /// </summary>
+    /// <param name="collectionName">Name of the collection to update.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="timeout">Wait for operation commit timeout in seconds. If timeout is reached - request will return with service error.</param>
+    /// <remarks>Issues the empty update collection parameters request to start optimizers for grey collections. https://qdrant.tech/documentation/concepts/collections/#grey-collection-status</remarks>
+    public async Task<DefaultOperationResponse> TriggerOptimizers(
+        string collectionName,
+        CancellationToken cancellationToken,
+        TimeSpan? timeout = null)
+    {
+        EnsureQdrantNameCorrect(collectionName);
+
+        var timeoutValue = GetTimeoutValueOrDefault(timeout);
+
+        var url = $"/collections/{collectionName}?timeout={timeoutValue}";
+
+        var response = await ExecuteRequest<string, DefaultOperationResponse>(
+            url,
+            HttpMethod.Patch,
+            UpdateCollectionParametersRequest.EmptyRequestBody,
             cancellationToken,
             retryCount: 0);
 

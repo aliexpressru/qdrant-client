@@ -8,22 +8,22 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 public enum QdrantCollectionStatus
 {
     /// <summary>
-    /// Means there were some errors the engine could not recover from.
+    /// An error occurred which the engine could not recover from.
     /// </summary>
     Red,
 
     /// <summary>
-    /// Means all the points are processed and indexing is done.
+    /// All the points are processed and indexing is done, collection is ready.
     /// </summary>
     Green,
 
     /// <summary>
-    /// Means the optimization is still running.
+    /// Optimization process is still running.
     /// </summary>
     Yellow,
 
     /// <summary>
-    /// Means optimizations are pending after restart.
+    /// Optimizations are pending after restart.
     /// </summary>
     Grey
 }

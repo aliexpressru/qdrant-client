@@ -6,6 +6,7 @@ using System.Text.Json;
 using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Infrastructure.Json;
+using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Shared;
 using Polly;
@@ -255,10 +256,16 @@ public partial class QdrantHttpClient
         {
             HttpRequestMessage message = new(method, url);
 
-            var contentJson =
+            var contentJson = requestContent switch
+            {
+                EmptyRequest er => er.RequestMessageBody,
+                
                 // check whether the requestContent is already a serialized string
-                requestContent as string
-                ?? JsonSerializer.Serialize(requestContent, JsonSerializerConstants.DefaultSerializerOptions);
+                string s => s,
+                
+                not null => JsonSerializer.Serialize(requestContent, JsonSerializerConstants.DefaultSerializerOptions),
+                null => EmptyRequest.Instance.RequestMessageBody
+            };
 
             var requestData = new StringContent(contentJson, Encoding.UTF8, "application/json");
 

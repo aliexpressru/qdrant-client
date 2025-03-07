@@ -6,13 +6,24 @@ using Aer.QdrantClient.Http.Models.Shared;
 namespace Aer.QdrantClient.Http.Models.Requests.Public;
 
 /// <summary>
-/// The request for updating an existing Qdrant collection paramters.
+/// The request for updating an existing Qdrant collection parameters.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class UpdateCollectionParametersRequest
 {
+    /// <summary>
+    /// Used to issue an empty update collection parameters request.
+    /// As per documentation https://qdrant.tech/documentation/concepts/collections/#grey-collection-status
+    /// this should be done to trigger grey collection optimizers. 
+    /// </summary>
+    internal static string EmptyRequestBody = """
+    {
+        "optimizers_config": {}
+    }
+    """;
+    
     #region Nested classes
 
     /// <summary>
