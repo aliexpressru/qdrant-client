@@ -1,16 +1,17 @@
 using System.Text.Json;
+using Aer.QdrantClient.Http.Filters.Optimization.Abstractions;
 using Aer.QdrantClient.Http.Infrastructure.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal class FieldMatchAnyCondition<T> : FilterConditionBase
+internal class FieldMatchAnyCondition<T> : FilterConditionBase, IOptimizableCondition
 {
-    private readonly IEnumerable<T> _any;
+    private readonly IEnumerable<T> _anyValuesToMatch;
 
-    public FieldMatchAnyCondition(string payloadFieldName, IEnumerable<T> matchAnyValues)
+    public FieldMatchAnyCondition(string payloadFieldName, IEnumerable<T> matchAnyValuesToMatchValues)
         : base(payloadFieldName)
     {
-        _any = matchAnyValues;
+        _anyValuesToMatch = matchAnyValuesToMatchValues;
     }
 
     public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
@@ -21,8 +22,13 @@ internal class FieldMatchAnyCondition<T> : FilterConditionBase
 
         jsonWriter.WritePropertyName("any");
 
-        JsonSerializer.Serialize(jsonWriter, _any, JsonSerializerConstants.DefaultSerializerOptions);
+        JsonSerializer.Serialize(jsonWriter, _anyValuesToMatch, JsonSerializerConstants.DefaultSerializerOptions);
 
         jsonWriter.WriteEndObject();
+    }
+
+    public void Accept(IOptimizationVisitor visitor)
+    {
+        visitor.Visit(this);
     }
 }

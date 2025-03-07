@@ -91,7 +91,7 @@ public static class Q
     /// <summary>
     /// Check if payload has a field with any of the given values.
     /// This filter variant is optimised so the MatchAny is substituted with
-    /// a bunch of MatchVBalue conditions combined with Should.
+    /// a bunch of MatchValue conditions combined with Should.
     /// </summary>
     /// <typeparam name="T">Type of the value to match payload value against.</typeparam>
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
@@ -102,7 +102,7 @@ public static class Q
     /// <summary>
     /// Check if payload has a field with any of the given values.
     /// This filter variant is optimised so the MatchAny is substituted with
-    /// a bunch of MatchVBalue conditions combined with Should.
+    /// a bunch of MatchValue conditions combined with Should.
     /// </summary>
     /// <typeparam name="T">Type of the value to match payload value against.</typeparam>
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>

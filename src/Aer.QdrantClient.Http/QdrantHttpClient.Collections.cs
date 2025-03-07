@@ -59,23 +59,17 @@ public partial class QdrantHttpClient
             throw new ArgumentNullException(nameof(request));
         }
 
-        if (request.OptimizersConfig is null
-            && request.Params is null)
-        {
-            // shortcut for cases where the request is empty
-            return new DefaultOperationResponse()
-            {
-                Result = true,
-                Status = new QdrantStatus(QdrantOperationStatusType.Ok),
-                Time = 0
-            };
-        }
-
         EnsureQdrantNameCorrect(collectionName);
 
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
 
         var url = $"/collections/{collectionName}?timeout={timeoutValue}";
+
+        if (request.IsEmpty)
+        { 
+            // Empty request is swapped with trigger optimizers request.
+            return await TriggerOptimizers(collectionName, cancellationToken);
+        }
 
         var response = await ExecuteRequest<UpdateCollectionParametersRequest, DefaultOperationResponse>(
             url,

@@ -4,6 +4,8 @@ using System.Text.Json;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters.Conditions;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
+using Aer.QdrantClient.Http.Filters.Optimization;
+using Aer.QdrantClient.Http.Filters.Optimization.Abstractions;
 
 namespace Aer.QdrantClient.Http.Filters;
 
@@ -220,6 +222,9 @@ public sealed class QdrantFilter
             return;
         }
 
+        // TODO: implement optimization
+        //Optimize();
+        
         jsonWriter.WriteStartObject();
 
         foreach (var condition in _conditions)
@@ -228,5 +233,18 @@ public sealed class QdrantFilter
         }
 
         jsonWriter.WriteEndObject();
+    }
+
+    /// <summary>
+    /// Analyzes the existing filter conditions and attempts to rewrite them in more optimal way.
+    /// </summary>
+    internal void Optimize()
+    {
+        ConditionOptimizationVisitor conditionOptimizationVisitor = new ConditionOptimizationVisitor();
+        
+        foreach (var filterCondition in _conditions)
+        {
+            conditionOptimizationVisitor.Visit(filterCondition);
+        }
     }
 }

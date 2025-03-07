@@ -13,17 +13,6 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class UpdateCollectionParametersRequest
 {
-    /// <summary>
-    /// Used to issue an empty update collection parameters request.
-    /// As per documentation https://qdrant.tech/documentation/concepts/collections/#grey-collection-status
-    /// this should be done to trigger grey collection optimizers. 
-    /// </summary>
-    internal static string EmptyRequestBody = """
-    {
-        "optimizers_config": {}
-    }
-    """;
-    
     #region Nested classes
 
     /// <summary>
@@ -58,6 +47,26 @@ public sealed class UpdateCollectionParametersRequest
     }
 
     #endregion
+    
+    internal bool IsEmpty { private init; get; }
+
+    /// <summary>
+    /// Used to issue an empty update collection parameters request.
+    /// As per documentation https://qdrant.tech/documentation/concepts/collections/#grey-collection-status
+    /// this should be done to trigger <see cref="QdrantCollectionStatus.Grey"/> status collection optimizers. 
+    /// </summary>
+    internal static string EmptyRequestBody { get; } = """
+        {
+            "optimizers_config": {}
+        }
+        """;
+
+    /// <summary>
+    /// Represents an empty update collection parameters request.
+    /// As per documentation https://qdrant.tech/documentation/concepts/collections/#grey-collection-status such
+    /// request should be issued to trigger optimizers for collections in <see cref="QdrantCollectionStatus.Grey"/> status.
+    /// </summary>
+    public static UpdateCollectionParametersRequest Empty { get; } = new() {IsEmpty = true};
 
     /// <summary>
     /// The dense vector configuration to update.

@@ -532,9 +532,53 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task TestUpdateCollectionParameters_EmptyRequest()
+    {
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                OptimizersConfig = new OptimizersConfiguration()
+                {
+                    MemmapThreshold = 1000,
+                    MaxOptimizationThreads = 1,
+                    IndexingThreshold = 1
+                },
+                HnswConfig = new HnswConfiguration()
+                {
+                    MaxIndexingThreads = 1
+                }
+            },
+            CancellationToken.None);
+
+        var triggerCollectionOptimizersResult = await _qdrantHttpClient.UpdateCollectionParameters(
+            TestCollectionName,
+            UpdateCollectionParametersRequest.Empty,
+            CancellationToken.None);
+
+        var updatedCollectionInfo =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        triggerCollectionOptimizersResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        triggerCollectionOptimizersResult.Status.IsSuccess.Should().BeTrue();
+
+        triggerCollectionOptimizersResult.Result.Should().NotBeNull();
+
+        updatedCollectionInfo.Result.Status.Should().Be(QdrantCollectionStatus.Green);
+        updatedCollectionInfo.Result.OptimizerStatus.IsOk.Should().BeTrue();
+
+        // Collection parameters should not change
+
+        updatedCollectionInfo.Result.Config.OptimizerConfig.IndexingThreshold.Should().Be(1);
+        updatedCollectionInfo.Result.Config.OptimizerConfig.MaxOptimizationThreads.Should().Be(1);
+        updatedCollectionInfo.Result.Config.OptimizerConfig.MemmapThreshold.Should().Be(1000);
+        updatedCollectionInfo.Result.Config.HnswConfig.MaxIndexingThreads.Should().Be(1);
+    }
+
+    [Test]
     public async Task TestUpdateCollectionParameters()
     {
-        // create collection first
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
@@ -607,7 +651,6 @@ public class CollectionParametersTests : QdrantTestsBase
     [Test]
     public async Task TestTriggerCollectionOptimizers()
     {
-        // create collection first
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
