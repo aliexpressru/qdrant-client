@@ -39,7 +39,7 @@ internal class ReflectionHelperTests
         var payloadMemberName =
             ReflectionHelper.GetPayloadFieldName((TestComplexPayload t) => t.Array);
         
-        payloadMemberName.Should().Be("array[]");
+        payloadMemberName.Should().Be("array");
     }
 
     [Test]
@@ -49,5 +49,23 @@ internal class ReflectionHelperTests
             ReflectionHelper.GetPayloadFieldName((TestComplexPayload t) => t.NestedArray[0].Name);
         
         payloadMemberName.Should().Be("nested_array[].name");
+    }
+
+    [Test]
+    public void GetNestedArrayPropertyName_DoublyNested()
+    {
+        var payloadMemberName =
+            ReflectionHelper.GetPayloadFieldName((TestComplexPayload t) => t.NestedArray[0].NestedNestedArray);
+
+        payloadMemberName.Should().Be("nested_array[].nested_nested_array");
+    }
+
+    [Test]
+    public void GetNestedInArrayPropertyName_DoublyNested()
+    {
+        var payloadMemberName =
+            ReflectionHelper.GetPayloadFieldName((TestComplexPayload t) => t.NestedArray[0].NestedNestedArray[0].Name);
+
+        payloadMemberName.Should().Be("nested_array[].nested_nested_array[].name");
     }
 }

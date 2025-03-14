@@ -106,7 +106,7 @@ public sealed class QdrantFilter
 
         QdrantFilter ret = new()
         {
-            _rawFilterString = filter
+            _rawFilterString = filter.ReplaceLineEndings()
         };
 
         return ret;

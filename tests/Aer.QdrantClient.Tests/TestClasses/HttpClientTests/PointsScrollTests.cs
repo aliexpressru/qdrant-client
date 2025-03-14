@@ -267,6 +267,8 @@ internal class PointsScrollTests : QdrantTestsBase
             Q.Must(
                 Q<TestComplexPayload>.MatchValue(p => p.StringArray, "c")
                 & Q<TestComplexPayload>.MatchValue(p => p.Array, 3)
+                // this condition is here to test ReflectionHelper's ability to reflect correct array names
+                & Q<TestComplexPayload>.HaveValuesCount(p => p.Array, greaterThanOrEqual: 3)
             ),
             PayloadPropertiesSelector.All,
             CancellationToken.None,

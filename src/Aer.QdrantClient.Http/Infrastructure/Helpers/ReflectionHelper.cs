@@ -50,7 +50,8 @@ internal static class ReflectionHelper
     /// <param name="propertyNamesCallChain">The output names in calling order from first to last.</param>
     private static void CollectPropertyNamesFromCallChain(
         MemberExpression expression,
-        List<string> propertyNamesCallChain)
+        List<string> propertyNamesCallChain,
+        bool isIndexer = false)
     {
         switch (expression.Expression)
         {
@@ -71,9 +72,9 @@ internal static class ReflectionHelper
             {
                 // means that expression higher in the call chain is another property name call with indexer access
 
-                CollectPropertyNamesFromCallChain((MemberExpression)arrayCallExpression.Left, propertyNamesCallChain);
+                CollectPropertyNamesFromCallChain((MemberExpression)arrayCallExpression.Left, propertyNamesCallChain, isIndexer : true);
 
-                var jsonObjectPropertyName = ReflectMemberName(expression.Member);
+                var jsonObjectPropertyName = ReflectMemberName(expression.Member, isIndexer);
 
                 propertyNamesCallChain.Add(jsonObjectPropertyName);
 
@@ -83,7 +84,7 @@ internal static class ReflectionHelper
             default:
             {
                 // means that expression higher in the call chain is either null or of some other type : recursion exit condition
-                var jsonObjectPropertyName = ReflectMemberName(expression.Member);
+                var jsonObjectPropertyName = ReflectMemberName(expression.Member, shouldAddArrayBrackets: isIndexer);
 
                 propertyNamesCallChain.Add(jsonObjectPropertyName);
                 return;
@@ -91,7 +92,7 @@ internal static class ReflectionHelper
         }
     }
 
-    private static string ReflectMemberName(MemberInfo targetMember)
+    private static string ReflectMemberName(MemberInfo targetMember, bool shouldAddArrayBrackets = false)
     {
         if (targetMember is not PropertyInfo propertyInfo)
         {
@@ -113,8 +114,9 @@ internal static class ReflectionHelper
             propertyInfo.Name
         );
 
-        if (propertyInfo.PropertyType.IsArray
-            || _collectionType.IsAssignableFrom(propertyInfo.PropertyType))
+        if (shouldAddArrayBrackets &&
+            (propertyInfo.PropertyType.IsArray
+                || _collectionType.IsAssignableFrom(propertyInfo.PropertyType)))
         {
             // means type is either an array or a collection - (array in json), we need to add [] to the property name
             reflectedJsonName += "[]";

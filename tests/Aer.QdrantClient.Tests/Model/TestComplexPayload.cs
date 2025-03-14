@@ -31,5 +31,14 @@ internal class TestComplexPayload : Payload
         public double Double { set; get; }
 
         public int Integer { get; set; }
+        
+        public NestedNestedClass[] NestedNestedArray { get; set; }
+    }
+
+    public class NestedNestedClass
+    {
+        public string Name { get; set; }
+
+        public double Double { set; get; }
     }
 }

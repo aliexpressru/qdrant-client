@@ -1589,24 +1589,24 @@ internal class QdrantFilterTests
     [Test]
     public void TestQdrantFilter_Should_Use_Raw_Filter_String_As_Is()
     {
-        var expectedFilter = """
-                             {
-                               "must": [
-                                 {
-                                   "key": "integer",
-                                   "match": {
-                                     "value": 123
-                                   }
-                                 },
-                                 {
-                                   "key": "text",
-                                   "match": {
-                                     "value": "test_value"
-                                   }
-                                 }
-                               ]
-                             }
-                             """;
+      var expectedFilter = """
+        {
+          "must": [
+            {
+              "key": "integer",
+              "match": {
+                "value": 123
+              }
+            },
+            {
+              "key": "text",
+              "match": {
+                "value": "test_value"
+              }
+            }
+          ]
+        }
+        """;
 
         var filter = QdrantFilter.Create(expectedFilter);
         var filterString = filter.ToString();
@@ -1618,24 +1618,24 @@ internal class QdrantFilterTests
     [Test]
     public void TestQdrantFilter_Should_Throw_Exception_If_Condition_Is_Added_When_Use_Raw_Filter_String()
     {
-        var expectedFilter = """
-                             {
-                               "must": [
-                                 {
-                                   "key": "integer",
-                                   "match": {
-                                     "value": 123
-                                   }
-                                 },
-                                 {
-                                   "key": "text",
-                                   "match": {
-                                     "value": "test_value"
-                                   }
-                                 }
-                               ]
-                             }
-                             """;
+      var expectedFilter = """
+        {
+          "must": [
+            {
+              "key": "integer",
+              "match": {
+                "value": 123
+              }
+            },
+            {
+              "key": "text",
+              "match": {
+                "value": "test_value"
+              }
+            }
+          ]
+        }
+        """;
 
         var filter = QdrantFilter.Create(expectedFilter);
 
