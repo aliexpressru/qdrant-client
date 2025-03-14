@@ -97,9 +97,13 @@ public class PointsQueryTests : QdrantTestsBase
         nearestPointsByVectorResponse.Result.Points.Should().AllSatisfy(
             p => p.Score.Should().BeGreaterThan(0)
         );
-        
-        nearestPointsByVectorResponse.Usage.Cpu.Should().BeGreaterThan(0);
-        nearestPointsByVectorResponse.Usage.PayloadIoRead.Should().BeGreaterThan(0);
+
+        if (!IsCiEnvironment)
+        {
+            // CI environment container does not have usage statistics enabled
+            nearestPointsByVectorResponse.Usage.Cpu.Should().BeGreaterThan(0);
+            nearestPointsByVectorResponse.Usage.PayloadIoRead.Should().BeGreaterThan(0);
+        }
     }
 
     [Test]

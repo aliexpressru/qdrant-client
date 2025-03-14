@@ -878,14 +878,22 @@ internal class PointsCrudTests : QdrantTestsBase
             .BeOneOf(QdrantOperationStatus.Completed);
         
         // Upsert operations do not report statistics
-        upsertPointsResult.Usage.PayloadIoWrite.Should().Be(0);
-        upsertPointsResult.Usage.VectorIoWrite.Should().Be(0);
+        if (!IsCiEnvironment)
+        {
+            // CI environment container does not have usage statistics enabled
+            upsertPointsResult.Usage.PayloadIoWrite.Should().Be(0);
+            upsertPointsResult.Usage.VectorIoWrite.Should().Be(0);
+        }
 
         readPointsResult.Status.IsSuccess.Should().BeTrue();
         readPointsResult.Result.Length.Should().Be(vectorCount);
-        
-        readPointsResult.Usage.PayloadIoRead.Should().BeGreaterThan(0);
-        readPointsResult.Usage.VectorIoRead.Should().BeGreaterThan(0);
+
+        if (!IsCiEnvironment)
+        {
+            // CI environment container does not have usage statistics enabled
+            readPointsResult.Usage.PayloadIoRead.Should().BeGreaterThan(0);
+            readPointsResult.Usage.VectorIoRead.Should().BeGreaterThan(0);
+        }
 
         foreach (var readPoint in readPointsResult.Result)
         {
