@@ -104,6 +104,10 @@ public class PointsQueryTests : QdrantTestsBase
             nearestPointsByVectorResponse.Usage.Cpu.Should().BeGreaterThan(0);
             nearestPointsByVectorResponse.Usage.PayloadIoRead.Should().BeGreaterThan(0);
         }
+        else
+        {
+            nearestPointsByVectorResponse.Usage.Should().BeNull();
+        }
     }
 
     [Test]

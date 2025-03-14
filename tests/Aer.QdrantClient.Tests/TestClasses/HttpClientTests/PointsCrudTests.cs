@@ -884,6 +884,10 @@ internal class PointsCrudTests : QdrantTestsBase
             upsertPointsResult.Usage.PayloadIoWrite.Should().Be(0);
             upsertPointsResult.Usage.VectorIoWrite.Should().Be(0);
         }
+        else
+        {
+            upsertPointsResult.Usage.Should().BeNull();
+        }
 
         readPointsResult.Status.IsSuccess.Should().BeTrue();
         readPointsResult.Result.Length.Should().Be(vectorCount);
@@ -893,6 +897,10 @@ internal class PointsCrudTests : QdrantTestsBase
             // CI environment container does not have usage statistics enabled
             readPointsResult.Usage.PayloadIoRead.Should().BeGreaterThan(0);
             readPointsResult.Usage.VectorIoRead.Should().BeGreaterThan(0);
+        }
+        else
+        {
+            readPointsResult.Usage.Should().BeNull();
         }
 
         foreach (var readPoint in readPointsResult.Result)
