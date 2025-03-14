@@ -3,6 +3,7 @@ using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -678,5 +679,107 @@ internal class PointsScrollTests : QdrantTestsBase
 
             previousDateTime = readPointPayload.DateTimeValue!.Value;
         }
+    }
+
+    [Test]
+    public async Task ScrollPoints_NamedVectors()
+    {
+        Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration> namedVectors = new()
+        {
+            ["Vector_1"] = new VectorConfigurationBase.SingleVectorConfiguration(
+                VectorDistanceMetric.Dot,
+                100,
+                isServeVectorsFromDisk: true),
+            ["Vector_2"] = new VectorConfigurationBase.SingleVectorConfiguration(
+                VectorDistanceMetric.Euclid,
+                5,
+                isServeVectorsFromDisk: false),
+            ["Vector_3"] = new VectorConfigurationBase.SingleVectorConfiguration(
+                VectorDistanceMetric.Cosine,
+                50,
+                isServeVectorsFromDisk: true),
+        };
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(namedVectors)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        UpsertPointsRequest<TestPayload>.UpsertPoint firstPoint =
+            new(
+                id: 1,
+                vector: new NamedVectors()
+                {
+                    Vectors = new Dictionary<string, VectorBase>()
+                    {
+                        // here and further on float[] will be implicitly converted to Vector
+                        ["Vector_1"] = CreateTestVector(100U),
+                        ["Vector_2"] = CreateTestVector(5U),
+                        ["Vector_3"] = CreateTestVector(50U),
+                    }
+                },
+                payload: 1);
+
+        UpsertPointsRequest<TestPayload>.UpsertPoint secondPoint = new(
+            id: 2,
+            vector: new NamedVectors()
+            {
+                Vectors = new Dictionary<string, VectorBase>()
+                {
+                    ["Vector_2"] = CreateTestVector(5U),
+                    ["Vector_3"] = CreateTestVector(50U),
+                }
+            },
+            payload: 2);
+
+        UpsertPointsRequest<TestPayload>.UpsertPoint thirdPoint = new(
+            id: 3,
+            vector: new NamedVectors()
+            {
+                Vectors = new Dictionary<string, VectorBase>()
+                {
+                    ["Vector_1"] = CreateTestVector(100U),
+                }
+            },
+            payload: 3);
+
+        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+        {
+            firstPoint,
+            secondPoint,
+            thirdPoint
+        };
+        
+        var upsertPointsResult = await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest<TestPayload>()
+            {
+                Points = upsertPoints
+            },
+            CancellationToken.None);
+
+        upsertPointsResult.EnsureSuccess();
+
+        var scrollPointsResponse =
+            await _qdrantHttpClient.ScrollPoints(
+                TestCollectionName,
+                filter: Q.HasNamedVector("Vector_1"),
+                withPayload: true,
+                CancellationToken.None);
+
+        scrollPointsResponse.Status.IsSuccess.Should().BeTrue();
+
+        scrollPointsResponse.Result.Points.Length.Should().Be(2); // only two points of three have "Vector_1" named vector
+
+        var foundPointIds = 
+            scrollPointsResponse.Result.Points.Select(p => p.Id.AsInteger()).ToHashSet();
+        
+        foundPointIds.Should().Contain(1);
+        foundPointIds.Should().Contain(3);
     }
 }

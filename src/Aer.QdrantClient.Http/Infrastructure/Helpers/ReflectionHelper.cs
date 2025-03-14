@@ -21,7 +21,7 @@ internal static class ReflectionHelper
         Expression<Func<TPayload, TProperty>> payloadMemberSelectorExpression)
     {
         if (payloadMemberSelectorExpression.Body
-            is MemberExpression { Member: PropertyInfo } expressionBody)
+            is MemberExpression {Member: PropertyInfo} expressionBody)
         {
             var namesCallChain = new List<string>();
 
@@ -45,9 +45,11 @@ internal static class ReflectionHelper
     /// </summary>
     /// <param name="expression">The expression to collect property names from.</param>
     /// <param name="propertyNamesCallChain">The output names in calling order from first to last.</param>
-    private static void CollectPropertyNamesFromCallChain(MemberExpression expression, List<string> propertyNamesCallChain)
+    private static void CollectPropertyNamesFromCallChain(
+        MemberExpression expression,
+        List<string> propertyNamesCallChain)
     {
-        if (expression.Expression is not MemberExpression { Member: PropertyInfo } memberExpression)
+        if (expression.Expression is not MemberExpression {Member: PropertyInfo} memberExpression)
         {
             // means that expression higher in the call chain is either null or of some other type : recursion exit condition
             var jsonObjectPropertyName = ReflectPropertyName(expression.Member);
@@ -56,7 +58,7 @@ internal static class ReflectionHelper
             return;
         }
 
-        if (memberExpression is { Member: PropertyInfo })
+        if (memberExpression is {Member: PropertyInfo})
         {
             // means that expression higher in the call chain is another property name call
 

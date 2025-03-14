@@ -132,9 +132,9 @@ public static class Q
     /// If several values are stored, at least one of them should match the condition.
     /// </summary>
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
-    /// <param name="lessThan">Value that palyload value must be less than.</param>
-    /// <param name="lessThanOrEqual">Value that palyload value must be less than or equal.</param>
-    /// <param name="greaterThan">Value that palyload value must be greater than.</param>
+    /// <param name="lessThan">Value that payload value must be less than.</param>
+    /// <param name="lessThanOrEqual">Value that payload value must be less than or equal.</param>
+    /// <param name="greaterThan">Value that payload value must be greater than.</param>
     /// <param name="greaterThanOrEqual">Value that payload value must be greater than or equal.</param>
     public static FilterConditionBase BeInRange(
         string payloadFieldName,
@@ -142,21 +142,22 @@ public static class Q
         int? lessThanOrEqual = null,
         int? greaterThan = null,
         int? greaterThanOrEqual = null)
-        => new FieldRangeIntCondition(
-            payloadFieldName,
-            lessThan,
-            lessThanOrEqual,
-            greaterThan,
-            greaterThanOrEqual);
+        =>
+            new FieldRangeIntCondition(
+                payloadFieldName,
+                lessThan,
+                lessThanOrEqual,
+                greaterThan,
+                greaterThanOrEqual);
 
     /// <summary>
     /// Check if payload field value lies in a given range.
     /// If several values are stored, at least one of them should match the condition.
     /// </summary>
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
-    /// <param name="lessThan">Value that palyload value must be less than.</param>
-    /// <param name="lessThanOrEqual">Value that palyload value must be less than or equal.</param>
-    /// <param name="greaterThan">Value that palyload value must be greater than.</param>
+    /// <param name="lessThan">Value that payload value must be less than.</param>
+    /// <param name="lessThanOrEqual">Value that payload value must be less than or equal.</param>
+    /// <param name="greaterThan">Value that payload value must be greater than.</param>
     /// <param name="greaterThanOrEqual">Value that payload value must be greater than or equal.</param>
     public static FilterConditionBase BeInRange(
         string payloadFieldName,
@@ -164,21 +165,22 @@ public static class Q
         double? lessThanOrEqual = null,
         double? greaterThan = null,
         double? greaterThanOrEqual = null)
-        => new FieldRangeDoubleCondition(
-            payloadFieldName,
-            lessThan,
-            lessThanOrEqual,
-            greaterThan,
-            greaterThanOrEqual);
+        =>
+            new FieldRangeDoubleCondition(
+                payloadFieldName,
+                lessThan,
+                lessThanOrEqual,
+                greaterThan,
+                greaterThanOrEqual);
 
     /// <summary>
     /// Check if payload field value lies in a given range.
     /// If several values are stored, at least one of them should match the condition.
     /// </summary>
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
-    /// <param name="lessThan">Value that palyload value must be less than.</param>
-    /// <param name="lessThanOrEqual">Value that palyload value must be less than or equal.</param>
-    /// <param name="greaterThan">Value that palyload value must be greater than.</param>
+    /// <param name="lessThan">Value that payload value must be less than.</param>
+    /// <param name="lessThanOrEqual">Value that payload value must be less than or equal.</param>
+    /// <param name="greaterThan">Value that payload value must be greater than.</param>
     /// <param name="greaterThanOrEqual">Value that payload value must be greater than or equal.</param>
     public static FilterConditionBase BeInRange(
         string payloadFieldName,
@@ -186,21 +188,22 @@ public static class Q
         DateTime? lessThanOrEqual = null,
         DateTime? greaterThan = null,
         DateTime? greaterThanOrEqual = null)
-        => new FieldRangeDateTimeCondition(
-            payloadFieldName,
-            lessThan,
-            lessThanOrEqual,
-            greaterThan,
-            greaterThanOrEqual);
+        =>
+            new FieldRangeDateTimeCondition(
+                payloadFieldName,
+                lessThan,
+                lessThanOrEqual,
+                greaterThan,
+                greaterThanOrEqual);
 
     /// <summary>
-    /// Check number of values of the payload agains the range of possible integer values.
+    /// Check number of values of the payload against the range of possible integer values.
     /// </summary>
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
-    /// <param name="lessThan">Count that palyload values count must be less than.</param>
-    /// <param name="lessThanOrEqual">Count that palyload values count must be less than or equal.</param>
-    /// <param name="greaterThan">Count that palyload values count must be greater than.</param>
-    /// <param name="greaterThanOrEqual">Count that palyload values count must be greater than or equal.</param>
+    /// <param name="lessThan">Count that payload values count must be less than.</param>
+    /// <param name="lessThanOrEqual">Count that payload values count must be less than or equal.</param>
+    /// <param name="greaterThan">Count that payload values count must be greater than.</param>
+    /// <param name="greaterThanOrEqual">Count that payload values count must be greater than or equal.</param>
     /// <remarks>
     /// If value stored under the <paramref name="payloadFieldName"/> payload field is not an array - it is assumed
     /// that the amount of values is equals to 1.
@@ -211,19 +214,20 @@ public static class Q
         int? lessThanOrEqual = null,
         int? greaterThan = null,
         int? greaterThanOrEqual = null)
-        => new FieldValuesCountCondition(
-            payloadFieldName,
-            lessThan,
-            lessThanOrEqual,
-            greaterThan,
-            greaterThanOrEqual);
+        =>
+            new FieldValuesCountCondition(
+                payloadFieldName,
+                lessThan,
+                lessThanOrEqual,
+                greaterThan,
+                greaterThanOrEqual);
 
     /// <summary>
     /// Check if the specified payload field either does not exist, or has <c>null</c> or empty array <c>[]</c> value.
     /// </summary>
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
-    public static FilterConditionBase BeNullOrEmpty(string payloadFieldName)
-        => new FieldIsNullOrEmptyCondition(payloadFieldName);
+    public static FilterConditionBase BeNullOrEmpty(string payloadFieldName) =>
+        new FieldIsNullOrEmptyCondition(payloadFieldName);
 
     /// <summary>
     /// Check if the specified payload field has <c>null</c> value.
@@ -289,13 +293,13 @@ public static class Q
         => new HasAnyIdCondition(ids);
 
     /// <summary>
-    /// Check if points geo location lies in a given area designated by a binding box.
+    /// Check if points geolocation lies in a given area designated by a binding box.
     /// These conditions can only be applied to payloads that match the geo-data format.
     /// </summary>
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
-    /// <param name="topLeftLongitude">Area bounding box top left longtitude.</param>
+    /// <param name="topLeftLongitude">Area bounding box top left longitude.</param>
     /// <param name="topLeftLatitude">Area bounding box top left latitude.</param>
-    /// <param name="bottomRightLongitude">Area bounding box bottom right longtitude.</param>
+    /// <param name="bottomRightLongitude">Area bounding box bottom right longitude.</param>
     /// <param name="bottomRightLatitude">Area bounding box bottom right latitude.</param>
     public static FilterConditionBase BeWithinGeoBoundingBox(
         string payloadFieldName,
@@ -303,19 +307,20 @@ public static class Q
         double topLeftLatitude,
         double bottomRightLongitude,
         double bottomRightLatitude)
-        => new FieldInGeoBoundingBoxCondition(
-            payloadFieldName,
-            topLeftLongitude,
-            topLeftLatitude,
-            bottomRightLongitude,
-            bottomRightLatitude);
+        =>
+            new FieldInGeoBoundingBoxCondition(
+                payloadFieldName,
+                topLeftLongitude,
+                topLeftLatitude,
+                bottomRightLongitude,
+                bottomRightLatitude);
 
     /// <summary>
     /// Check if geo point is within an area with a given radius.
     /// These conditions can only be applied to payloads that match the geo-data format.
     /// </summary>
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
-    /// <param name="centerLongitude">Area center longtitude.</param>
+    /// <param name="centerLongitude">Area center longitude.</param>
     /// <param name="centerLatitude">Area center latitude.</param>
     /// <param name="radius">Radius of the area in meters.</param>
     public static FilterConditionBase BeWithinGeoRadius(
@@ -323,11 +328,12 @@ public static class Q
         double centerLongitude,
         double centerLatitude,
         double radius)
-        => new FieldInGeoRadiusCondition(
-            payloadFieldName,
-            centerLongitude,
-            centerLatitude,
-            radius);
+        =>
+            new FieldInGeoRadiusCondition(
+                payloadFieldName,
+                centerLongitude,
+                centerLatitude,
+                radius);
 
     /// <summary>
     /// Check if geo point is within an area defined by the given <paramref name="exteriorPolygonPoints"/> points
@@ -344,10 +350,11 @@ public static class Q
         string payloadFieldName,
         IEnumerable<GeoPoint> exteriorPolygonPoints,
         params IEnumerable<GeoPoint>[] interiorPolygonsPoints)
-        => new FieldInGeoPolygonCondition(
-            payloadFieldName,
-            exteriorPolygonPoints,
-            interiorPolygonsPoints);
+        =>
+            new FieldInGeoPolygonCondition(
+                payloadFieldName,
+                exteriorPolygonPoints,
+                interiorPolygonsPoints);
 
     /// <summary>
     /// Check if specified payload field value satisfies all the nested conditions.
@@ -356,13 +363,11 @@ public static class Q
     /// <param name="conditions">Conditions that must be satisfied.</param>
     public static FilterConditionBase SatisfyNested(
         string payloadFieldName,
-        params FilterConditionBase[] conditions
-    )
-    {
-        return new NestedCondition(
-            payloadFieldName,
-            conditions);
-    }
+        params FilterConditionBase[] conditions)
+        =>
+            new NestedCondition(
+                payloadFieldName,
+                conditions);
 
     /// <summary>
     /// Check if specified payload field value satisfies all the nested conditions.
@@ -371,11 +376,17 @@ public static class Q
     /// <param name="conditions">Conditions that must be satisfied.</param>
     public static FilterConditionBase SatisfyNested(
         string payloadFieldName,
-        IEnumerable<FilterConditionBase> conditions
-    )
-    {
-        return new NestedCondition(
-            payloadFieldName,
-            conditions);
-    }
+        IEnumerable<FilterConditionBase> conditions)
+        =>
+            new NestedCondition(
+                payloadFieldName,
+                conditions);
+
+    /// <summary>
+    /// Check if point has a specified named vector.
+    /// </summary>
+    /// <param name="namedVectorName">Name of the named vector to check.</param>
+    public static FilterConditionBase HasNamedVector(string namedVectorName)
+        => new HasNamedVectorCondition(namedVectorName);
+
 }
