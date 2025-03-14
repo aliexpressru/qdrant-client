@@ -34,7 +34,16 @@ public sealed class QdrantFilter
     /// </summary>
     public static QdrantFilter Create(FilterConditionBase singleCondition)
     {
+        
+#if NETSTANDARD2_1
+        if (singleCondition is null)
+        { 
+            throw new ArgumentNullException(nameof(singleCondition));
+        }
+#else
         ArgumentNullException.ThrowIfNull(singleCondition);
+#endif
+        
 
         QdrantFilter ret = new();
 
@@ -102,11 +111,24 @@ public sealed class QdrantFilter
     /// </summary>
     public static QdrantFilter Create(string filter)
     {
+        
+#if NETSTANDARD2_1
+        if (string.IsNullOrWhiteSpace(filter))
+        {
+            throw new ArgumentNullException(nameof(filter));
+        }
+#else
         ArgumentException.ThrowIfNullOrWhiteSpace(filter);
-
+#endif
+        
         QdrantFilter ret = new()
         {
+
+#if NETSTANDARD2_1
+            _rawFilterString = filter
+#else
             _rawFilterString = filter.ReplaceLineEndings()
+#endif
         };
 
         return ret;
@@ -187,9 +209,13 @@ public sealed class QdrantFilter
 
         jsonWriter.Flush();
 
+#if NETSTANDARD2_1
+        var builtFilter = Encoding.UTF8.GetString(stream.ToArray());
+#else
         var builtFilter = Encoding.UTF8.GetString(stream.ToArray())
             .ReplaceLineEndings();
-
+#endif
+        
         return builtFilter;
     }
 

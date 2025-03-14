@@ -21,8 +21,14 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         TimeSpan? timeout = null)
     {
+#if NETSTANDARD2_1
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+#else
         ArgumentNullException.ThrowIfNull(request);
-
+#endif
         EnsureQdrantNameCorrect(collectionName);
 
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
