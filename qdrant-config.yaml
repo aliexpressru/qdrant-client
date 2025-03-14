@@ -341,7 +341,6 @@ cluster:
 # Read more: https://qdrant.tech/documentation/guides/telemetry
 telemetry_disabled: true
 
-
 # TLS configuration.
 # Required if either service.enable_tls or cluster.p2p.enable_tls is true.
 tls:
@@ -365,4 +364,3 @@ tls:
   # Only works for HTTPS endpoints. Does not support gRPC (and intra-cluster communication).
   # If `null` - TTL is disabled.
   cert_ttl: 3600
-

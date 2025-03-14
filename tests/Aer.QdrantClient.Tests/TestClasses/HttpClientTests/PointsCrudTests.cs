@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text.Json.Nodes;
 using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Exceptions;
@@ -877,9 +876,16 @@ internal class PointsCrudTests : QdrantTestsBase
         upsertPointsResult.Status.IsSuccess.Should().BeTrue();
         upsertPointsResult.Result.Status.Should()
             .BeOneOf(QdrantOperationStatus.Completed);
+        
+        // Upsert operations do not report statistics
+        upsertPointsResult.Usage.PayloadIoWrite.Should().Be(0);
+        upsertPointsResult.Usage.VectorIoWrite.Should().Be(0);
 
         readPointsResult.Status.IsSuccess.Should().BeTrue();
         readPointsResult.Result.Length.Should().Be(vectorCount);
+        
+        readPointsResult.Usage.PayloadIoRead.Should().BeGreaterThan(0);
+        readPointsResult.Usage.VectorIoRead.Should().BeGreaterThan(0);
 
         foreach (var readPoint in readPointsResult.Result)
         {

@@ -5,7 +5,6 @@ using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters.Conditions;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 using Aer.QdrantClient.Http.Filters.Optimization;
-using Aer.QdrantClient.Http.Filters.Optimization.Abstractions;
 
 namespace Aer.QdrantClient.Http.Filters;
 

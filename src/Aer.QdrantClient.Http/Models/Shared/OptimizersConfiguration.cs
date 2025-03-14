@@ -1,12 +1,13 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
-/// The optimizers configuration.
+/// The optimizer configuration.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class OptimizersConfiguration
 {
     /// <summary>
@@ -24,7 +25,16 @@ public class OptimizersConfiguration
     /// depending on multiple parameters: - Amount of stored points - Current write RPS
     /// It is recommended to select default number of segments as a factor of the number
     /// of search threads, so that each segment would be handled evenly by one of the
-    /// threads If default_segment_number = 0, will be automatically selected by the number of available CPUs
+    /// threads If default_segment_number = 0, will be automatically selected by the number of available CPUs.
+    ///
+    /// To maximize throughput, configure Qdrant to use as many cores as possible to process multiple requests in parallel.
+    /// To do that, use fewer segments(usually 2) to handle more requests in parallel.
+    /// Large segments benefit from the size of the index and overall smaller number of vector comparisons required to
+    /// find the nearest neighbors.However, they will require more time to build the HNSW index.
+    ///
+    /// To minimize latency, you can set up Qdrant to use as many cores as possible for a single request.
+    /// You can do this by setting the number of segments in the collection to be equal to the number of cores in the system.
+    /// In this case, each segment will be processed in parallel, and the final result will be obtained faster.
     /// </summary>
     public ulong? DefaultSegmentNumber { set; get; }
 
