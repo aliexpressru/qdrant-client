@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json.Serialization;
@@ -11,6 +12,8 @@ namespace Aer.QdrantClient.Http.Infrastructure.Helpers;
 /// </summary>
 internal static class ReflectionHelper
 {
+    private static readonly Type _collectionType = typeof(ICollection);
+    
     /// <summary>
     /// Gets the JSON property name for the property specified in selector expression.
     /// </summary>
@@ -49,28 +52,46 @@ internal static class ReflectionHelper
         MemberExpression expression,
         List<string> propertyNamesCallChain)
     {
-        if (expression.Expression is not MemberExpression {Member: PropertyInfo} memberExpression)
+        switch (expression.Expression)
         {
-            // means that expression higher in the call chain is either null or of some other type : recursion exit condition
-            var jsonObjectPropertyName = ReflectPropertyName(expression.Member);
+            case MemberExpression {Member: PropertyInfo} memberExpression:
+            {
+                // means that expression higher in the call chain is another property name call
 
-            propertyNamesCallChain.Add(jsonObjectPropertyName);
-            return;
-        }
+                CollectPropertyNamesFromCallChain(memberExpression, propertyNamesCallChain);
 
-        if (memberExpression is {Member: PropertyInfo})
-        {
-            // means that expression higher in the call chain is another property name call
+                var jsonObjectPropertyName = ReflectMemberName(expression.Member);
 
-            CollectPropertyNamesFromCallChain(memberExpression, propertyNamesCallChain);
+                propertyNamesCallChain.Add(jsonObjectPropertyName);
 
-            var jsonObjectPropertyName = ReflectPropertyName(expression.Member);
+                break;
+            }
 
-            propertyNamesCallChain.Add(jsonObjectPropertyName);
+            case BinaryExpression {NodeType: ExpressionType.ArrayIndex} arrayCallExpression:
+            {
+                // means that expression higher in the call chain is another property name call with indexer access
+
+                CollectPropertyNamesFromCallChain((MemberExpression)arrayCallExpression.Left, propertyNamesCallChain);
+
+                var jsonObjectPropertyName = ReflectMemberName(expression.Member);
+
+                propertyNamesCallChain.Add(jsonObjectPropertyName);
+
+                break;
+            }
+            
+            default:
+            {
+                // means that expression higher in the call chain is either null or of some other type : recursion exit condition
+                var jsonObjectPropertyName = ReflectMemberName(expression.Member);
+
+                propertyNamesCallChain.Add(jsonObjectPropertyName);
+                return;
+            }
         }
     }
 
-    private static string ReflectPropertyName(MemberInfo targetMember)
+    private static string ReflectMemberName(MemberInfo targetMember)
     {
         if (targetMember is not PropertyInfo propertyInfo)
         {
@@ -88,8 +109,17 @@ internal static class ReflectionHelper
             );
         }
 
-        return JsonSerializerConstants.NamingStrategy.ConvertName(
+        var reflectedJsonName = JsonSerializerConstants.NamingStrategy.ConvertName(
             propertyInfo.Name
         );
+
+        if (propertyInfo.PropertyType.IsArray
+            || _collectionType.IsAssignableFrom(propertyInfo.PropertyType))
+        {
+            // means type is either an array or a collection - (array in json), we need to add [] to the property name
+            reflectedJsonName += "[]";
+        }
+
+        return reflectedJsonName;
     }
 }

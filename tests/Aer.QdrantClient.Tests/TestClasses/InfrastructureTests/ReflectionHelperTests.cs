@@ -6,30 +6,48 @@ namespace Aer.QdrantClient.Tests.TestClasses.InfrastructureTests;
 internal class ReflectionHelperTests
 {
     [Test]
-    public void TestReflectionHelper_GetSimpleSingleWordNameProperty()
+    public void GetSimpleSingleWordNameProperty()
     {
         var payloadMemberName = ReflectionHelper.GetPayloadFieldName((TestComplexPayload t)=>t.Text);
         payloadMemberName.Should().Be("text");
     }
 
     [Test]
-    public void TestReflectionHelper_GetSimpleMultiWordNameProperty()
+    public void GetSimpleMultiWordNameProperty()
     {
         var payloadMemberName = ReflectionHelper.GetPayloadFieldName((TestComplexPayload t) => t.IntProperty);
         payloadMemberName.Should().Be("int_property");
     }
 
     [Test]
-    public void TestReflectionHelper_GetNestedSimpleMultiWordNameProperty()
+    public void GetNestedSimpleMultiWordNameProperty()
     {
         var payloadMemberName = ReflectionHelper.GetPayloadFieldName((TestComplexPayload t) => t.Nested.Name);
         payloadMemberName.Should().Be("nested.name");
     }
 
     [Test]
-    public void TestReflectionHelper_GetOverriddenPropertyName()
+    public void GetOverriddenPropertyName()
     {
         var payloadMemberName = ReflectionHelper.GetPayloadFieldName((TestComplexPayload t) => t.TestOverriddenPropertyName);
         payloadMemberName.Should().Be("name_override");
+    }
+
+    [Test]
+    public void GetArrayPropertyName()
+    {
+        var payloadMemberName =
+            ReflectionHelper.GetPayloadFieldName((TestComplexPayload t) => t.Array);
+        
+        payloadMemberName.Should().Be("array[]");
+    }
+
+    [Test]
+    public void GetNestedInArrayPropertyName()
+    {
+        var payloadMemberName =
+            ReflectionHelper.GetPayloadFieldName((TestComplexPayload t) => t.NestedArray[0].Name);
+        
+        payloadMemberName.Should().Be("nested_array[].name");
     }
 }

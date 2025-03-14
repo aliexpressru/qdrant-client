@@ -18,6 +18,8 @@ internal class TestComplexPayload : Payload
     public GeoPoint Location { get; set; }
 
     public NestedClass Nested { get; set; }
+    
+    public NestedClass[] NestedArray { get; set; }
 
     [JsonPropertyName("name_override")]
     public string TestOverriddenPropertyName { get; set; }
