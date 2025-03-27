@@ -881,8 +881,8 @@ internal class PointsCrudTests : QdrantTestsBase
         if (!IsCiEnvironment)
         {
             // CI environment container does not have usage statistics enabled
-            upsertPointsResult.Usage.PayloadIoWrite.Should().Be(0);
-            upsertPointsResult.Usage.VectorIoWrite.Should().Be(0);
+            upsertPointsResult.Usage.PayloadIoWrite.Should().NotBe(0);
+            upsertPointsResult.Usage.VectorIoWrite.Should().NotBe(0);
         }
         else
         {
