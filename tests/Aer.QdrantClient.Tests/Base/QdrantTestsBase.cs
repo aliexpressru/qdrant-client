@@ -272,19 +272,31 @@ public class QdrantTestsBase
     private float[] CreateTestFloat32Vector(uint vectorLength)
         =>
             Enumerable.Range(0, (int) vectorLength)
+#if NET7_0_OR_GREATER                
                 .Select(_ => float.CreateTruncating(Random.NextDouble()))
+#else
+                .Select(_ => Random.NextSingle())
+#endif
                 .ToArray();
 
     private float[] CreateTestFloat16Vector(uint vectorLength)
         =>
             Enumerable.Range(0, (int) vectorLength)
+#if NET7_0_OR_GREATER  
                 .Select(_ => (float) Half.CreateTruncating(Random.NextDouble()))
+#else
+                .Select(_ => (float) ((Half)Random.NextSingle()))
+#endif
                 .ToArray();
 
     private float[] CreateTestByteVector(uint vectorLength)
         =>
             Enumerable.Range(0, (int) vectorLength)
+#if NET7_0_OR_GREATER                
                 .Select(_ => (float) byte.CreateTruncating(Random.Next()))
+#else
+                .Select(_ => (float) unchecked((byte)Random.Next()))
+#endif
                 .ToArray();
 
     protected VectorBase CreateTestNamedVectors(uint vectorLength, int namedVectorsCount)

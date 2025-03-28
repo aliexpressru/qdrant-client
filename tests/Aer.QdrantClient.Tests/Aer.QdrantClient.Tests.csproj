@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <IsPackable>false</IsPackable>
@@ -10,6 +10,7 @@
 
     <EnableNUnitRunner>true</EnableNUnitRunner>
     <OutputType>Exe</OutputType>
+    <TestTfmsInParallel>false</TestTfmsInParallel>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
     <!--  By default, all console output that the underlying test executable writes is captured and hidden from the user. 
