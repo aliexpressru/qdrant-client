@@ -223,7 +223,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         uint retryCount,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
         where TResponse : QdrantResponseBase
         =>
             ExecuteRequestCore<TResponse>(
@@ -242,7 +242,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         uint retryCount,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
         where TRequest : class
         where TResponse : QdrantResponseBase
     {
@@ -353,7 +353,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         uint retryCount,
         TimeSpan? retryDelay,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
         where TResponse : QdrantResponseBase
     {
         var requestMessage = createMessage();
@@ -381,7 +381,7 @@ public partial class QdrantHttpClient
                     _ => retryDelay ?? _defaultPointsReadRetryDelay,
                     onRetry: (exception, currentRetryDelay, retryNumber, _) =>
                     {
-                        onRetry?.Invoke(exception, currentRetryDelay, retryNumber);
+                        onRetry?.Invoke(exception, currentRetryDelay, retryNumber, retryCount);
                     }
                 )
                 .ExecuteAsync(
