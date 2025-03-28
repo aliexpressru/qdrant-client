@@ -48,6 +48,10 @@ internal static class ReflectionHelper
     /// </summary>
     /// <param name="expression">The expression to collect property names from.</param>
     /// <param name="propertyNamesCallChain">The output names in calling order from first to last.</param>
+    /// <param name="isIndexer">
+    /// If set to <c>true</c> means that the <paramref name="expression"/> is an array indexer.
+    /// If it comes last in the call chain then it should have a `[]` added to the name.
+    /// </param>
     private static void CollectPropertyNamesFromCallChain(
         MemberExpression expression,
         List<string> propertyNamesCallChain,
