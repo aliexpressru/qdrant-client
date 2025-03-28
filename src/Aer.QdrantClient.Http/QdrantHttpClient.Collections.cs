@@ -21,7 +21,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         TimeSpan? timeout = null)
     {
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETSTANDARD2_1
         if (request is null)
         {
             throw new ArgumentNullException(nameof(request));
@@ -59,7 +59,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         TimeSpan? timeout = null)
     {
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETSTANDARD2_1
         if (request is null)
         {
             throw new ArgumentNullException(nameof(request));

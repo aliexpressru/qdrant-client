@@ -1,6 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Exceptions;
+
+#if  NETSTANDARD2_0
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
+#endif
+
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;

@@ -198,7 +198,7 @@ public partial class QdrantHttpClient
     {
         var response = await _apiClient.SendAsync(message, cancellationToken);
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETSTANDARD2_1
         var result = await response.Content.ReadAsStringAsync();
 #else
         var result = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -294,7 +294,7 @@ public partial class QdrantHttpClient
             && !_specialStatusCodes.Contains(response.StatusCode))
         {
             
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETSTANDARD2_1
             var errorResult = await response.Content.ReadAsStringAsync();
 #else
             var errorResult = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -320,7 +320,7 @@ public partial class QdrantHttpClient
         if (response.StatusCode == HttpStatusCode.BadRequest)
         {
             
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETSTANDARD2_1
             var errorResult = await response.Content.ReadAsStringAsync();
 #else
             var errorResult = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -336,7 +336,7 @@ public partial class QdrantHttpClient
 
         var contentLength = response.Content.Headers.ContentLength ?? 0;
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETSTANDARD2_1
         var resultStream = await response.Content.ReadAsStreamAsync();
 #else
         var resultStream = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -365,7 +365,7 @@ public partial class QdrantHttpClient
             getResponse = () => Policy
                 .Handle<HttpRequestException>(
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETSTANDARD2_1
                     e => e.GetStatusCode() is null
                         ||
                         (e.GetStatusCode() is { } statusCode && !_specialStatusCodes.Contains(statusCode))
@@ -395,7 +395,7 @@ public partial class QdrantHttpClient
 
         var response = await getResponse();
         
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETSTANDARD2_1
         var result = await response.Content.ReadAsStringAsync();
 #else
         var result = await response.Content.ReadAsStringAsync(cancellationToken);
