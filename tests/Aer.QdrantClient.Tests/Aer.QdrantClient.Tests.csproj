@@ -12,7 +12,9 @@
     <OutputType>Exe</OutputType>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
-    <TestingPlatformCaptureOutput>false</TestingPlatformCaptureOutput>
+    <!--  By default, all console output that the underlying test executable writes is captured and hidden from the user. 
+    This includes the banner, version information, and formatted test information.   -->
+    <TestingPlatformCaptureOutput>true</TestingPlatformCaptureOutput>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
