@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.Json;
 using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Exceptions;
-using Aer.QdrantClient.Http.Helpers;
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Models.Requests;
