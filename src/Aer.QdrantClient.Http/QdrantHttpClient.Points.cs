@@ -329,7 +329,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<GetPointResponse> GetPoint(
         string collectionName,
@@ -337,7 +337,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var url = $"/collections/{collectionName}/points/{pointId}";
 
@@ -369,7 +369,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<GetPointsResponse> GetPoints(
         string collectionName,
@@ -381,7 +381,7 @@ public partial class QdrantHttpClient
         ShardSelector shardSelector = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var points = new GetPointsRequest
         {
@@ -430,7 +430,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<ScrollPointsResponse> ScrollPoints(
         string collectionName,
@@ -445,7 +445,7 @@ public partial class QdrantHttpClient
         OrderBySelector orderBySelector = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -484,7 +484,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<CountPointsResponse> CountPoints(
         string collectionName,
@@ -492,7 +492,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var url = $"/collections/{collectionName}/points/count";
 
@@ -520,7 +520,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<FacetCountPointsResponse> FacetCountPoints(
         string collectionName,
@@ -530,7 +530,7 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -565,7 +565,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<SearchPointsResponse> SearchPoints(
         string collectionName,
@@ -574,7 +574,7 @@ public partial class QdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -603,7 +603,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<SearchPointsBatchedResponse> SearchPointsBatched(
         string collectionName,
@@ -612,7 +612,7 @@ public partial class QdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -641,7 +641,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<SearchPointsGroupedResponse> SearchPointsGrouped(
         string collectionName,
@@ -650,7 +650,7 @@ public partial class QdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -680,7 +680,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<SearchPointsDistanceMatrixPairsResponse> SearchPointsDistanceMatrixPairs(
         string collectionName,
@@ -690,7 +690,7 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -720,7 +720,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<SearchPointsDistanceMatrixOffsetsResponse> SearchPointsDistanceMatrixOffsets(
         string collectionName,
@@ -730,7 +730,7 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -760,7 +760,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<SearchPointsResponse> RecommendPoints(
         string collectionName,
@@ -769,7 +769,7 @@ public partial class QdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -798,7 +798,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<SearchPointsBatchedResponse> RecommendPointsBatched(
         string collectionName,
@@ -807,7 +807,7 @@ public partial class QdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -837,7 +837,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<SearchPointsGroupedResponse> RecommendPointsGrouped(
         string collectionName,
@@ -846,7 +846,7 @@ public partial class QdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -887,7 +887,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<SearchPointsResponse> DiscoverPoints(
         string collectionName,
@@ -897,7 +897,7 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -928,7 +928,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<SearchPointsBatchedResponse> DiscoverPointsBatched(
         string collectionName,
@@ -938,7 +938,7 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -970,7 +970,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<QueryPointsResponse> QueryPoints(
         string collectionName,
@@ -980,7 +980,7 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -1012,7 +1012,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<QueryPointsBatchedResponse> QueryPointsBatched(
         string collectionName,
@@ -1022,7 +1022,7 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
@@ -1055,7 +1055,7 @@ public partial class QdrantHttpClient
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry and a retry number.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
     public async Task<SearchPointsGroupedResponse> QueryPointsGrouped(
         string collectionName,
@@ -1065,7 +1065,7 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
