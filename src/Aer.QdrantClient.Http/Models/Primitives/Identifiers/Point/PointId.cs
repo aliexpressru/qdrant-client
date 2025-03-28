@@ -104,8 +104,13 @@ public abstract class PointId : IEquatable<PointId>
     /// Throws if the provided string is not parseable as GUID.
     /// </summary>
     /// <param name="pointId">The point identifier.</param>
-    public static PointId Guid(string pointId) => new GuidPointId(System.Guid.Parse((ReadOnlySpan<char>)pointId));
-
+    public static PointId Guid(string pointId) =>
+#if NETSTANDARD2_0
+        new GuidPointId(System.Guid.Parse(pointId));
+#else
+        new GuidPointId(System.Guid.Parse((ReadOnlySpan<char>)pointId));
+#endif
+    
     /// <summary>
     /// Create instance of GUID point identifier with new random guid.
     /// </summary>

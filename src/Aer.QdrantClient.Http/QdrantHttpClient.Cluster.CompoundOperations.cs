@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Collections;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Helpers;
+using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -523,8 +524,10 @@ public partial class QdrantHttpClient
             ci => ci.Value.Uri,
             ci => ci.Key);
 
-        var candidatePeersIds = peerIdByNodeUrl.Where(
-                kv => kv.Key.Contains(clusterNodeUriSubstring, StringComparison.InvariantCulture))
+        var candidatePeersIds = peerIdByNodeUrl
+            .Where(
+                kv => kv.Key.Contains(clusterNodeUriSubstring, StringComparison.InvariantCulture)
+            )
             .ToList();
 
         if (candidatePeersIds.Count == 0)
@@ -605,8 +608,11 @@ public partial class QdrantHttpClient
             }
 
             collectionShardsPerPeers[collectionShardingInfo.PeerId].Add(localShard.ShardId);
-
+#if NETSTANDARD2_0
+            if (!shardReplicationFactors.TryAdd(localShard.ShardId, (uint)1))
+#else
             if (!shardReplicationFactors.TryAdd(localShard.ShardId, 1))
+#endif
             {
                 shardReplicationFactors[localShard.ShardId]++;
             }
@@ -633,7 +639,11 @@ public partial class QdrantHttpClient
                 collectionShardsPerPeers.Add(remoteShard.PeerId, new());
             }
 
+#if NETSTANDARD2_0
+            if (!shardReplicationFactors.TryAdd(remoteShard.ShardId, (uint) 1))
+#else
             if (!shardReplicationFactors.TryAdd(remoteShard.ShardId, 1))
+#endif
             {
                 shardReplicationFactors[remoteShard.ShardId]++;
             }

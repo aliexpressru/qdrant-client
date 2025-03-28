@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 

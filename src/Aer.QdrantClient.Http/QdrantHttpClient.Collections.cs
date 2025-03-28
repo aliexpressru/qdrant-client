@@ -21,8 +21,15 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         TimeSpan? timeout = null)
     {
+#if NETSTANDARD2_0
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+#else
         ArgumentNullException.ThrowIfNull(request);
-
+#endif
+        
         EnsureQdrantNameCorrect(collectionName);
 
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
@@ -52,11 +59,15 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         TimeSpan? timeout = null)
     {
-        if (request == null)
+#if NETSTANDARD2_0
+        if (request is null)
         {
             throw new ArgumentNullException(nameof(request));
         }
-
+#else
+        ArgumentNullException.ThrowIfNull(request);
+#endif
+        
         EnsureQdrantNameCorrect(collectionName);
 
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
@@ -71,7 +82,11 @@ public partial class QdrantHttpClient
 
         var response = await ExecuteRequest<UpdateCollectionParametersRequest, DefaultOperationResponse>(
             url,
+#if NETSTANDARD2_0
+            new HttpMethod("PATCH"),
+#else
             HttpMethod.Patch,
+#endif
             request,
             cancellationToken,
             retryCount: 0);
@@ -99,7 +114,11 @@ public partial class QdrantHttpClient
 
         var response = await ExecuteRequest<string, DefaultOperationResponse>(
             url,
+#if NETSTANDARD2_0
+            new HttpMethod("PATCH"),
+#else
             HttpMethod.Patch,
+#endif
             UpdateCollectionParametersRequest.EmptyRequestBody,
             cancellationToken,
             retryCount: 0);

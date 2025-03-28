@@ -2,6 +2,7 @@
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;

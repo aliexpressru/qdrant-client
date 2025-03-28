@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses.Base;
@@ -197,7 +198,11 @@ public partial class QdrantHttpClient
     {
         var response = await _apiClient.SendAsync(message, cancellationToken);
 
+#if NETSTANDARD2_0
+        var result = await response.Content.ReadAsStringAsync();
+#else
         var result = await response.Content.ReadAsStringAsync(cancellationToken);
+#endif
 
         if (!response.IsSuccessStatusCode)
         {
@@ -288,7 +293,12 @@ public partial class QdrantHttpClient
         if (!response.IsSuccessStatusCode
             && !_specialStatusCodes.Contains(response.StatusCode))
         {
+            
+#if NETSTANDARD2_0
+            var errorResult = await response.Content.ReadAsStringAsync();
+#else
             var errorResult = await response.Content.ReadAsStringAsync(cancellationToken);
+#endif
 
             throw new QdrantCommunicationException(
                 message.Method.Method,
@@ -309,7 +319,12 @@ public partial class QdrantHttpClient
 
         if (response.StatusCode == HttpStatusCode.BadRequest)
         {
+            
+#if NETSTANDARD2_0
+            var errorResult = await response.Content.ReadAsStringAsync();
+#else
             var errorResult = await response.Content.ReadAsStringAsync(cancellationToken);
+#endif
 
             throw new QdrantCommunicationException(
                 message.Method.Method,
@@ -320,7 +335,12 @@ public partial class QdrantHttpClient
         }
 
         var contentLength = response.Content.Headers.ContentLength ?? 0;
+
+#if NETSTANDARD2_0
+        var resultStream = await response.Content.ReadAsStreamAsync();
+#else
         var resultStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+#endif
 
         return (contentLength, resultStream);
     }
@@ -344,9 +364,17 @@ public partial class QdrantHttpClient
         {
             getResponse = () => Policy
                 .Handle<HttpRequestException>(
+
+#if NETSTANDARD2_0
+                    e => e.GetStatusCode() is null
+                        ||
+                        (e.GetStatusCode() is { } statusCode && !_specialStatusCodes.Contains(statusCode))
+#else
                     e => e.StatusCode is null
                         ||
                         (e.StatusCode is { } statusCode && !_specialStatusCodes.Contains(statusCode))
+#endif                        
+                        
                 )
                 .WaitAndRetryAsync(
                     (int) retryCount,
@@ -356,13 +384,23 @@ public partial class QdrantHttpClient
                         onRetry?.Invoke(exception, currentRetryDelay, retryNumber, retryCount);
                     }
                 )
-                .ExecuteAsync(() => _apiClient.SendAsync(createMessage(), cancellationToken));
+                .ExecuteAsync(
+#if NETSTANDARD2_0
+                    async () => (await _apiClient.SendAsync(createMessage(), cancellationToken)).SetStatusCode()
+#else
+                    () => _apiClient.SendAsync(createMessage(), cancellationToken)
+#endif
+                );
         }
 
         var response = await getResponse();
-
+        
+#if NETSTANDARD2_0
+        var result = await response.Content.ReadAsStringAsync();
+#else
         var result = await response.Content.ReadAsStringAsync(cancellationToken);
-
+#endif
+        
         if (!response.IsSuccessStatusCode
             && !_specialStatusCodes.Contains(response.StatusCode))
         {
