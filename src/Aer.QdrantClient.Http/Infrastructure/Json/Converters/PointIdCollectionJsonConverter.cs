@@ -48,8 +48,11 @@ internal class PointIdCollectionJsonConverter : JsonConverter<IReadOnlyList<Poin
                     // try parse as Guid then try parse as ulong
                     var parsedPointId = Guid.TryParse(pointIdValueString, out Guid parsedIdGuid)
                         ? PointId.Guid(parsedIdGuid)
+#if NETSTANDARD2_0
+                        : PointId.Integer(ulong.Parse(pointIdValueString));
+#else
                         : PointId.Integer(ulong.Parse((ReadOnlySpan<char>) pointIdValueString));
-
+#endif
                     collection.Add(parsedPointId);
                     break;
                 }

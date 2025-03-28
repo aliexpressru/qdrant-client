@@ -1,6 +1,8 @@
-﻿namespace Aer.QdrantClient.Http.Helpers;
+﻿using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 
-#if NETSTANDARD2_1
+namespace Aer.QdrantClient.Http.Helpers;
+
+#if NETSTANDARD2_0
 internal static class HttpResponseMessageExtensions
 {
 	public static HttpResponseMessage SetStatusCode(this HttpResponseMessage httpResponseMessage)

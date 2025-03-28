@@ -161,7 +161,7 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
     /// <param name="id">The string group identifier value.</param>
     public static implicit operator SearchGroupId(string id)
     {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_0
         if (string.IsNullOrEmpty(id))
         {
             throw new ArgumentNullException(nameof(id));

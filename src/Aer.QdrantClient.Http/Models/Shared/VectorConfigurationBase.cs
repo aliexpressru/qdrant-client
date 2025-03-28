@@ -29,7 +29,12 @@ public abstract class VectorConfigurationBase
         /// The distance metric used to build collection index.
         /// </summary>
         [JsonIgnore]
-        public VectorDistanceMetric DistanceMetric => Enum.Parse<VectorDistanceMetric>(Distance, ignoreCase: true);
+        public VectorDistanceMetric DistanceMetric =>
+#if NETSTANDARD2_0
+            (VectorDistanceMetric) Enum.Parse(typeof(VectorDistanceMetric), Distance, ignoreCase: true);      
+#else
+            Enum.Parse<VectorDistanceMetric>(Distance, ignoreCase: true);
+#endif
 
         /// <summary>
         /// The vector elements count - vector dimensions.

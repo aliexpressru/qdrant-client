@@ -1,8 +1,8 @@
 ﻿using System.Net;
 
-namespace Aer.QdrantClient.Http.Helpers;
+namespace Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_0
 internal static class HttpRequestExceptionExtensions
 {
 	private const string StatusCodeKeyName = "StatusCode";
