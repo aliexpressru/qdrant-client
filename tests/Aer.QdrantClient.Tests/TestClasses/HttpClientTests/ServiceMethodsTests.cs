@@ -26,6 +26,17 @@ public class ServiceMethodsTests : QdrantTestsBase
         await ResetStorage();
     }
 
+    [Test]
+    public async Task TestGetInstanceDetailsData()
+    {
+        var instanceDetails = await _qdrantHttpClient.GetInstanceDetails(
+            CancellationToken.None);
+
+        instanceDetails.Title.Should().NotBeEmpty();
+        instanceDetails.Version.Should().NotBeEmpty();
+        instanceDetails.Commit.Should().NotBeEmpty();
+    }
+    
     [TestCase(true)]
     [TestCase(false)]
     public async Task TestGetTelemetryData(bool isAnonymized)
@@ -176,7 +187,8 @@ public class ServiceMethodsTests : QdrantTestsBase
         // the fact that locked collection throws unauthorized status code is freaking me out!
 
         await upsertPointsAct.Should().ThrowAsync<QdrantUnauthorizedAccessException>()
-                .Where(e => e.Message.Contains(lockReason));
+            .Where(e => e.Message.Contains(lockReason)
+        );
 
         var setNewLockOptionsResult =
             await _qdrantHttpClient.SetLockOptions(areWritesDisabled: false, lockReason, CancellationToken.None);

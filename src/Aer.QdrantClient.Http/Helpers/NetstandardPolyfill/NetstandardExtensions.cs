@@ -33,7 +33,26 @@ internal static class HttpResponseMessageExtensions
 
 		return httpResponseMessage;
 	}
+	
+	public static async Task<Stream> ReadAsStreamAsync(this HttpContent httpContent, CancellationToken cancellationToken)
+	{
+		return await httpContent.ReadAsStreamAsync().WaitAsync(
+			timeout: Timeout.InfiniteTimeSpan,
+			TimeProvider.System,
+			cancellationToken: cancellationToken);
+	}
+
+	public static async Task<string> ReadAsStringAsync(
+		this HttpContent httpContent,
+		CancellationToken cancellationToken)
+	{
+		return await httpContent.ReadAsStringAsync().WaitAsync(
+			timeout: Timeout.InfiniteTimeSpan,
+			TimeProvider.System,
+			cancellationToken: cancellationToken);
+	}
 }
+
 #endif
 
 #if NETSTANDARD2_0

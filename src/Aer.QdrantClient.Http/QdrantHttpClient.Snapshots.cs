@@ -262,7 +262,6 @@ public partial class QdrantHttpClient
         HttpRequestMessage message = new(HttpMethod.Get, url);
 
         var result = await DownloadSnapshot(
-            url,
             snapshotName,
             message,
             cancellationToken);
@@ -469,7 +468,6 @@ public partial class QdrantHttpClient
         HttpRequestMessage message = new(HttpMethod.Get, url);
 
         var result = await DownloadSnapshot(
-            url,
             snapshotName,
             message,
             cancellationToken);
@@ -557,7 +555,6 @@ public partial class QdrantHttpClient
         HttpRequestMessage message = new(HttpMethod.Get, url);
 
         var result = await DownloadSnapshot(
-            url,
             snapshotName,
             message,
             cancellationToken);
@@ -575,8 +572,6 @@ public partial class QdrantHttpClient
         var httpMethod = HttpMethod.Post;
 
         var response = await ExecuteRequestCore<DefaultOperationResponse>(
-            url,
-            httpMethod,
             CreateMessage,
             cancellationToken,
             retryCount: 0U,
@@ -599,14 +594,13 @@ public partial class QdrantHttpClient
     }
 
     private async Task<DownloadSnapshotResponse> DownloadSnapshot(
-        string url,
         string snapshotName,
         HttpRequestMessage message,
         CancellationToken cancellationToken)
     {
         try
         {
-            var resultStream = await ExecuteRequestReadAsStream(url, message, cancellationToken);
+            var resultStream = await ExecuteRequestReadAsStream(message, cancellationToken);
 
             return new DownloadSnapshotResponse(
                 snapshotName,

@@ -139,7 +139,8 @@ public partial class QdrantHttpClient
     {
         if (timeout is {TotalMilliseconds: 0})
         {
-            throw new InvalidOperationException($"{nameof(timeout)} should be greater than zero or not set but was {timeout:g}");
+            throw new InvalidOperationException(
+                $"{nameof(timeout)} should be greater than zero or not set but was {timeout:g}");
         }
 
         var actualTimeout = timeout ?? _defaultOperationTimeout;
@@ -191,28 +192,38 @@ public partial class QdrantHttpClient
         }
     }
 
-    private async Task<string> ExecuteRequestPlain(
-        string url,
+    private async Task<TResponse> ExecuteRequest<TResponse>(
         HttpRequestMessage message,
         CancellationToken cancellationToken)
     {
+        if (message.RequestUri is null)
+        {
+            throw new InvalidOperationException("Message request uri is null");
+        }
+
         var response = await _apiClient.SendAsync(message, cancellationToken);
 
-#if NETSTANDARD2_0 || NETSTANDARD2_1
-        var result = await response.Content.ReadAsStringAsync();
-#else
-        var result = await response.Content.ReadAsStringAsync(cancellationToken);
-#endif
+        var result = await ReadResponseAndHandleErrors(
+            message,
+            response,
+            responseReader: async responseMessage =>
+            {
+                var resultString =
+                    await responseMessage.Content.ReadAsStringAsync(cancellationToken);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new QdrantCommunicationException(
-                message.Method.Method,
-                url,
-                response.StatusCode,
-                response.ReasonPhrase,
-                result);
-        }
+                if (typeof(TResponse) == typeof(string))
+                {
+                    // If the result type is string - return result as is
+                    return (TResponse) Convert.ChangeType(resultString, typeof(TResponse));
+                }
+
+                var deserializedResult =
+                    JsonSerializer.Deserialize<TResponse>(resultString, JsonSerializerConstants.DefaultSerializerOptions);
+
+                return deserializedResult;
+            },
+            badRequestResponseMessageReader: null,
+            cancellationToken);
 
         return result;
     }
@@ -227,8 +238,6 @@ public partial class QdrantHttpClient
         where TResponse : QdrantResponseBase
         =>
             ExecuteRequestCore<TResponse>(
-                url,
-                method,
                 () => new(method, url),
                 cancellationToken,
                 retryCount,
@@ -247,8 +256,6 @@ public partial class QdrantHttpClient
         where TResponse : QdrantResponseBase
     {
         var response = ExecuteRequestCore<TResponse>(
-            url,
-            method,
             CreateMessage,
             cancellationToken,
             retryCount,
@@ -264,10 +271,10 @@ public partial class QdrantHttpClient
             var contentJson = requestContent switch
             {
                 EmptyRequest er => er.RequestMessageBody,
-                
+
                 // check whether the requestContent is already a serialized string
                 string s => s,
-                
+
                 not null => JsonSerializer.Serialize(requestContent, JsonSerializerConstants.DefaultSerializerOptions),
                 null => EmptyRequest.Instance.RequestMessageBody
             };
@@ -281,73 +288,37 @@ public partial class QdrantHttpClient
     }
 
     private async Task<(long ContentLength, Stream ResponseStream)> ExecuteRequestReadAsStream(
-        string url,
         HttpRequestMessage message,
         CancellationToken cancellationToken)
     {
+        if (message.RequestUri is null)
+        {
+            throw new InvalidOperationException("Message request uri is null");
+        }
+
         var response = await _apiClient.SendAsync(
             message,
             HttpCompletionOption.ResponseHeadersRead,
             cancellationToken);
 
-        if (!response.IsSuccessStatusCode
-            && !_specialStatusCodes.Contains(response.StatusCode))
-        {
-            
-#if NETSTANDARD2_0 || NETSTANDARD2_1
-            var errorResult = await response.Content.ReadAsStringAsync();
-#else
-            var errorResult = await response.Content.ReadAsStringAsync(cancellationToken);
-#endif
+        var result = await ReadResponseAndHandleErrors(
+            message,
+            response,
+            responseReader: async responseMessage =>
+            {
+                var resultStream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
+                
+                var contentLength = response.Content.Headers.ContentLength ?? 0;
 
-            throw new QdrantCommunicationException(
-                message.Method.Method,
-                url,
-                response.StatusCode,
-                response.ReasonPhrase,
-                errorResult);
-        }
+                return (contentLength, resultStream);
+            },
+            badRequestResponseMessageReader: null,
+            cancellationToken);
 
-        // handle unauthorized codes
-        if (_unauthorizedStatusCodes.Contains(response.StatusCode))
-        {
-            throw new QdrantUnauthorizedAccessException(response.ReasonPhrase);
-        }
-
-        // in case of bad request the result may be in the form of a single string
-        // thus the following parsing may fail
-
-        if (response.StatusCode == HttpStatusCode.BadRequest)
-        {
-            
-#if NETSTANDARD2_0 || NETSTANDARD2_1
-            var errorResult = await response.Content.ReadAsStringAsync();
-#else
-            var errorResult = await response.Content.ReadAsStringAsync(cancellationToken);
-#endif
-
-            throw new QdrantCommunicationException(
-                message.Method.Method,
-                url,
-                response.StatusCode,
-                response.ReasonPhrase,
-                errorResult);
-        }
-
-        var contentLength = response.Content.Headers.ContentLength ?? 0;
-
-#if NETSTANDARD2_0 || NETSTANDARD2_1
-        var resultStream = await response.Content.ReadAsStreamAsync();
-#else
-        var resultStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-#endif
-
-        return (contentLength, resultStream);
+        return result;
     }
 
     private async Task<TResponse> ExecuteRequestCore<TResponse>(
-        string url,
-        HttpMethod httpMethod,
         // We are using func to create message since sending one instance of HttpRequestMessage several times is not allowed.
         Func<HttpRequestMessage> createMessage,
         CancellationToken cancellationToken,
@@ -364,6 +335,7 @@ public partial class QdrantHttpClient
         {
             getResponse = () => Policy
                 .Handle<HttpRequestException>(
+                    // Retry only responses without status code or when status code is not a special one
 
 #if NETSTANDARD2_0 || NETSTANDARD2_1
                     e => e.GetStatusCode() is null
@@ -373,8 +345,8 @@ public partial class QdrantHttpClient
                     e => e.StatusCode is null
                         ||
                         (e.StatusCode is { } statusCode && !_specialStatusCodes.Contains(statusCode))
-#endif                        
-                        
+#endif
+
                 )
                 .WaitAndRetryAsync(
                     (int) retryCount,
@@ -394,28 +366,98 @@ public partial class QdrantHttpClient
         }
 
         var response = await getResponse();
-        
-#if NETSTANDARD2_0 || NETSTANDARD2_1
-        var result = await response.Content.ReadAsStringAsync();
-#else
-        var result = await response.Content.ReadAsStringAsync(cancellationToken);
-#endif
-        
+
+        var result = await ReadResponseAndHandleErrors(
+            requestMessage,
+            response,
+            responseReader: async responseMessage =>
+            {
+                var resultString = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
+
+                var deserializedObject =
+                    JsonSerializer.Deserialize<TResponse>(resultString, JsonSerializerConstants.DefaultSerializerOptions);
+
+                return deserializedObject;
+            },
+            badRequestResponseMessageReader: errorContent =>
+            {
+                // in case of bad request the result may be in the form of a single string
+                // thus the following parsing may fail
+                try
+                {
+                    var badRequestResult =
+                        JsonSerializer.Deserialize<TResponse>(
+                            errorContent,
+                            JsonSerializerConstants.DefaultSerializerOptions);
+
+                    return badRequestResult;
+                }
+                catch (JsonException jex)
+                {
+                    // means that the response is a simple string
+                    var errorResponse = Activator.CreateInstance<TResponse>();
+                    errorResponse.Status = new QdrantStatus(QdrantOperationStatusType.Unknown)
+                    {
+                        Error = errorContent,
+                        RawStatusString = errorContent,
+                        Exception = jex
+                    };
+                    errorResponse.Time = -1;
+
+                    return errorResponse;
+                }
+
+            },
+            cancellationToken);
+
+        return result;
+    }
+
+    private async Task<TResponse> ReadResponseAndHandleErrors<TResponse>(
+        HttpRequestMessage message,
+        HttpResponseMessage response,
+        Func<HttpResponseMessage, Task<TResponse>> responseReader,
+        Func<string, TResponse> badRequestResponseMessageReader,
+        CancellationToken cancellationToken)
+    {
+        // We have already checked that the request uri is not null
+        var url = message.RequestUri!.ToString();
+
         if (!response.IsSuccessStatusCode
             && !_specialStatusCodes.Contains(response.StatusCode))
         {
+            var errorResultString =
+                await response.Content.ReadAsStringAsync(cancellationToken);
+
             throw new QdrantCommunicationException(
-                httpMethod.Method,
+                message.Method.Method,
                 url,
                 response.StatusCode,
                 response.ReasonPhrase,
-                result);
+                errorResultString);
         }
 
         // handle unauthorized codes
         if (_unauthorizedStatusCodes.Contains(response.StatusCode))
         {
-            throw new QdrantUnauthorizedAccessException(result);
+            var forbiddenReason = response.ReasonPhrase;
+
+            try
+            {
+                // Try to read specific error from content
+                var errorMessage = await response.Content.ReadAsStringAsync(cancellationToken);
+
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    forbiddenReason = $"{response.ReasonPhrase} : {errorMessage}";
+                }
+            }
+            catch (Exception)
+            { 
+                // Ignore
+            }
+            
+            throw new QdrantUnauthorizedAccessException(forbiddenReason);
         }
 
         // in case of bad request the result may be in the form of a single string
@@ -423,33 +465,24 @@ public partial class QdrantHttpClient
 
         if (response.StatusCode == HttpStatusCode.BadRequest)
         {
-            try
-            {
-                var badRequestResult =
-                    JsonSerializer.Deserialize<TResponse>(result, JsonSerializerConstants.DefaultSerializerOptions);
+            var errorResult = await response.Content.ReadAsStringAsync(cancellationToken);
 
-                return badRequestResult;
-            }
-            catch (JsonException jex)
+            if (badRequestResponseMessageReader == null)
             {
-                // means that the response is a simple string
-                var errorResponse = Activator.CreateInstance<TResponse>();
-                errorResponse.Status = new QdrantStatus(QdrantOperationStatusType.Unknown)
-                {
-                    Error = result,
-                    RawStatusString = result,
-                    Exception = jex
-                };
-                errorResponse.Time = -1;
-
-                return errorResponse;
+                throw new QdrantCommunicationException(
+                    message.Method.Method,
+                    url,
+                    response.StatusCode,
+                    response.ReasonPhrase,
+                    errorResult);
             }
+
+            return badRequestResponseMessageReader(errorResult);
         }
 
-        var deserializedObject =
-            JsonSerializer.Deserialize<TResponse>(result, JsonSerializerConstants.DefaultSerializerOptions);
+        var readResult = await responseReader(response);
 
-        return deserializedObject;
+        return readResult;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -457,7 +490,9 @@ public partial class QdrantHttpClient
     {
         if (qdrantEntityName is null or {Length: 0})
         {
-            throw new QdrantInvalidEntityNameException(qdrantEntityName, "Entity name name should not be null or empty");
+            throw new QdrantInvalidEntityNameException(
+                qdrantEntityName,
+                "Entity name name should not be null or empty");
         }
 
         if (qdrantEntityName.Length is 0 or > 255)

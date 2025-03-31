@@ -8,6 +8,23 @@ namespace Aer.QdrantClient.Http;
 public partial class QdrantHttpClient
 {
     /// <summary>
+    /// Gets the Qdrant instance details.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    public async Task<GetInstanceDetailsResponse> GetInstanceDetails(CancellationToken cancellationToken)
+    {
+        var url = "/";
+        
+        HttpRequestMessage message = new(HttpMethod.Get, url);
+
+        var response = await ExecuteRequest<GetInstanceDetailsResponse>(
+            message,
+            cancellationToken);
+
+        return response;
+    }
+    
+    /// <summary>
     /// Get the Qdrant telemetry information.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -42,7 +59,7 @@ public partial class QdrantHttpClient
 
         HttpRequestMessage message = new(HttpMethod.Get, url);
 
-        var result = await ExecuteRequestPlain(url, message, cancellationToken);
+        var result = await ExecuteRequest<string>(message, cancellationToken);
 
         return result;
     }

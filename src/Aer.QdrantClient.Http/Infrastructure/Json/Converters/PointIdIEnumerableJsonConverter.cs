@@ -53,7 +53,6 @@ internal class PointIdIEnumerableJsonConverter : JsonConverter<IEnumerable<Point
 #else
                         : PointId.Integer(ulong.Parse((ReadOnlySpan<char>) pointIdValueString));
 #endif
-
                     collection.Add(parsedPointId);
                     break;
                 }

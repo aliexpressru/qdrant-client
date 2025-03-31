@@ -8,6 +8,13 @@ namespace Aer.QdrantClient.Http;
 [SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public partial class QdrantHttpClient
 {
+    private static readonly HttpMethod _patchHttpMethod =
+#if NETSTANDARD2_0
+        new HttpMethod("PATCH");
+#else
+        HttpMethod.Patch;
+#endif
+
     /// <summary>
     /// Create collection.
     /// </summary>
@@ -21,15 +28,11 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         TimeSpan? timeout = null)
     {
-#if NETSTANDARD2_0 || NETSTANDARD2_1
         if (request is null)
         {
             throw new ArgumentNullException(nameof(request));
         }
-#else
-        ArgumentNullException.ThrowIfNull(request);
-#endif
-        
+
         EnsureQdrantNameCorrect(collectionName);
 
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
@@ -59,15 +62,11 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         TimeSpan? timeout = null)
     {
-#if NETSTANDARD2_0 || NETSTANDARD2_1
         if (request is null)
         {
             throw new ArgumentNullException(nameof(request));
         }
-#else
-        ArgumentNullException.ThrowIfNull(request);
-#endif
-        
+
         EnsureQdrantNameCorrect(collectionName);
 
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
@@ -75,18 +74,14 @@ public partial class QdrantHttpClient
         var url = $"/collections/{collectionName}?timeout={timeoutValue}";
 
         if (request.IsEmpty)
-        { 
+        {
             // Empty request is swapped with trigger optimizers request.
             return await TriggerOptimizers(collectionName, cancellationToken);
         }
 
         var response = await ExecuteRequest<UpdateCollectionParametersRequest, DefaultOperationResponse>(
             url,
-#if NETSTANDARD2_0
-            new HttpMethod("PATCH"),
-#else
-            HttpMethod.Patch,
-#endif
+            _patchHttpMethod,
             request,
             cancellationToken,
             retryCount: 0);
@@ -114,11 +109,7 @@ public partial class QdrantHttpClient
 
         var response = await ExecuteRequest<string, DefaultOperationResponse>(
             url,
-#if NETSTANDARD2_0
-            new HttpMethod("PATCH"),
-#else
-            HttpMethod.Patch,
-#endif
+            _patchHttpMethod,
             UpdateCollectionParametersRequest.EmptyRequestBody,
             cancellationToken,
             retryCount: 0);
@@ -131,7 +122,9 @@ public partial class QdrantHttpClient
     /// </summary>
     /// <param name="collectionName">Collection name to get info for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    public async Task<GetCollectionInfoResponse> GetCollectionInfo(string collectionName, CancellationToken cancellationToken)
+    public async Task<GetCollectionInfoResponse> GetCollectionInfo(
+        string collectionName,
+        CancellationToken cancellationToken)
     {
         EnsureQdrantNameCorrect(collectionName);
 

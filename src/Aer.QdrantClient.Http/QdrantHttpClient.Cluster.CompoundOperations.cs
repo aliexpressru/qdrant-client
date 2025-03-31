@@ -608,6 +608,7 @@ public partial class QdrantHttpClient
             }
 
             collectionShardsPerPeers[collectionShardingInfo.PeerId].Add(localShard.ShardId);
+            
 #if NETSTANDARD2_0
             if (!shardReplicationFactors.TryAdd(localShard.ShardId, (uint)1))
 #else

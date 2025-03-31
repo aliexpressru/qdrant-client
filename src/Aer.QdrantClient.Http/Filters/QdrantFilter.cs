@@ -34,16 +34,10 @@ public sealed class QdrantFilter
     /// </summary>
     public static QdrantFilter Create(FilterConditionBase singleCondition)
     {
-        
-#if NETSTANDARD2_0 || NETSTANDARD2_1
         if (singleCondition is null)
         { 
             throw new ArgumentNullException(nameof(singleCondition));
         }
-#else
-        ArgumentNullException.ThrowIfNull(singleCondition);
-#endif
-        
 
         QdrantFilter ret = new();
 
@@ -112,18 +106,13 @@ public sealed class QdrantFilter
     public static QdrantFilter Create(string filter)
     {
         
-#if NETSTANDARD2_0 || NETSTANDARD2_1 || NET6_0
         if (string.IsNullOrWhiteSpace(filter))
         {
             throw new ArgumentNullException(nameof(filter));
         }
-#else
-        ArgumentException.ThrowIfNullOrWhiteSpace(filter);
-#endif
         
         QdrantFilter ret = new()
         {
-
 #if NETSTANDARD2_0 || NETSTANDARD2_1
             _rawFilterString = filter
 #else

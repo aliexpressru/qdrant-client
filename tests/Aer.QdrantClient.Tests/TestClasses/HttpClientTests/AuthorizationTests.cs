@@ -38,6 +38,8 @@ public class AuthorizationTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        await unauthorizedAct.Should().ThrowAsync<QdrantUnauthorizedAccessException>();
+        await unauthorizedAct.Should().ThrowAsync<QdrantUnauthorizedAccessException>().Where(
+            e => e.Message.Contains("Unauthorized : Must provide an API key or an Authorization bearer token")
+        );
     }
 }

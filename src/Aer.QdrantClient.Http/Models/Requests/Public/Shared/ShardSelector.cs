@@ -108,14 +108,10 @@ public abstract class ShardSelector
     /// <param name="shardKeyValue">The shard key value.</param>
     public static implicit operator ShardSelector(string shardKeyValue)
     {
-#if NETSTANDARD2_0 || NETSTANDARD2_1 || NET6_0
         if (string.IsNullOrEmpty(shardKeyValue))
         {
             throw new ArgumentNullException(nameof(shardKeyValue));
         }
-#else
-        ArgumentException.ThrowIfNullOrEmpty(shardKeyValue);
-#endif
 
         return String(shardKeyValue);
     }
