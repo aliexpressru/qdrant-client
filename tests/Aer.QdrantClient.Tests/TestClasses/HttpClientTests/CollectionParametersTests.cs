@@ -583,7 +583,7 @@ public class CollectionParametersTests : QdrantTestsBase
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
             {
-                OnDiskPayload = true,
+                OnDiskPayload = false,
                 OptimizersConfig = new OptimizersConfiguration()
                 {
                     MemmapThreshold = 1000,
@@ -604,6 +604,9 @@ public class CollectionParametersTests : QdrantTestsBase
             TestCollectionName,
             new UpdateCollectionParametersRequest()
             {
+                Params = new(){
+                    OnDiskPayload = true
+                },
                 OptimizersConfig = new()
                 {
                     MemmapThreshold = newMemmapThreshold,
@@ -614,6 +617,8 @@ public class CollectionParametersTests : QdrantTestsBase
                 }
             },
             CancellationToken.None);
+        
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
 
         var updatedCollectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
 
@@ -630,6 +635,7 @@ public class CollectionParametersTests : QdrantTestsBase
         updatedCollectionInfo.Result.Config.OptimizerConfig.MemmapThreshold.Should().Be(newMemmapThreshold);
         updatedCollectionInfo.Result.Config.OptimizerConfig.MaxOptimizationThreads.Should().Be(newMaxOptimizationThreads);
         updatedCollectionInfo.Result.Config.HnswConfig.MaxIndexingThreads.Should().Be(newMaxIndexingThreads);
+        updatedCollectionInfo.Result.Config.Params.OnDiskPayload.Should().BeTrue();
     }
 
     [Test]
