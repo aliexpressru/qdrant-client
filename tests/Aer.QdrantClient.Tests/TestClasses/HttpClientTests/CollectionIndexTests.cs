@@ -1,4 +1,5 @@
 using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
@@ -198,6 +199,47 @@ internal class CollectionIndexTests : QdrantTestsBase
         collectionInfo.PayloadSchema[TestPayloadFieldName2].DataType.Should().Be(PayloadIndexedFieldType.Integer);
         collectionInfo.PayloadSchema[TestPayloadFieldName2].Params.OnDisk.Should().BeFalse();
         collectionInfo.PayloadSchema[TestPayloadFieldName2].Params.IsTenant.Should().BeFalse();
+    }
+
+    [Test]
+    public async Task CreateIndex_RestrictedTypes()
+    {
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                HnswConfig = new HnswConfiguration()
+                {
+                    PayloadM = 16,
+                    M = 0
+                }
+            },
+            CancellationToken.None);
+
+        var createCollectionPrincipalIndexAct = async ()=>
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                PayloadIndexedFieldType.Keyword,
+                CancellationToken.None,
+                isWaitForResult: true,
+                isPrincipal: true);
+
+        var createCollectionTenantIndexAct = async () =>
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                PayloadIndexedFieldType.Integer,
+                CancellationToken.None,
+                isWaitForResult: true,
+                isTenant: true);
+
+        await createCollectionPrincipalIndexAct.Should().ThrowAsync<QdrantUnsupportedFieldSchemaForIndexConfiguration>()
+            .Where(e => e.Message.Contains("Principal"));
+
+        await createCollectionTenantIndexAct.Should().ThrowAsync<QdrantUnsupportedFieldSchemaForIndexConfiguration>()
+            .Where(e => e.Message.Contains("Tenant"));
     }
 
     [Test]
