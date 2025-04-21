@@ -1,16 +1,21 @@
 ﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Model;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
 public class CollectionsCompoundOperationsTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
+    private QdrantClientSettings _qdrantClientSettings;
+    private ILogger _logger;
 
     [OneTimeSetUp]
     public void Setup()
@@ -18,6 +23,8 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
         Initialize();
 
         _qdrantHttpClient = ServiceProvider.GetRequiredService<QdrantHttpClient>();
+        _qdrantClientSettings = ServiceProvider.GetRequiredService<IOptions<QdrantClientSettings>>().Value;
+        _logger = ServiceProvider.GetRequiredService<ILogger<CollectionsCompoundOperationsTests>>();
     }
 
     [SetUp]
@@ -27,7 +34,7 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestListCollectionInfo()
+    public async Task ListCollectionInfo()
     {
         var vectorSize = 10U;
         var vectorCount = 10;
@@ -123,5 +130,67 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
 
         listCollectionInfoResult.Result[TestCollectionName].Should().BeEquivalentTo(firstCollectionInfoResult.Result);
         listCollectionInfoResult.Result[TestCollectionName2].Should().BeEquivalentTo(secondCollectionInfoResult.Result);
+    }
+
+    [Test]
+    public async Task StartCreatingCollectionIndexes()
+    {
+        var qdrantClient =
+            new QdrantHttpClient(
+                new Uri(_qdrantClientSettings.HttpAddress),
+                apiKey: _qdrantClientSettings.ApiKey,
+                logger: _logger,
+                disableTracing: true);
+            
+        await qdrantClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        qdrantClient.StartCreatingCollectionIndexes(
+            TestCollectionName,
+            10,
+            [
+                new CollectionPayloadIndexDefinition(
+                    TestPayloadFieldName,
+                    PayloadIndexedFieldType.Keyword,
+                    isTenant: true),
+                
+                new CollectionPayloadIndexDefinition(
+                    TestPayloadFieldName2,
+                    PayloadIndexedFieldType.Integer,
+                    onDisk: true,
+                    isPrincipal: true)
+            ]
+        );
+        
+        await Task.Delay(TimeSpan.FromMilliseconds(1000));
+
+        await qdrantClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        var collectionInfo = await qdrantClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+        
+        collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionInfo.Status.IsSuccess.Should().BeTrue();
+
+        collectionInfo.Result.Config.OptimizerConfig.IndexingThreshold.Should().Be(10);
+
+        collectionInfo.Result.PayloadSchema.Count.Should().Be(2);
+        collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName);
+        collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName2);
+
+        var firstPayloadSchema = collectionInfo.Result.PayloadSchema[TestPayloadFieldName]; 
+        
+        firstPayloadSchema.DataType.Should().Be(PayloadIndexedFieldType.Keyword);
+        firstPayloadSchema.Params.IsTenant.Should().BeTrue();
+
+        var secondPayloadSchema = collectionInfo.Result.PayloadSchema[TestPayloadFieldName2];
+        
+        secondPayloadSchema.DataType.Should().Be(PayloadIndexedFieldType.Integer);
+        secondPayloadSchema.Params.OnDisk.Should().BeTrue();
+        secondPayloadSchema.Params.IsPrincipal.Should().BeTrue();
     }
 }

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -8,6 +9,17 @@ namespace Aer.QdrantClient.Http;
 [SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public partial class QdrantHttpClient
 {
+    private readonly HashSet<PayloadIndexedFieldType> _allowedPayloadFieldTypesForTenantIndex = [
+        PayloadIndexedFieldType.Keyword,
+        PayloadIndexedFieldType.Uuid
+    ];
+    
+    private readonly HashSet<PayloadIndexedFieldType> _allowedPayloadFieldTypesForPrincipalIndex = [
+        PayloadIndexedFieldType.Integer,
+        PayloadIndexedFieldType.Float,
+        PayloadIndexedFieldType.Datetime
+    ];
+    
     /// <summary>
     /// Creates an index on specified payload field.
     /// </summary>
@@ -63,6 +75,18 @@ public partial class QdrantHttpClient
         EnsureQdrantNameCorrect(collectionName);
         EnsureQdrantNameCorrect(payloadFieldName);
 
+        if (isTenant && !_allowedPayloadFieldTypesForTenantIndex.Contains(payloadFieldType))
+        {
+            throw new QdrantUnsupportedFieldSchemaForIndexConfiguration(
+                $"Tenant index is not supported for payload field {payloadFieldName} with type {payloadFieldType}. Supported types: [{string.Join(", ", _allowedPayloadFieldTypesForTenantIndex)}]");
+        }
+
+        if (isPrincipal && !_allowedPayloadFieldTypesForPrincipalIndex.Contains(payloadFieldType))
+        {
+            throw new QdrantUnsupportedFieldSchemaForIndexConfiguration(
+                $"Principal index is not supported for payload field {payloadFieldName} with type {payloadFieldType}. Supported types: [{string.Join(", ", _allowedPayloadFieldTypesForPrincipalIndex)}]");
+        }
+        
         if (payloadFieldType == PayloadIndexedFieldType.Text)
         {
             throw new InvalidOperationException(

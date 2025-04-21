@@ -31,7 +31,7 @@ public class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestClusterInfo_ClusterEnabled()
+    public async Task ClusterInfo_ClusterEnabled()
     {
         var clusterInfo = await _qdrantHttpClient.GetClusterInfo(CancellationToken.None);
 
@@ -40,7 +40,7 @@ public class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestGetCollectionClusteringInfo_ManualSharding()
+    public async Task GetCollectionClusteringInfo_ManualSharding()
     {
         await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
@@ -63,7 +63,7 @@ public class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCollectionShardMove_OneShard()
+    public async Task CollectionShardMove_OneShard()
     {
         await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
@@ -126,7 +126,7 @@ public class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCollectionShardReplicate_OneShard()
+    public async Task CollectionShardReplicate_OneShard()
     {
         await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
@@ -188,7 +188,7 @@ public class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCollectionCreateShardKey_ManualPlacement()
+    public async Task CollectionCreateShardKey_ManualPlacement()
     {
         var vectorSize = 10U;
 
@@ -296,7 +296,7 @@ public class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCollectionDeleteShardKey_ManualPlacement()
+    public async Task CollectionDeleteShardKey_ManualPlacement()
     {
         (await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -341,7 +341,7 @@ public class ClusterTests : QdrantTestsBase
 
     //[Test]
     [Ignore("This test works only once since for adding peer back the whole cluster should be recreated")]
-    public async Task TestCollectionRemovePeer_RemotePeer()
+    public async Task CollectionRemovePeer_RemotePeer()
     {
         // NOTE: after performing this test - stop all containers, remove volumes
         // and rerun docker compose up to restore cluster to its 2-node state
@@ -374,7 +374,7 @@ public class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCollectionRecoverRaftStart_Success()
+    public async Task CollectionRecoverRaftStart_Success()
     {
         const uint vectorSize = 10;
 

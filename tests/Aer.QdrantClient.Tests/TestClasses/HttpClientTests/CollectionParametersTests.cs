@@ -30,7 +30,7 @@ public class CollectionParametersTests : QdrantTestsBase
     [TestCase(VectorDataType.Float32)]
     [TestCase(VectorDataType.Uint8)]
     [TestCase(VectorDataType.Float16)]
-    public async Task TestCreateCollection_CheckParameters(VectorDataType vectorDataType)
+    public async Task CreateCollection_CheckParameters(VectorDataType vectorDataType)
     {
         uint vectorSize = 10U;
 
@@ -91,7 +91,7 @@ public class CollectionParametersTests : QdrantTestsBase
     [TestCase(VectorDataType.Float32)]
     [TestCase(VectorDataType.Uint8)]
     [TestCase(VectorDataType.Float16)]
-    public async Task TestCreateCollection_NamedVectors_CheckParameters(VectorDataType vectorDataType)
+    public async Task CreateCollection_NamedVectors_CheckParameters(VectorDataType vectorDataType)
     {
         uint vectorSize = 10U;
 
@@ -176,7 +176,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_NamedVectors()
+    public async Task CreateCollection_NamedVectors()
     {
         Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration> namedVectors = new()
         {
@@ -236,7 +236,7 @@ public class CollectionParametersTests : QdrantTestsBase
     [TestCase(VectorDataType.Float32, nameof(SparseVectorModifier.Idf))]
     [TestCase(VectorDataType.Uint8, null)]
     [TestCase(VectorDataType.Float16, nameof(SparseVectorModifier.None))]
-    public async Task TestCreateCollection_NamedVectors_SparseVectors(
+    public async Task CreateCollection_NamedVectors_SparseVectors(
         VectorDataType vectorDataType,
         string sparseVectorModifierString)
     {
@@ -309,7 +309,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_ServeVectorsFromDisk()
+    public async Task CreateCollection_ServeVectorsFromDisk()
     {
         var createCollectionRequest = new CreateCollectionRequest(
             VectorDistanceMetric.Dot,
@@ -335,7 +335,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_CustomShardingMethod()
+    public async Task CreateCollection_CustomShardingMethod()
     {
         var createCollectionRequest = new CreateCollectionRequest(
             VectorDistanceMetric.Dot,
@@ -363,7 +363,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_ScalarQuantization()
+    public async Task CreateCollection_ScalarQuantization()
     {
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -394,7 +394,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_BinaryQuantization()
+    public async Task CreateCollection_BinaryQuantization()
     {
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -423,7 +423,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_ProductQuantization()
+    public async Task CreateCollection_ProductQuantization()
     {
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -455,7 +455,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_VectorsParametersOverrideCollectionParameters()
+    public async Task CreateCollection_VectorsParametersOverrideCollectionParameters()
     {
         var createCollectionRequest = new CreateCollectionRequest(
             VectorDistanceMetric.Dot,
@@ -509,7 +509,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestUpdateCollectionParameters_CollectionDoesNotExist()
+    public async Task UpdateCollectionParameters_CollectionDoesNotExist()
     {
         var updateNoCollectionParametersResult = await _qdrantHttpClient.UpdateCollectionParameters(
             TestCollectionName,
@@ -532,7 +532,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestUpdateCollectionParameters_EmptyRequest()
+    public async Task UpdateCollectionParameters_EmptyRequest()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -577,7 +577,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestUpdateCollectionParameters()
+    public async Task UpdateCollectionParameters()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -639,7 +639,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestTriggerCollectionOptimizers_CollectionDoesNotExist()
+    public async Task TriggerCollectionOptimizers_CollectionDoesNotExist()
     {
         var triggerCollectionOptimizersResult = await _qdrantHttpClient.TriggerOptimizers(
             TestCollectionName,
@@ -655,7 +655,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestTriggerCollectionOptimizers()
+    public async Task TriggerCollectionOptimizers()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,

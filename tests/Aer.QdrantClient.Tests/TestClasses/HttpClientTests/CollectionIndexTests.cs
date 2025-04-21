@@ -23,7 +23,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateIndex_CollectionDoesNotExist()
+    public async Task CreateIndex_CollectionDoesNotExist()
     {
         var createNonExistentCollectionIndexResult =
             await _qdrantHttpClient.CreatePayloadIndex(
@@ -41,7 +41,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateIndex_OneField()
+    public async Task CreateIndex_OneField()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -75,7 +75,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateFulltextIndex_OneField()
+    public async Task CreateFulltextIndex_OneField()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -113,7 +113,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateIndex_OnDisk()
+    public async Task CreateIndex_OnDisk()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -145,7 +145,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateIndex_MultiTenant()
+    public async Task CreateIndex_Tenant()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -192,16 +192,16 @@ internal class CollectionIndexTests : QdrantTestsBase
             .And.ContainKey(TestPayloadFieldName2);
 
         collectionInfo.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Keyword);
-        collectionInfo.PayloadSchema[TestPayloadFieldName].Params.OnDisk.Should().Be(false);
-        collectionInfo.PayloadSchema[TestPayloadFieldName].Params.IsTenant.Should().Be(true);
+        collectionInfo.PayloadSchema[TestPayloadFieldName].Params.OnDisk.Should().BeFalse();
+        collectionInfo.PayloadSchema[TestPayloadFieldName].Params.IsTenant.Should().BeTrue();
 
         collectionInfo.PayloadSchema[TestPayloadFieldName2].DataType.Should().Be(PayloadIndexedFieldType.Integer);
-        collectionInfo.PayloadSchema[TestPayloadFieldName2].Params.OnDisk.Should().Be(false);
-        collectionInfo.PayloadSchema[TestPayloadFieldName2].Params.IsTenant.Should().Be(false);
+        collectionInfo.PayloadSchema[TestPayloadFieldName2].Params.OnDisk.Should().BeFalse();
+        collectionInfo.PayloadSchema[TestPayloadFieldName2].Params.IsTenant.Should().BeFalse();
     }
 
     [Test]
-    public async Task TestCreateIndex_Principal()
+    public async Task CreateIndex_Principal()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -241,7 +241,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateIndex_TwoFields()
+    public async Task CreateIndex_TwoFields()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -287,7 +287,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateIndex_TwoIdenticalFields()
+    public async Task CreateIndex_TwoIdenticalFields()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -331,7 +331,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateIndex_TwoIdenticalFields_DifferentTypes()
+    public async Task CreateIndex_TwoIdenticalFields_DifferentTypes()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -374,7 +374,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestDeleteIndex_CollectionDoesNotExist()
+    public async Task DeleteIndex_CollectionDoesNotExist()
     {
         var deleteNonExistentCollectionIndexResult =
             await _qdrantHttpClient.DeletePayloadIndex(
@@ -391,7 +391,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestDeleteIndex_IndexDoesNotExist()
+    public async Task DeleteIndex_IndexDoesNotExist()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -413,7 +413,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestDeleteIndex_OneFieldOneDelete()
+    public async Task DeleteIndex_OneFieldOneDelete()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -445,7 +445,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestDeleteIndex_TwoFieldsOneDelete()
+    public async Task DeleteIndex_TwoFieldsOneDelete()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,

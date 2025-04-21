@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -7,9 +8,12 @@ using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 using Aer.QdrantClient.Http.Infrastructure.Json;
+using Aer.QdrantClient.Http.Infrastructure.Tracing;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Shared;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Polly;
 
 namespace Aer.QdrantClient.Http;
@@ -21,9 +25,11 @@ namespace Aer.QdrantClient.Http;
 public partial class QdrantHttpClient
 {
     private readonly HttpClient _apiClient;
-    private const int DEFAULT_OPERATION_TIMEOUT_SECONDS = 30;
+    private readonly ILogger _logger;
 
+    private const int DEFAULT_OPERATION_TIMEOUT_SECONDS = 30;
     private const uint DEFAULT_POINTS_READ_RETRY_COUNT = 3;
+    
     private static readonly TimeSpan _defaultPointsReadRetryDelay = TimeSpan.FromSeconds(1);
 
     private readonly TimeSpan _defaultOperationTimeout = TimeSpan.FromSeconds(DEFAULT_OPERATION_TIMEOUT_SECONDS);
@@ -60,11 +66,13 @@ public partial class QdrantHttpClient
     /// Initializes a new Qdrant HTTP client instance.
     /// </summary>
     /// <param name="apiClient">The http client to use.</param>
-    public QdrantHttpClient(HttpClient apiClient)
+    /// <param name="logger">The optional logger to log internal messages.</param>
+    public QdrantHttpClient(HttpClient apiClient, ILogger logger = null)
     {
         _apiClient = apiClient;
+        _logger = logger ?? NullLogger.Instance;
     }
-
+    
     /// <summary>
     /// Initializes a new Qdrant HTTP client instance.
     /// </summary>
@@ -73,12 +81,16 @@ public partial class QdrantHttpClient
     /// <param name="useHttps">Set to <c>true</c> to use communication over HTTPS, defaults to <c>false</c>.</param>
     /// <param name="apiKey">The Qdrant api key value.</param>
     /// <param name="httpClientTimeout">Http client timeout. Default value is <c>100 seconds</c>.</param>
+    /// <param name="logger">The optional logger to log internal messages.</param>
+    /// <param name="disableTracing">Is set to <c>true</c>, http client activity tracing is disabled.</param>
     public QdrantHttpClient(
         string host,
         int port = 6334,
         bool useHttps = false,
         string apiKey = null,
-        TimeSpan? httpClientTimeout = null) : this(
+        TimeSpan? httpClientTimeout = null,
+        ILogger logger = null,
+        bool disableTracing = false) : this(
         new UriBuilder(
             useHttps
                 ? "https"
@@ -86,7 +98,9 @@ public partial class QdrantHttpClient
             host,
             port).Uri,
         apiKey,
-        httpClientTimeout)
+        httpClientTimeout,
+        logger,
+        disableTracing)
     { }
 
     /// <summary>
@@ -95,13 +109,37 @@ public partial class QdrantHttpClient
     /// <param name="httpAddress">The Qdrant HTTP api server address and port.</param>
     /// <param name="apiKey">The Qdrant api key value.</param>
     /// <param name="httpClientTimeout">Http client timeout. Default value is <c>100 seconds</c>.</param>
-    public QdrantHttpClient(Uri httpAddress, string apiKey = null, TimeSpan? httpClientTimeout = null)
+    /// <param name="logger">The optional logger to log internal messages.</param>
+    /// <param name="disableTracing">Is set to <c>true</c>, http client activity tracing is disabled.</param>
+    public QdrantHttpClient(
+        Uri httpAddress,
+        string apiKey = null,
+        TimeSpan? httpClientTimeout = null,
+        ILogger logger = null,
+        bool disableTracing = false)
     {
-        var apiClient = new HttpClient()
+        HttpClient apiClient;
+        
+        if (disableTracing)
         {
-            BaseAddress = httpAddress,
-            Timeout = httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout
-        };
+            // Use custom http client handler that disables activity tracing
+            
+            DistributedContextPropagator.Current = new ConditionalPropagator();
+
+            apiClient = new HttpClient(new DisableActivityHandler(new HttpClientHandler()))
+            {
+                BaseAddress = httpAddress,
+                Timeout = httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout,
+            };
+        }
+        else
+        {
+            apiClient = new HttpClient()
+            {
+                BaseAddress = httpAddress,
+                Timeout = httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout
+            };
+        }
 
         if (apiKey is {Length: > 0})
         {
@@ -112,6 +150,7 @@ public partial class QdrantHttpClient
         }
 
         _apiClient = apiClient;
+        _logger = logger ?? NullLogger.Instance;
     }
 
     /// <summary>

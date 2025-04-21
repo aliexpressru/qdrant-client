@@ -37,7 +37,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestGetPeerInfoByUriSubstring_MoreThanOneNodeFound()
+    public async Task GetPeerInfoByUriSubstring_MoreThanOneNodeFound()
     {
         await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
@@ -48,7 +48,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestGetPeerInfoByUriSubstring_Success()
+    public async Task GetPeerInfoByUriSubstring_Success()
     {
         await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
@@ -72,7 +72,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestIsPeerEmpty_Success()
+    public async Task IsPeerEmpty_Success()
     {
         const uint vectorSize = 10;
 
@@ -126,7 +126,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestDrainPeer_CollectionDoesNotExist()
+    public async Task DrainPeer_CollectionDoesNotExist()
     {
         var drainPeerResponse =
             await _qdrantHttpClient.DrainPeer(
@@ -142,7 +142,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
     [Test]
     [TestCase(1)]
     [TestCase(2)]
-    public async Task TestDrainPeer_SelectedCollection(int replicationFactor)
+    public async Task DrainPeer_SelectedCollection(int replicationFactor)
     {
         await CreateSmallTestShardedCollection(
             _qdrantHttpClient,
@@ -229,7 +229,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
     [Test]
     [TestCase(1)]
     [TestCase(2)]
-    public async Task TestDrainPeer_AllCollections(int replicationFactor)
+    public async Task DrainPeer_AllCollections(int replicationFactor)
     {
         await CreateSmallTestShardedCollection(
             _qdrantHttpClient,
@@ -323,7 +323,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
     [Test]
     [TestCase(1)]
     [TestCase(2)]
-    public async Task TestReplicateShardsToClusterNode_SelectedCollection(int replicationFactor)
+    public async Task ReplicateShardsToClusterNode_SelectedCollection(int replicationFactor)
     {
         await CreateSmallTestShardedCollection(
             _qdrantHttpClient,
@@ -410,7 +410,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
     [Test]
     [TestCase(1)]
     [TestCase(2)]
-    public async Task TestReplicateShardsToClusterNode_AllCollections(int replicationFactor)
+    public async Task ReplicateShardsToClusterNode_AllCollections(int replicationFactor)
     {
         await CreateSmallTestShardedCollection(
             _qdrantHttpClient,
@@ -502,7 +502,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestReplicateShardsToClusterNode_RespectReplicationFactor()
+    public async Task ReplicateShardsToClusterNode_RespectReplicationFactor()
     {
         var replicationFactor = 2;
         await CreateSmallTestShardedCollection(

@@ -27,7 +27,7 @@ public class ServiceMethodsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestGetInstanceDetailsData()
+    public async Task GetInstanceDetailsData()
     {
         var instanceDetails = await _qdrantHttpClient.GetInstanceDetails(
             CancellationToken.None);
@@ -39,7 +39,7 @@ public class ServiceMethodsTests : QdrantTestsBase
     
     [TestCase(true)]
     [TestCase(false)]
-    public async Task TestGetTelemetryData(bool isAnonymized)
+    public async Task GetTelemetryData(bool isAnonymized)
     {
         var telemetry = await _qdrantHttpClient.GetTelemetry(
             CancellationToken.None,
@@ -52,7 +52,7 @@ public class ServiceMethodsTests : QdrantTestsBase
 
     [TestCase(true)]
     [TestCase(false)]
-    public async Task TestPrometheusMetrics(bool isAnonymized)
+    public async Task GetPrometheusMetrics(bool isAnonymized)
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -72,7 +72,7 @@ public class ServiceMethodsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCollectionReady_CollectionDoesNotExist()
+    public async Task EnsureCollectionReady_CollectionDoesNotExist()
     {
         var act = () => _qdrantHttpClient.EnsureCollectionReady(
                 TestCollectionName,
@@ -83,7 +83,7 @@ public class ServiceMethodsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCollectionReady_InvalidTimeout()
+    public async Task EnsureCollectionReady_InvalidTimeout()
     {
         var vectorSize = 10U;
 
@@ -109,7 +109,7 @@ public class ServiceMethodsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCollectionReady_OneSuccessfulResponse()
+    public async Task EnsureCollectionReady_OneSuccessfulResponse()
     {
         var vectorSize = 10U;
 
@@ -135,7 +135,7 @@ public class ServiceMethodsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCollectionReady_SeveralSuccessfulResponses()
+    public async Task EnsureCollectionReady_SeveralSuccessfulResponses()
     {
         var vectorSize = 10U;
 
@@ -161,7 +161,7 @@ public class ServiceMethodsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestStorageLock()
+    public async Task StorageLock()
     {
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
@@ -203,7 +203,7 @@ public class ServiceMethodsTests : QdrantTestsBase
 
     [Test]
     [Experimental("QD0001")]
-    public async Task TestReportIssues()
+    public async Task ReportIssues()
     {
         var issuesReportResult =
             await _qdrantHttpClient.ReportIssues(CancellationToken.None);

@@ -17,7 +17,7 @@ public class AuthorizationTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestUnauthorizedAction()
+    public async Task UnauthorizedAction()
     {
         if (IsCiEnvironment)
         {

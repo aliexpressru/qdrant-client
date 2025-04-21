@@ -27,7 +27,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_InvalidCollectionName()
+    public async Task CreateCollection_InvalidCollectionName()
     {
         var createCollectionAct = async () => await _qdrantHttpClient.CreateCollection(
             TestCollectionName + "/" + "aaa", // invalid collection name
@@ -51,7 +51,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCollectionExists()
+    public async Task CheckCollectionExists()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName2,
@@ -81,7 +81,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection()
+    public async Task CreateCollection()
     {
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -99,7 +99,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_VeryLongName()
+    public async Task CreateCollection_VeryLongName()
     {
         var veryLongCollectionName = new string('t', 1024);
 
@@ -119,7 +119,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     [TestCase(VectorDataType.Float32)]
     [TestCase(VectorDataType.Uint8)]
     [TestCase(VectorDataType.Float16)]
-    public async Task TestCreateCollection_WithSparseVectors(VectorDataType vectorDataType)
+    public async Task CreateCollection_WithSparseVectors(VectorDataType vectorDataType)
     {
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -140,7 +140,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_SameNamedVectors()
+    public async Task CreateCollection_SameNamedVectors()
     {
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -162,7 +162,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_DifferentNamedVectors()
+    public async Task CreateCollection_DifferentNamedVectors()
     {
         Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration> namedVectors = new()
         {
@@ -196,7 +196,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_Delete_RecreateSameCollection()
+    public async Task CreateCollection_Delete_RecreateSameCollection()
     {
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -232,7 +232,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_InitFrom()
+    public async Task CreateCollection_InitFrom()
     {
         var vectorSize = 10U;
 
@@ -303,7 +303,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestCreateCollection_CollectionAlreadyExists()
+    public async Task CreateCollection_CollectionAlreadyExists()
     {
         // create collection once
         await _qdrantHttpClient.CreateCollection(
@@ -334,7 +334,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestDeleteCollection()
+    public async Task DeleteCollection()
     {
         // create collection first
         await _qdrantHttpClient.CreateCollection(
@@ -357,7 +357,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestDeleteCollection_DoubleDeleteSameCollection()
+    public async Task DeleteCollection_DoubleDeleteSameCollection()
     {
         // create collection first
         await _qdrantHttpClient.CreateCollection(
@@ -383,7 +383,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestListCollections_EmptyCollectionList()
+    public async Task ListCollections_EmptyCollectionList()
     {
         var existingCollections = await _qdrantHttpClient.ListCollections(CancellationToken.None);
 
@@ -395,7 +395,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestListCollections()
+    public async Task ListCollections()
     {
         // create collection
         await _qdrantHttpClient.CreateCollection(
@@ -439,7 +439,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestGetCollectionInfo_NoCollection()
+    public async Task GetCollectionInfo_NoCollection()
     {
         var nonExistentCollectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
 
@@ -453,7 +453,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task TestGetCollectionInfo()
+    public async Task GetCollectionInfo()
     {
         // create collection
         await _qdrantHttpClient.CreateCollection(
