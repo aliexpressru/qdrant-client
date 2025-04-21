@@ -137,7 +137,7 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
     {
         var qdrantClient =
             new QdrantHttpClient(
-                new Uri(_qdrantClientSettings.HttpAddress),
+                _qdrantClientSettings.HttpAddressUri,
                 apiKey: _qdrantClientSettings.ApiKey,
                 logger: _logger,
                 disableTracing: true);

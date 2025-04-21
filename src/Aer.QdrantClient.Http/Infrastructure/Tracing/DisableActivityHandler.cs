@@ -21,7 +21,7 @@ internal class DisableActivityHandler : DelegatingHandler
 	}
 }
 
-/// See hacky gist from issie https://github.com/dotnet/runtime/issues/85883 for details https://gist.github.com/MihaZupan/835591bb22270b1aa7feeeece721520d
+/// See hacky gist from issue https://github.com/dotnet/runtime/issues/85883 for details : https://gist.github.com/MihaZupan/835591bb22270b1aa7feeeece721520d
 internal sealed class ConditionalPropagator : DistributedContextPropagator
 {
 	public static readonly AsyncLocal<bool> IgnoreRequest = new();
@@ -30,7 +30,7 @@ internal sealed class ConditionalPropagator : DistributedContextPropagator
 
 	public override IReadOnlyCollection<string> Fields => _originalPropagator.Fields;
 
-	public override void Inject(Activity? activity, object? carrier, PropagatorSetterCallback? setter)
+	public override void Inject(Activity activity, object carrier, PropagatorSetterCallback setter)
 	{
 		if (IgnoreRequest.Value)
 		{
@@ -41,14 +41,16 @@ internal sealed class ConditionalPropagator : DistributedContextPropagator
 	}
 
 	public override void ExtractTraceIdAndState(
-		object? carrier,
-		PropagatorGetterCallback? getter,
-		out string? traceId,
-		out string? traceState) =>
-		_originalPropagator.ExtractTraceIdAndState(carrier, getter, out traceId, out traceState);
+		object carrier,
+		PropagatorGetterCallback getter,
+		out string traceId,
+		out string traceState)
+		=>
+			_originalPropagator.ExtractTraceIdAndState(carrier, getter, out traceId, out traceState);
 
-	public override IEnumerable<KeyValuePair<string, string?>>? ExtractBaggage(
-		object? carrier,
-		PropagatorGetterCallback? getter) =>
-		_originalPropagator.ExtractBaggage(carrier, getter);
+	public override IEnumerable<KeyValuePair<string, string>> ExtractBaggage(
+		object carrier,
+		PropagatorGetterCallback getter)
+		=>
+			_originalPropagator.ExtractBaggage(carrier, getter);
 }
