@@ -152,7 +152,6 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
 
         qdrantClient.StartCreatingCollectionIndexes(
             TestCollectionName,
-            10,
             [
                 new CollectionPayloadIndexDefinition(
                     TestPayloadFieldName,
@@ -176,7 +175,7 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
         collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
         collectionInfo.Status.IsSuccess.Should().BeTrue();
 
-        collectionInfo.Result.Config.OptimizerConfig.IndexingThreshold.Should().Be(10);
+        collectionInfo.Result.Config.OptimizerConfig.IndexingThreshold.Should().Be(QdrantHttpClient.DEFAULT_COLLECTION_INDEXING_THRESHOLD);
 
         collectionInfo.Result.PayloadSchema.Count.Should().Be(2);
         collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName);

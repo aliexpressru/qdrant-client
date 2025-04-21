@@ -30,7 +30,7 @@ public class QdrantClientSettings
     /// If not set to <c>null</c>, all requests will include a header
     /// with the api-key : <c>api-key: 'API-KEY'</c>
     /// </summary>
-    public string ApiKey { internal set; get; }
+    public string ApiKey { set; get; }
 
     /// <summary>
     /// The default timeout for http client which ios used to call Qdrant HTTP API.

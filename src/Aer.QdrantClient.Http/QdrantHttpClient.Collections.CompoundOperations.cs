@@ -12,6 +12,8 @@ namespace Aer.QdrantClient.Http;
 [SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public partial class QdrantHttpClient
 {
+    internal const uint DEFAULT_COLLECTION_INDEXING_THRESHOLD = 10000;
+    
     /// <summary>
     /// Get the detailed information about specified existing collection.
     /// </summary>
@@ -90,16 +92,15 @@ public partial class QdrantHttpClient
     /// Pass logger when constructing <see cref="QdrantHttpClient"/> to see any errors that may happen during this operation.
     /// </summary>
     /// <param name="collectionName">Collection name to create indexes for.</param>
-    /// <param name="collectionIndexingThreshold">
-    /// Maximum size (in KiloBytes) of vectors allowed for plain index.
-    /// To disable vector indexing, set to <c>0</c>.
-    /// Note: 1kB = 1 vector of size 256.
-    /// </param>
     /// <param name="payloadIndexes">Collection payload index definitions that describe payload indexes to create after the HNSW index creation has been successfully issued.</param>
+    /// <param name="collectionIndexingThreshold">
+    /// Optional Maximum size (in KiloBytes) of vectors allowed for plain index.
+    /// If not set the default value of 10000 is used.
+    /// </param>
     public void StartCreatingCollectionIndexes(
         string collectionName,
-        uint collectionIndexingThreshold,
-        ICollection<CollectionPayloadIndexDefinition> payloadIndexes)
+        ICollection<CollectionPayloadIndexDefinition> payloadIndexes,
+        uint? collectionIndexingThreshold = null)
     {
         Task.Run(async () => {
             try
@@ -110,7 +111,7 @@ public partial class QdrantHttpClient
                     {
                         OptimizersConfig = new OptimizersConfiguration()
                         {
-                            IndexingThreshold = collectionIndexingThreshold
+                            IndexingThreshold = collectionIndexingThreshold ?? DEFAULT_COLLECTION_INDEXING_THRESHOLD
                         }
                     },
                     CancellationToken.None,
@@ -133,29 +134,35 @@ public partial class QdrantHttpClient
                     return;
                 }
 
-                foreach (var payloadIndex in payloadIndexes)
+                foreach (var payloadIndexDefinition in payloadIndexes)
                 {
                     var createPayloadIndexResponse = await CreatePayloadIndex(
                         collectionName,
-                        payloadIndex.PayloadIndexedFieldName,
-                        payloadIndex.PayloadIndexedFieldSchema,
+                        payloadIndexDefinition.PayloadIndexedFieldName,
+                        payloadIndexDefinition.PayloadIndexedFieldSchema,
                         CancellationToken.None,
-                        onDisk: payloadIndex.OnDisk,
-                        isTenant: payloadIndex.IsTenant,
-                        isPrincipal: payloadIndex.IsPrincipal,
+                        onDisk: payloadIndexDefinition.OnDisk,
+                        isTenant: payloadIndexDefinition.IsTenant,
+                        isPrincipal: payloadIndexDefinition.IsPrincipal,
                         isWaitForResult: false);
 
                     if (!createPayloadIndexResponse.Status.IsSuccess)
                     {
                         _logger.LogError(
                             "Failed to create payload index {PayloadIndex} for collection {CollectionName}. Details: {ErrorMessage}",
-                            payloadIndex.ToString(),
+                            payloadIndexDefinition.ToString(),
                             collectionName,
                             createPayloadIndexResponse.Status.GetErrorMessage());
 
                         return;
                     }
                 }
+
+                _logger.LogInformation(
+                    "Successfully started collection {CollectionName} HNSW and payload indexes [{PayloadIndexDefinitions}] creation",
+                    collectionName,
+                    string.Join(", ", payloadIndexes.Select(x => x.ToString()))
+                );
             }
             catch (Exception ex)
             { 
