@@ -13,13 +13,13 @@ public partial class QdrantHttpClient
         PayloadIndexedFieldType.Keyword,
         PayloadIndexedFieldType.Uuid
     ];
-    
+
     private readonly HashSet<PayloadIndexedFieldType> _allowedPayloadFieldTypesForPrincipalIndex = [
         PayloadIndexedFieldType.Integer,
         PayloadIndexedFieldType.Float,
         PayloadIndexedFieldType.Datetime
     ];
-    
+
     /// <summary>
     /// Creates an index on specified payload field.
     /// </summary>
@@ -62,6 +62,12 @@ public partial class QdrantHttpClient
     /// <see cref="PayloadIndexedFieldType.Float"/>,
     /// <see cref="PayloadIndexedFieldType.Datetime"/>
     /// </remarks>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
+    /// </param>
     public async Task<PayloadIndexOperationResponse> CreatePayloadIndex(
         string collectionName,
         string payloadFieldName,
@@ -70,7 +76,10 @@ public partial class QdrantHttpClient
         bool isWaitForResult = false,
         bool onDisk = false,
         bool isTenant = false,
-        bool isPrincipal = false)
+        bool isPrincipal = false,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         EnsureQdrantNameCorrect(collectionName);
         EnsureQdrantNameCorrect(payloadFieldName);
@@ -86,7 +95,7 @@ public partial class QdrantHttpClient
             throw new QdrantUnsupportedFieldSchemaForIndexConfiguration(
                 $"Principal index is not supported for payload field {payloadFieldName} with type {payloadFieldType}. Supported types: [{string.Join(", ", _allowedPayloadFieldTypesForPrincipalIndex)}]");
         }
-        
+
         if (payloadFieldType == PayloadIndexedFieldType.Text)
         {
             throw new InvalidOperationException(
@@ -102,7 +111,9 @@ public partial class QdrantHttpClient
             HttpMethod.Put,
             index,
             cancellationToken,
-            retryCount: 0);
+            retryCount,
+            retryDelay,
+            onRetry);
 
         return response;
     }
@@ -127,6 +138,12 @@ public partial class QdrantHttpClient
     /// On-disk payload index might affect cold requests latency, as it requires additional disk I/O operations.
     /// </param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
+    /// </param>
     public async Task<PayloadIndexOperationResponse> CreateFullTextPayloadIndex(
         string collectionName,
         string payloadTextFieldName,
@@ -136,7 +153,10 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         bool isLowercasePayloadTokens = true,
         bool onDisk = false,
-        bool isWaitForResult = false)
+        bool isWaitForResult = false,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         EnsureQdrantNameCorrect(collectionName);
         EnsureQdrantNameCorrect(payloadTextFieldName);
@@ -159,7 +179,9 @@ public partial class QdrantHttpClient
             HttpMethod.Put,
             createIndexRequest,
             cancellationToken,
-            retryCount: 0);
+            retryCount,
+            retryDelay,
+            onRetry);
 
         return response;
     }
@@ -171,11 +193,20 @@ public partial class QdrantHttpClient
     /// <param name="fieldName">Name of the field to delete index for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
+    /// </param>
     public async Task<PayloadIndexOperationResponse> DeletePayloadIndex(
         string collectionName,
         string fieldName,
         CancellationToken cancellationToken,
-        bool isWaitForResult = false)
+        bool isWaitForResult = false,
+        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         EnsureQdrantNameCorrect(collectionName);
         EnsureQdrantNameCorrect(fieldName);
@@ -186,7 +217,9 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Delete,
             cancellationToken,
-            retryCount: 0);
+            retryCount,
+            retryDelay,
+            onRetry);
 
         return response;
     }
