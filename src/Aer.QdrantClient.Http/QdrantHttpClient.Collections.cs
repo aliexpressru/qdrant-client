@@ -133,9 +133,18 @@ public partial class QdrantHttpClient
     /// </summary>
     /// <param name="collectionName">Collection name to get info for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
+    /// </param>
     public async Task<GetCollectionInfoResponse> GetCollectionInfo(
         string collectionName,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        uint retryCount = DEFAULT_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         EnsureQdrantNameCorrect(collectionName);
 
@@ -145,7 +154,9 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Get,
             cancellationToken,
-            retryCount: 0);
+            retryCount,
+            retryDelay,
+            onRetry);
 
         return response;
     }
@@ -195,7 +206,17 @@ public partial class QdrantHttpClient
     /// Get list of all existing collections aliases.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    public async Task<ListCollectionAliasesResponse> ListAllAliases(CancellationToken cancellationToken)
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
+    /// </param>
+    public async Task<ListCollectionAliasesResponse> ListAllAliases(
+        CancellationToken cancellationToken,
+        uint retryCount = DEFAULT_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var url = "/aliases";
 
@@ -203,7 +224,9 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Get,
             cancellationToken,
-            retryCount: 0);
+            retryCount,
+            retryDelay,
+            onRetry);
 
         return response;
     }
@@ -213,9 +236,18 @@ public partial class QdrantHttpClient
     /// </summary>
     /// <param name="collectionName">The name of the collection to list aliases for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
+    /// </param>
     public async Task<ListCollectionAliasesResponse> ListCollectionAliases(
         string collectionName,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        uint retryCount = DEFAULT_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var url = $"/collections/{collectionName}/aliases";
 
@@ -223,7 +255,9 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Get,
             cancellationToken,
-            retryCount: 0);
+            retryCount,
+            retryDelay,
+            onRetry);
 
         return response;
     }
