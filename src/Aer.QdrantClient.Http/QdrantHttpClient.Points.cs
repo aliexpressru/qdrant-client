@@ -335,7 +335,7 @@ public partial class QdrantHttpClient
         string collectionName,
         PointId pointId,
         CancellationToken cancellationToken,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -379,7 +379,7 @@ public partial class QdrantHttpClient
         VectorSelector withVector = null,
         ReadPointsConsistency consistency = null,
         ShardSelector shardSelector = null,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -443,7 +443,7 @@ public partial class QdrantHttpClient
         ReadPointsConsistency consistency = null,
         ShardSelector shardSelector = null,
         OrderBySelector orderBySelector = null,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -490,7 +490,7 @@ public partial class QdrantHttpClient
         string collectionName,
         CountPointsRequest countPointsRequest,
         CancellationToken cancellationToken,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -528,7 +528,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
         TimeSpan? timeout = null,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -572,7 +572,7 @@ public partial class QdrantHttpClient
         SearchPointsRequest searchPointsRequest,
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -610,7 +610,7 @@ public partial class QdrantHttpClient
         SearchPointsBatchedRequest searchPointsBatchedRequest,
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -648,7 +648,7 @@ public partial class QdrantHttpClient
         SearchPointsGroupedRequest searchPointsGroupedRequest,
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -688,7 +688,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
         TimeSpan? timeout = null,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -728,7 +728,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
         TimeSpan? timeout = null,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -767,7 +767,7 @@ public partial class QdrantHttpClient
         RecommendPointsRequest recommendPointsRequest,
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -805,7 +805,7 @@ public partial class QdrantHttpClient
         RecommendPointsBatchedRequest recommendPointsBatchedRequest,
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -844,7 +844,7 @@ public partial class QdrantHttpClient
         RecommendPointsGroupedRequest recommendPointsGroupedRequest,
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -895,7 +895,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
         TimeSpan? timeout = null,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -936,7 +936,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
         TimeSpan? timeout = null,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -978,7 +978,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
         TimeSpan? timeout = null,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -1020,7 +1020,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
         TimeSpan? timeout = null,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -1063,7 +1063,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         ReadPointsConsistency consistency = null,
         TimeSpan? timeout = null,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {

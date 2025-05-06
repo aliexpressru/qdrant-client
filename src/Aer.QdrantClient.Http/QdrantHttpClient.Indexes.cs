@@ -77,7 +77,7 @@ public partial class QdrantHttpClient
         bool onDisk = false,
         bool isTenant = false,
         bool isPrincipal = false,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -154,7 +154,7 @@ public partial class QdrantHttpClient
         bool isLowercasePayloadTokens = true,
         bool onDisk = false,
         bool isWaitForResult = false,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
@@ -204,7 +204,7 @@ public partial class QdrantHttpClient
         string fieldName,
         CancellationToken cancellationToken,
         bool isWaitForResult = false,
-        uint retryCount = DEFAULT_POINTS_READ_RETRY_COUNT,
+        uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {

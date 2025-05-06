@@ -28,8 +28,8 @@ public partial class QdrantHttpClient
     private readonly ILogger _logger;
 
     private const int DEFAULT_OPERATION_TIMEOUT_SECONDS = 30;
-    private const uint DEFAULT_POINTS_READ_RETRY_COUNT = 3;
-    
+    private const uint DEFAULT_RETRY_COUNT = 3;
+
     private static readonly TimeSpan _defaultPointsReadRetryDelay = TimeSpan.FromSeconds(1);
 
     private readonly TimeSpan _defaultOperationTimeout = TimeSpan.FromSeconds(DEFAULT_OPERATION_TIMEOUT_SECONDS);
@@ -72,7 +72,7 @@ public partial class QdrantHttpClient
         _apiClient = apiClient;
         _logger = logger ?? NullLogger.Instance;
     }
-    
+
     /// <summary>
     /// Initializes a new Qdrant HTTP client instance.
     /// </summary>
@@ -119,11 +119,11 @@ public partial class QdrantHttpClient
         bool disableTracing = false)
     {
         HttpClient apiClient;
-        
+
         if (disableTracing)
         {
             // Use custom http client handler that disables activity tracing
-            
+
             DistributedContextPropagator.Current = new ConditionalPropagator();
 
             apiClient = new HttpClient(new DisableActivityHandler(new HttpClientHandler()))
@@ -346,7 +346,7 @@ public partial class QdrantHttpClient
             responseReader: async responseMessage =>
             {
                 var resultStream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
-                
+
                 var contentLength = response.Content.Headers.ContentLength ?? 0;
 
                 return (contentLength, resultStream);
@@ -492,10 +492,10 @@ public partial class QdrantHttpClient
                 }
             }
             catch (Exception)
-            { 
+            {
                 // Ignore
             }
-            
+
             throw new QdrantUnauthorizedAccessException(forbiddenReason);
         }
 
