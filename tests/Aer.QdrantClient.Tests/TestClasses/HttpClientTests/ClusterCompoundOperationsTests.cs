@@ -517,7 +517,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
 
         var targetPeerId = peerInfo.PeerId;
 
-        var testLogger = new DummyMicrosoftLogger();
+        var testLogger = new TestMicrosoftLogger();
 
         var replicateCollectionResponse =
             await _qdrantHttpClient.ReplicateShardsToPeer(

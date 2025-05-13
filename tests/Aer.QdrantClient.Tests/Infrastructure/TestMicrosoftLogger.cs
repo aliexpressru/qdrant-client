@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Aer.QdrantClient.Tests.Infrastructure;
 
-internal class DummyMicrosoftLogger : ILogger
+internal class TestMicrosoftLogger : ILogger
 {
     private class MicrosoftLoggerScopeMock<TState> : IDisposable
     {

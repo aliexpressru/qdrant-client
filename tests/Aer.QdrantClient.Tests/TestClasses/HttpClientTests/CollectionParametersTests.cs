@@ -1,9 +1,12 @@
-﻿using Aer.QdrantClient.Http;
+﻿using System.Collections.Concurrent;
+using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
+using Aer.QdrantClient.Tests.Infrastructure;
 using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
@@ -636,6 +639,74 @@ public class CollectionParametersTests : QdrantTestsBase
         updatedCollectionInfo.Result.Config.OptimizerConfig.MaxOptimizationThreads.Should().Be(newMaxOptimizationThreads);
         updatedCollectionInfo.Result.Config.HnswConfig.MaxIndexingThreads.Should().Be(newMaxIndexingThreads);
         updatedCollectionInfo.Result.Config.Params.OnDiskPayload.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task UpdateCollectionParameters_WithRetry()
+    {
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = false,
+                OptimizersConfig = new OptimizersConfiguration()
+                {
+                    MemmapThreshold = 1000,
+                    MaxOptimizationThreads = 1,
+                    IndexingThreshold = 1
+                },
+                HnswConfig = new HnswConfiguration()
+                {
+                    MaxIndexingThreads = 1
+                }
+            },
+            CancellationToken.None);
+
+        const int newMemmapThreshold = 1;
+
+        var throwingQdrantHttpClient = new ThrowingQdrantHttpClient(_qdrantHttpClient.ApiClient);
+        
+        throwingQdrantHttpClient.ThrowOnce();
+        throwingQdrantHttpClient.BadRequestOnce();
+
+        int retryCount = 0;
+        ConcurrentBag<Exception> exceptions = new();
+
+        var updateCollectionParametersResult = await throwingQdrantHttpClient.UpdateCollectionParameters(
+            TestCollectionName,
+            new UpdateCollectionParametersRequest()
+            {
+                OptimizersConfig = new()
+                {
+                    MemmapThreshold = newMemmapThreshold,
+                }
+            },
+            CancellationToken.None,
+            retryCount: 3,
+            retryDelay: TimeSpan.FromMilliseconds(10),
+            onRetry: (ex, _, _, _) => { 
+                Interlocked.Increment(ref retryCount);
+                exceptions.Add(ex);
+            }
+        );
+
+        retryCount.Should().Be(2);
+        exceptions.Count.Should().Be(2);
+
+        // 1 retry exception because when retrying bad request we don't actually have any real exception but a special one.
+        exceptions.Count(e => e is QdrantRequestRetryException).Should().Be(1);
+        exceptions.Count(e => e is HttpRequestException).Should().Be(1); // 1 exception for requested request failure
+        
+        updateCollectionParametersResult.Status.IsSuccess.Should().BeTrue();
+        updateCollectionParametersResult.Result.Should().NotBeNull();
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        var updatedCollectionInfo =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        // Just check that thew request to update collection parameters actually worked
+        updatedCollectionInfo.Result.Config.OptimizerConfig.MemmapThreshold.Should().Be(newMemmapThreshold);
     }
 
     [Test]

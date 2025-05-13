@@ -85,7 +85,13 @@ public partial class QdrantHttpClient
         if (request.IsEmpty)
         {
             // Empty request is swapped with trigger optimizers request.
-            return await TriggerOptimizers(collectionName, cancellationToken);
+            return await TriggerOptimizers(
+                collectionName,
+                cancellationToken,
+                timeout,
+                retryCount,
+                retryDelay,
+                onRetry);
         }
 
         var response = await ExecuteRequest<UpdateCollectionParametersRequest, DefaultOperationResponse>(
@@ -106,11 +112,20 @@ public partial class QdrantHttpClient
     /// <param name="collectionName">Name of the collection to update.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="timeout">Wait for operation commit timeout in seconds. If timeout is reached - request will return with service error.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
+    /// </param>
     /// <remarks>Issues the empty update collection parameters request to start optimizers for grey collections. https://qdrant.tech/documentation/concepts/collections/#grey-collection-status</remarks>
     public async Task<DefaultOperationResponse> TriggerOptimizers(
         string collectionName,
         CancellationToken cancellationToken,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         EnsureQdrantNameCorrect(collectionName);
 
@@ -123,7 +138,9 @@ public partial class QdrantHttpClient
             _patchHttpMethod,
             UpdateCollectionParametersRequest.EmptyRequestBody,
             cancellationToken,
-            retryCount: 0);
+            retryCount,
+            retryDelay,
+            onRetry);
 
         return response;
     }

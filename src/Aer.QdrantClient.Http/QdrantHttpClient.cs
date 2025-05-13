@@ -6,7 +6,11 @@ using System.Text;
 using System.Text.Json;
 using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Exceptions;
+    
+#if NETSTANDARD2_0 || NETSTANDARD2_1 
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
+#endif
+
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Infrastructure.Tracing;
 using Aer.QdrantClient.Http.Models.Requests;
@@ -23,14 +27,13 @@ namespace Aer.QdrantClient.Http;
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public partial class QdrantHttpClient
-{
-    private readonly HttpClient _apiClient;
+{ 
     private readonly ILogger _logger;
 
     private const int DEFAULT_OPERATION_TIMEOUT_SECONDS = 30;
     private const uint DEFAULT_RETRY_COUNT = 3;
 
-    private static readonly TimeSpan _defaultPointsReadRetryDelay = TimeSpan.FromSeconds(1);
+    private static readonly TimeSpan _defaultPointsReadRetryDelay = TimeSpan.FromMilliseconds(100);
 
     private readonly TimeSpan _defaultOperationTimeout = TimeSpan.FromSeconds(DEFAULT_OPERATION_TIMEOUT_SECONDS);
     private readonly TimeSpan _defaultPollingInterval = TimeSpan.FromSeconds(1);
@@ -56,11 +59,24 @@ public partial class QdrantHttpClient
         .. _unauthorizedStatusCodes
     ];
 
+    // contains codes messages with which should not be retried
+    private static readonly HashSet<HttpStatusCode> _noRetryStatusCodes =
+    [
+        HttpStatusCode.NotFound,
+        .. _unauthorizedStatusCodes
+    ];
+    
     private static readonly List<string> _invalidQdrantNameSymbols =
     [
         "/",
         " "
     ];
+
+    /// <summary>
+    /// The actual HTTP client used to make calls to Qdrant API.
+    /// </summary>
+    /// <remarks>Protected internal for testing purposes.</remarks>
+    protected internal HttpClient ApiClient;
 
     /// <summary>
     /// Initializes a new Qdrant HTTP client instance.
@@ -69,7 +85,7 @@ public partial class QdrantHttpClient
     /// <param name="logger">The optional logger to log internal messages.</param>
     public QdrantHttpClient(HttpClient apiClient, ILogger logger = null)
     {
-        _apiClient = apiClient;
+        ApiClient = apiClient;
         _logger = logger ?? NullLogger.Instance;
     }
 
@@ -149,7 +165,7 @@ public partial class QdrantHttpClient
             );
         }
 
-        _apiClient = apiClient;
+        ApiClient = apiClient;
         _logger = logger ?? NullLogger.Instance;
     }
 
@@ -240,7 +256,7 @@ public partial class QdrantHttpClient
             throw new InvalidOperationException("Message request uri is null");
         }
 
-        var response = await _apiClient.SendAsync(message, cancellationToken);
+        var response = await ApiClient.SendAsync(message, cancellationToken);
 
         var result = await ReadResponseAndHandleErrors(
             message,
@@ -335,7 +351,7 @@ public partial class QdrantHttpClient
             throw new InvalidOperationException("Message request uri is null");
         }
 
-        var response = await _apiClient.SendAsync(
+        var response = await ApiClient.SendAsync(
             message,
             HttpCompletionOption.ResponseHeadersRead,
             cancellationToken);
@@ -366,9 +382,8 @@ public partial class QdrantHttpClient
         Action<Exception, TimeSpan, int, uint> onRetry = null)
         where TResponse : QdrantResponseBase
     {
-        var requestMessage = createMessage();
         var getResponse =
-            async () => await _apiClient.SendAsync(requestMessage, cancellationToken);
+            async () => await ApiClient.SendAsync(createMessage(), cancellationToken);
 
         if (retryCount > 0)
         {
@@ -387,31 +402,38 @@ public partial class QdrantHttpClient
 #endif
 
                 )
+                .OrResult<HttpResponseMessage>(r=>!r.IsSuccessStatusCode && !_noRetryStatusCodes.Contains(r.StatusCode))
                 .WaitAndRetryAsync(
                     (int) retryCount,
                     _ => retryDelay ?? _defaultPointsReadRetryDelay,
-                    onRetry: (exception, currentRetryDelay, retryNumber, _) =>
+                    onRetry: (result, currentRetryDelay, retryNumber, _) =>
                     {
-                        onRetry?.Invoke(exception, currentRetryDelay, retryNumber, retryCount);
+                        // result.Exception can be null when retrying not the exceptional case but unsuccessful status code
+                        // To avoid null reference exception we substitute null exceptions with a special QdrantRequestRetryException
+                        onRetry?.Invoke(result.Exception ?? new QdrantRequestRetryException(result.Result), currentRetryDelay, retryNumber, retryCount);
                     }
                 )
                 .ExecuteAsync(
 #if NETSTANDARD2_0
-                    async () => (await _apiClient.SendAsync(createMessage(), cancellationToken)).SetStatusCode()
+                    async () => (await ApiClient.SendAsync(createMessage(), cancellationToken)).SetStatusCode()
 #else
-                    () => _apiClient.SendAsync(createMessage(), cancellationToken)
+                    () => ApiClient.SendAsync(createMessage(), cancellationToken)
 #endif
                 );
         }
 
-        var response = await getResponse();
+        var responseMessage = await getResponse();
+
+        // createMessage() should never be called unless there is some non-standard http message handler in HttpClient that does not set the RequestMessage property.
+        // See https://github.com/dotnet/runtime/discussions/104113 for details.
+        var requestMessage = responseMessage.RequestMessage ?? createMessage(); 
 
         var result = await ReadResponseAndHandleErrors(
-            requestMessage,
-            response,
-            responseReader: async responseMessage =>
+            requestMessage, 
+            responseMessage,
+            responseReader: async rm =>
             {
-                var resultString = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
+                var resultString = await rm.Content.ReadAsStringAsync(cancellationToken);
 
                 var deserializedObject =
                     JsonSerializer.Deserialize<TResponse>(resultString, JsonSerializerConstants.DefaultSerializerOptions);
@@ -431,21 +453,37 @@ public partial class QdrantHttpClient
 
                     return badRequestResult;
                 }
-                catch (JsonException jex)
+                catch (JsonException)
                 {
                     // means that the response is a simple string
                     var errorResponse = Activator.CreateInstance<TResponse>();
+                    
                     errorResponse.Status = new QdrantStatus(QdrantOperationStatusType.Unknown)
                     {
                         Error = errorContent,
                         RawStatusString = errorContent,
-                        Exception = jex
                     };
+                    
                     errorResponse.Time = -1;
 
                     return errorResponse;
                 }
+                catch (Exception ex)
+                {
+                    // means that some unexpected error happened
+                    var errorResponse = Activator.CreateInstance<TResponse>();
 
+                    errorResponse.Status = new QdrantStatus(QdrantOperationStatusType.Unknown)
+                    {
+                        Error = errorContent,
+                        RawStatusString = errorContent,
+                        Exception = ex
+                    };
+                    
+                    errorResponse.Time = -1;
+
+                    return errorResponse;
+                }
             },
             cancellationToken);
 
@@ -453,42 +491,42 @@ public partial class QdrantHttpClient
     }
 
     private async Task<TResponse> ReadResponseAndHandleErrors<TResponse>(
-        HttpRequestMessage message,
-        HttpResponseMessage response,
+        HttpRequestMessage requestMessage,
+        HttpResponseMessage responseMessage,
         Func<HttpResponseMessage, Task<TResponse>> responseReader,
         Func<string, TResponse> badRequestResponseMessageReader,
         CancellationToken cancellationToken)
     {
         // We have already checked that the request uri is not null
-        var url = message.RequestUri!.ToString();
+        var url = requestMessage.RequestUri!.ToString();
 
-        if (!response.IsSuccessStatusCode
-            && !_specialStatusCodes.Contains(response.StatusCode))
+        if (!responseMessage.IsSuccessStatusCode
+            && !_specialStatusCodes.Contains(responseMessage.StatusCode))
         {
             var errorResultString =
-                await response.Content.ReadAsStringAsync(cancellationToken);
+                await responseMessage.Content.ReadAsStringAsync(cancellationToken);
 
             throw new QdrantCommunicationException(
-                message.Method.Method,
+                requestMessage.Method.Method,
                 url,
-                response.StatusCode,
-                response.ReasonPhrase,
+                responseMessage.StatusCode,
+                responseMessage.ReasonPhrase,
                 errorResultString);
         }
 
         // handle unauthorized codes
-        if (_unauthorizedStatusCodes.Contains(response.StatusCode))
+        if (_unauthorizedStatusCodes.Contains(responseMessage.StatusCode))
         {
-            var forbiddenReason = response.ReasonPhrase;
+            var forbiddenReason = responseMessage.ReasonPhrase;
 
             try
             {
                 // Try to read specific error from content
-                var errorMessage = await response.Content.ReadAsStringAsync(cancellationToken);
+                var errorMessage = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
 
                 if (!string.IsNullOrEmpty(errorMessage))
                 {
-                    forbiddenReason = $"{response.ReasonPhrase} : {errorMessage}";
+                    forbiddenReason = $"{responseMessage.ReasonPhrase} : {errorMessage}";
                 }
             }
             catch (Exception)
@@ -502,24 +540,24 @@ public partial class QdrantHttpClient
         // in case of bad request the result may be in the form of a single string
         // thus the following parsing may fail
 
-        if (response.StatusCode == HttpStatusCode.BadRequest)
+        if (responseMessage.StatusCode == HttpStatusCode.BadRequest)
         {
-            var errorResult = await response.Content.ReadAsStringAsync(cancellationToken);
+            var errorResult = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
 
             if (badRequestResponseMessageReader == null)
             {
                 throw new QdrantCommunicationException(
-                    message.Method.Method,
+                    requestMessage.Method.Method,
                     url,
-                    response.StatusCode,
-                    response.ReasonPhrase,
+                    responseMessage.StatusCode,
+                    responseMessage.ReasonPhrase,
                     errorResult);
             }
 
             return badRequestResponseMessageReader(errorResult);
         }
 
-        var readResult = await responseReader(response);
+        var readResult = await responseReader(responseMessage);
 
         return readResult;
     }
