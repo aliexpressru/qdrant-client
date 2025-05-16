@@ -22,11 +22,20 @@ public partial class QdrantHttpClient
     /// <param name="request">The collection creation request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
+    /// </param>
     public async Task<DefaultOperationResponse> CreateCollection(
         string collectionName,
         CreateCollectionRequest request,
         CancellationToken cancellationToken,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         if (request is null)
         {
@@ -44,7 +53,9 @@ public partial class QdrantHttpClient
             HttpMethod.Put,
             request,
             cancellationToken,
-            retryCount: 0);
+            retryCount,
+            retryDelay,
+            onRetry);
 
         return response;
     }
@@ -201,10 +212,19 @@ public partial class QdrantHttpClient
     /// <param name="collectionName">The name of the collection to delete.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
+    /// </param>
     public async Task<DefaultOperationResponse> DeleteCollection(
         string collectionName,
         CancellationToken cancellationToken,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         EnsureQdrantNameCorrect(collectionName);
 
@@ -214,7 +234,9 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Delete,
             cancellationToken,
-            retryCount: 0);
+            retryCount,
+            retryDelay,
+            onRetry);
 
         return response;
     }
@@ -285,10 +307,19 @@ public partial class QdrantHttpClient
     /// <param name="updateCollectionAliasesRequest">The request with update aliases operations batch.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
+    /// </param>
     public async Task<DefaultOperationResponse> UpdateCollectionsAliases(
         UpdateCollectionAliasesRequest updateCollectionAliasesRequest,
         CancellationToken cancellationToken,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         if (updateCollectionAliasesRequest.OperationsCount == 0)
         {
@@ -305,7 +336,9 @@ public partial class QdrantHttpClient
             HttpMethod.Post,
             updateCollectionAliasesRequest,
             cancellationToken,
-            retryCount: 0);
+            retryCount,
+            retryDelay,
+            onRetry);
 
         return response;
     }
