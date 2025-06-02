@@ -4,12 +4,12 @@ services:
 
   qdrant-0:
     container_name: qdrant-0
-    image: qdrant/qdrant:v1.13.5
+    image: qdrant/qdrant:v1.14.1
     entrypoint: ./entrypoint.sh
     command: --uri 'http://qdrant-0:6335'
     volumes:
-      - ./volumes/0/qdrant_storage:/qdrant/storage
-      - ./volumes/0/qdrant_snapshots:/qdrant/snapshots
+      - qdrant-storage-0:/qdrant/storage
+      - snapshot-data-0:/qdrant/snapshots
       - ./qdrant-config.yaml:/qdrant/config/production.yaml
     ports:
       - "6333:6333"
@@ -28,12 +28,12 @@ services:
 
   qdrant-1:
     container_name: qdrant-1
-    image: qdrant/qdrant:v1.13.5
+    image: qdrant/qdrant:v1.14.1
     entrypoint: ./entrypoint.sh
     command: --uri 'http://qdrant-1:6335'
     volumes:
-      - ./volumes/1/qdrant_storage:/qdrant/storage
-      - ./volumes/1/qdrant_snapshots:/qdrant/snapshots
+      - qdrant-storage-1:/qdrant/storage
+      - snapshot-data-1:/qdrant/snapshots
       - ./qdrant-config-cluster.yaml:/qdrant/config/production.yaml
     ports:
       - "6343:6333"
@@ -50,12 +50,12 @@ services:
 
   qdrant-2:
     container_name: qdrant-2
-    image: qdrant/qdrant:v1.13.5
+    image: qdrant/qdrant:v1.14.1
     entrypoint: ./entrypoint.sh
     command: --bootstrap 'http://qdrant-1:6335'
     volumes:
-      - ./volumes/2/qdrant_storage:/qdrant/storage
-      - ./volumes/2/qdrant_snapshots:/qdrant/snapshots
+      - qdrant-storage-2:/qdrant/storage
+      - snapshot-data-2:/qdrant/snapshots
       - ./qdrant-config-cluster.yaml:/qdrant/config/production.yaml
     ports:
       - "6353:6333"
@@ -70,24 +70,27 @@ services:
           cpus: '3'
           memory: 2G
 
-  # qdrant-3:
-  #   container_name: qdrant-3
-  #   image: qdrant/qdrant:v1.13.5
-  #   entrypoint: ./entrypoint.sh
-  #   command: --bootstrap 'http://qdrant-1:6335'
-  #   volumes:
-  #     - ./volumes/3/qdrant_storage:/qdrant/storage
-  #     - ./volumes/3/qdrant_snapshots:/qdrant/snapshots
-  #     - ./qdrant-config-cluster.yaml:/qdrant/config/production.yaml
-  #   ports:
-  #     - "6363:6333"
-  #     - "6364:6334"
-  #     - "6365:6335"
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: '4'
-  #         memory: 6G
-  #       reservations:
-  #         cpus: '1'
-  #         memory: 2G
+# We need to use named volumes instead of local volumes to avoid qdrant zerioing out the vectors after index creation.
+# And also to avoid the " \"called `Result::unwrap()` on an `Err` value: OutputTooSmall { expected: 4, actual: 0 }" error on version 1.14.x.
+volumes:
+  qdrant-storage-0:
+    # Service internal error: 1 of 1 read operations failed:\n  Service internal error: task 116 panicked with message \"called `Result::unwrap()` on an `Err` value: OutputTooSmall { expected: 4, actual: 0 }
+    # This error is caused by using local volumes with fs paths instead of named volumes managed by docker.
+
+    # driver: local
+    # driver_opts:
+    #   type: none
+    #   device: ./volumes/0/qdrant_storage
+    #   o: bind
+  qdrant-storage-1:
+  qdrant-storage-2:
+
+  snapshot-data-0:
+    # driver: local
+    # driver_opts:
+    #   type: none
+    #   device: ./volumes/0/qdrant_snapshots
+    #   o: bind
+  snapshot-data-1:
+  snapshot-data-2:
+  

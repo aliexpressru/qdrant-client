@@ -1,8 +1,12 @@
 using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Filters;
+using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests.Public;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
+using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
@@ -73,6 +77,105 @@ internal class CollectionIndexTests : QdrantTestsBase
         collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName);
 
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Float);
+    }
+
+    [Test]
+    public async Task CreateIndex_CheckVectorsNonZero()
+    {
+        var vectorCount = 100;
+        var vectorSize = 10U;
+        
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        for (int i = 0; i < vectorCount; i++)
+        {
+            upsertPoints.Add(
+                new(
+                    PointId.Integer((ulong) i),
+                    CreateTestVector(vectorSize),
+                    i
+                )
+            );
+        }
+
+        var upsertPointsResult
+            = await _qdrantHttpClient.UpsertPoints(
+                TestCollectionName,
+                new UpsertPointsRequest<TestPayload>()
+                {
+                    Points = upsertPoints
+                },
+                CancellationToken.None,
+                isWaitForResult: true,
+                ordering: OrderingType.Strong);
+        
+        upsertPointsResult.Status.IsSuccess.Should().BeTrue();
+        
+        // Enable HNSW index
+        
+        var enableIndexResult = await _qdrantHttpClient.UpdateCollectionParameters(TestCollectionName,
+            new UpdateCollectionParametersRequest()
+            {
+                OptimizersConfig = new(){
+                    IndexingThreshold = 1
+                }
+            },
+            CancellationToken.None);
+
+        enableIndexResult.Status.IsSuccess.Should().BeTrue();
+
+        // Enable payload
+        
+        var createCollectionIndexResult =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                "integer",
+                PayloadIndexedFieldType.Float,
+                CancellationToken.None,
+                isWaitForResult: true);
+
+        createCollectionIndexResult.Status.IsSuccess.Should().BeTrue();
+
+        // Just in case wait for index to be created
+        await Task.Delay(TimeSpan.FromMilliseconds(100)); 
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        var collectionInfo = (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
+        collectionInfo.IndexedVectorsCount.Should().Be((uint)vectorCount);
+        
+        // Check that all vectors are non-zero
+        
+        var readAllPoints = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            QdrantFilter.Empty, 
+            PayloadPropertiesSelector.All,
+            limit: (uint)vectorCount,
+            withVector: true,
+            cancellationToken: CancellationToken.None);
+        
+        readAllPoints.Status.IsSuccess.Should().BeTrue();
+        readAllPoints.Result.Points.Length.Should().Be(vectorCount);
+        
+        foreach(var readPoint in readAllPoints.Result.Points)
+        {
+            readPoint.Vector.Should().NotBeNull();
+            var isWholeVectorZero = true;
+            
+            foreach (var vectorComponent in readPoint.Vector.AsDenseVector().VectorValues)
+            {
+                isWholeVectorZero &= vectorComponent == 0;
+            }
+
+            isWholeVectorZero.Should().BeFalse();
+        }
     }
 
     [Test]
