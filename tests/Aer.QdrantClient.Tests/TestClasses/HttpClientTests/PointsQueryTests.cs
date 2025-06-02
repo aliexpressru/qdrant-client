@@ -78,7 +78,7 @@ public class PointsQueryTests : QdrantTestsBase
 
         var nearestPointsByVectorResponse = await _qdrantHttpClient.QueryPoints(
             TestCollectionName,
-            new QueryPointsRequest(PointsQuery.CreateFindNearestPointsQuery(upsertPointsByPointIds.First().Value.Vector))
+            new QueryPointsRequest(upsertPointsByPointIds.First().Value.Vector)
             {
                 WithPayload = true,
                 WithVector = true,

@@ -85,6 +85,20 @@ volumes:
   qdrant-storage-1:
   qdrant-storage-2:
 
+  # qdrant-config-single-node:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     device: ./qdrant-config.yaml
+  #     o: bind
+
+  # qdrant-config-cluster:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     device: ./qdrant-config-cluster.yaml
+  #     o: bind
+
   snapshot-data-0:
     # driver: local
     # driver_opts:

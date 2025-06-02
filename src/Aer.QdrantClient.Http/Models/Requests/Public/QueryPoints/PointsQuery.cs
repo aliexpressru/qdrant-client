@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
+using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
@@ -15,6 +17,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 [JsonDerivedType(typeof(OrderByQuery))]
 [JsonDerivedType(typeof(FusionQuery))]
 [JsonDerivedType(typeof(SampleQuery))]
+[JsonDerivedType(typeof(FormulaQuery))]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public abstract class PointsQuery
 {
@@ -127,6 +130,16 @@ public abstract class PointsQuery
     {
         public string Sample { get; } = "random";
     }
+    
+    internal sealed class FormulaQuery : PointsQuery
+    {
+        public string Formula { get; }
+
+        internal FormulaQuery(string formula)
+        {
+            Formula = formula;
+        }
+    }
 
     /// <summary>
     /// Creates a "find nearest points" query.
@@ -185,4 +198,22 @@ public abstract class PointsQuery
     /// Creates a "random sample" query.
     /// </summary>
     public static PointsQuery CreateSampleQuery() => new SampleQuery();
+
+    /// <summary>
+    /// Implicitly converts query vector to an instance of <see cref="PointsQuery"/>.
+    /// </summary>
+    /// <param name="queryVector">The query vector to convert.</param>
+    public static implicit operator PointsQuery(VectorBase queryVector) => CreateFindNearestPointsQuery(queryVector);
+    
+    /// <summary>
+    /// Implicitly converts query vector to an instance of <see cref="PointsQuery"/>.
+    /// </summary>
+    /// <param name="queryVector">The query vector to convert.</param>
+    public static implicit operator PointsQuery(QueryVector queryVector) => CreateFindNearestPointsQuery(queryVector);
+
+    /// <summary>
+    /// Implicitly converts point id to an instance of <see cref="PointsQuery"/>.
+    /// </summary>
+    /// <param name="pointId">The point id to convert.</param>
+    public static implicit operator PointsQuery(PointId pointId) => CreateFindNearestPointsQuery(pointId);
 }
