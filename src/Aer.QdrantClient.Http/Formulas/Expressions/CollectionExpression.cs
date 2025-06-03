@@ -3,25 +3,27 @@
 namespace Aer.QdrantClient.Http.Formulas.Expressions;
 
 /// <summary>
-/// Represents a multiplication expression that multiplies results of the multiple expressions.
+/// Represents a collection expression in Qdrant formulas.
 /// </summary>
-internal class MultiplyExpression : ExpressionBase
+internal class CollectionExpression: ExpressionBase
 {
+	private readonly string _collectionOperator;
 	private readonly ICollection<ExpressionBase> _expressions;
 
-	public MultiplyExpression(params ICollection<ExpressionBase> expressions)
-	{ 
+	public CollectionExpression(string collectionOperator,params ICollection<ExpressionBase> expressions)
+	{
+		_collectionOperator = collectionOperator ?? throw new ArgumentNullException(nameof(collectionOperator));
 		_expressions = expressions ?? throw new ArgumentNullException(nameof(expressions));
 	}
-
+	
 	public override void WriteExpressionJson(Utf8JsonWriter jsonWriter)
 	{
 		jsonWriter.WriteStartObject();
 
-		jsonWriter.WritePropertyName("mult");
-		
+		jsonWriter.WritePropertyName(_collectionOperator);
+
 		jsonWriter.WriteStartArray();
-		
+
 		foreach (var expression in _expressions)
 		{
 			if (expression is null)
@@ -31,9 +33,9 @@ internal class MultiplyExpression : ExpressionBase
 
 			expression.WriteExpressionJson(jsonWriter);
 		}
-		
+
 		jsonWriter.WriteEndArray();
-		
+
 		jsonWriter.WriteEndObject();
 	}
 }
