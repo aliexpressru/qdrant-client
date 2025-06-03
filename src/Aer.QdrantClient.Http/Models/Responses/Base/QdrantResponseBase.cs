@@ -46,7 +46,7 @@ public abstract class QdrantResponseBase
         /// Cpu usage to execute request.
         /// </summary>
         [Obsolete(
-            $"From qdrant 1.14.0 this property is deprecated and will be null. Use {nameof(Hardware.Cpu)} instead.")]
+            $"From qdrant 1.14.0 this property is deprecated. Use {nameof(Hardware.Cpu)} instead.")]
         public long Cpu
         {
             get => _cpu == 0
@@ -61,7 +61,7 @@ public abstract class QdrantResponseBase
         /// Payload IO read operations.
         /// </summary>
         [Obsolete(
-            $"From qdrant 1.14.0 this property is deprecated and will be null. Use {nameof(Hardware.PayloadIoRead)} instead.")]
+            $"From qdrant 1.14.0 this property is deprecated. Use {nameof(Hardware.PayloadIoRead)} instead.")]
         public long PayloadIoRead
         {
             get => _payloadIoRead == 0
@@ -76,7 +76,7 @@ public abstract class QdrantResponseBase
         /// Payload IO write operations.
         /// </summary>
         [Obsolete(
-            $"From qdrant 1.14.0 this property is deprecated and will be null. Use {nameof(Hardware.PayloadIoWrite)} instead.")]
+            $"From qdrant 1.14.0 this property is deprecated. Use {nameof(Hardware.PayloadIoWrite)} instead.")]
         public long PayloadIoWrite
         {
             get => _payloadIoWrite == 0
@@ -91,7 +91,7 @@ public abstract class QdrantResponseBase
         /// Vector IO read operations.
         /// </summary>
         [Obsolete(
-            $"From qdrant 1.14.0 this property is deprecated and will be null. Use {nameof(Hardware.VectorIoRead)} instead.")]
+            $"From qdrant 1.14.0 this property is deprecated. Use {nameof(Hardware.VectorIoRead)} instead.")]
         public long VectorIoRead
         {
             get => _vectorIoRead == 0
@@ -106,7 +106,7 @@ public abstract class QdrantResponseBase
         /// Vector IO write operations.
         /// </summary>
         [Obsolete(
-            $"From qdrant 1.14.0 this property is deprecated and will be null. Use {nameof(Hardware.VectorIoWrite)} instead.")]
+            $"From qdrant 1.14.0 this property is deprecated. Use {nameof(Hardware.VectorIoWrite)} instead.")]
         public long VectorIoWrite
         {
             get => _vectorIoWrite == 0
