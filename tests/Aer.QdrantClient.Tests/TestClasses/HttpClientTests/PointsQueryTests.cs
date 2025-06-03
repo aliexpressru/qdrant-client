@@ -1,5 +1,6 @@
 ﻿using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Filters.Builders;
+using Aer.QdrantClient.Http.Formulas.Builders;
 using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -427,5 +428,45 @@ public class PointsQueryTests : QdrantTestsBase
                     .And.AllSatisfy(h => h.Vector.Should().NotBeNull())
                     .And.AllSatisfy(h=>h.Score.Should().BeGreaterThan(0))
             );
+    }
+
+    [Test]
+    public async Task QueryPoints_ScoreBoosting()
+    {
+        var vectorCount = 10;
+
+        var (upsertPoints, _, _) =
+            await PrepareCollection(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorCount: vectorCount,
+                payloadInitializerFunction: i => new TestPayload()
+                {
+                    Integer = i < 5
+                        ? 1
+                        : 2,
+                    Text = (i + 1).ToString()
+                });
+
+        var queryResponse = await _qdrantHttpClient.QueryPoints(
+            TestCollectionName,
+            new QueryPointsRequest(
+                PointsQuery.CreateFormulaQuery(F.Constant(10)), // All resulting points will have score 10
+                withVector: true,
+                withPayload: true){
+                Prefetch =
+                [
+                    new PrefetchPoints()
+                    {
+                        Query = PointsQuery.CreateFindNearestPointsQuery(upsertPoints[0].Vector),
+                        Limit = 2
+                    }
+                ]  
+            },
+            CancellationToken.None);
+
+        queryResponse.Status.IsSuccess.Should().BeTrue();
+        
+        queryResponse.Result.Points.Should().AllSatisfy(p=>p.Score.Should().Be(10));
     }
 }

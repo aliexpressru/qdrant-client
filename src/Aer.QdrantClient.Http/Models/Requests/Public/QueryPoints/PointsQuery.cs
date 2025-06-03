@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Formulas;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
@@ -133,11 +134,15 @@ public abstract class PointsQuery
     
     internal sealed class FormulaQuery : PointsQuery
     {
-        public string Formula { get; }
+        [JsonConverter(typeof(QdrantFormulaJsonConverter))]
+        public QdrantFormula Formula { get; }
+        
+        public Dictionary<string, object> Defaults { get; }
 
-        internal FormulaQuery(string formula)
+        internal FormulaQuery(QdrantFormula formula, Dictionary<string, object> defaults)
         {
             Formula = formula;
+            Defaults = defaults;
         }
     }
 
@@ -198,6 +203,17 @@ public abstract class PointsQuery
     /// Creates a "random sample" query.
     /// </summary>
     public static PointsQuery CreateSampleQuery() => new SampleQuery();
+
+    /// <summary>
+    /// Creates a score boosting formula query.
+    /// </summary>
+    /// <param name="formula">The score calculating formula.</param>
+    /// <param name="defaults">
+    /// The defaults for cases when the variable (either from payload or prefetch score) is not found.
+    /// Key - variable name, value - default variable value.
+    /// </param>
+    public static PointsQuery CreateFormulaQuery(QdrantFormula formula, Dictionary<string, object> defaults = null)
+        => new FormulaQuery(formula, defaults);
 
     /// <summary>
     /// Implicitly converts query vector to an instance of <see cref="PointsQuery"/>.

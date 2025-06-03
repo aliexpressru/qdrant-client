@@ -1,19 +1,19 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
 /// <summary>
 /// A base class for all filter conditions.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public abstract class FilterConditionBase
 {
     /// <summary>
-    /// This value indicates the we don't care about the payload property name in the filter condition.
+    /// This value indicates that we don't care about the payload property name in the filter condition.
     /// </summary>
     protected static readonly string DiscardPayloadFieldName = string.Empty;
 
@@ -82,7 +82,7 @@ public abstract class FilterConditionBase
     {
         List<FilterConditionBase> conditions = [];
 
-        // unwarp should conditions
+        // unwarp "should" conditions
 
         if (left is ShouldCondition lsc)
         {
@@ -107,7 +107,7 @@ public abstract class FilterConditionBase
 
     /// <summary>
     /// Wraps condition in <see cref="MustNotCondition"/>. If the condition is <see cref="MustCondition"/>
-    /// or <see cref="MustNotCondition"/> it gets transformed into an oposite condition.
+    /// or <see cref="MustNotCondition"/> it gets transformed into an opposite condition.
     /// </summary>
     /// <param name="condition">The condition to negate.</param>
     public static FilterConditionBase operator !(FilterConditionBase condition)

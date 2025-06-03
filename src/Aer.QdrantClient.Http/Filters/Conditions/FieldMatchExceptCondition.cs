@@ -4,7 +4,7 @@ using Aer.QdrantClient.Http.Infrastructure.Json;
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
 /// <summary>
-/// Represents the match for field that does not any of the given values.
+/// Represents the match for field that does not have any of the given values.
 /// </summary>
 /// <typeparam name="T">The type of the payload field.</typeparam>
 internal class FieldMatchExceptCondition<T> : FilterConditionBase
