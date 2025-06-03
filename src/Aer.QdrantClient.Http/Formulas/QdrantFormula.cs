@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Text.Json;
 using Aer.QdrantClient.Http.Formulas.Expressions;
 
@@ -65,10 +66,41 @@ public sealed class QdrantFormula
 			return;
 		}
 
-		// jsonWriter.WriteStartObject();
-
 		_expression.WriteExpressionJson(jsonWriter);
+	}
 
-		// jsonWriter.WriteEndObject();
+	/// <summary>
+	/// Build qdrant formula string representation. For debug and testing purposes.
+	/// </summary>
+	/// <param name="isIndentFormulaSyntax">Determines whether the resulting formula string should be indented. Default value is <c>false</c>.</param>
+	public string ToString(bool isIndentFormulaSyntax)
+	{
+		if (!string.IsNullOrWhiteSpace(_rawExpressionString))
+		{
+			return _rawExpressionString;
+		}
+		
+		using var stream = new MemoryStream();
+
+		Utf8JsonWriter jsonWriter = new Utf8JsonWriter(
+			stream,
+			new JsonWriterOptions()
+			{
+				Indented = isIndentFormulaSyntax,
+				SkipValidation = true
+			});
+
+		WriteFormulaJson(jsonWriter);
+
+		jsonWriter.Flush();
+
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+        var builtExpression = Encoding.UTF8.GetString(stream.ToArray());
+#else
+		var builtExpression = Encoding.UTF8.GetString(stream.ToArray())
+			.ReplaceLineEndings();
+#endif
+
+		return builtExpression;
 	}
 }

@@ -1,7 +1,12 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Formulas.Expressions;
 
+/// <summary>
+/// The base class for all expression types used in Qdrant formulas.
+/// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public abstract class ExpressionBase
 {
 	/// <summary>
