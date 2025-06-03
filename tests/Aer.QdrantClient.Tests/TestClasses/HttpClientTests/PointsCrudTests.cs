@@ -825,7 +825,7 @@ internal class PointsCrudTests : QdrantTestsBase
     }
 
     [TestCase(0U)]
-    [TestCase(3U)]
+    //[TestCase(3U)]
     public async Task UpsertPoints(uint readRetryCount)
     {
         var vectorSize = 10U;

@@ -25,40 +25,126 @@ public abstract class QdrantResponseBase
     public double Time { get; set; }
     
     /// <summary>
-    /// Gets or sets the hardware usage report for operation.
+    /// Gets or sets the resource usage report for operation.
     /// Not all operations report usage data.
     /// </summary>
-    public HardwareUsageReport Usage { get; set; }
+    public UsageReport Usage { get; set; }
 
     /// <summary>
     /// Represents the resource usage report if <c>service.hardware_reporting</c> config setting is set to <c>true</c>.
     /// <c>null</c> if it is <c>false</c> or missing.
     /// </summary>
-    public class HardwareUsageReport
-    { 
+    public class UsageReport
+    {
+        /// <summary>
+        /// The hardware resources usage report. 
+        /// </summary>
+        public HardwareUsageReport Hardware { get; set; }
+
+        private long _cpu;
         /// <summary>
         /// Cpu usage to execute request.
         /// </summary>
-        public long Cpu { get; set; }
-        
+        [Obsolete(
+            $"From qdrant 1.14.0 this property is deprecated and will be null. Use {nameof(Hardware.Cpu)} instead.")]
+        public long Cpu
+        {
+            get => _cpu == 0
+                ? Hardware.Cpu
+                : _cpu;
+            
+            set => _cpu = value;
+        }
+
+        private long _payloadIoRead;
         /// <summary>
         /// Payload IO read operations.
         /// </summary>
-        public long PayloadIoRead { get; set; }
-        
+        [Obsolete(
+            $"From qdrant 1.14.0 this property is deprecated and will be null. Use {nameof(Hardware.PayloadIoRead)} instead.")]
+        public long PayloadIoRead
+        {
+            get => _payloadIoRead == 0
+                ? Hardware.PayloadIoRead
+                : _payloadIoRead;
+            
+            set => _payloadIoRead = value;
+        }
+
+        private long _payloadIoWrite;
         /// <summary>
         /// Payload IO write operations.
         /// </summary>
-        public long PayloadIoWrite { get; set; }
-        
+        [Obsolete(
+            $"From qdrant 1.14.0 this property is deprecated and will be null. Use {nameof(Hardware.PayloadIoWrite)} instead.")]
+        public long PayloadIoWrite
+        {
+            get => _payloadIoWrite == 0
+                ? Hardware.PayloadIoWrite
+                : _payloadIoWrite;
+            
+            set => _payloadIoWrite = value;
+        }
+
+        private long _vectorIoRead;
         /// <summary>
         /// Vector IO read operations.
         /// </summary>
-        public long VectorIoRead { get; set; }
-        
+        [Obsolete(
+            $"From qdrant 1.14.0 this property is deprecated and will be null. Use {nameof(Hardware.VectorIoRead)} instead.")]
+        public long VectorIoRead
+        {
+            get => _vectorIoRead == 0
+                ? Hardware.VectorIoRead
+                : _vectorIoRead;
+            
+            set => _vectorIoRead = value;
+        }
+
+        private long _vectorIoWrite;
         /// <summary>
         /// Vector IO write operations.
         /// </summary>
-        public long VectorIoWrite { get; set; }
+        [Obsolete(
+            $"From qdrant 1.14.0 this property is deprecated and will be null. Use {nameof(Hardware.VectorIoWrite)} instead.")]
+        public long VectorIoWrite
+        {
+            get => _vectorIoWrite == 0
+                ? Hardware.VectorIoWrite
+                : _vectorIoWrite;
+            
+            set => _vectorIoWrite = value;
+        }
+
+        /// <summary>
+        /// Represents a hardware usage report.
+        /// </summary>
+        public class HardwareUsageReport
+        {
+            /// <summary>
+            /// Cpu usage to execute request.
+            /// </summary>
+            public long Cpu { get; set; }
+
+            /// <summary>
+            /// Payload IO read operations.
+            /// </summary>
+            public long PayloadIoRead { get; set; }
+
+            /// <summary>
+            /// Payload IO write operations.
+            /// </summary>
+            public long PayloadIoWrite { get; set; }
+
+            /// <summary>
+            /// Vector IO read operations.
+            /// </summary>
+            public long VectorIoRead { get; set; }
+
+            /// <summary>
+            /// Vector IO write operations.
+            /// </summary>
+            public long VectorIoWrite { get; set; }
+        }
     }
 }
