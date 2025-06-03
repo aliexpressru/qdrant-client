@@ -5,7 +5,7 @@ namespace Aer.QdrantClient.Tests.TestClasses.InfrastructureTests;
 internal class CircularEnumerableTests
 {
     [Test]
-    public void TestCircularEnumerable_CircularEnumeration()
+    public void CircularEnumeration()
     {
         var ce = new CircularEnumerable<int>([1, 2, 3]);
         var first = ce.GetNext();
@@ -20,7 +20,7 @@ internal class CircularEnumerableTests
     }
 
     [Test]
-    public void TestCircularEnumerable_CircleDetection_OneElement()
+    public void CircleDetection_OneElement()
     {
         var ce = new CircularEnumerable<int>([1]);
 
@@ -34,7 +34,7 @@ internal class CircularEnumerableTests
     }
 
     [Test]
-    public void TestCircularEnumerable_CircleDetection_FromStart()
+    public void CircleDetection_FromStart()
     {
         var ce = new CircularEnumerable<int>([1,2,3]);
 
@@ -50,7 +50,7 @@ internal class CircularEnumerableTests
     }
 
     [Test]
-    public void TestCircularEnumerable_CircleDetection_FromEnd()
+    public void CircleDetection_FromEnd()
     {
         var ce = new CircularEnumerable<int>([1, 2, 3]);
 
@@ -68,7 +68,7 @@ internal class CircularEnumerableTests
     }
 
     [Test]
-    public void TestCircularEnumerable_CircleDetection_ThenSimpleEnumeration()
+    public void CircleDetection_ThenSimpleEnumeration()
     {
         var ce = new CircularEnumerable<int>([1, 2, 3]);
 
@@ -95,7 +95,7 @@ internal class CircularEnumerableTests
     }
 
     [Test]
-    public void TestCircularEnumerable_CircleDetection_DoubleDetection()
+    public void CircleDetection_DoubleDetection()
     {
         var ce = new CircularEnumerable<int>([1, 2, 3]);
 

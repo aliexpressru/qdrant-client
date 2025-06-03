@@ -10,7 +10,7 @@ namespace Aer.QdrantClient.Tests.TestClasses.InfrastructureTests;
 internal class QdrantFilterTests
 {
     [Test]
-    public void TestQdrantFilter_ImplicitlyCreateMustTopLevelCondition()
+    public void ImplicitlyCreateMustTopLevelCondition()
     {
         QdrantFilter filter = Q.MatchValue("whatever", 1);
 
@@ -33,7 +33,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_EmptyFilter()
+    public void EmptyFilter()
     {
         var filter = QdrantFilter.Empty.ToString();
 
@@ -41,7 +41,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_Match()
+    public void Must_Match()
     {
         var filter = QdrantFilter.Create(
             Q.Must(
@@ -74,7 +74,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Should_Match()
+    public void Should_Match()
     {
         var filter = QdrantFilter.Create(
                 Q.Should(
@@ -108,7 +108,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_MinShould_Match()
+    public void MinShould_Match()
     {
         var filter = QdrantFilter.Create(
                 Q.MinShould(
@@ -146,7 +146,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_MustNot_Match_SingleField()
+    public void MustNot_Match_SingleField()
     {
         var filter = QdrantFilter.Create(
                 Q.MustNot(
@@ -173,7 +173,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_MustNot_Match()
+    public void MustNot_Match()
     {
         var filter = QdrantFilter.Create(
                 Q.MustNot(
@@ -207,7 +207,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_MatchExcept()
+    public void Must_MatchExcept()
     {
         var filter = QdrantFilter.Create(
             Q.Must(
@@ -246,7 +246,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_And_MustNot_Match_SingleField()
+    public void Must_And_MustNot_Match_SingleField()
     {
         var filter = QdrantFilter.Create(
                 Q.Must(
@@ -284,7 +284,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_PlusEqualsOperatorCombined()
+    public void PlusEqualsOperatorCombined()
     {
         QdrantFilter filter = null;
 
@@ -340,7 +340,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_PlusOperatorCombined()
+    public void PlusOperatorCombined()
     {
         QdrantFilter filter =
             Q.Must(
@@ -391,7 +391,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_AndOperatorCombined()
+    public void AndOperatorCombined()
     {
         QdrantFilter filter =
             Q.Must(
@@ -446,7 +446,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_OrOperatorCombined()
+    public void OrOperatorCombined()
     {
         QdrantFilter filter =
             Q.Must(
@@ -501,7 +501,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_AndOrOperatorCombined()
+    public void AndOrOperatorCombined()
     {
         // note that operator associativity is modified by parethesis
         QdrantFilter filter =
@@ -567,7 +567,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_PlusAndOrOperatorCombined()
+    public void PlusAndOrOperatorCombined()
     {
         // note that operator associativity is modified by parethesis
         QdrantFilter filter =
@@ -687,7 +687,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_Negated()
+    public void Must_Negated()
     {
         QdrantFilter filter =
                 !Q.Must(
@@ -721,7 +721,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_MustNot_Negated()
+    public void MustNot_Negated()
     {
         QdrantFilter filter =
             !Q.MustNot(
@@ -755,7 +755,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_Negated_Unwrapped()
+    public void Must_Negated_Unwrapped()
     {
         QdrantFilter filter =
             !(
@@ -790,7 +790,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Condition_Negated()
+    public void Condition_Negated()
     {
         QdrantFilter filter =
             Q.Must(
@@ -828,7 +828,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_And_MustNot_Match()
+    public void Must_And_MustNot_Match()
     {
         var filter = QdrantFilter.Create(
                 Q.Must(
@@ -880,7 +880,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_Nested_MustNot_Match()
+    public void Must_Nested_MustNot_Match()
     {
         var filter = QdrantFilter.Create(
                 Q.MustNot(
@@ -920,7 +920,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_ComplexNesting_Unwarpping()
+    public void Must_ComplexNesting_Unwarpping()
     {
         var filter = QdrantFilter.Create(
             Q.Must(
@@ -1035,7 +1035,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_MatchAny()
+    public void Must_MatchAny()
     {
         var filter = QdrantFilter.Create(
                 Q.Must(
@@ -1075,7 +1075,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_Match_FultText()
+    public void Must_Match_FultText()
     {
         var filter = QdrantFilter.Create(
                 Q.Must(
@@ -1109,7 +1109,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_Range()
+    public void Must_Range()
     {
         var filter = QdrantFilter.Create(
                 Q.Must(
@@ -1176,7 +1176,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_ValuesCount()
+    public void Must_ValuesCount()
     {
         var filter = QdrantFilter.Create(
                 Q.Must(
@@ -1223,7 +1223,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_IsEmpty()
+    public void Must_IsEmpty()
     {
         var filter = QdrantFilter.Create(
                 Q.Must(
@@ -1257,7 +1257,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_IsNull()
+    public void Must_IsNull()
     {
         var filter = QdrantFilter.Create(
                 Q.Must(
@@ -1289,7 +1289,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_HaveId()
+    public void Must_HaveId()
     {
         var filter = QdrantFilter.Create(
                 Q.Must(
@@ -1339,7 +1339,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_GeoBoundingBox()
+    public void Must_GeoBoundingBox()
     {
         var filter = QdrantFilter.Create(
                 Q.Must(
@@ -1378,7 +1378,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_GeoRadius()
+    public void Must_GeoRadius()
     {
         var filter = QdrantFilter.Create(
                 Q.Must(
@@ -1413,7 +1413,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_GeoPolygon()
+    public void Must_GeoPolygon()
     {
         var filter = QdrantFilter.Create(
             Q.Must(
@@ -1539,7 +1539,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Must_NestedConditions_Match()
+    public void Must_NestedConditions_Match()
     {
         var filter = QdrantFilter.Create(
             Q.Must(
@@ -1587,7 +1587,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Should_Use_Raw_Filter_String_As_Is()
+    public void Should_Use_Raw_Filter_String_As_Is()
     {
       var expectedFilter = """
         {
@@ -1616,7 +1616,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void TestQdrantFilter_Should_Throw_Exception_If_Condition_Is_Added_When_Use_Raw_Filter_String()
+    public void Should_Throw_Exception_If_Condition_Is_Added_When_Use_Raw_Filter_String()
     {
       var expectedFilter = """
         {

@@ -22,7 +22,7 @@ internal class PointIdTests
 
     [Test]
     [TestCaseSource(nameof(PointIdCases))]
-    public void TestPointIdEquality(PointId x, PointId y, bool shouldBeEqual)
+    public void PointIdEquality(PointId x, PointId y, bool shouldBeEqual)
     {
         if (x is not null)
         {

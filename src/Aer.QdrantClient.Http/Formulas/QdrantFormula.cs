@@ -15,10 +15,9 @@ public sealed class QdrantFormula
 	private string _rawExpressionString;
 
 	/// <summary>
-	/// Creates the qdrant formula instance from formula expression.
+	/// Creates the qdrant formula instance from a formula expression.
 	/// </summary>
 	/// <param name="expression">The expression to create formula from.</param>
-	/// <returns></returns>
 	public static QdrantFormula Create(ExpressionBase expression)
 	{ 
 		if (expression is null)
@@ -69,10 +68,14 @@ public sealed class QdrantFormula
 		_expression.WriteExpressionJson(jsonWriter);
 	}
 
+	/// <inheritdoc/>
+	public override string ToString() => ToString(true);
+
 	/// <summary>
 	/// Build qdrant formula string representation. For debug and testing purposes.
 	/// </summary>
 	/// <param name="isIndentFormulaSyntax">Determines whether the resulting formula string should be indented. Default value is <c>false</c>.</param>
+	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 	public string ToString(bool isIndentFormulaSyntax)
 	{
 		if (!string.IsNullOrWhiteSpace(_rawExpressionString))
@@ -95,12 +98,12 @@ public sealed class QdrantFormula
 		jsonWriter.Flush();
 
 #if NETSTANDARD2_0 || NETSTANDARD2_1
-        var builtExpression = Encoding.UTF8.GetString(stream.ToArray());
+        var builtFormula = Encoding.UTF8.GetString(stream.ToArray());
 #else
-		var builtExpression = Encoding.UTF8.GetString(stream.ToArray())
+		var builtFormula = Encoding.UTF8.GetString(stream.ToArray())
 			.ReplaceLineEndings();
 #endif
 
-		return builtExpression;
+		return builtFormula;
 	}
 }
