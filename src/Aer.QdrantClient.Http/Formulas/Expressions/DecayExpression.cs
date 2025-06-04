@@ -32,7 +32,7 @@ internal class DecayExpression : ExpressionBase
 	{
 		jsonWriter.WriteStartObject();
 		{
-			jsonWriter.WritePropertyName("_decayOperator");
+			jsonWriter.WritePropertyName(_decayOperator);
 
 			jsonWriter.WriteStartObject();
 			{

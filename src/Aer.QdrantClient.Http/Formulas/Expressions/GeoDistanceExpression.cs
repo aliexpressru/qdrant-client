@@ -36,6 +36,7 @@ internal class GeoDistanceExpression : ExpressionBase
 					jsonWriter.WritePropertyName("lat");
 					jsonWriter.WriteNumberValue(_originLatitude);
 				}
+				jsonWriter.WriteEndObject();
 				
 				jsonWriter.WritePropertyName("to");
 				jsonWriter.WriteStringValue(_toPayloadFieldName);
