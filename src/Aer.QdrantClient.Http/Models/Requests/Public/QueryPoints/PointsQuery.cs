@@ -1,6 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Formulas;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
+using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
@@ -15,6 +18,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 [JsonDerivedType(typeof(OrderByQuery))]
 [JsonDerivedType(typeof(FusionQuery))]
 [JsonDerivedType(typeof(SampleQuery))]
+[JsonDerivedType(typeof(FormulaQuery))]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public abstract class PointsQuery
 {
@@ -127,6 +131,20 @@ public abstract class PointsQuery
     {
         public string Sample { get; } = "random";
     }
+    
+    internal sealed class FormulaQuery : PointsQuery
+    {
+        [JsonConverter(typeof(QdrantFormulaJsonConverter))]
+        public QdrantFormula Formula { get; }
+        
+        public Dictionary<string, object> Defaults { get; }
+
+        internal FormulaQuery(QdrantFormula formula, Dictionary<string, object> defaults)
+        {
+            Formula = formula;
+            Defaults = defaults;
+        }
+    }
 
     /// <summary>
     /// Creates a "find nearest points" query.
@@ -185,4 +203,33 @@ public abstract class PointsQuery
     /// Creates a "random sample" query.
     /// </summary>
     public static PointsQuery CreateSampleQuery() => new SampleQuery();
+
+    /// <summary>
+    /// Creates a score boosting formula query.
+    /// </summary>
+    /// <param name="formula">The score calculating formula.</param>
+    /// <param name="defaults">
+    /// The defaults for cases when the variable (either from payload or prefetch score) is not found.
+    /// Key - variable name, value - default variable value.
+    /// </param>
+    public static PointsQuery CreateFormulaQuery(QdrantFormula formula, Dictionary<string, object> defaults = null)
+        => new FormulaQuery(formula, defaults);
+
+    /// <summary>
+    /// Implicitly converts query vector to an instance of <see cref="PointsQuery"/>.
+    /// </summary>
+    /// <param name="queryVector">The query vector to convert.</param>
+    public static implicit operator PointsQuery(VectorBase queryVector) => CreateFindNearestPointsQuery(queryVector);
+    
+    /// <summary>
+    /// Implicitly converts query vector to an instance of <see cref="PointsQuery"/>.
+    /// </summary>
+    /// <param name="queryVector">The query vector to convert.</param>
+    public static implicit operator PointsQuery(QueryVector queryVector) => CreateFindNearestPointsQuery(queryVector);
+
+    /// <summary>
+    /// Implicitly converts point id to an instance of <see cref="PointsQuery"/>.
+    /// </summary>
+    /// <param name="pointId">The point id to convert.</param>
+    public static implicit operator PointsQuery(PointId pointId) => CreateFindNearestPointsQuery(pointId);
 }

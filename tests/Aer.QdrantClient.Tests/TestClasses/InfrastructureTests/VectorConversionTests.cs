@@ -7,7 +7,7 @@ namespace Aer.QdrantClient.Tests.TestClasses.InfrastructureTests;
 internal class VectorConversionTests : QdrantTestsBase
 {
     [Test]
-    public void TestVectorConversions()
+    public void ConvertVectorTypes()
     {
         int vectorLength = 10;
 

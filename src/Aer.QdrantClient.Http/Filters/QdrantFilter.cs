@@ -105,7 +105,6 @@ public sealed class QdrantFilter
     /// </summary>
     public static QdrantFilter Create(string filter)
     {
-        
         if (string.IsNullOrWhiteSpace(filter))
         {
             throw new ArgumentNullException(nameof(filter));

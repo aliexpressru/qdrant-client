@@ -18,5 +18,11 @@ public enum RecommendStrategy
     /// If the <c>max_neg_score</c> is chosen then it is squared and negated,
     /// otherwise it is just the <c>max_pos_score</c>.
     /// </summary>
-    BestScore
+    BestScore,
+    
+    /// <summary>
+    /// Sums multiple query vector scores against the candidates. 
+    /// As with <see cref="BestScore"/>, this strategy also allows using only negative examples.
+    /// </summary>
+    SumScores
 }

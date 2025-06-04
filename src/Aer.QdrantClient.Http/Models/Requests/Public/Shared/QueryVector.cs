@@ -69,25 +69,23 @@ public abstract class QueryVector
     /// Implicitly converts sparse vector components to an instance of <see cref="QueryVector"/>.
     /// </summary>
     /// <param name="sparseVectorComponents">The value to convert.</param>
-    public static implicit operator QueryVector((uint[] Indices, float[] Values) sparseVectorComponents)
-    {
-        return new SparseQueryVector((SparseVector) sparseVectorComponents);
-    }
+    public static implicit operator QueryVector((uint[] Indices, float[] Values) sparseVectorComponents) 
+        => 
+            new SparseQueryVector((SparseVector) sparseVectorComponents);
 
     /// <summary>
     /// Implicitly converts an instance of <see cref="VectorBase"/> to an instance of <see cref="QueryVector"/>.
     /// </summary>
     /// <param name="vector">The value to convert.</param>
     public static implicit operator QueryVector(VectorBase vector)
-    {
-        return vector switch
-        {
-            null => throw new ArgumentNullException(nameof(vector)),
-            DenseVector v => new DenseQueryVector(v.VectorValues),
-            SparseVector sv => new SparseQueryVector(sv),
-            _ => throw GetException(vector.GetType())
-        };
-    }
+        =>
+            vector switch
+            {
+                null => throw new ArgumentNullException(nameof(vector)),
+                DenseVector v => new DenseQueryVector(v.VectorValues),
+                SparseVector sv => new SparseQueryVector(sv),
+                _ => throw GetException(vector.GetType())
+            };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static InvalidCastException GetException(Type vectorType)

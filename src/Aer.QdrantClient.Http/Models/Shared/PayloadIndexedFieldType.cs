@@ -28,6 +28,31 @@ public enum PayloadIndexedFieldType
     /// <summary>
     /// The datetime type.
     /// </summary>
+    /// <remarks>
+    /// Datetime should be in RFC 3339 https://datatracker.ietf.org/doc/html/rfc3339#section-5.6 format.
+    /// For more information, see the <a href="https://qdrant.tech/documentation/concepts/payload/#datetime">Qdrant datetime payload type documentation</a>.
+    /// 
+    /// Supported formats:
+    /// <li>
+    /// "2023-02-08T10:49:00Z" (RFC 3339, UTC)
+    /// </li>
+    /// 
+    /// <li>
+    /// "2023-02-08T11:49:00+01:00"  (RFC 3339, with timezone)
+    /// </li>
+    /// 
+    /// <li>
+    /// "2023-02-08T10:49:00" (without timezone, UTC is assumed)
+    /// </li>
+    /// 
+    /// <li>
+    /// "2023-02-08T10:49" (without timezone and seconds)
+    /// </li>
+    /// 
+    /// <li>
+    /// "2023-02-08" (only date, midnight is assumed)
+    /// </li>
+    /// </remarks>
     Datetime,
 
     /// <summary>

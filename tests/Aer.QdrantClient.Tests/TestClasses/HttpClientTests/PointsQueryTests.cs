@@ -1,5 +1,6 @@
 ﻿using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Filters.Builders;
+using Aer.QdrantClient.Http.Formulas.Builders;
 using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -78,7 +79,7 @@ public class PointsQueryTests : QdrantTestsBase
 
         var nearestPointsByVectorResponse = await _qdrantHttpClient.QueryPoints(
             TestCollectionName,
-            new QueryPointsRequest(PointsQuery.CreateFindNearestPointsQuery(upsertPointsByPointIds.First().Value.Vector))
+            new QueryPointsRequest(upsertPointsByPointIds.First().Value.Vector)
             {
                 WithPayload = true,
                 WithVector = true,
@@ -103,6 +104,7 @@ public class PointsQueryTests : QdrantTestsBase
             // CI environment container does not have usage statistics enabled
             nearestPointsByVectorResponse.Usage.Cpu.Should().BeGreaterThan(0);
             nearestPointsByVectorResponse.Usage.PayloadIoRead.Should().BeGreaterThan(0);
+            nearestPointsByVectorResponse.Usage.VectorIoRead.Should().BeGreaterThan(0);
         }
         else
         {
@@ -426,5 +428,106 @@ public class PointsQueryTests : QdrantTestsBase
                     .And.AllSatisfy(h => h.Vector.Should().NotBeNull())
                     .And.AllSatisfy(h=>h.Score.Should().BeGreaterThan(0))
             );
+    }
+
+    [Test]
+    public async Task QueryPoints_ScoreBoosting_Constant()
+    {
+        var vectorCount = 10;
+
+        var (upsertPoints, _, _) =
+            await PrepareCollection(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorCount: vectorCount,
+                payloadInitializerFunction: i => new TestPayload()
+                {
+                    Integer = i < 5
+                        ? 1
+                        : 2,
+                    Text = (i + 1).ToString()
+                });
+
+        var queryResponse = await _qdrantHttpClient.QueryPoints(
+            TestCollectionName,
+            new QueryPointsRequest(
+                PointsQuery.CreateFormulaQuery(F.Constant(10)), // All resulting points will have score 10
+                withVector: true,
+                withPayload: true){
+                Prefetch =
+                [
+                    new PrefetchPoints()
+                    {
+                        Query = PointsQuery.CreateFindNearestPointsQuery(upsertPoints[0].Vector),
+                        Limit = 2
+                    }
+                ]  
+            },
+            CancellationToken.None);
+
+        queryResponse.Status.IsSuccess.Should().BeTrue();
+        
+        queryResponse.Result.Points.Should().AllSatisfy(p=>p.Score.Should().Be(10));
+    }
+
+    [Test]
+    public async Task QueryPoints_ScoreBoosting_PayloadFieldBased()
+    {
+        var vectorCount = 10;
+
+        var (upsertPoints, _, _) =
+            await PrepareCollection(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorCount: vectorCount,
+                payloadInitializerFunction: i => new TestPayload()
+                {
+                    Integer = i,
+                    Text = (i + 1).ToString()
+                });
+
+        var queryResponse = await _qdrantHttpClient.QueryPoints(
+            TestCollectionName,
+            new QueryPointsRequest(
+                PointsQuery.CreateFormulaQuery(
+                    F.Sum(
+                        1,
+                        F.Filter(
+                            Q.BeInRange(
+                                "integer",
+                                greaterThanOrEqual: 5,
+                                lessThanOrEqual: 7)
+                        )
+                    )
+                ),
+                withVector: true,
+                withPayload: true)
+            {
+                Prefetch =
+                [
+                    new PrefetchPoints()
+                    {
+                        Query = PointsQuery.CreateFindNearestPointsQuery(upsertPoints[0].Vector),
+                        Limit = 10
+                    }
+                ]
+            },
+            CancellationToken.None);
+
+        queryResponse.Status.IsSuccess.Should().BeTrue();
+        
+        foreach(var readPoint in queryResponse.Result.Points)
+        {
+            var readPointInteger = readPoint.Payload.As<TestPayload>().Integer;
+
+            // Points with Integer payload field value in range [5, 7] will have score 2
+            // All other points will have score 1
+
+            readPoint.Score.Should().Be(
+                readPointInteger is >= 5 and <= 7
+                    ? 2
+                    : 1
+            );
+        }
     }
 }

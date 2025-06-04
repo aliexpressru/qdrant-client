@@ -4,21 +4,21 @@ namespace Aer.QdrantClient.Http.Filters.Conditions;
 
 internal class FieldInGeoBoundingBoxCondition : FilterConditionBase
 {
-    private readonly double _topLeftLongtitude;
+    private readonly double _topLeftLongitude;
     private readonly double _topLeftLatitude;
-    private readonly double _bottomRightLongtitude;
+    private readonly double _bottomRightLongitude;
     private readonly double _bottomRightLatitude;
 
     public FieldInGeoBoundingBoxCondition(
         string payloadFieldName,
-        double topLeftLongtitude,
+        double topLeftLongitude,
         double topLeftLatitude,
-        double bottomRightLongtitude,
+        double bottomRightLongitude,
         double bottomRightLatitude) : base(payloadFieldName)
     {
-        _topLeftLongtitude = topLeftLongtitude;
+        _topLeftLongitude = topLeftLongitude;
         _topLeftLatitude = topLeftLatitude;
-        _bottomRightLongtitude = bottomRightLongtitude;
+        _bottomRightLongitude = bottomRightLongitude;
         _bottomRightLatitude = bottomRightLatitude;
     }
 
@@ -35,7 +35,7 @@ internal class FieldInGeoBoundingBoxCondition : FilterConditionBase
 
             {
                 jsonWriter.WriteNumber("lat", _bottomRightLatitude);
-                jsonWriter.WriteNumber("lon", _bottomRightLongtitude);
+                jsonWriter.WriteNumber("lon", _bottomRightLongitude);
             }
 
             jsonWriter.WriteEndObject();
@@ -45,7 +45,7 @@ internal class FieldInGeoBoundingBoxCondition : FilterConditionBase
 
             {
                 jsonWriter.WriteNumber("lat", _topLeftLatitude);
-                jsonWriter.WriteNumber("lon", _topLeftLongtitude);
+                jsonWriter.WriteNumber("lon", _topLeftLongitude);
             }
 
             jsonWriter.WriteEndObject();

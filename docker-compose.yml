@@ -4,7 +4,7 @@ services:
 
   qdrant-0:
     container_name: qdrant-0
-    image: qdrant/qdrant:v1.14.1
+    image: qdrant/qdrant:${QDRANT_VERSION}
     entrypoint: ./entrypoint.sh
     command: --uri 'http://qdrant-0:6335'
     volumes:
@@ -28,7 +28,7 @@ services:
 
   qdrant-1:
     container_name: qdrant-1
-    image: qdrant/qdrant:v1.14.1
+    image: qdrant/qdrant:${QDRANT_VERSION}
     entrypoint: ./entrypoint.sh
     command: --uri 'http://qdrant-1:6335'
     volumes:
@@ -50,7 +50,7 @@ services:
 
   qdrant-2:
     container_name: qdrant-2
-    image: qdrant/qdrant:v1.14.1
+    image: qdrant/qdrant:${QDRANT_VERSION}
     entrypoint: ./entrypoint.sh
     command: --bootstrap 'http://qdrant-1:6335'
     volumes:
@@ -84,6 +84,20 @@ volumes:
     #   o: bind
   qdrant-storage-1:
   qdrant-storage-2:
+
+  # qdrant-config-single-node:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     device: ./qdrant-config.yaml
+  #     o: bind
+
+  # qdrant-config-cluster:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     device: ./qdrant-config-cluster.yaml
+  #     o: bind
 
   snapshot-data-0:
     # driver: local

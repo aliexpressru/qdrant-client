@@ -84,7 +84,6 @@ public static class Q
     /// <typeparam name="T">Type of the value to match payload value against.</typeparam>
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
     /// <param name="anyValues">Payload field values to match with.</param>
-    [Obsolete($"There is an alternative, faster implementation of this filter. Use {nameof(MatchAnyFast)} condition.")]
     public static FilterConditionBase MatchAny<T>(string payloadFieldName, params T[] anyValues)
         => new FieldMatchAnyCondition<T>(payloadFieldName, anyValues);
 

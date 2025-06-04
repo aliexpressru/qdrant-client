@@ -1,8 +1,13 @@
 name: Build & Test
 
 on:
+# As per https://github.com/orgs/community/discussions/26276 - we run build\test on every push or pull request but not both
   push:
+    branches:
+    - main
   pull_request:
+    branches:
+    - main
 
 jobs:
   build_test:
