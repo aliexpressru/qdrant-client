@@ -431,7 +431,7 @@ public class PointsQueryTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task QueryPoints_ScoreBoosting()
+    public async Task QueryPoints_ScoreBoosting_Constant()
     {
         var vectorCount = 10;
 
@@ -468,5 +468,69 @@ public class PointsQueryTests : QdrantTestsBase
         queryResponse.Status.IsSuccess.Should().BeTrue();
         
         queryResponse.Result.Points.Should().AllSatisfy(p=>p.Score.Should().Be(10));
+    }
+
+    [Test]
+    public async Task QueryPoints_ScoreBoosting_PayloadFieldBased()
+    {
+        var vectorCount = 10;
+
+        var (upsertPoints, _, _) =
+            await PrepareCollection(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorCount: vectorCount,
+                payloadInitializerFunction: i => new TestPayload()
+                {
+                    Integer = i,
+                    Text = (i + 1).ToString()
+                });
+
+        var queryResponse = await _qdrantHttpClient.QueryPoints(
+            TestCollectionName,
+            new QueryPointsRequest(
+                PointsQuery.CreateFormulaQuery(
+                    F.Sum(
+                        1,
+                        F.Filter(
+                            Q.BeInRange(
+                                "integer",
+                                greaterThanOrEqual: 5,
+                                lessThanOrEqual: 7)
+                        )
+                    )
+                ),
+                withVector: true,
+                withPayload: true)
+            {
+                Prefetch =
+                [
+                    new PrefetchPoints()
+                    {
+                        Query = PointsQuery.CreateFindNearestPointsQuery(upsertPoints[0].Vector),
+                        Limit = 10
+                    }
+                ]
+            },
+            CancellationToken.None);
+
+        queryResponse.Status.IsSuccess.Should().BeTrue();
+        
+        foreach(var readPoint in queryResponse.Result.Points)
+        {
+            var readPointInteger = readPoint.Payload.As<TestPayload>().Integer;
+
+            // Points with Integer payload field value in range [5, 7] will have score 2
+            // All other points will have score 1
+            
+            if (readPointInteger is >= 5 and <= 7)
+            {
+                readPoint.Score.Should().Be(2);
+            }
+            else
+            {
+                readPoint.Score.Should().Be(1);
+            }
+        }
     }
 }

@@ -29,7 +29,20 @@ internal class QdrantFormulaTests
 
 		formulaString.Should().Be(expectedFormula.ReplaceLineEndings());
 	}
-	
+
+	[Test]
+	public void Invalid_FilterCondition()
+	{
+		var invalidFormulaCreateAct = () => F.Filter(
+			Q.MatchValue("field", 1567)
+			+ Q.BeInRange("test", 1, 2)
+		); // + is equivalent to "AND" and the whole expression gets wrapped in ShouldCondition which is a group condition and is not allowed in formulas.
+
+		invalidFormulaCreateAct.Should()
+			.Throw<InvalidOperationException>()
+			.Where(e => e.Message.Contains("can't be used in formulas"));
+	}
+
 	[Test]
 	public void FilterCondition()
 	{

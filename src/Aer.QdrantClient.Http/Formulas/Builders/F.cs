@@ -36,13 +36,13 @@ public static class F
 	{
 		var ret = condition switch
 		{
-			FilterGroupCondition
+			FilterGroupCondition 
 				or MinimumShouldCondition
 				or MustCondition
 				or MustNotCondition
 				or NestedCondition
 				or ShouldCondition => throw new InvalidOperationException(
-					"Filter group conditions can't be used in formulas"),
+					$"Filter group conditions like {condition.GetType()} can't be used in formulas"),
 			_ => new FilterConditionExpression(condition)
 		};
 
