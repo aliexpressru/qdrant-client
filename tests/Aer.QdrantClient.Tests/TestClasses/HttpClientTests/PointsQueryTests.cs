@@ -522,15 +522,12 @@ public class PointsQueryTests : QdrantTestsBase
 
             // Points with Integer payload field value in range [5, 7] will have score 2
             // All other points will have score 1
-            
-            if (readPointInteger is >= 5 and <= 7)
-            {
-                readPoint.Score.Should().Be(2);
-            }
-            else
-            {
-                readPoint.Score.Should().Be(1);
-            }
+
+            readPoint.Score.Should().Be(
+                readPointInteger is >= 5 and <= 7
+                    ? 2
+                    : 1
+            );
         }
     }
 }
