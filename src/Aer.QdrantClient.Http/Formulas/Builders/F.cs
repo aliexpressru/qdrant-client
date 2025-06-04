@@ -164,4 +164,89 @@ public static class F
 	public static ExpressionBase DateTimeKey(string dateTimePayloadFieldName)
 		=>
 			new ValueExpression("datetime_key", dateTimePayloadFieldName);
+
+	/// <summary>
+	/// Haversine distance between two geographic points.
+	/// </summary>
+	/// <param name="originLongitude">The origin point longitude.</param>
+	/// <param name="originLatitude">The origin point latitude.</param>
+	/// <param name="toPayloadFieldName">The target point payload field name. Filed must contain the geo coordinate object.</param>
+	public static ExpressionBase GeoDistance(double originLongitude, double originLatitude, string toPayloadFieldName)
+		=>
+			new GeoDistanceExpression(originLongitude, originLatitude, toPayloadFieldName);
+
+	/// <summary>
+	/// Apply a linear decay function to an expression, which clamps the output between 0 and 1
+	/// </summary>
+	/// <param name="x">The value to decay.</param>
+	/// <param name="target">
+	/// The value at which the decay will be at its peak. For distances, it is usually set at 0.0, but can be set to any value.
+	/// If not set defaults to 0.0.
+	/// </param>
+	/// <param name="scale">
+	/// The value at which the decay function will be equal to midpoint. This is in terms of x units,
+	/// for example, if x is in meters, scale of 5000 means 5km. Must be a non-zero positive number.
+	/// If not set, defaults to 1.0.
+	/// </param>
+	/// <param name="midpoint">
+	/// Output is midpoint when x equals scale. Must be in the range (0.0, 1.0), exclusive.
+	/// If not set, defaults to 0.5.
+	/// </param>
+	public static ExpressionBase LinearDecay(
+		ExpressionBase x,
+		ExpressionBase target = null,
+		double? scale = null,
+		double? midpoint = null)
+		=>
+			new DecayExpression("lin_decay", x, target, scale, midpoint);
+
+	/// <summary>
+	/// Apply an exponential decay function to an expression, which clamps the output between 0 and 1
+	/// </summary>
+	/// <param name="x">The value to decay.</param>
+	/// <param name="target">
+	/// The value at which the decay will be at its peak. For distances, it is usually set at 0.0, but can be set to any value.
+	/// If not set defaults to 0.0.
+	/// </param>
+	/// <param name="scale">
+	/// The value at which the decay function will be equal to midpoint. This is in terms of x units,
+	/// for example, if x is in meters, scale of 5000 means 5km. Must be a non-zero positive number.
+	/// If not set, defaults to 1.0.
+	/// </param>
+	/// <param name="midpoint">
+	/// Output is midpoint when x equals scale. Must be in the range (0.0, 1.0), exclusive.
+	/// If not set, defaults to 0.5.
+	/// </param>
+	public static ExpressionBase ExponentialDecay(
+		ExpressionBase x,
+		ExpressionBase target = null,
+		double? scale = null,
+		double? midpoint = null)
+		=>
+			new DecayExpression("exp_decay", x, target, scale, midpoint);
+
+	/// <summary>
+	/// Apply a gaussean decay function to an expression, which clamps the output between 0 and 1
+	/// </summary>
+	/// <param name="x">The value to decay.</param>
+	/// <param name="target">
+	/// The value at which the decay will be at its peak. For distances, it is usually set at 0.0, but can be set to any value.
+	/// If not set defaults to 0.0.
+	/// </param>
+	/// <param name="scale">
+	/// The value at which the decay function will be equal to midpoint. This is in terms of x units,
+	/// for example, if x is in meters, scale of 5000 means 5km. Must be a non-zero positive number.
+	/// If not set, defaults to 1.0.
+	/// </param>
+	/// <param name="midpoint">
+	/// Output is midpoint when x equals scale. Must be in the range (0.0, 1.0), exclusive.
+	/// If not set, defaults to 0.5.
+	/// </param>
+	public static ExpressionBase GaussDecay(
+		ExpressionBase x,
+		ExpressionBase target = null,
+		double? scale = null,
+		double? midpoint = null)
+		=>
+			new DecayExpression("gauss_decay", x, target, scale, midpoint);
 }
