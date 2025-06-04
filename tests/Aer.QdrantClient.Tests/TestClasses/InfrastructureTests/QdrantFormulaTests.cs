@@ -39,9 +39,9 @@ internal class QdrantFormulaTests
 
 		var expectedFormula = """
 			{
-			  "key" : "field",
-			  "match" : {
-			    "value" : 1567
+			  "key": "field",
+			  "match": {
+			    "value": 1567
 			  }
 			}
 			""";
