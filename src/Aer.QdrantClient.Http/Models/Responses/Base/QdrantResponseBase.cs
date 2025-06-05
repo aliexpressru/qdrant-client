@@ -23,7 +23,7 @@ public abstract class QdrantResponseBase
     /// Gets or sets the time (in seconds) elapsed for the operation.
     /// </summary>
     public double Time { get; set; }
-    
+
     /// <summary>
     /// Gets or sets the resource usage report for operation.
     /// Not all operations report usage data.
@@ -49,10 +49,10 @@ public abstract class QdrantResponseBase
             $"From qdrant 1.14.0 this property is deprecated. Use {nameof(Hardware.Cpu)} instead.")]
         public long Cpu
         {
-            get => _cpu == 0
+            get => _cpu == 0 && Hardware is not null
                 ? Hardware.Cpu
                 : _cpu;
-            
+
             set => _cpu = value;
         }
 
@@ -64,10 +64,10 @@ public abstract class QdrantResponseBase
             $"From qdrant 1.14.0 this property is deprecated. Use {nameof(Hardware.PayloadIoRead)} instead.")]
         public long PayloadIoRead
         {
-            get => _payloadIoRead == 0
+            get => _payloadIoRead == 0 && Hardware is not null
                 ? Hardware.PayloadIoRead
                 : _payloadIoRead;
-            
+
             set => _payloadIoRead = value;
         }
 
@@ -79,10 +79,10 @@ public abstract class QdrantResponseBase
             $"From qdrant 1.14.0 this property is deprecated. Use {nameof(Hardware.PayloadIoWrite)} instead.")]
         public long PayloadIoWrite
         {
-            get => _payloadIoWrite == 0
+            get => _payloadIoWrite == 0 && Hardware is not null
                 ? Hardware.PayloadIoWrite
                 : _payloadIoWrite;
-            
+
             set => _payloadIoWrite = value;
         }
 
@@ -94,10 +94,10 @@ public abstract class QdrantResponseBase
             $"From qdrant 1.14.0 this property is deprecated. Use {nameof(Hardware.VectorIoRead)} instead.")]
         public long VectorIoRead
         {
-            get => _vectorIoRead == 0
+            get => _vectorIoRead == 0 && Hardware is not null
                 ? Hardware.VectorIoRead
                 : _vectorIoRead;
-            
+
             set => _vectorIoRead = value;
         }
 
@@ -109,10 +109,10 @@ public abstract class QdrantResponseBase
             $"From qdrant 1.14.0 this property is deprecated. Use {nameof(Hardware.VectorIoWrite)} instead.")]
         public long VectorIoWrite
         {
-            get => _vectorIoWrite == 0
+            get => _vectorIoWrite == 0 && Hardware is not null
                 ? Hardware.VectorIoWrite
                 : _vectorIoWrite;
-            
+
             set => _vectorIoWrite = value;
         }
 
