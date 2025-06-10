@@ -26,6 +26,8 @@ internal class PointIdTests
         new object[] {"not a guid", null, true},
         new object[] {1.3, null, true},
         new object[] {-1, null, true},
+
+        new object[] {null, PointId.NewGuid(), false},
         
         new object[] {"08ced0de-5a51-4162-b839-8fd8ab3c6b6c", PointId.Guid("08ced0de-5a51-4162-b839-8fd8ab3c6b6c"), false},
         new object[] {1, PointId.Integer(1), false},
@@ -59,11 +61,20 @@ internal class PointIdTests
         }
         else
         {
+            // NewGuid case is treated specially, as it always returns a random guid
+
             pointIdCreateAct.Should().NotThrow();
-            
             var createdPointId = pointIdCreateAct();
             
-            createdPointId.Equals(expected).Should().BeTrue();
+            if (pointIdRawSource is null
+                && expected is GuidPointId)
+            { 
+                createdPointId.Should().BeOfType<GuidPointId>();
+            }
+            else
+            {
+                createdPointId.Equals(expected).Should().BeTrue();
+            }
         }
     }
 }

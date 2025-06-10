@@ -65,12 +65,14 @@ public abstract class PointId : IEquatable<PointId>
 
     /// <summary>
     /// Creates a point id from the provided <paramref name="pointId"/> value.
+    /// Id <paramref name="pointId"/> is null - creates a new point id with random guid.
     /// </summary>
     /// <param name="pointId">The value to create point id from.</param>
     /// <exception cref="QdrantPointIdConversionException">Occurs if provided value can't be used as point id.</exception>
     public static PointId Create(object pointId) =>
         pointId switch
         {
+            null => NewGuid(),
             ulong ulongId => Integer(ulongId),
             uint uintId => Integer(uintId),
             int intId => Integer(intId),
