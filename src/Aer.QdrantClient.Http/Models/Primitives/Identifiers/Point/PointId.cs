@@ -64,6 +64,23 @@ public abstract class PointId : IEquatable<PointId>
     #region Factory methods
 
     /// <summary>
+    /// Creates a point id from the provided <paramref name="pointId"/> value.
+    /// </summary>
+    /// <param name="pointId">The value to create point id from.</param>
+    /// <exception cref="QdrantPointIdConversionException">Occurs if provided value can't be used as point id.</exception>
+    public static PointId Create(object pointId) =>
+        pointId switch
+        {
+            ulong ulongId => Integer(ulongId),
+            uint uintId => Integer(uintId),
+            int intId => Integer(intId),
+            long longId => Integer(longId),
+            Guid guidId => Guid(guidId),
+            string stringId => Guid(stringId),
+            _ => throw new QdrantInvalidPointIdException(pointId)
+        };
+
+    /// <summary>
     /// Create instance of integer point identifier.
     /// </summary>
     /// <param name="pointId">The point identifier.</param>
@@ -81,7 +98,7 @@ public abstract class PointId : IEquatable<PointId>
     /// <param name="pointId">The point identifier.</param>
     public static PointId Integer(int pointId)
         => pointId < 0
-            ? throw new QdrantInvalidNumericPointIdException(pointId)
+            ? throw new QdrantInvalidPointIdException(pointId)
             : new IntegerPointId((ulong) pointId);
     
     /// <summary>
@@ -90,7 +107,7 @@ public abstract class PointId : IEquatable<PointId>
     /// <param name="pointId">The point identifier.</param>
     public static PointId Integer(long pointId)
         => pointId < 0
-            ? throw new QdrantInvalidNumericPointIdException(pointId)
+            ? throw new QdrantInvalidPointIdException(pointId)
             : new IntegerPointId((ulong) pointId);
 
     /// <summary>
@@ -104,13 +121,23 @@ public abstract class PointId : IEquatable<PointId>
     /// Throws if the provided string is not parseable as GUID.
     /// </summary>
     /// <param name="pointId">The point identifier.</param>
-    public static PointId Guid(string pointId) =>
+    public static PointId Guid(string pointId)
+    {
+        
 #if NETSTANDARD2_0
-        new GuidPointId(System.Guid.Parse(pointId));
+        bool isConversionSuccessful = System.Guid.TryParse(pointId, out var guid);
 #else
-        new GuidPointId(System.Guid.Parse((ReadOnlySpan<char>)pointId));
+        bool isConversionSuccessful = System.Guid.TryParse((ReadOnlySpan<char>) pointId, out var guid);
 #endif
-    
+        
+        if (isConversionSuccessful)
+        { 
+            return new GuidPointId(guid);
+        }
+        
+        throw new QdrantInvalidPointIdException(pointId);
+    }
+
     /// <summary>
     /// Create instance of GUID point identifier with new random guid.
     /// </summary>
