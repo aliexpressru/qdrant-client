@@ -63,19 +63,19 @@ internal class QuantizationConfigurationJsonConverter : JsonConverter<Quantizati
             switch (value)
             {
                 case QuantizationConfiguration.ScalarQuantizationConfiguration sc:
-                    writer.WritePropertyName(QuantizationConfiguration.ScalarQuantizationConfiguration.QuantizationMethodName);
+                    writer.WritePropertyName(sc.Method);
 
                     JsonSerializer.Serialize(writer, sc, JsonSerializerConstants.DefaultSerializerOptions);
 
                     break;
                 case QuantizationConfiguration.ProductQuantizationConfiguration pc:
-                    writer.WritePropertyName(QuantizationConfiguration.ProductQuantizationConfiguration.QuantizationMethodName);
+                    writer.WritePropertyName(pc.Method);
 
                     JsonSerializer.Serialize(writer, pc, JsonSerializerConstants.DefaultSerializerOptions);
 
                     break;
                 case QuantizationConfiguration.BinaryQuantizationConfiguration bc:
-                    writer.WritePropertyName(QuantizationConfiguration.BinaryQuantizationConfiguration.QuantizationMethodName);
+                    writer.WritePropertyName(bc.Method);
 
                     JsonSerializer.Serialize(writer, bc, JsonSerializerConstants.DefaultSerializerOptions);
 

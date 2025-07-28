@@ -392,6 +392,7 @@ public class CollectionParametersTests : QdrantTestsBase
         var quantizationConfig = createdCollectionInfo.Result.Config.QuantizationConfig
             .As<QuantizationConfiguration.ScalarQuantizationConfiguration>();
 
+        quantizationConfig.Method.Should().Be(QuantizationConfiguration.ScalarQuantizationConfiguration.QuantizationMethodName);
         quantizationConfig.Quantile.Should().Be(0.9f);
         quantizationConfig.AlwaysRam.Should().BeTrue();
     }
@@ -422,6 +423,8 @@ public class CollectionParametersTests : QdrantTestsBase
         var quantizationConfig = createdCollectionInfo.Result.Config.QuantizationConfig
             .As<QuantizationConfiguration.BinaryQuantizationConfiguration>();
 
+        quantizationConfig.Method.Should()
+            .Be(QuantizationConfiguration.BinaryQuantizationConfiguration.QuantizationMethodName);
         quantizationConfig.AlwaysRam.Should().BeTrue();
     }
 
@@ -453,6 +456,8 @@ public class CollectionParametersTests : QdrantTestsBase
         var quantizationConfig = createdCollectionInfo.Result.Config.QuantizationConfig
             .As<QuantizationConfiguration.ProductQuantizationConfiguration>();
 
+        quantizationConfig.Method.Should()
+            .Be(QuantizationConfiguration.ProductQuantizationConfiguration.QuantizationMethodName);
         quantizationConfig.Compression.Should().Be(ProductQuantizationCompressionRatio.x8);
         quantizationConfig.AlwaysRam.Should().BeTrue();
     }

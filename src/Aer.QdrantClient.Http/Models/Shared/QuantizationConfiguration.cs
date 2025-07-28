@@ -13,11 +13,22 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 public abstract class QuantizationConfiguration
 {
     #region Quantization types
+    
+    /// <summary>
+    /// The quantization method.
+    /// </summary>
+    public abstract string Method { get; }
 
-    internal class ScalarQuantizationConfiguration : QuantizationConfiguration
+    /// <summary>
+    /// Represents the scalar quantization configuration.
+    /// </summary>
+    public class ScalarQuantizationConfiguration : QuantizationConfiguration
     {
-        public const string QuantizationMethodName = "scalar";
-
+        internal const string QuantizationMethodName = "scalar";
+        
+        /// <inheritdoc/>
+        public override string Method => QuantizationMethodName;
+        
         /// <summary>
         /// The type of the quantized vector components. Currently, Qdrant supports only <c>int8</c>.
         /// </summary>
@@ -65,9 +76,15 @@ public abstract class QuantizationConfiguration
         public bool AlwaysRam { set; get; }
     }
 
-    internal class ProductQuantizationConfiguration : QuantizationConfiguration
+    /// <summary>
+    /// Represents the product quantization configuration.
+    /// </summary>
+    public class ProductQuantizationConfiguration : QuantizationConfiguration
     {
-        public const string QuantizationMethodName = "product";
+        internal const string QuantizationMethodName = "product";
+
+        /// <inheritdoc/>
+        public override string Method => QuantizationMethodName;
 
         /// <summary>
         /// Compression ratio. Compression ratio represents the size of the quantized vector in bytes
@@ -105,9 +122,15 @@ public abstract class QuantizationConfiguration
         public bool AlwaysRam { set; get; } = false;
     }
 
-    internal class BinaryQuantizationConfiguration : QuantizationConfiguration
+    /// <summary>
+    /// Represents the binary quantization configuration.
+    /// </summary>
+    public class BinaryQuantizationConfiguration : QuantizationConfiguration
     {
-        public const string QuantizationMethodName = "binary";
+        internal const string QuantizationMethodName = "binary";
+
+        /// <inheritdoc/>
+        public override string Method => QuantizationMethodName;
 
         /// <summary>
         /// Whether to keep quantized vectors always cached in RAM or not.
