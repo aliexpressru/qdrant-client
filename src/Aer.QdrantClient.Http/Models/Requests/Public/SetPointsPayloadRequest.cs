@@ -21,6 +21,11 @@ public sealed class SetPointsPayloadRequest<TPayload>
     /// The point payload.
     /// </summary>
     public TPayload Payload { get; }
+    
+    /// <summary>
+    /// The key of the payload to set.
+    /// </summary>
+    public string Key { get; set; }
 
     /// <summary>
     /// Assigns payload to each point in this list.
@@ -47,10 +52,12 @@ public sealed class SetPointsPayloadRequest<TPayload>
     /// </summary>
     /// <param name="payload">Payload to set.</param>
     /// <param name="pointsToSetPayloadFor">Point ids to set payload for.</param>
-    public SetPointsPayloadRequest(TPayload payload, IEnumerable<PointId> pointsToSetPayloadFor)
+    /// <param name="key">The key of the payload to set. If specified the <paramref name="payload"/> will be set tot that key.</param>
+    public SetPointsPayloadRequest(TPayload payload, IEnumerable<PointId> pointsToSetPayloadFor, string key = null)
     {
         Payload = payload;
         Points = pointsToSetPayloadFor;
+        Key = key;
     }
 
     /// <summary>
@@ -59,9 +66,11 @@ public sealed class SetPointsPayloadRequest<TPayload>
     /// </summary>
     /// <param name="payload">Payload to set.</param>
     /// <param name="pointsFilterToSetPayloadFor">Points filter to set payload for.</param>
-    public SetPointsPayloadRequest(TPayload payload, QdrantFilter pointsFilterToSetPayloadFor)
+    /// <param name="key">The key of the payload to set. If specified the <paramref name="payload"/> will be set tot that key.</param>
+    public SetPointsPayloadRequest(TPayload payload, QdrantFilter pointsFilterToSetPayloadFor, string key = null)
     {
         Payload = payload;
         Filter = pointsFilterToSetPayloadFor;
+        Key = key;
     }
 }

@@ -12,7 +12,7 @@ namespace Aer.QdrantClient.Http.Models.Responses.Base;
 public class QdrantOperationResult
 {
     /// <summary>
-    /// The operation identifier.
+    /// Sequential number of the operation.
     /// </summary>
     public ulong OperationId { get; set; }
 

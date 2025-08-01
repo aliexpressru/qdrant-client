@@ -2106,6 +2106,114 @@ internal class PointsCrudTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task SetPointsPayloadByKey()
+    {
+        var (upsertPoints, _, upsertPointIds) =
+            await PrepareCollection<TestComplexPayload>(
+                _qdrantHttpClient,
+                TestCollectionName,
+                payloadInitializerFunction: (i) => new TestComplexPayload() {IntProperty = i + 1});
+
+        // update payload key by id
+
+        var pointIdsToUpdatePayloadFor = upsertPoints.Take(5)
+            .Select(p => p.Id).ToHashSet();
+
+        var setPayloadByIdAndKey = await _qdrantHttpClient.SetPointsPayload(
+            TestCollectionName,
+            new SetPointsPayloadRequest<TestComplexPayload.NestedClass>(
+                new TestComplexPayload.NestedClass()
+                {
+                    Double = 1.567
+                },
+                pointIdsToUpdatePayloadFor,
+                key: "nested"
+            ),
+            CancellationToken.None
+        );
+
+        setPayloadByIdAndKey.Status.IsSuccess.Should().BeTrue();
+
+        // check payload updated by id
+
+        var readAllPoints = await _qdrantHttpClient.GetPoints(
+            TestCollectionName,
+            upsertPointIds,
+            PayloadPropertiesSelector.All,
+            CancellationToken.None);
+
+        var pointsThatShouldBeUpdated = readAllPoints.Result
+            .Where(p => pointIdsToUpdatePayloadFor.Contains(p.Id));
+
+        var pointsThatShouldNotBeUpdated = readAllPoints.Result
+            .Where(p => !pointIdsToUpdatePayloadFor.Contains(p.Id));
+
+        // check initial key is intact
+        readAllPoints.Result.Should().AllSatisfy(p => p.Payload.As<TestComplexPayload>()
+            .IntProperty.Should().BeGreaterThan(0)
+        );
+
+        pointsThatShouldBeUpdated.Should().AllSatisfy(p => p.Payload.As<TestComplexPayload>()
+            .Nested.Double.Should().Be(1.567)
+        );
+
+        pointsThatShouldNotBeUpdated.Should().AllSatisfy(p => p.Payload.As<TestComplexPayload>()
+            .Nested.Should().BeNull()
+        );
+
+        // update payload by filter
+
+        var pointsToUpdatePayloadByFilter = upsertPoints.Skip(5).Take(5);
+
+        var pointIdsToUpdateByFilter = pointsToUpdatePayloadByFilter.Select(p => p.Id).ToHashSet();
+
+        var pointFilterToUpdatePayloadFor = QdrantFilter.Create(
+            Q.Must(
+                Q.HaveAnyId(pointIdsToUpdateByFilter))
+        );
+
+        var setPayloadByFilterAndKey = await _qdrantHttpClient.SetPointsPayload(
+            TestCollectionName,
+            new SetPointsPayloadRequest<TestComplexPayload.NestedClass>(
+                new TestComplexPayload.NestedClass()
+                {
+                    Double = 1567.12
+                },
+                pointFilterToUpdatePayloadFor,
+                key: "nested"),
+            CancellationToken.None);
+
+        setPayloadByFilterAndKey.Status.IsSuccess.Should().BeTrue();
+
+        // check payload updated by filter
+
+        readAllPoints = await _qdrantHttpClient.GetPoints(
+            TestCollectionName,
+            upsertPointIds,
+            PayloadPropertiesSelector.All,
+            CancellationToken.None);
+
+        readAllPoints.Status.IsSuccess.Should().BeTrue();
+
+        pointsThatShouldBeUpdated = readAllPoints.Result
+            .Where(p => pointIdsToUpdateByFilter.Contains(p.Id));
+
+        pointsThatShouldNotBeUpdated = readAllPoints.Result
+            .Where(p => !pointIdsToUpdateByFilter.Contains(p.Id));
+
+        // check initial key is intact
+        readAllPoints.Result.Should()
+            .AllSatisfy(p => p.Payload.As<TestComplexPayload>().IntProperty.Should().BeGreaterThan(0)
+            );
+
+        pointsThatShouldBeUpdated.Should()
+            .AllSatisfy(p => p.Payload.As<TestComplexPayload>().Nested.Double.Should().Be(1567.12));
+
+        pointsThatShouldNotBeUpdated.Should()
+            .AllSatisfy(p => p.Payload.As<TestComplexPayload>().Nested.Double.Should().NotBe(1567.12));
+    }
+
+    [Test]
     public async Task OverwritePointsPayload()
     {
         var (upsertPoints, _, upsertPointIds) =
