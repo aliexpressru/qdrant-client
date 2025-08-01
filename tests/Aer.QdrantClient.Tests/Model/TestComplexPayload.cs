@@ -33,6 +33,8 @@ internal class TestComplexPayload : Payload
         public int Integer { get; set; }
         
         public NestedNestedClass[] NestedNestedArray { get; set; }
+        
+        public NestedNestedClass Nested { get; set; }
     }
 
     public class NestedNestedClass

@@ -2174,13 +2174,13 @@ internal class PointsCrudTests : QdrantTestsBase
 
         var setPayloadByFilterAndKey = await _qdrantHttpClient.SetPointsPayload(
             TestCollectionName,
-            new SetPointsPayloadRequest<TestComplexPayload.NestedClass>(
-                new TestComplexPayload.NestedClass()
+            new SetPointsPayloadRequest<TestComplexPayload.NestedNestedClass>(
+                new TestComplexPayload.NestedNestedClass()
                 {
                     Double = 1567.12
                 },
                 pointFilterToUpdatePayloadFor,
-                key: "nested"),
+                key: "nested.nested"),
             CancellationToken.None);
 
         setPayloadByFilterAndKey.Status.IsSuccess.Should().BeTrue();
@@ -2207,10 +2207,10 @@ internal class PointsCrudTests : QdrantTestsBase
             );
 
         pointsThatShouldBeUpdated.Should()
-            .AllSatisfy(p => p.Payload.As<TestComplexPayload>().Nested.Double.Should().Be(1567.12));
+            .AllSatisfy(p => p.Payload.As<TestComplexPayload>().Nested.Nested.Double.Should().Be(1567.12));
 
         pointsThatShouldNotBeUpdated.Should()
-            .AllSatisfy(p => p.Payload.As<TestComplexPayload>().Nested.Double.Should().NotBe(1567.12));
+            .AllSatisfy(p => p.Payload.As<TestComplexPayload>().Nested.Nested.Should().BeNull());
     }
 
     [Test]
