@@ -10,7 +10,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 /// Represents a point id or a search vector - dense or sparse.
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
-public class PointIdOrQueryVector
+public sealed class PointIdOrQueryVector
 {
     /// <summary>
     /// The point id.

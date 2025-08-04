@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents the vector search parameters.
 /// </summary>
-public class VectorSearchParameters
+public sealed class VectorSearchParameters
 {
     /// <summary>
     /// Params relevant to HNSW index. Size of the beam in a beam-search.

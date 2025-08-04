@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a string shard key value.
 /// </summary>
-internal class StringShardKey : ShardKey
+internal sealed class StringShardKey : ShardKey
 {
     /// <summary>
     /// The shard key value.

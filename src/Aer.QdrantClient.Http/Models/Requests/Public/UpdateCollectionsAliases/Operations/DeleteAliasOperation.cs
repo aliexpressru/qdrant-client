@@ -18,7 +18,7 @@ internal sealed class DeleteAliasOperation : UpdateCollectionAliasOperationBase
     /// <summary>
     /// Represents the delete alias operation definition.
     /// </summary>
-    public class DeleteAliasDefinition
+    public sealed class DeleteAliasDefinition
     {
         /// <summary>
         /// The collection alias name.

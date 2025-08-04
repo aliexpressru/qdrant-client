@@ -7,7 +7,7 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 /// String point identifier.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class GuidPointId : PointId
+public sealed class GuidPointId : PointId
 {
     internal override object ObjectId { get; }
 

@@ -6,7 +6,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 /// <summary>
 /// Represents the location used to lookup vectors.
 /// </summary>
-public class VectorsLookupLocation
+public sealed class VectorsLookupLocation
 {
     /// <summary>
     /// The name of the collection to lookup vectors in.

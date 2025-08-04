@@ -14,7 +14,7 @@ internal sealed class CreatePayloadIndexRequest
     /// <summary>
     /// Represents a field schema configuration.
     /// </summary>
-    internal class FieldSchemaUnit(
+    internal sealed class FieldSchemaUnit(
         string type,
         bool onDisk,
         bool isTenant,

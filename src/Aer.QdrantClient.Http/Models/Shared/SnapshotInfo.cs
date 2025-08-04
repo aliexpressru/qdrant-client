@@ -1,12 +1,12 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
 /// Represents a snapshot information.
 /// </summary>
-public class SnapshotInfo
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+public sealed class SnapshotInfo
 {
     /// <summary>
     /// Snapshot name.
@@ -24,7 +24,7 @@ public class SnapshotInfo
     public long Size { set; get; }
 
     /// <summary>
-    /// Snapshopt size in megabytes.
+    /// Snapshot size in megabytes.
     /// </summary>
     public double SizeMegabytes => Size / 1024.0 / 1024.0;
 }

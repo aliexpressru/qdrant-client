@@ -7,7 +7,7 @@ namespace Aer.QdrantClient.Http.Models.Requests;
 /// Request for recovering a single collection or collection shard from a snapshot.
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-internal class RecoverEntityFromSnapshotRequest
+internal sealed class RecoverEntityFromSnapshotRequest
 {
     /// <summary>
     /// Snapshot location.

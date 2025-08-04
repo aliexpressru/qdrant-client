@@ -1,6 +1,10 @@
 ﻿namespace Aer.QdrantClient.Http.Models.Requests;
 
-internal class EmptyRequest
+/// <summary>
+/// Represents an empty request.
+/// This is used when no specific request body is needed.
+/// </summary>
+internal sealed class EmptyRequest
 {
 	public string RequestMessageBody { get; } = "{}";
 	

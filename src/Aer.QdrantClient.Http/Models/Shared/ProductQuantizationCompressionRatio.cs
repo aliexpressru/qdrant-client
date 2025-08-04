@@ -1,5 +1,4 @@
-﻿// ReSharper disable UnusedMember.Global
-// ReSharper disable InconsistentNaming | Justification = "Named as per Qdrant documentation"
+﻿// ReSharper disable InconsistentNaming | Justification = "Named as per Qdrant documentation"
 
 namespace Aer.QdrantClient.Http.Models.Shared;
 

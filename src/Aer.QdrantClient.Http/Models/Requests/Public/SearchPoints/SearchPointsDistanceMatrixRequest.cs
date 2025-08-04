@@ -8,7 +8,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// <summary>
 /// Represents the search points distance matrix API request.
 /// </summary>
-public class SearchPointsDistanceMatrixRequest
+public sealed class SearchPointsDistanceMatrixRequest
 {
     /// <summary>
     /// The shard selector to perform operation only on specified shards.

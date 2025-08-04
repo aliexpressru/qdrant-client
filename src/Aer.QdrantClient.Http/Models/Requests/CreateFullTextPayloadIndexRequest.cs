@@ -12,12 +12,10 @@ namespace Aer.QdrantClient.Http.Models.Requests;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 internal sealed class CreateFullTextPayloadIndexRequest
 {
-    #region Nested types
-
     /// <summary>
     /// Represents the full text payload field schema.
     /// </summary>
-    public class FullTextPayloadFieldSchema
+    public sealed class FullTextPayloadFieldSchema
     {
         /// <summary>
         /// The type of the payload field. Since this is a full-text index the field type can only be <c>Keyword</c>.
@@ -49,8 +47,6 @@ internal sealed class CreateFullTextPayloadIndexRequest
         /// </summary>
         public bool OnDisk { get; set; } = false;
     }
-
-    #endregion
 
     /// <summary>
     /// Gets or sets the name of the indexed field.

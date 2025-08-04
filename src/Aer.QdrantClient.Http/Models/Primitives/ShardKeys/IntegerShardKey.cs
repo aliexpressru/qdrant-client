@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents an integer shard key value.
 /// </summary>
-internal class IntegerShardKey : ShardKey
+internal sealed class IntegerShardKey : ShardKey
 {
     /// <summary>
     /// The shard key value.

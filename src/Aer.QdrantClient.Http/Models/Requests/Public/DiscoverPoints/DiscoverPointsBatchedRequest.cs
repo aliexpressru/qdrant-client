@@ -11,7 +11,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
 /// </remarks>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public class DiscoverPointsBatchedRequest
+public sealed class DiscoverPointsBatchedRequest
 {
     /// <summary>
     /// The individual recommend requests to execute as batch.

@@ -12,7 +12,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
 [SuppressMessage("ReSharper", "CollectionNeverQueried.Global")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
-public class DiscoverPointsRequest
+public sealed class DiscoverPointsRequest
 {
     /// <summary>
     /// Pairs of positive - negative examples to constrain the search.

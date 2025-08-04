@@ -22,7 +22,7 @@ public abstract class UpdateCollectionClusteringSetupRequest
     /// <summary>
     /// Represents a request to move shard form peer to peer.
     /// </summary>
-    internal class MoveShardRequest : UpdateCollectionClusteringSetupRequest
+    internal sealed class MoveShardRequest : UpdateCollectionClusteringSetupRequest
     {
         /// <summary>
         /// The move shard operation description.
@@ -33,7 +33,7 @@ public abstract class UpdateCollectionClusteringSetupRequest
     /// <summary>
     /// Represents a request to replicate shard form peer to peer.
     /// </summary>
-    internal class ReplicateShardRequest : UpdateCollectionClusteringSetupRequest
+    internal sealed class ReplicateShardRequest : UpdateCollectionClusteringSetupRequest
     {
         /// <summary>
         /// The replicate shard operation description.
@@ -44,7 +44,7 @@ public abstract class UpdateCollectionClusteringSetupRequest
     /// <summary>
     /// Represents a request to abort an ongoing shard transfer process.
     /// </summary>
-    internal class AbortShardTransferRequest : UpdateCollectionClusteringSetupRequest
+    internal sealed class AbortShardTransferRequest : UpdateCollectionClusteringSetupRequest
     {
         /// <summary>
         /// The abort shard replication or transfer operation description.
@@ -55,7 +55,7 @@ public abstract class UpdateCollectionClusteringSetupRequest
     /// <summary>
     /// Represents a request to drop an existing shard replica.
     /// </summary>
-    internal class DropShardReplicaRequest : UpdateCollectionClusteringSetupRequest
+    internal sealed class DropShardReplicaRequest : UpdateCollectionClusteringSetupRequest
     {
         /// <summary>
         /// Represents a description of a replica to drop.
@@ -82,7 +82,7 @@ public abstract class UpdateCollectionClusteringSetupRequest
     /// <summary>
     /// Represents a descriptor for the shard operation to perform.
     /// </summary>
-    internal class ShardOperationDescription
+    internal sealed class ShardOperationDescription
     {
         /// <summary>
         /// The shard identifier.

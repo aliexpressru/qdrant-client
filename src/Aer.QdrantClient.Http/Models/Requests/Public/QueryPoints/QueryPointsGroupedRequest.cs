@@ -7,7 +7,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 /// Represents a universal query API grouped request.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QueryPointsGroupedRequest : QueryPointsRequest
+public sealed class QueryPointsGroupedRequest : QueryPointsRequest
 {
     /// <summary>
     /// Payload field to group by, must be a string or number field.

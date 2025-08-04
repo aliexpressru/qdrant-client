@@ -8,7 +8,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public abstract class PayloadPropertiesSelector
 {
-    internal class AllPayloadPropertiesSelector : PayloadPropertiesSelector
+    internal sealed class AllPayloadPropertiesSelector : PayloadPropertiesSelector
     {
         public bool AreAllPayloadPropertiesSelected { get; }
 
@@ -18,7 +18,7 @@ public abstract class PayloadPropertiesSelector
         }
     }
 
-    internal class IncludePayloadPropertiesSelector : PayloadPropertiesSelector
+    internal sealed class IncludePayloadPropertiesSelector : PayloadPropertiesSelector
     {
         public string[] IncludedPayloadProperties { get; }
 
@@ -28,7 +28,7 @@ public abstract class PayloadPropertiesSelector
         }
     }
 
-    internal class ExcludePayloadPropertiesSelector : PayloadPropertiesSelector
+    internal sealed class ExcludePayloadPropertiesSelector : PayloadPropertiesSelector
     {
         public string[] ExcludedPayloadProperties { get; }
 
@@ -60,8 +60,6 @@ public abstract class PayloadPropertiesSelector
     public static PayloadPropertiesSelector Exclude(params string[] excludedPayloadProperties) =>
         new ExcludePayloadPropertiesSelector(excludedPayloadProperties);
 
-    #region Operators
-
     /// <summary>
     /// Implicitly converts boolean values to <see cref="AllPayloadPropertiesSelector"/> instances.
     /// </summary>
@@ -71,6 +69,4 @@ public abstract class PayloadPropertiesSelector
     {
         return new AllPayloadPropertiesSelector(value);
     }
-
-    #endregion
 }

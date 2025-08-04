@@ -10,7 +10,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class LookupSearchParameters
+public sealed class LookupSearchParameters
 {
     /// <summary>
     /// The name of the collection to look up points in.

@@ -1,13 +1,9 @@
-﻿// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-
-namespace Aer.QdrantClient.Http.Models.Shared;
+﻿namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
 /// The HNSW index configuration.
 /// </summary>
-public class HnswConfiguration
+public sealed class HnswConfiguration
 {
     /// <summary>
     /// Number of edges per node in the index graph. Larger the value - more accurate the search, more space required.

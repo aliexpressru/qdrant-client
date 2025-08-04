@@ -18,7 +18,7 @@ public abstract class VectorConfigurationBase
     /// <summary>
     /// Represents a single vector configuration.
     /// </summary>
-    public class SingleVectorConfiguration : VectorConfigurationBase
+    public sealed class SingleVectorConfiguration : VectorConfigurationBase
     {
         /// <summary>
         /// The distance metric used to build collection index.
@@ -105,7 +105,7 @@ public abstract class VectorConfigurationBase
     /// <summary>
     /// Represents a configuration for collection with named vectors.
     /// </summary>
-    public class NamedVectorsConfiguration : VectorConfigurationBase
+    public sealed class NamedVectorsConfiguration : VectorConfigurationBase
     {
         /// <summary>
         /// The named vectors configurations,

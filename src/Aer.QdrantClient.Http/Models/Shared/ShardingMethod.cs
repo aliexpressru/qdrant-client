@@ -1,10 +1,11 @@
-﻿// ReSharper disable MemberCanBeInternal
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
 /// The collection sharding method.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public enum ShardingMethod
 {
     /// <summary>

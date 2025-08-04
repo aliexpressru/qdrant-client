@@ -22,7 +22,7 @@ public abstract class QuantizationConfiguration
     /// <summary>
     /// Represents the scalar quantization configuration.
     /// </summary>
-    public class ScalarQuantizationConfiguration : QuantizationConfiguration
+    public sealed class ScalarQuantizationConfiguration : QuantizationConfiguration
     {
         internal const string QuantizationMethodName = "scalar";
         
@@ -79,7 +79,7 @@ public abstract class QuantizationConfiguration
     /// <summary>
     /// Represents the product quantization configuration.
     /// </summary>
-    public class ProductQuantizationConfiguration : QuantizationConfiguration
+    public sealed class ProductQuantizationConfiguration : QuantizationConfiguration
     {
         internal const string QuantizationMethodName = "product";
 
@@ -125,7 +125,7 @@ public abstract class QuantizationConfiguration
     /// <summary>
     /// Represents the binary quantization configuration.
     /// </summary>
-    public class BinaryQuantizationConfiguration : QuantizationConfiguration
+    public sealed class BinaryQuantizationConfiguration : QuantizationConfiguration
     {
         internal const string QuantizationMethodName = "binary";
 

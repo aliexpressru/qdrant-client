@@ -13,7 +13,7 @@ public abstract class ReadPointsConsistency
     /// <summary>
     /// Represents an integer consistency.
     /// </summary>
-    internal class IntegerReadConsistency : ReadPointsConsistency
+    internal sealed class IntegerReadConsistency : ReadPointsConsistency
     {
         /// <summary>
         /// Random requests to send and retrieve.
@@ -39,7 +39,7 @@ public abstract class ReadPointsConsistency
     /// <summary>
     /// Represents a specific preset consistency.
     /// </summary>
-    internal class PresetReadConsistency : ReadPointsConsistency
+    internal sealed class PresetReadConsistency : ReadPointsConsistency
     {
         /// <summary>
         /// The specific preset consistency type.

@@ -1,5 +1,3 @@
-// ReSharper disable UnusedMember.Global
-
 namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>

@@ -9,7 +9,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 /// Represents a sub request to perform first.
 /// If present, the query will be performed on the results of the prefetch(es).
 /// </summary>
-public class PrefetchPoints
+public sealed class PrefetchPoints
 {
     /// <summary>
     /// Sub-requests to perform first. If present, the query will be performed on the results of the prefetches.

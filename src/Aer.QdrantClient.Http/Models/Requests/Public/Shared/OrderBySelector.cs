@@ -9,7 +9,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public class OrderBySelector
+public sealed class OrderBySelector
 {
     /// <summary>
     /// Payload key to order by.

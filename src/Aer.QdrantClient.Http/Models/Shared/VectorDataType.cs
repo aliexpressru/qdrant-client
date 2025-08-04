@@ -1,11 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Aer.QdrantClient.Http.Models.Shared;
+﻿namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
 /// Represents a vector datatype to represent vectors in the storage.
 /// </summary>
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public enum VectorDataType
 {
     /// <summary>

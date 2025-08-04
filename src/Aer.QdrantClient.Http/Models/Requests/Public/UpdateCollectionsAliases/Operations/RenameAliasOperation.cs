@@ -18,7 +18,7 @@ internal sealed class RenameAliasOperation : UpdateCollectionAliasOperationBase
     /// <summary>
     /// Represents the rename alias operation definition.
     /// </summary>
-    public class RenameAliasDefinition
+    public sealed class RenameAliasDefinition
     {
         /// <summary>
         /// The old collection alias name to change.

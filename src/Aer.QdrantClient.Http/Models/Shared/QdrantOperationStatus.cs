@@ -1,9 +1,7 @@
-// ReSharper disable UnusedMember.Global
-
 namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
-/// Peresents a qdrant operation status
+/// Represents a qdrant operation status.
 /// </summary>
 public enum QdrantOperationStatus
 {

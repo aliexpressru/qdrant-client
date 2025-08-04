@@ -1,11 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Aer.QdrantClient.Http.Models.Shared;
+﻿namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
 /// Shard transfer method.
 /// </summary>
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public enum ShardTransferMethod
 {
     /// <summary>

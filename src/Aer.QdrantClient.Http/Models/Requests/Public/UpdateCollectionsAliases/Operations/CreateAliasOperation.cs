@@ -18,7 +18,7 @@ internal sealed class CreateAliasOperation : UpdateCollectionAliasOperationBase
     /// <summary>
     /// Represents the create alias operation definition.
     /// </summary>
-    public class CreateAliasDefinition
+    public sealed class CreateAliasDefinition
     {
         /// <summary>
         /// The original collection name.

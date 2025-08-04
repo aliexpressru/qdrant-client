@@ -9,7 +9,7 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 /// Represents a single point with associated vector.
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public class PointVector
+public sealed class PointVector
 {
     /// <summary>
     /// Gets or sets the point identifier.

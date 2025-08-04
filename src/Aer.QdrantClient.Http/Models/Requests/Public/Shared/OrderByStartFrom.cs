@@ -5,7 +5,7 @@
 /// </summary>
 public class OrderByStartFrom
 {
-    internal class OrderByStartFromInteger : OrderByStartFrom
+    internal sealed class OrderByStartFromInteger : OrderByStartFrom
     {
         /// <summary>
         /// Which payload value to start scrolling from.
@@ -22,7 +22,7 @@ public class OrderByStartFrom
         }
     }
 
-    internal class OrderByStartFromDouble : OrderByStartFrom
+    internal sealed class OrderByStartFromDouble : OrderByStartFrom
     {
         /// <summary>
         /// Which payload value to start scrolling from.
@@ -39,7 +39,7 @@ public class OrderByStartFrom
         }
     }
 
-    internal class OrderByStartFromDateTime : OrderByStartFrom
+    internal sealed class OrderByStartFromDateTime : OrderByStartFrom
     {
         /// <summary>
         /// Which payload value to start scrolling from.

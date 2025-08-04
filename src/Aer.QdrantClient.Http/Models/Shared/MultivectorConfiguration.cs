@@ -8,7 +8,7 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class MultivectorConfiguration
+public sealed class MultivectorConfiguration
 {
     /// <summary>
     /// The comparator to be used while comparing multivectors.

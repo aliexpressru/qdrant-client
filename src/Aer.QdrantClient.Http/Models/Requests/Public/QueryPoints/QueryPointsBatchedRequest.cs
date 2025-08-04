@@ -7,7 +7,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QueryPointsBatchedRequest
+public sealed class QueryPointsBatchedRequest
 {
     /// <summary>
     /// The individual searches to execute as batch.

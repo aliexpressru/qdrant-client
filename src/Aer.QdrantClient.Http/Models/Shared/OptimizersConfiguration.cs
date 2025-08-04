@@ -8,7 +8,7 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class OptimizersConfiguration
+public sealed class OptimizersConfiguration
 {
     /// <summary>
     /// The minimal fraction of deleted vectors in a segment, required to perform segment optimization.

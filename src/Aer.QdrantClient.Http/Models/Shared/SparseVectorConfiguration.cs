@@ -10,7 +10,7 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 [JsonConverter(typeof(SparseVectorConfigurationJsonConverter))]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "AutoPropertyCanBeMadeGetOnly.Global")]
-public class SparseVectorConfiguration
+public sealed class SparseVectorConfiguration
 {
     /// <summary>
     /// Indicates whether to store sparse vector index on disk.

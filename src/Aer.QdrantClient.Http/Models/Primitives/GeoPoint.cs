@@ -1,6 +1,3 @@
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-
 using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Primitives;
@@ -8,7 +5,8 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 /// <summary>
 /// Represents the geo point data.
 /// </summary>
-public class GeoPoint
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+public sealed class GeoPoint
 {
     /// <summary>
     /// The longitude.

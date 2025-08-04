@@ -8,7 +8,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class CollectionPayloadIndexDefinition
+public sealed class CollectionPayloadIndexDefinition
 {
 	/// <summary>
 	/// The name of the payload property to index.

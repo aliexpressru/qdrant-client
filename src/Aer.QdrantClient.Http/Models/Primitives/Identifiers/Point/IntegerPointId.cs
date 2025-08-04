@@ -7,7 +7,7 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 /// Integer point identifier.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class IntegerPointId : PointId
+public sealed class IntegerPointId : PointId
 {
     internal override object ObjectId { get; }
 

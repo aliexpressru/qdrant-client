@@ -8,7 +8,7 @@ public abstract class ShardSelector
     /// <summary>
     /// Represents a shard selector using string shard keys.
     /// </summary>
-    internal class StringShardKeyShardSelector : ShardSelector
+    internal sealed class StringShardKeyShardSelector : ShardSelector
     {
         /// <summary>
         /// Shard key value.
@@ -28,7 +28,7 @@ public abstract class ShardSelector
     /// <summary>
     /// Represents a shard selector using integer shard keys.
     /// </summary>
-    internal class IntegerShardKeyShardSelector : ShardSelector
+    internal sealed class IntegerShardKeyShardSelector : ShardSelector
     {
         /// <summary>
         /// Shard key value.

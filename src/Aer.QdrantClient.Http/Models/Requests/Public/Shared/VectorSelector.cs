@@ -10,7 +10,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public abstract class VectorSelector
 {
-    internal class AllVectorsSelector : VectorSelector
+    internal sealed class AllVectorsSelector : VectorSelector
     {
         public bool AreAllVectorsSelected { get; }
 
@@ -20,7 +20,7 @@ public abstract class VectorSelector
         }
     }
 
-    internal class IncludeNamedVectorsSelector : VectorSelector
+    internal sealed class IncludeNamedVectorsSelector : VectorSelector
     {
         public string[] IncludedVectorNames { get; }
 

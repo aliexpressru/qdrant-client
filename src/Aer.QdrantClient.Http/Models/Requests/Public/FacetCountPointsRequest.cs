@@ -8,7 +8,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// <summary>
 /// Represents a faceting count points request.
 /// </summary>
-public class FacetCountPointsRequest
+public sealed class FacetCountPointsRequest
 {
     /// <summary>
     /// Payload key to use for faceting.

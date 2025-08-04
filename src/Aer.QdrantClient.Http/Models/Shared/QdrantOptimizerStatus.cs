@@ -6,7 +6,7 @@
 public enum QdrantOptimizerStatus
 {
     /// <summary>
-    /// Represents the unkown qdrant collection optimizer status. Might indicate an exception or a bug.
+    /// Represents the unknown qdrant collection optimizer status. Might indicate an exception or a bug.
     /// </summary>
     Unknown,
 
