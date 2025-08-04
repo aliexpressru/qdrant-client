@@ -23,7 +23,7 @@ public sealed class SetPointsPayloadRequest<TPayload>
     public TPayload Payload { get; }
     
     /// <summary>
-    /// The key of the payload to set.
+    /// The specific key of the payload to set. If specified the <see cref="Payload"/> will be set to that key.
     /// </summary>
     public string Key { get; set; }
 
@@ -66,7 +66,7 @@ public sealed class SetPointsPayloadRequest<TPayload>
     /// </summary>
     /// <param name="payload">Payload to set.</param>
     /// <param name="pointsFilterToSetPayloadFor">Points filter to set payload for.</param>
-    /// <param name="key">The key of the payload to set. If specified the <paramref name="payload"/> will be set tot that key.</param>
+    /// <param name="key">The specific key of the payload to set. If specified the <paramref name="payload"/> will be set to that key.</param>
     public SetPointsPayloadRequest(TPayload payload, QdrantFilter pointsFilterToSetPayloadFor, string key = null)
     {
         Payload = payload;

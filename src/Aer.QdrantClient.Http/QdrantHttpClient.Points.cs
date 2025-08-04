@@ -15,6 +15,7 @@ namespace Aer.QdrantClient.Http;
 public partial class QdrantHttpClient
 {
     #region Create \ Update \ Delete operations
+    
     /// <summary>
     /// Delete points by specified ids.
     /// </summary>
@@ -35,6 +36,44 @@ public partial class QdrantHttpClient
         var points = new DeletePointsRequest()
         {
             Points = pointIds,
+            ShardKey = shardSelector
+        };
+
+        var orderingValue = (ordering ?? OrderingType.Weak).ToString().ToLowerInvariant();
+
+        var url =
+            $"/collections/{collectionName}/points/delete?wait={ToUrlQueryString(isWaitForResult)}&ordering={orderingValue}";
+
+        var response = await ExecuteRequest<DeletePointsRequest, PointsOperationResponse>(
+            url,
+            HttpMethod.Post,
+            points,
+            cancellationToken,
+            retryCount: 0);
+
+        return response;
+    }
+
+    /// <summary>
+    /// Delete points by specified filters.
+    /// </summary>
+    /// <param name="collectionName">Name of the collection to delete points from.</param>
+    /// <param name="filter">The filter to find points to delete.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="shardSelector">The shard selector. If set, performs operation only on specified shard(s).</param>
+    /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
+    /// <param name="ordering">The delete operation ordering settings.</param>
+    public async Task<PointsOperationResponse> DeletePoints(
+        string collectionName,
+        QdrantFilter filter,
+        CancellationToken cancellationToken,
+        ShardSelector shardSelector = null,
+        bool isWaitForResult = true,
+        OrderingType? ordering = null)
+    {
+        var points = new DeletePointsRequest()
+        {
+            Filter = filter,
             ShardKey = shardSelector
         };
 

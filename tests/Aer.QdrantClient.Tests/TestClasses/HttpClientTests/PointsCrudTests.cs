@@ -1956,35 +1956,41 @@ internal class PointsCrudTests : QdrantTestsBase
         var vectorCount = 10;
         var pointsToDeleteCount = 5;
 
-        var (_, upsertPointsByPointIds, _) =
+        var (_, pointsByPointIds, _) =
             await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName,
                 vectorCount: vectorCount);
 
-        var pointsToDelete = upsertPointsByPointIds.Values.Take(pointsToDeleteCount).ToList();
+        var pointsToDelete = pointsByPointIds.Values.Take(pointsToDeleteCount).ToList();
 
-        List<PointId> pintIdsToDelete = pointsToDelete.Select(p => p.Id).ToList();
-        foreach (var pointIdToDelete in pintIdsToDelete)
-        {
-            upsertPointsByPointIds.Remove(((IntegerPointId) pointIdToDelete).Id);
-        }
+        List<PointId> pointIdsToDelete = pointsToDelete.Select(p => p.Id).ToList();
 
-        var deletePointsResult = await _qdrantHttpClient.DeletePoints(
+        var deletePointsByPointIdResult = await _qdrantHttpClient.DeletePoints(
             TestCollectionName,
-            pintIdsToDelete,
+            pointIdsToDelete.Take(2),
             CancellationToken.None);
 
+        deletePointsByPointIdResult.Status.IsSuccess.Should().BeTrue();
+        deletePointsByPointIdResult.Result.Status.Should().Be(QdrantOperationStatus.Completed);
+        
+        var deletePointsByFilterResult = await _qdrantHttpClient.DeletePoints(
+            TestCollectionName,
+            // We use only the id filter for the test purposes, but we can actually use any filter
+            Q.HaveAnyId(pointIdsToDelete.Skip(2)),
+            CancellationToken.None);
+
+        deletePointsByFilterResult.Status.IsSuccess.Should().BeTrue();
+        deletePointsByFilterResult.Result.Status.Should().Be(QdrantOperationStatus.Completed);
+        
         var readPointsResult = await _qdrantHttpClient.GetPoints(
             TestCollectionName,
-            upsertPointsByPointIds.Keys.Select(PointId.Integer),
+            pointsByPointIds.Keys.Select(PointId.Integer),
             PayloadPropertiesSelector.All,
             CancellationToken.None,
             withVector: true);
 
-        deletePointsResult.Status.IsSuccess.Should().BeTrue();
-
-        deletePointsResult.Result.Status.Should().Be(QdrantOperationStatus.Completed);
+        
 
         readPointsResult.Status.IsSuccess.Should().BeTrue();
         readPointsResult.Result.Length.Should().Be(vectorCount - pointsToDeleteCount);
@@ -1993,7 +1999,7 @@ internal class PointsCrudTests : QdrantTestsBase
         {
             var readPointId = readPoint.Id.As<IntegerPointId>().Id;
 
-            var expectedPoint = upsertPointsByPointIds[readPointId];
+            var expectedPoint = pointsByPointIds[readPointId];
 
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
 

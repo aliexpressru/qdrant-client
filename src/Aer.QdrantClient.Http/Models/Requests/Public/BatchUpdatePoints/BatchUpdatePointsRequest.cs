@@ -96,6 +96,32 @@ public class BatchUpdatePointsRequest
     }
 
     /// <summary>
+    /// Append a delete points operation to batch.
+    /// </summary>
+    /// <param name="filter">Filter to find points to delete.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
+    public BatchUpdatePointsRequest DeletePoints(
+        QdrantFilter filter,
+        ShardSelector shardSelector = null)
+    {
+        var operation = new DeletePointsOperation()
+        {
+            Delete = new DeletePointsRequest()
+            {
+                Filter = filter,
+                ShardKey = shardSelector
+            }
+        };
+
+        Operations.Add(operation);
+
+        return this;
+    }
+
+    /// <summary>
     /// Append a set points payload operation to batch.
     /// </summary>
     /// <param name="payload">Payload to set.</param>
@@ -104,11 +130,13 @@ public class BatchUpdatePointsRequest
     /// The shard selector. If set performs operation on specified shard(s).
     /// If not set - performs operation on all shards.
     /// </param>
+    /// <param name="key">The specific key of the payload to set. If specified the <paramref name="payload"/> will be set to that key.</param>
     /// <typeparam name="TPayload">The type of the point payload.</typeparam>
     public BatchUpdatePointsRequest SetPointsPayload<TPayload>(
         TPayload payload,
         IEnumerable<PointId> pointsToSetPayloadFor,
-        ShardSelector shardSelector = null)
+        ShardSelector shardSelector = null,
+        string key = null)
         where TPayload : class
     {
         var operation = new SetPointsPayloadOperation()
@@ -116,6 +144,7 @@ public class BatchUpdatePointsRequest
             SetPayload = new SetPointsPayloadRequest<TPayload>(payload, pointsToSetPayloadFor)
             {
                 ShardKey = shardSelector,
+                Key = key
             }
         };
 
@@ -133,18 +162,21 @@ public class BatchUpdatePointsRequest
     /// The shard selector. If set performs operation on specified shard(s).
     /// If not set - performs operation on all shards.
     /// </param>
+    /// <param name="key">The specific key of the payload to set. If specified the <paramref name="payload"/> will be set to that key.</param>
     /// <typeparam name="TPayload">The type of the point payload.</typeparam>
     public BatchUpdatePointsRequest SetPointsPayload<TPayload>(
         TPayload payload,
         QdrantFilter pointsFilterToSetPayloadFor,
-        ShardSelector shardSelector = null)
+        ShardSelector shardSelector = null,
+        string key = null)
         where TPayload : class
     {
         var operation = new SetPointsPayloadOperation()
         {
             SetPayload = new SetPointsPayloadRequest<TPayload>(payload, pointsFilterToSetPayloadFor)
             {
-                ShardKey = shardSelector
+                ShardKey = shardSelector,
+                Key = key
             }
         };
 
@@ -162,17 +194,22 @@ public class BatchUpdatePointsRequest
     /// The shard selector. If set performs operation on specified shard(s).
     /// If not set - performs operation on all shards.
     /// </param>
+    /// <param name="nestedPayloadPropertyPath">Assigns payload to each point that satisfy this path of property.</param>
     /// <typeparam name="TPayload">The type of the point payload.</typeparam>
     public BatchUpdatePointsRequest OverwritePointsPayload<TPayload>(
         TPayload payload,
         IEnumerable<PointId> pointsToOverwritePayloadFor,
-        ShardSelector shardSelector = null)
+        ShardSelector shardSelector = null,
+        string nestedPayloadPropertyPath = null)
         where TPayload : class
     {
         var operation = new OverwritePointsPayloadOperation()
         {
             OverwritePayload =
-                new OverwritePointsPayloadRequest<TPayload>(payload, pointsToOverwritePayloadFor)
+                new OverwritePointsPayloadRequest<TPayload>(
+                    payload,
+                    pointsToOverwritePayloadFor,
+                    nestedPayloadPropertyPath)
                 {
                     ShardKey = shardSelector
                 }
@@ -192,17 +229,22 @@ public class BatchUpdatePointsRequest
     /// The shard selector. If set performs operation on specified shard(s).
     /// If not set - performs operation on all shards.
     /// </param>
+    /// <param name="nestedPayloadPropertyPath">Assigns payload to each point that satisfy this path of property.</param>
     /// <typeparam name="TPayload">The type of the point payload.</typeparam>
     public BatchUpdatePointsRequest OverwritePointsPayload<TPayload>(
         TPayload payload,
         QdrantFilter pointsFilterToOverwritePayloadFor,
-        ShardSelector shardSelector = null)
+        ShardSelector shardSelector = null,
+        string nestedPayloadPropertyPath = null)
         where TPayload : class
     {
         var operation = new OverwritePointsPayloadOperation()
         {
             OverwritePayload =
-                new OverwritePointsPayloadRequest<TPayload>(payload, pointsFilterToOverwritePayloadFor)
+                new OverwritePointsPayloadRequest<TPayload>(
+                    payload,
+                    pointsFilterToOverwritePayloadFor,
+                    nestedPayloadPropertyPath)
                 {
                     ShardKey = shardSelector
                 }
@@ -281,7 +323,6 @@ public class BatchUpdatePointsRequest
     /// </param>
     public BatchUpdatePointsRequest ClearPointsPayload(
         IEnumerable<PointId> pointIdsToClearPayloadFor,
-
         ShardSelector shardSelector = null)
     {
         var operation = new ClearPointsPayloadOperation()

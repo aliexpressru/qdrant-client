@@ -1,10 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
-namespace Aer.QdrantClient.Http.Models.Requests.Public;
+namespace Aer.QdrantClient.Http.Models.Requests;
 
 /// <summary>
 /// Represents the request to delete points by point identifiers.
@@ -12,13 +13,19 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public sealed class DeletePointsRequest
+internal sealed class DeletePointsRequest
 {
     /// <summary>
     /// The point identifiers to delete points for.
     /// </summary>
     [JsonConverter(typeof(PointIdIEnumerableJsonConverter))]
-    public required IEnumerable<PointId> Points { get; set; }
+    public IEnumerable<PointId> Points { get; set; }
+    
+    /// <summary>
+    /// Delete points that satisfy the filter.
+    /// </summary>
+    [JsonConverter(typeof(QdrantFilterJsonConverter))]
+    public QdrantFilter Filter { get; set; }
 
     /// <summary>
     /// The shard selector to perform operation only on specified shards.
