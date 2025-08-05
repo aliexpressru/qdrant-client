@@ -22,6 +22,11 @@ public sealed class QdrantFilter
     /// Returns an empty filter.
     /// </summary>
     public static QdrantFilter Empty { get; } = new();
+    
+    /// <summary>
+    /// Returns <c>true</c> if this filter is empty (i.e. does not have any conditions), otherwise <c>false</c>.
+    /// </summary>
+    public bool IsEmpty => _conditions.Count == 0;
 
     /// <summary>
     /// This ctor is for preventing builder from being created manually.
