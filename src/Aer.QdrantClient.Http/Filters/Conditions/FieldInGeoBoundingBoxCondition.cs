@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
@@ -8,6 +9,8 @@ internal class FieldInGeoBoundingBoxCondition : FilterConditionBase
     private readonly double _topLeftLatitude;
     private readonly double _bottomRightLongitude;
     private readonly double _bottomRightLatitude;
+
+    protected internal override PayloadIndexedFieldType? PayloadFieldType => PayloadIndexedFieldType.Geo;
 
     public FieldInGeoBoundingBoxCondition(
         string payloadFieldName,

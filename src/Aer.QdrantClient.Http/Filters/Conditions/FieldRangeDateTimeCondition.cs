@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
@@ -8,6 +9,8 @@ internal class FieldRangeDateTimeCondition : FilterConditionBase
     private readonly DateTimeOffset? _lessThanOrEqual;
     private readonly DateTimeOffset? _greaterThan;
     private readonly DateTimeOffset? _greaterThanOrEqual;
+
+    protected internal override PayloadIndexedFieldType? PayloadFieldType => PayloadIndexedFieldType.Datetime;
 
     public FieldRangeDateTimeCondition(
         string payloadFieldName,

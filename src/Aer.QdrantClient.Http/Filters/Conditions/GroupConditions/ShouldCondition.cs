@@ -5,10 +5,8 @@ namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 /// <summary>
 /// Represents "at least one nested condition should" filter condition group.
 /// </summary>
-internal class ShouldCondition : FilterConditionBase
+internal class ShouldCondition : FilterGroupConditionBase
 {
-    internal readonly List<FilterConditionBase> Conditions = [];
-
     public ShouldCondition(IEnumerable<FilterConditionBase> conditions) : base(DiscardPayloadFieldName)
     {
         foreach (var condition in conditions)

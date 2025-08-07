@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Aer.QdrantClient.Http.Infrastructure.Json;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
@@ -11,6 +12,8 @@ internal class FieldMatchCondition<T> : FilterConditionBase
 {
     private readonly bool _isSubstringMatch;
     private readonly T _value;
+
+    protected internal override PayloadIndexedFieldType? PayloadFieldType { get; } = GetPayloadFieldType<T>();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FieldMatchCondition{T}"/> class.

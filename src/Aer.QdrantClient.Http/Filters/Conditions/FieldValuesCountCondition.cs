@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
@@ -8,6 +9,8 @@ internal class FieldValuesCountCondition : FilterConditionBase
     private readonly int? _lessThanOrEqual;
     private readonly int? _greaterThan;
     private readonly int? _greaterThanOrEqual;
+
+    protected internal override PayloadIndexedFieldType? PayloadFieldType => null; 
 
     public FieldValuesCountCondition(
         string payloadFieldName,

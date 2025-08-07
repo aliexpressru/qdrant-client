@@ -7,360 +7,360 @@ namespace Aer.QdrantClient.Tests.TestClasses.InfrastructureTests;
 
 internal class QdrantFormulaTests
 {
-	[Test]
-	public void Constant()
-	{
-		QdrantFormula doubleConstant = F.Constant(10.1);
+    [Test]
+    public void Constant()
+    {
+        QdrantFormula doubleConstant = F.Constant(10.1);
 
-		var formulaString = doubleConstant.ToString();
+        var formulaString = doubleConstant.ToString();
 
-		var expectedFormula = """
-			10.1
-			""";
+        var expectedFormula = """
+            10.1
+            """;
 
-		formulaString.Should().Be(expectedFormula);
+        formulaString.Should().Be(expectedFormula);
 
-		QdrantFormula stringConstant = F.Constant("test");
+        QdrantFormula stringConstant = F.Constant("test");
 
-		expectedFormula = """
-			"test"
-			""";
+        expectedFormula = """
+        "test"
+        """;
 
-		formulaString = stringConstant.ToString();
+        formulaString = stringConstant.ToString();
 
-		formulaString.AssertSameString(expectedFormula);
-	}
+        formulaString.AssertSameString(expectedFormula);
+    }
 
-	[Test]
-	public void Invalid_FilterCondition()
-	{
-		var invalidFormulaCreateAct = () => F.Filter(
-			Q.MatchValue("field", 1567)
-			+ Q.BeInRange("test", 1, 2)
-		); // + is equivalent to "AND" and the whole expression gets wrapped in ShouldCondition which is a group condition and is not allowed in formulas.
+    [Test]
+    public void Invalid_FilterCondition()
+    {
+        var invalidFormulaCreateAct = () => F.Filter(
+            Q.MatchValue("field", 1567)
+            + Q.BeInRange("test", 1, 2)
+        ); // + is equivalent to "AND" and the whole expression gets wrapped in ShouldCondition which is a group condition and is not allowed in formulas.
 
-		invalidFormulaCreateAct.Should()
-			.Throw<InvalidOperationException>()
-			.Where(e => e.Message.Contains("can't be used in formulas"));
-	}
+        invalidFormulaCreateAct.Should()
+            .Throw<InvalidOperationException>()
+            .Where(e => e.Message.Contains("can't be used in formulas"));
+    }
 
-	[Test]
-	public void FilterCondition()
-	{
-		QdrantFormula formula = F.Filter(Q.MatchValue("field", 1567));
+    [Test]
+    public void FilterCondition()
+    {
+        QdrantFormula formula = F.Filter(Q.MatchValue("field", 1567));
 
-		var formulaString = formula.ToString();
+        var formulaString = formula.ToString();
 
-		var expectedFormula = """
-			{
-			  "key": "field",
-			  "match": {
-			    "value": 1567
-			  }
-			}
-			""";
+        var expectedFormula = """
+            {
+              "key": "field",
+              "match": {
+                "value": 1567
+              }
+            }
+            """;
 
-		formulaString.AssertSameString(expectedFormula);
-	}
+        formulaString.AssertSameString(expectedFormula);
+    }
 
-	[Test]
-	public void PrefetchReference()
-	{
-		QdrantFormula defaultReference = F.PrefetchReference();
-		QdrantFormula specificReference = F.PrefetchReference(15);
-		
-		var defaultFormulaString = defaultReference.ToString();
-		
-		var expectedDefaultFormula = """
-			"$score"
-			""";
+    [Test]
+    public void PrefetchReference()
+    {
+        QdrantFormula defaultReference = F.PrefetchReference();
+        QdrantFormula specificReference = F.PrefetchReference(15);
 
-		var specificFormulaString = specificReference.ToString();
-		
-		var expectedSpecificFormula = """
-			"$score[15]"
-			""";
-		
-		defaultFormulaString.AssertSameString(expectedDefaultFormula);
-		specificFormulaString.AssertSameString(expectedSpecificFormula);
-	}
+        var defaultFormulaString = defaultReference.ToString();
 
-	[Test]
-	public void CollectionExpression()
-	{
-		QdrantFormula formula = F.Sum(
-			F.Constant(1.0),
-			F.PrefetchReference(),
-			F.Multiply(
-				F.Constant("abc"),
-				F.Abs(
-					F.Filter(
-						Q.MatchAny("test_payload", 1, 23)
-					)
-				)
-			)
-		);
-		
-		var formulaString = formula.ToString();
-		
-		var expectedFormula = """
-			{
-			  "sum": [
-			    1,
-			    "$score",
-			    {
-			      "mult": [
-			        "abc",
-			        {
-			          "abs": {
-			            "key": "test_payload",
-			            "match": {
-			              "any": [
-			                1,
-			                23
-			              ]
-			            }
-			          }
-			        }
-			      ]
-			    }
-			  ]
-			}
-			""";
-		
-		formulaString.AssertSameString(expectedFormula);
-	}
+        var expectedDefaultFormula = """
+            "$score"
+            """;
 
-	
-	[Test]
-	public void Divide()
-	{
-		QdrantFormula formula =
-			F.Divide(
-				F.Abs(-12),
-				F.Sum(
-					F.PrefetchReference(),
-					F.Constant(3.0)
-				),
-				-1
-			);
-		
-		var formulaString = formula.ToString();
-		
-		var expectedFormula = """
-			{
-			  "div": {
-			    "left": {
-			      "abs": -12
-			    },
-			    "right": {
-			      "sum": [
-			        "$score",
-			        3
-			      ]
-			    },
-			    "by_zero_default": -1
-			  }
-			}
-			""";
-		
-		formulaString.AssertSameString(expectedFormula);
-	}
+        var specificFormulaString = specificReference.ToString();
 
-	[Test]
-	public void Power()
-	{
-		QdrantFormula formula =
-			F.Power(
-				F.PrefetchReference(3),
-				F.Constant(2.0)
-			);
-		
-		var formulaString = formula.ToString();
-		
-		var expectedFormula = """
-			{
-			  "pow": {
-			    "base": "$score[3]",
-			    "exponent": 2
-			  }
-			}
-			""";
-		
-		formulaString.AssertSameString(expectedFormula);
-	}
+        var expectedSpecificFormula = """
+            "$score[15]"
+            """;
 
-	[Test]
-	public void UnaryExpression()
-	{
-		QdrantFormula formula = F.Sqrt(
-			F.Negate(
-				F.Exponent(
-					F.Log10(
-						F.Ln(
-							F.Filter(
-								Q.BeInRange(
-									"test",
-									greaterThanOrEqual: 1,
-									lessThanOrEqual: 23)
-							)
-						)
-					)
-				)
-			)
-		);
-		
-		var formulaString = formula.ToString();
-		
-		var expectedFormula = """
-			{
-			  "sqrt": {
-			    "neg": {
-			      "exp": {
-			        "log10": {
-			          "ln": {
-			            "key": "test",
-			            "range": {
-			              "lte": 23,
-			              "gte": 1
-			            }
-			          }
-			        }
-			      }
-			    }
-			  }
-			}
-			""";
-		
-		formulaString.AssertSameString(expectedFormula);
-	}
+        defaultFormulaString.AssertSameString(expectedDefaultFormula);
+        specificFormulaString.AssertSameString(expectedSpecificFormula);
+    }
 
-	[Test]
-	public void ValueExpression()
-	{
-		QdrantFormula dtKeyFormula = F.DateTimeKey("test");
-		QdrantFormula dtValueFormula = F.DateTimeValue("2023-10-01T00:00:00Z");
-		
-		var dtKeyFormulaString = dtKeyFormula.ToString();
-		var expectedDtKeyFormula = """
-			{
-			  "datetime_key": "test"
-			}
-			""";
-		
-		dtKeyFormulaString.AssertSameString(expectedDtKeyFormula);
-		
-		var dtValueFormulaString = dtValueFormula.ToString();
-		var expectedDtValueFormula = """
-			{
-			  "datetime": "2023-10-01T00:00:00Z"
-			}
-			""";
-		dtValueFormulaString.AssertSameString(expectedDtValueFormula);
-	}
+    [Test]
+    public void CollectionExpression()
+    {
+        QdrantFormula formula = F.Sum(
+            F.Constant(1.0),
+            F.PrefetchReference(),
+            F.Multiply(
+                F.Constant("abc"),
+                F.Abs(
+                    F.Filter(
+                        Q.MatchAny("test_payload", 1, 23)
+                    )
+                )
+            )
+        );
 
-	[Test]
-	public void GeoDistanceExpression()
-	{
-		QdrantFormula formula = F.GeoDistance(
-				24.56,
-				12.34,
-				"geo_field");
-		
-		var formulaString = formula.ToString();
-		var expectedFormula = """
-			{
-			  "geo_distance": {
-			    "origin": {
-			      "lon": 24.56,
-			      "lat": 12.34
-			    },
-			    "to": "geo_field"
-			  }
-			}
-			""";
-		
-		formulaString.AssertSameString(expectedFormula);
-	}
+        var formulaString = formula.ToString();
 
-	[Test]
-	public void DecayExpression()
-	{
-		QdrantFormula gaussDecayFormula = F.GaussDecay(
-			"test_field",
-			10.0,
-			5.0,
-			2.0);
+        var expectedFormula = """
+            {
+              "sum": [
+                1,
+                "$score",
+                {
+                  "mult": [
+                    "abc",
+                    {
+                      "abs": {
+                        "key": "test_payload",
+                        "match": {
+                          "any": [
+                            1,
+                            23
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+            """;
 
-		QdrantFormula linearDecayFormula = F.LinearDecay(
-			F.Sum(
-				F.PrefetchReference(),
-				10),
-			F.Filter(
-				Q.MatchAny(
-					"test_field",
-					1,
-					2,
-					3
-				)
-			)
-		);
-		
-		QdrantFormula exponentialDecayFormula = F.ExponentialDecay(
-			F.Constant(5.0),
-			"test_field",
-			midpoint: 10
-		);
-		
-		var gaussDecayFormulaString = gaussDecayFormula.ToString();
-		var expectedGaussDecayFormula = """
-			{
-			  "gauss_decay": {
-			    "x": "test_field",
-			    "target": 10,
-			    "scale": 5,
-			    "midpoint": 2
-			  }
-			}
-			""";
-		gaussDecayFormulaString.AssertSameString(expectedGaussDecayFormula);
-		
-		var linearDecayFormulaString = linearDecayFormula.ToString();
-		var expectedLinearDecayFormula = """
-			{
-			  "lin_decay": {
-			    "x": {
-			      "sum": [
-			        "$score",
-			        10
-			      ]
-			    },
-			    "target": {
-			      "key": "test_field",
-			      "match": {
-			        "any": [
-			          1,
-			          2,
-			          3
-			        ]
-			      }
-			    }
-			  }
-			}
-			""";
-		linearDecayFormulaString.AssertSameString(expectedLinearDecayFormula);
-		
-		var exponentialDecayFormulaString = exponentialDecayFormula.ToString();
-		var expectedExponentialDecayFormula = """
-			{
-			  "exp_decay": {
-			    "x": 5,
-			    "target": "test_field",
-			    "midpoint": 10
-			  }
-			}
-			""";
-		
-		exponentialDecayFormulaString.AssertSameString(expectedExponentialDecayFormula);
-	}
+        formulaString.AssertSameString(expectedFormula);
+    }
+
+
+    [Test]
+    public void Divide()
+    {
+        QdrantFormula formula =
+            F.Divide(
+                F.Abs(-12),
+                F.Sum(
+                    F.PrefetchReference(),
+                    F.Constant(3.0)
+                ),
+                -1
+            );
+
+        var formulaString = formula.ToString();
+
+        var expectedFormula = """
+            {
+              "div": {
+                "left": {
+                  "abs": -12
+                },
+                "right": {
+                  "sum": [
+                    "$score",
+                    3
+                  ]
+                },
+                "by_zero_default": -1
+              }
+            }
+            """;
+
+        formulaString.AssertSameString(expectedFormula);
+    }
+
+    [Test]
+    public void Power()
+    {
+        QdrantFormula formula =
+            F.Power(
+                F.PrefetchReference(3),
+                F.Constant(2.0)
+            );
+
+        var formulaString = formula.ToString();
+
+        var expectedFormula = """
+            {
+              "pow": {
+                "base": "$score[3]",
+                "exponent": 2
+              }
+            }
+            """;
+
+        formulaString.AssertSameString(expectedFormula);
+    }
+
+    [Test]
+    public void UnaryExpression()
+    {
+        QdrantFormula formula = F.Sqrt(
+            F.Negate(
+                F.Exponent(
+                    F.Log10(
+                        F.Ln(
+                            F.Filter(
+                                Q.BeInRange(
+                                    "test",
+                                    greaterThanOrEqual: 1,
+                                    lessThanOrEqual: 23)
+                            )
+                        )
+                    )
+                )
+            )
+        );
+
+        var formulaString = formula.ToString();
+
+        var expectedFormula = """
+            {
+              "sqrt": {
+                "neg": {
+                  "exp": {
+                    "log10": {
+                      "ln": {
+                        "key": "test",
+                        "range": {
+                          "lte": 23,
+                          "gte": 1
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            """;
+
+        formulaString.AssertSameString(expectedFormula);
+    }
+
+    [Test]
+    public void ValueExpression()
+    {
+        QdrantFormula dtKeyFormula = F.DateTimeKey("test");
+        QdrantFormula dtValueFormula = F.DateTimeValue("2023-10-01T00:00:00Z");
+
+        var dtKeyFormulaString = dtKeyFormula.ToString();
+        var expectedDtKeyFormula = """
+            {
+              "datetime_key": "test"
+            }
+            """;
+
+        dtKeyFormulaString.AssertSameString(expectedDtKeyFormula);
+
+        var dtValueFormulaString = dtValueFormula.ToString();
+        var expectedDtValueFormula = """
+            {
+              "datetime": "2023-10-01T00:00:00Z"
+            }
+            """;
+        dtValueFormulaString.AssertSameString(expectedDtValueFormula);
+    }
+
+    [Test]
+    public void GeoDistanceExpression()
+    {
+        QdrantFormula formula = F.GeoDistance(
+            24.56,
+            12.34,
+            "geo_field");
+
+        var formulaString = formula.ToString();
+        var expectedFormula = """
+            {
+              "geo_distance": {
+                "origin": {
+                  "lon": 24.56,
+                  "lat": 12.34
+                },
+                "to": "geo_field"
+              }
+            }
+            """;
+
+        formulaString.AssertSameString(expectedFormula);
+    }
+
+    [Test]
+    public void DecayExpression()
+    {
+        QdrantFormula gaussDecayFormula = F.GaussDecay(
+            "test_field",
+            10.0,
+            5.0,
+            2.0);
+
+        QdrantFormula linearDecayFormula = F.LinearDecay(
+            F.Sum(
+                F.PrefetchReference(),
+                10),
+            F.Filter(
+                Q.MatchAny(
+                    "test_field",
+                    1,
+                    2,
+                    3
+                )
+            )
+        );
+
+        QdrantFormula exponentialDecayFormula = F.ExponentialDecay(
+            F.Constant(5.0),
+            "test_field",
+            midpoint: 10
+        );
+
+        var gaussDecayFormulaString = gaussDecayFormula.ToString();
+        var expectedGaussDecayFormula = """
+            {
+              "gauss_decay": {
+                "x": "test_field",
+                "target": 10,
+                "scale": 5,
+                "midpoint": 2
+              }
+            }
+            """;
+        gaussDecayFormulaString.AssertSameString(expectedGaussDecayFormula);
+
+        var linearDecayFormulaString = linearDecayFormula.ToString();
+        var expectedLinearDecayFormula = """
+            {
+              "lin_decay": {
+                "x": {
+                  "sum": [
+                    "$score",
+                    10
+                  ]
+                },
+                "target": {
+                  "key": "test_field",
+                  "match": {
+                    "any": [
+                      1,
+                      2,
+                      3
+                    ]
+                  }
+                }
+              }
+            }
+            """;
+        linearDecayFormulaString.AssertSameString(expectedLinearDecayFormula);
+
+        var exponentialDecayFormulaString = exponentialDecayFormula.ToString();
+        var expectedExponentialDecayFormula = """
+            {
+              "exp_decay": {
+                "x": 5,
+                "target": "test_field",
+                "midpoint": 10
+              }
+            }
+            """;
+
+        exponentialDecayFormulaString.AssertSameString(expectedExponentialDecayFormula);
+    }
 }

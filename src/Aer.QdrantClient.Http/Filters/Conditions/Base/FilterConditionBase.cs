@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
@@ -20,7 +21,12 @@ public abstract class FilterConditionBase
     /// <summary>
     /// The payload filed to apply filter to.
     /// </summary>
-    protected readonly string PayloadFieldName;
+    protected internal readonly string PayloadFieldName;
+    
+    /// <summary>
+    /// The type of the payload field corresponding to the actual filter parameter.
+    /// </summary>
+    protected internal abstract PayloadIndexedFieldType? PayloadFieldType { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FilterConditionBase"/> class.
@@ -143,5 +149,39 @@ public abstract class FilterConditionBase
         }
 
         jsonWriter.WriteString("key", PayloadFieldName);
+    }
+    
+    /// <summary>
+    /// Gets the <see cref="PayloadIndexedFieldType"/> for the specified parameter type.
+    /// </summary>
+    /// <typeparam name="T">Type of the parameter to get <see cref="PayloadIndexedFieldType"/> for.</typeparam>
+    protected static PayloadIndexedFieldType? GetPayloadFieldType<T>()
+    {
+        var typeCode = Type.GetTypeCode(typeof(T));
+
+        PayloadIndexedFieldType? payloadFieldType = typeCode switch
+        {
+            TypeCode.String => PayloadIndexedFieldType.Keyword,
+            TypeCode.Int32 => PayloadIndexedFieldType.Integer,
+            TypeCode.Int64 => PayloadIndexedFieldType.Integer,
+            TypeCode.Single => PayloadIndexedFieldType.Float,
+            TypeCode.Double => PayloadIndexedFieldType.Float,
+            TypeCode.Boolean => PayloadIndexedFieldType.Keyword,
+            TypeCode.Empty => null,
+            TypeCode.Object => null,
+            TypeCode.DBNull => null,
+            TypeCode.Char => PayloadIndexedFieldType.Keyword,
+            TypeCode.SByte => PayloadIndexedFieldType.Integer,
+            TypeCode.Byte => PayloadIndexedFieldType.Integer,
+            TypeCode.Int16 => PayloadIndexedFieldType.Integer,
+            TypeCode.UInt16 => PayloadIndexedFieldType.Integer,
+            TypeCode.UInt32 => PayloadIndexedFieldType.Integer,
+            TypeCode.UInt64 => PayloadIndexedFieldType.Integer,
+            TypeCode.Decimal => PayloadIndexedFieldType.Float,
+            TypeCode.DateTime => PayloadIndexedFieldType.Datetime,
+            _ => throw new ArgumentOutOfRangeException($"Unknown type code '{typeCode}' for type {typeof(T).FullName}")
+        };
+        
+        return payloadFieldType;
     }
 }

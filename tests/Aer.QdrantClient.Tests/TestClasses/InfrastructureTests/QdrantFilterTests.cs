@@ -30,6 +30,8 @@ internal class QdrantFilterTests
             }
             """;
 
+        filter.GetPayloadFieldsWithTypes().Should().BeEquivalentTo(["whatever"]);
+
         filterString.AssertSameString(expectedFilter);
     }
 
@@ -49,28 +51,32 @@ internal class QdrantFilterTests
                 Q<TestPayload>.MatchValue(p => p.Integer, 123),
                 Q<TestPayload>.MatchValue(p => p.Text, "test_value")
             )
-        ).ToString();
+        );
+
+        var filterJson = filter.ToString();
 
         var expectedFilter = """
-          {
-            "must": [
-              {
-                "key": "integer",
-                "match": {
-                  "value": 123
+            {
+              "must": [
+                {
+                  "key": "integer",
+                  "match": {
+                    "value": 123
+                  }
+                },
+                {
+                  "key": "text",
+                  "match": {
+                    "value": "test_value"
+                  }
                 }
-              },
-              {
-                "key": "text",
-                "match": {
-                  "value": "test_value"
-                }
-              }
-            ]
-          }
-          """;
+              ]
+            }
+            """;
 
-        filter.AssertSameString(expectedFilter);
+        filter.GetPayloadFieldsWithTypes().Should().BeEquivalentTo(["integer", "text"]);
+
+        filterJson.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -328,6 +334,8 @@ internal class QdrantFilterTests
               ]
             }
             """;
+        
+        filter.GetPayloadFieldsWithTypes().Should().BeEquivalentTo(["int_property", "text"]);
 
         filterString.AssertSameString(expectedFilter);
     }
@@ -493,7 +501,7 @@ internal class QdrantFilterTests
     [Test]
     public void AndOrOperatorCombined()
     {
-        // note that operator associativity is modified by parethesis
+        // note that operator associativity is modified by parenthesis
         QdrantFilter filter =
             (
                 Q.Must(
@@ -558,7 +566,7 @@ internal class QdrantFilterTests
     [Test]
     public void PlusAndOrOperatorCombined()
     {
-        // note that operator associativity is modified by parethesis
+        // note that operator associativity is modified by parenthesis
         QdrantFilter filter =
             (
                 (
@@ -678,10 +686,10 @@ internal class QdrantFilterTests
     public void Must_Negated()
     {
         QdrantFilter filter =
-                !Q.Must(
-                    Q.MatchValue("test_key", 123),
-                    Q.MatchValue("test_key_1", Guid.Parse("e0d28537-03ed-43a8-b93c-b1c54371b176"))
-                );
+            !Q.Must(
+                Q.MatchValue("test_key", 123),
+                Q.MatchValue("test_key_1", Guid.Parse("e0d28537-03ed-43a8-b93c-b1c54371b176"))
+            );
 
         var filterString = filter.ToString();
 
@@ -920,8 +928,7 @@ internal class QdrantFilterTests
                 )
                 |
                 !Q.MatchValue("test_key_3", 15.67)
-            )
-            ,
+            ),
             Q.Should(
                 Q.MatchValue("test_key_4", -1),
                 Q.Should(
@@ -1055,7 +1062,7 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void Must_Match_FultText()
+    public void Must_Match_FullText()
     {
         var filter = QdrantFilter.Create(
                 Q.Must(
@@ -1093,8 +1100,11 @@ internal class QdrantFilterTests
         var filter = QdrantFilter.Create(
                 Q.Must(
                     Q<TestComplexPayload>.BeInRange(p => p.IntProperty, greaterThanOrEqual: 1, lessThanOrEqual: 100),
-                    Q<TestComplexPayload>.BeInRange(p => p.Nested.Double, greaterThanOrEqual: 1.1, lessThanOrEqual: 100.2),
-                    // these are impossible conditions but they are used to test all the parameters
+                    Q<TestComplexPayload>.BeInRange(
+                        p => p.Nested.Double,
+                        greaterThanOrEqual: 1.1,
+                        lessThanOrEqual: 100.2),
+                    // these are impossible conditions, but they are used to test all the parameters
                     Q<TestComplexPayload>.BeInRange(
                         p => p.FloatingPointNumber,
                         greaterThan: 1.1,
@@ -1392,21 +1402,21 @@ internal class QdrantFilterTests
                 Q<TestComplexPayload>.BeWithinGeoPolygon(
                     p => p.Location,
                     [
-                      new GeoPoint(-70.1, -70.1),
+                        new GeoPoint(-70.1, -70.1),
                         new GeoPoint(-70.1, 60.1),
                         new GeoPoint(60.1, 60.1),
                         new GeoPoint(60.1, -70.1),
                         new GeoPoint(-70.1, -70.1)
                     ],
                     [
-                      new GeoPoint(-65.1, -65.1),
+                        new GeoPoint(-65.1, -65.1),
                         new GeoPoint(-65.1, 0.1),
                         new GeoPoint(0.1, 0.1),
                         new GeoPoint(0.1, -65.1),
                         new GeoPoint(-65.1, -65.1)
                     ],
                     [
-                      new GeoPoint(-75.1, -75.1),
+                        new GeoPoint(-75.1, -75.1),
                         new GeoPoint(-75.1, 10.1),
                         new GeoPoint(10.1, 10.1),
                         new GeoPoint(10.1, -75.1),
@@ -1554,26 +1564,29 @@ internal class QdrantFilterTests
     [Test]
     public void Should_Use_Raw_Filter_String_As_Is()
     {
-      var expectedFilter = """
-        {
-          "must": [
+        var expectedFilter = """
             {
-              "key": "integer",
-              "match": {
-                "value": 123
-              }
-            },
-            {
-              "key": "text",
-              "match": {
-                "value": "test_value"
-              }
+              "must": [
+                {
+                  "key": "integer",
+                  "match": {
+                    "value": 123
+                  }
+                },
+                {
+                  "key": "text",
+                  "match": {
+                    "value": "test_value"
+                  }
+                }
+              ]
             }
-          ]
-        }
-        """;
+            """;
 
         var filter = QdrantFilter.Create(expectedFilter);
+        
+        filter.GetPayloadFieldsWithTypes().Should().BeEmpty();
+        
         var filterString = filter.ToString();
 
         filterString.AssertSameString(expectedFilter);
@@ -1582,29 +1595,49 @@ internal class QdrantFilterTests
     [Test]
     public void Should_Throw_Exception_If_Condition_Is_Added_When_Use_Raw_Filter_String()
     {
-      var expectedFilter = """
-        {
-          "must": [
+        var expectedFilter = """
             {
-              "key": "integer",
-              "match": {
-                "value": 123
-              }
-            },
-            {
-              "key": "text",
-              "match": {
-                "value": "test_value"
-              }
+              "must": [
+                {
+                  "key": "integer",
+                  "match": {
+                    "value": 123
+                  }
+                },
+                {
+                  "key": "text",
+                  "match": {
+                    "value": "test_value"
+                  }
+                }
+              ]
             }
-          ]
-        }
-        """;
+            """;
 
         var filter = QdrantFilter.Create(expectedFilter);
 
         var func = () => filter += new HasAnyIdCondition(Enumerable.Range(1, 5));
 
         func.Should().Throw<QdrantFilterModificationForbiddenException>();
+    }
+
+    [Test]
+    public void FilterIntrospection()
+    {
+        // var filter = QdrantFilter.Create(
+        //     Q.Must(
+        //         Q<TestComplexPayload>.SatisfyNested(
+        //             p => p.Nested,
+        //             Q.Must(
+        //                 Q<TestComplexPayload>.BeInRange(n => n.Nested.Integer, greaterThanOrEqual: 2),
+        //                 Q<TestComplexPayload>.BeInRange(n => n.Nested.Double, greaterThan: 500, lessThanOrEqual: 1000),
+        //                 Q<TestComplexPayload>.MatchValue(n => n.Nested.Double, 1.567)
+        //             ),
+        //             Q.Should(
+        //                 
+        //                 )
+        //         )
+        //     )
+        // )
     }
 }

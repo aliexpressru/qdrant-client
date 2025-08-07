@@ -1,10 +1,13 @@
 ﻿using System.Text.Json;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
 internal class HasNamedVectorCondition : FilterConditionBase
 {
 	private readonly string _namedVectorName;
+
+    protected internal override PayloadIndexedFieldType? PayloadFieldType => null;
 	
 	public HasNamedVectorCondition(string namedVectorName) : base(DiscardPayloadFieldName)
 	{ 

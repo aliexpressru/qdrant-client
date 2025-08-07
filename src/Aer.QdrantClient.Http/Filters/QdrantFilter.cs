@@ -4,6 +4,7 @@ using System.Text.Json;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters.Conditions;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
+using Aer.QdrantClient.Http.Filters.Introspection;
 using Aer.QdrantClient.Http.Filters.Optimization;
 
 namespace Aer.QdrantClient.Http.Filters;
@@ -32,6 +33,28 @@ public sealed class QdrantFilter
     /// Gets the raw filter string if this filter was created from a raw filter string.
     /// </summary>
     public string RawFilterString => _rawFilterString;
+    
+    /// <summary>
+    /// Gets the payload filed names used in all of this filter conditions along with their inferred types.
+    /// Is this filter was constructed with raw filter string - returns an empty collection.
+    /// </summary>
+    public IReadOnlyCollection<FieldNameType> GetPayloadFieldsWithTypes()
+    {
+        if (IsEmpty 
+            || !string.IsNullOrEmpty(_rawFilterString))
+        {
+            return [];
+        }
+
+        var payloadPropertyNames = new HashSet<FieldNameType>();
+
+        foreach (var condition in _conditions)
+        {
+            GetPayloadFieldNameTypesInternal(condition, payloadPropertyNames);
+        }
+
+        return payloadPropertyNames;
+    }
 
     /// <summary>
     /// This ctor is for preventing builder from being created manually.
@@ -291,6 +314,27 @@ public sealed class QdrantFilter
         foreach (var filterCondition in _conditions)
         {
             conditionOptimizationVisitor.Visit(filterCondition);
+        }
+    }
+
+    private void GetPayloadFieldNameTypesInternal(FilterConditionBase condition, HashSet<FieldNameType> payloadFiledNameTypes)
+    {
+        if (IsEmpty || !string.IsNullOrEmpty(_rawFilterString))
+        {
+            return;
+        }
+
+        if (condition is FilterGroupConditionBase filterGroupCondition)
+        {
+            foreach (var conditionInGroup in filterGroupCondition.Conditions)
+            {
+                GetPayloadFieldNameTypesInternal(conditionInGroup, payloadFiledNameTypes);
+            }
+        }
+        else
+        { 
+            // Means this is a leaf condition, not a group
+            payloadFiledNameTypes.Add(new(condition.PayloadFieldName, condition.PayloadFieldType));
         }
     }
 }

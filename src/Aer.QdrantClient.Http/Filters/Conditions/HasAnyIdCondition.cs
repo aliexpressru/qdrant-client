@@ -1,12 +1,15 @@
 using System.Text.Json;
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
 internal class HasAnyIdCondition : FilterConditionBase
 {
     private readonly IEnumerable<PointId> _pointIds;
+
+    protected internal override PayloadIndexedFieldType? PayloadFieldType => null;
 
     public HasAnyIdCondition(IEnumerable<PointId> pointIds) : base(DiscardPayloadFieldName)
     {

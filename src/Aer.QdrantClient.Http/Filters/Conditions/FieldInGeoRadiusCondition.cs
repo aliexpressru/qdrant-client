@@ -1,20 +1,23 @@
 using System.Text.Json;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
 internal class FieldInGeoRadiusCondition : FilterConditionBase
 {
-    private readonly double _centerLongtitude;
+    private readonly double _centerLongitude;
     private readonly double _centerLatitude;
     private readonly double _radius;
 
+    protected internal override PayloadIndexedFieldType? PayloadFieldType => PayloadIndexedFieldType.Geo;
+
     public FieldInGeoRadiusCondition(
         string payloadFieldName,
-        double centerLongtitude,
+        double centerLongitude,
         double centerLatitude,
         double radius) : base(payloadFieldName)
     {
-        _centerLongtitude = centerLongtitude;
+        _centerLongitude = centerLongitude;
         _centerLatitude = centerLatitude;
         _radius = radius;
     }
@@ -32,7 +35,7 @@ internal class FieldInGeoRadiusCondition : FilterConditionBase
 
             {
                 jsonWriter.WriteNumber("lat", _centerLatitude);
-                jsonWriter.WriteNumber("lon", _centerLongtitude);
+                jsonWriter.WriteNumber("lon", _centerLongitude);
             }
 
             jsonWriter.WriteEndObject();

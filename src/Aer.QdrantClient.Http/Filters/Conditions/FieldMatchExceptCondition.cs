@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Aer.QdrantClient.Http.Infrastructure.Json;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
@@ -10,6 +11,8 @@ namespace Aer.QdrantClient.Http.Filters.Conditions;
 internal class FieldMatchExceptCondition<T> : FilterConditionBase
 {
     private readonly T[] _exceptValues;
+
+    protected internal override PayloadIndexedFieldType? PayloadFieldType { get; } = GetPayloadFieldType<T>();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FieldMatchExceptCondition{T}"/> class.

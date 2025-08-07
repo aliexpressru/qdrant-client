@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
@@ -8,6 +9,8 @@ internal class FieldInGeoPolygonCondition : FilterConditionBase
     private readonly IEnumerable<GeoPoint> _exteriorPolygonPoints;
     private readonly IEnumerable<GeoPoint>[] _interiorPolygonsPoints;
 
+    protected internal override PayloadIndexedFieldType? PayloadFieldType => PayloadIndexedFieldType.Geo;
+    
     public FieldInGeoPolygonCondition(
         string payloadFieldName,
         IEnumerable<GeoPoint> exteriorPolygonPoints,

@@ -5,13 +5,11 @@ namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 /// <summary>
 /// Represents "all nested conditions must satisfy specified filters" filter condition group.
 /// </summary>
-internal class NestedCondition : FilterConditionBase
+internal class NestedCondition : FilterGroupConditionBase
 {
-    private readonly IEnumerable<FilterConditionBase> _conditions;
-
     public NestedCondition(string payloadFieldName, IEnumerable<FilterConditionBase> conditions) : base(payloadFieldName)
     {
-        _conditions = conditions;
+        Conditions.AddRange(conditions);
     }
 
     public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
@@ -24,7 +22,7 @@ internal class NestedCondition : FilterConditionBase
         jsonWriter.WritePropertyName("filter");
         jsonWriter.WriteStartObject();
 
-        foreach (var condition in _conditions)
+        foreach (var condition in Conditions)
         {
             condition.WriteConditionJson(jsonWriter);
         }

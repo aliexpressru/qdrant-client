@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
@@ -8,6 +9,8 @@ internal class FieldRangeDoubleCondition : FilterConditionBase
     private readonly double? _gte;
     private readonly double? _lt;
     private readonly double? _lte;
+
+    protected internal override PayloadIndexedFieldType? PayloadFieldType => PayloadIndexedFieldType.Float;
 
     public FieldRangeDoubleCondition(
         string payloadFieldName,

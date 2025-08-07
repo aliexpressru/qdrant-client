@@ -5,10 +5,8 @@ namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 /// <summary>
 /// Represents "all nested conditions must not match" filter condition group.
 /// </summary>
-internal class MustNotCondition : FilterConditionBase
+internal class MustNotCondition : FilterGroupConditionBase
 {
-    internal readonly List<FilterConditionBase> Conditions = [];
-
     public MustNotCondition(FilterConditionBase singleCondition) : base(DiscardPayloadFieldName)
     {
         if (singleCondition is FilterGroupCondition fgc)

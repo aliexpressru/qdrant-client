@@ -1,9 +1,12 @@
 using System.Text.Json;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
 internal class FieldIsNullOrEmptyCondition : FilterConditionBase
 {
+    protected internal override PayloadIndexedFieldType? PayloadFieldType => null;
+    
     public FieldIsNullOrEmptyCondition(string payloadFieldName) : base(payloadFieldName)
     { }
 

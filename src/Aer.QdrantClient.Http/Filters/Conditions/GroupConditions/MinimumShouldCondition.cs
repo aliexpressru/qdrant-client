@@ -5,10 +5,8 @@ namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 /// <summary>
 /// Represents "At least minimum amount of given conditions should match" filter condition group.
 /// </summary>
-internal class MinimumShouldCondition : FilterConditionBase
+internal class MinimumShouldCondition : FilterGroupConditionBase
 {
-    internal readonly List<FilterConditionBase> Conditions = [];
-
     /// <summary>
     /// Minimal number of conditions that should match to render ths filter matched.
     /// </summary>

@@ -1,11 +1,14 @@
 ﻿using System.Text.Json;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
 internal class FieldMatchAnyConditionFast<T> : FilterConditionBase
 {
     private readonly ShouldCondition _optimizedShouldCondition;
+
+    protected internal override PayloadIndexedFieldType? PayloadFieldType { get; } = GetPayloadFieldType<T>();
 
     public FieldMatchAnyConditionFast(string payloadFieldName, IEnumerable<T> matchAnyValues)
         : base(payloadFieldName)
