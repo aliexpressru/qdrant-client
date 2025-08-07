@@ -40,11 +40,7 @@ public sealed class QdrantFormula
 
 		QdrantFormula ret = new()
 		{
-#if NETSTANDARD2_0 || NETSTANDARD2_1
-            _rawExpressionString = formula
-#else
-			_rawExpressionString = formula.ReplaceLineEndings()
-#endif
+			_rawExpressionString = formula
 		};
 		
 		return ret;
@@ -97,13 +93,8 @@ public sealed class QdrantFormula
 
 		jsonWriter.Flush();
 
-#if NETSTANDARD2_0 || NETSTANDARD2_1
-        var builtFormula = Encoding.UTF8.GetString(stream.ToArray());
-#else
-		var builtFormula = Encoding.UTF8.GetString(stream.ToArray())
-			.ReplaceLineEndings();
-#endif
-
+		var builtFormula = Encoding.UTF8.GetString(stream.ToArray());
+		
 		return builtFormula;
 	}
 }

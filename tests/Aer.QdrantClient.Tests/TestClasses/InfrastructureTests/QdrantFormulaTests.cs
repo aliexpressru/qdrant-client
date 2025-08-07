@@ -1,6 +1,7 @@
 ﻿using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Formulas;
 using Aer.QdrantClient.Http.Formulas.Builders;
+using Aer.QdrantClient.Tests.Helpers;
 
 namespace Aer.QdrantClient.Tests.TestClasses.InfrastructureTests;
 
@@ -17,7 +18,7 @@ internal class QdrantFormulaTests
 			10.1
 			""";
 
-		formulaString.Should().Be(expectedFormula.ReplaceLineEndings());
+		formulaString.Should().Be(expectedFormula);
 
 		QdrantFormula stringConstant = F.Constant("test");
 
@@ -27,7 +28,7 @@ internal class QdrantFormulaTests
 
 		formulaString = stringConstant.ToString();
 
-		formulaString.Should().Be(expectedFormula.ReplaceLineEndings());
+		formulaString.AssertSameString(expectedFormula);
 	}
 
 	[Test]
@@ -59,7 +60,7 @@ internal class QdrantFormulaTests
 			}
 			""";
 
-		formulaString.Should().Be(expectedFormula.ReplaceLineEndings());
+		formulaString.AssertSameString(expectedFormula);
 	}
 
 	[Test]
@@ -80,8 +81,8 @@ internal class QdrantFormulaTests
 			"$score[15]"
 			""";
 		
-		defaultFormulaString.Should().Be(expectedDefaultFormula.ReplaceLineEndings());
-		specificFormulaString.Should().Be(expectedSpecificFormula.ReplaceLineEndings());
+		defaultFormulaString.AssertSameString(expectedDefaultFormula);
+		specificFormulaString.AssertSameString(expectedSpecificFormula);
 	}
 
 	[Test]
@@ -127,7 +128,7 @@ internal class QdrantFormulaTests
 			}
 			""";
 		
-		formulaString.Should().Be(expectedFormula.ReplaceLineEndings());
+		formulaString.AssertSameString(expectedFormula);
 	}
 
 	
@@ -163,7 +164,7 @@ internal class QdrantFormulaTests
 			}
 			""";
 		
-		formulaString.Should().Be(expectedFormula.ReplaceLineEndings());
+		formulaString.AssertSameString(expectedFormula);
 	}
 
 	[Test]
@@ -186,7 +187,7 @@ internal class QdrantFormulaTests
 			}
 			""";
 		
-		formulaString.Should().Be(expectedFormula.ReplaceLineEndings());
+		formulaString.AssertSameString(expectedFormula);
 	}
 
 	[Test]
@@ -231,7 +232,7 @@ internal class QdrantFormulaTests
 			}
 			""";
 		
-		formulaString.Should().Be(expectedFormula.ReplaceLineEndings());
+		formulaString.AssertSameString(expectedFormula);
 	}
 
 	[Test]
@@ -247,14 +248,15 @@ internal class QdrantFormulaTests
 			}
 			""";
 		
-		dtKeyFormulaString.Should().Be(expectedDtKeyFormula.ReplaceLineEndings());
+		dtKeyFormulaString.AssertSameString(expectedDtKeyFormula);
+		
 		var dtValueFormulaString = dtValueFormula.ToString();
 		var expectedDtValueFormula = """
 			{
 			  "datetime": "2023-10-01T00:00:00Z"
 			}
 			""";
-		dtValueFormulaString.Should().Be(expectedDtValueFormula.ReplaceLineEndings());
+		dtValueFormulaString.AssertSameString(expectedDtValueFormula);
 	}
 
 	[Test]
@@ -278,7 +280,7 @@ internal class QdrantFormulaTests
 			}
 			""";
 		
-		formulaString.Should().Be(expectedFormula.ReplaceLineEndings());
+		formulaString.AssertSameString(expectedFormula);
 	}
 
 	[Test]
@@ -321,7 +323,7 @@ internal class QdrantFormulaTests
 			  }
 			}
 			""";
-		gaussDecayFormulaString.Should().Be(expectedGaussDecayFormula.ReplaceLineEndings());
+		gaussDecayFormulaString.AssertSameString(expectedGaussDecayFormula);
 		
 		var linearDecayFormulaString = linearDecayFormula.ToString();
 		var expectedLinearDecayFormula = """
@@ -346,7 +348,7 @@ internal class QdrantFormulaTests
 			  }
 			}
 			""";
-		linearDecayFormulaString.Should().Be(expectedLinearDecayFormula.ReplaceLineEndings());
+		linearDecayFormulaString.AssertSameString(expectedLinearDecayFormula);
 		
 		var exponentialDecayFormulaString = exponentialDecayFormula.ToString();
 		var expectedExponentialDecayFormula = """
@@ -359,6 +361,6 @@ internal class QdrantFormulaTests
 			}
 			""";
 		
-		exponentialDecayFormulaString.Should().Be(expectedExponentialDecayFormula.ReplaceLineEndings());
+		exponentialDecayFormulaString.AssertSameString(expectedExponentialDecayFormula);
 	}
 }

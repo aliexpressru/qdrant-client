@@ -3,6 +3,7 @@ using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Filters.Conditions;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Tests.Helpers;
 using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.InfrastructureTests;
@@ -29,7 +30,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filterString.Should().Be(expectedFilter.ReplaceLineEndings());
+        filterString.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -51,26 +52,25 @@ internal class QdrantFilterTests
         ).ToString();
 
         var expectedFilter = """
-            {
-              "must": [
-                {
-                  "key": "integer",
-                  "match": {
-                    "value": 123
-                  }
-                },
-                {
-                  "key": "text",
-                  "match": {
-                    "value": "test_value"
-                  }
+          {
+            "must": [
+              {
+                "key": "integer",
+                "match": {
+                  "value": 123
                 }
-              ]
-            }
-            """;
+              },
+              {
+                "key": "text",
+                "match": {
+                  "value": "test_value"
+                }
+              }
+            ]
+          }
+          """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -103,8 +103,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -141,8 +140,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -168,8 +166,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -202,8 +199,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -241,8 +237,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -279,8 +274,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -335,8 +329,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filterString.Should().NotBeNull();
-        filterString.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filterString.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -386,8 +379,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filterString.Should().NotBeNull();
-        filterString.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filterString.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -441,8 +433,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filterString.Should().NotBeNull();
-        filterString.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filterString.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -496,8 +487,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filterString.Should().NotBeNull();
-        filterString.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filterString.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -562,8 +552,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filterString.Should().NotBeNull();
-        filterString.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filterString.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -682,8 +671,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filterString.Should().NotBeNull();
-        filterString.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filterString.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -716,8 +704,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filterString.Should().NotBeNull();
-        filterString.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filterString.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -750,8 +737,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filterString.Should().NotBeNull();
-        filterString.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filterString.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -785,8 +771,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filterString.Should().NotBeNull();
-        filterString.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filterString.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -823,8 +808,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filterString.Should().NotBeNull();
-        filterString.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filterString.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -875,8 +859,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -915,12 +898,11 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
-    public void Must_ComplexNesting_Unwarpping()
+    public void Must_ComplexNesting_Unwrapping()
     {
         var filter = QdrantFilter.Create(
             Q.Must(
@@ -1030,8 +1012,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -1070,8 +1051,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -1104,8 +1084,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -1171,8 +1150,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -1218,8 +1196,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -1252,8 +1229,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -1284,8 +1260,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -1334,8 +1309,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -1373,8 +1347,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -1408,8 +1381,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -1419,34 +1391,29 @@ internal class QdrantFilterTests
             Q.Must(
                 Q<TestComplexPayload>.BeWithinGeoPolygon(
                     p => p.Location,
-                    new[]
-                    {
-                        new GeoPoint(-70.1, -70.1),
+                    [
+                      new GeoPoint(-70.1, -70.1),
                         new GeoPoint(-70.1, 60.1),
                         new GeoPoint(60.1, 60.1),
                         new GeoPoint(60.1, -70.1),
                         new GeoPoint(-70.1, -70.1)
-                    },
-                    new[]
-                    {
-                        new GeoPoint(-65.1, -65.1),
+                    ],
+                    [
+                      new GeoPoint(-65.1, -65.1),
                         new GeoPoint(-65.1, 0.1),
                         new GeoPoint(0.1, 0.1),
                         new GeoPoint(0.1, -65.1),
-                        new GeoPoint(-65.1, -65.1),
-                    },
-                    new[]
-                    {
-                        new GeoPoint(-75.1, -75.1),
+                        new GeoPoint(-65.1, -65.1)
+                    ],
+                    [
+                      new GeoPoint(-75.1, -75.1),
                         new GeoPoint(-75.1, 10.1),
                         new GeoPoint(10.1, 10.1),
                         new GeoPoint(10.1, -75.1),
-                        new GeoPoint(-75.1, -75.1),
-                    })
+                        new GeoPoint(-75.1, -75.1)
+                    ])
             )
-        );
-
-        var filterJson = filter.ToString();
+        ).ToString();
 
         var expectedFilter = """
             {
@@ -1534,8 +1501,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filterJson.Should().NotBeNull();
-        filterJson.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -1582,8 +1548,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.Should().NotBeNull();
-        filter.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filter.AssertSameString(expectedFilter);
     }
 
     [Test]
@@ -1611,8 +1576,7 @@ internal class QdrantFilterTests
         var filter = QdrantFilter.Create(expectedFilter);
         var filterString = filter.ToString();
 
-        filterString.Should().NotBeNull();
-        filterString.Should().BeEquivalentTo(expectedFilter.ReplaceLineEndings());
+        filterString.AssertSameString(expectedFilter);
     }
 
     [Test]

@@ -22,11 +22,16 @@ public sealed class QdrantFilter
     /// Returns an empty filter.
     /// </summary>
     public static QdrantFilter Empty { get; } = new();
+
+    /// <summary>
+    /// Returns <c>true</c> if this filter is empty (i.e. does not have any conditions and was not created from a raw filter string), otherwise <c>false</c>.
+    /// </summary>
+    public bool IsEmpty => _conditions.Count == 0 && string.IsNullOrWhiteSpace(_rawFilterString);
     
     /// <summary>
-    /// Returns <c>true</c> if this filter is empty (i.e. does not have any conditions), otherwise <c>false</c>.
+    /// Gets the raw filter string if this filter was created from a raw filter string.
     /// </summary>
-    public bool IsEmpty => _conditions.Count == 0;
+    public string RawFilterString => _rawFilterString;
 
     /// <summary>
     /// This ctor is for preventing builder from being created manually.
@@ -117,14 +122,42 @@ public sealed class QdrantFilter
         
         QdrantFilter ret = new()
         {
-#if NETSTANDARD2_0 || NETSTANDARD2_1
             _rawFilterString = filter
-#else
-            _rawFilterString = filter.ReplaceLineEndings()
-#endif
         };
 
         return ret;
+    }
+
+    /// <summary>
+    /// Adds all filter conditions from specified filter to this filter.
+    /// </summary>
+    /// <param name="target">The filter to add conditions to.</param>
+    /// <param name="source">The filter to add conditions from.</param>
+    public static QdrantFilter operator +(QdrantFilter target, QdrantFilter source)
+    {
+        if (target is null)
+        {
+            throw new ArgumentNullException(nameof(target));
+        }
+
+        if (source is null or {IsEmpty: true})
+        {
+            return target;
+        }
+
+        if (!string.IsNullOrWhiteSpace(target._rawFilterString))
+        {
+            throw new QdrantFilterModificationForbiddenException(target._rawFilterString);
+        }
+
+        if (!string.IsNullOrWhiteSpace(source._rawFilterString))
+        {
+            throw new QdrantFilterModificationForbiddenException(source._rawFilterString);
+        }
+
+        target._conditions.AddRange(source._conditions);
+
+        return target;
     }
 
     /// <summary>
@@ -202,12 +235,7 @@ public sealed class QdrantFilter
 
         jsonWriter.Flush();
 
-#if NETSTANDARD2_0 || NETSTANDARD2_1
         var builtFilter = Encoding.UTF8.GetString(stream.ToArray());
-#else
-        var builtFilter = Encoding.UTF8.GetString(stream.ToArray())
-            .ReplaceLineEndings();
-#endif
         
         return builtFilter;
     }
