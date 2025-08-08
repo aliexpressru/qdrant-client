@@ -34,6 +34,39 @@ public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<Get
         public uint ShardCount { set; get; }
 
         /// <summary>
+        /// Number of shards in the <see cref="ShardState.Partial"/> state.
+        /// This state indicates node still being replicated.
+        /// </summary>
+        public uint PartialShardCount =>
+            (LocalShards is {Length: > 0} localShards
+                ? (uint) localShards.Sum(s => s.State == ShardState.Partial
+                    ? 1
+                    : 0)
+                : 0U)
+            +
+            (RemoteShards is {Length: > 0} remoteShards
+                ? (uint) remoteShards.Sum(s => s.State == ShardState.Partial
+                    ? 1
+                    : 0)
+                : 0U);
+
+        /// <summary>
+        /// Number of shards in the <see cref="ShardState.Dead"/> state.
+        /// </summary>
+        public uint DeadShardCount =>
+            (LocalShards is {Length: > 0} localShards
+                ? (uint) localShards.Sum(s => s.State == ShardState.Dead
+                    ? 1
+                    : 0)
+                : 0U)
+            +
+            (RemoteShards is {Length: > 0} remoteShards
+                ? (uint) remoteShards.Sum(s => s.State == ShardState.Dead
+                    ? 1
+                    : 0)
+                : 0U);
+
+        /// <summary>
         /// Local shard information.
         /// </summary>
         public LocalShardInfo[] LocalShards { set; get; }

@@ -67,6 +67,9 @@ public class ClusterTests : QdrantTestsBase
 
         collectionClusteringInfo.Result.RemoteShards.Length.Should().Be(1);
         collectionClusteringInfo.Result.ShardTransfers.Length.Should().Be(0);
+        
+        collectionClusteringInfo.Result.PartialShardCount.Should().Be(0);
+        collectionClusteringInfo.Result.DeadShardCount.Should().Be(0);
     }
 
     [Test]
