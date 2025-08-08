@@ -157,7 +157,8 @@ public abstract class FilterConditionBase
     /// <typeparam name="T">Type of the parameter to get <see cref="PayloadIndexedFieldType"/> for.</typeparam>
     protected static PayloadIndexedFieldType? GetPayloadFieldType<T>()
     {
-        var typeCode = Type.GetTypeCode(typeof(T));
+        var type = typeof(T);
+        var typeCode = Type.GetTypeCode(type);
 
         PayloadIndexedFieldType? payloadFieldType = typeCode switch
         {
@@ -167,9 +168,10 @@ public abstract class FilterConditionBase
             TypeCode.Single => PayloadIndexedFieldType.Float,
             TypeCode.Double => PayloadIndexedFieldType.Float,
             TypeCode.Boolean => PayloadIndexedFieldType.Keyword,
-            TypeCode.Empty => null,
-            TypeCode.Object => null,
-            TypeCode.DBNull => null,
+            
+            // Guid will have an Object type code so we need to check for it explicitly.
+            TypeCode.Object when type == typeof(Guid) => PayloadIndexedFieldType.Uuid,
+            
             TypeCode.Char => PayloadIndexedFieldType.Keyword,
             TypeCode.SByte => PayloadIndexedFieldType.Integer,
             TypeCode.Byte => PayloadIndexedFieldType.Integer,
@@ -179,6 +181,9 @@ public abstract class FilterConditionBase
             TypeCode.UInt64 => PayloadIndexedFieldType.Integer,
             TypeCode.Decimal => PayloadIndexedFieldType.Float,
             TypeCode.DateTime => PayloadIndexedFieldType.Datetime,
+            TypeCode.Object => null,
+            TypeCode.DBNull => null,
+            TypeCode.Empty => null,
             _ => throw new ArgumentOutOfRangeException($"Unknown type code '{typeCode}' for type {typeof(T).FullName}")
         };
         

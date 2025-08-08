@@ -3,6 +3,7 @@ using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Filters.Conditions;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Helpers;
 using Aer.QdrantClient.Tests.Model;
 
@@ -1624,20 +1625,45 @@ internal class QdrantFilterTests
     [Test]
     public void FilterIntrospection()
     {
-        // var filter = QdrantFilter.Create(
-        //     Q.Must(
-        //         Q<TestComplexPayload>.SatisfyNested(
-        //             p => p.Nested,
-        //             Q.Must(
-        //                 Q<TestComplexPayload>.BeInRange(n => n.Nested.Integer, greaterThanOrEqual: 2),
-        //                 Q<TestComplexPayload>.BeInRange(n => n.Nested.Double, greaterThan: 500, lessThanOrEqual: 1000),
-        //                 Q<TestComplexPayload>.MatchValue(n => n.Nested.Double, 1.567)
-        //             ),
-        //             Q.Should(
-        //                 
-        //                 )
-        //         )
-        //     )
-        // )
+        var filter = QdrantFilter.Create(
+            Q.Must(
+                Q<TestComplexPayload>.SatisfyNested(
+                    p => p.Nested,
+                    Q.Must(
+                        Q<TestComplexPayload>.BeInRange(n => n.Nested.Integer, greaterThanOrEqual: 2),
+
+                        // This is an int field filter
+                        Q<TestComplexPayload>.BeInRange(n => n.Nested.Double, greaterThan: 500, lessThanOrEqual: 1000),
+
+                        // This is the same field filter but with different data type
+                        Q<TestComplexPayload>.MatchValue(n => n.Nested.Double, 1.567),
+                        Q<TestComplexPayload>.MatchAny(x => x.Text, "Test")
+                    ),
+                    Q.Should(
+                        // this filter deliberately uses string data type instead of int in the previous filter on this field
+                        Q.MatchValue("nested.integer", "1"),
+                        Q<TestComplexPayload>.BeWithinGeoRadius(x => x.Location, 1.25, 2.5, 1000.1)
+                    ),
+                    Q.Must(
+                        Q<TestComplexPayload>.BeInRange(x => x.Date, lessThan: DateTime.Now),
+                        !Q<TestComplexPayload>.MatchValue(x => x.Guid, Guid.NewGuid())
+                    )
+                )
+            )
+        );
+        
+        var payloadFields = filter.GetPayloadFieldsWithTypes();
+        
+        payloadFields.Should().HaveCount(8);
+        
+        // Check every introspected field and its type
+        payloadFields.Should().Contain(x => x.Name == "nested.integer" && x.Type == PayloadIndexedFieldType.Integer);
+        payloadFields.Should().Contain(x => x.Name == "nested.double" && x.Type == PayloadIndexedFieldType.Integer);
+        payloadFields.Should().Contain(x => x.Name == "nested.double" && x.Type == PayloadIndexedFieldType.Float);
+        payloadFields.Should().Contain(x => x.Name == "text" && x.Type == PayloadIndexedFieldType.Keyword);
+        payloadFields.Should().Contain(x => x.Name == "nested.integer" && x.Type == PayloadIndexedFieldType.Integer);
+        payloadFields.Should().Contain(x => x.Name == "location" && x.Type == PayloadIndexedFieldType.Geo);
+        payloadFields.Should().Contain(x => x.Name == "date" && x.Type == PayloadIndexedFieldType.Datetime);
+        payloadFields.Should().Contain(x => x.Name == "guid" && x.Type == PayloadIndexedFieldType.Uuid);
     }
 }

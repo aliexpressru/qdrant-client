@@ -14,6 +14,10 @@ internal class TestComplexPayload : Payload
     public int[] Array { set; get; }
 
     public string[] StringArray { set; get; }
+    
+    public DateTime Date { set; get; }
+    
+    public Guid Guid { set; get; }
 
     public GeoPoint Location { get; set; }
 
