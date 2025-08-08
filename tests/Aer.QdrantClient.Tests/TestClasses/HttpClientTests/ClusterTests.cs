@@ -153,7 +153,8 @@ public class ClusterTests : QdrantTestsBase
                 UpdateCollectionClusteringSetupRequest.CreateReplicateShardRequest(
                     localShardId,
                     localPeerId,
-                    remotePeerId),
+                    remotePeerId,
+                    shardTransferMethod: ShardTransferMethod.StreamRecords),
                 CancellationToken.None);
 
         replicateShardResult.EnsureSuccess();

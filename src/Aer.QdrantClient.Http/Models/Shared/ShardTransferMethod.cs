@@ -19,5 +19,10 @@ public enum ShardTransferMethod
     /// <summary>
     /// Transfer by resolving WAL difference - only the operations that were missed will be transferred.
     /// </summary>
-    WalDelta
+    WalDelta,
+
+    /// <summary>
+    /// Shard transfer for resharding: stream all records in batches until all points are transferred.
+    /// </summary>
+    ReshardingStreamRecords
 }

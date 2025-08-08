@@ -27,6 +27,10 @@ public partial class QdrantHttpClient
     /// If set to <c>true</c>, this operation calculates and logs
     /// all shard movements without actually executing them.
     /// </param>
+    /// <param name="shardTransferMethod">
+    /// Method for transferring the shard from one node to another.
+    /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
+    /// </param>
     /// <param name="collectionNamesToReplicate">
     /// Collection names to replicate shards for.
     /// If <c>null</c> or empty - replicates all collection shards.
@@ -37,6 +41,7 @@ public partial class QdrantHttpClient
         bool isIgnoreReplicationFactor = true,
         ILogger logger = null,
         bool isDryRun = false,
+        ShardTransferMethod? shardTransferMethod = null,
         params string[] collectionNamesToReplicate)
     {
         Stopwatch sw = Stopwatch.StartNew();
@@ -194,7 +199,8 @@ public partial class QdrantHttpClient
                             UpdateCollectionClusteringSetupRequest.CreateReplicateShardRequest(
                                 shardId: sourceShardId,
                                 fromPeerId: shardReplicaSourcePeerId,
-                                toPeerId: targetPeerId),
+                                toPeerId: targetPeerId,
+                                shardTransferMethod: shardTransferMethod ?? ShardTransferMethod.Snapshot),
                             cancellationToken);
 
                         if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
@@ -261,6 +267,10 @@ public partial class QdrantHttpClient
     /// If set to <c>true</c>, this operation calculates and logs
     /// all shard movements without actually executing them.
     /// </param>
+    /// <param name="shardTransferMethod">
+    /// Method for transferring the shard from one node to another.
+    /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
+    /// </param>
     /// <param name="collectionNamesToMove">
     /// Collection names to move shards for.
     /// If <c>null</c> or empty - moves all collection shards.
@@ -270,6 +280,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
+        ShardTransferMethod? shardTransferMethod = null,
         params string[] collectionNamesToMove
     )
     {
@@ -376,7 +387,7 @@ public partial class QdrantHttpClient
                                     shardId: shardToMoveToPeer,
                                     fromPeerId: sourcePeerId,
                                     toPeerId: targetPeerId,
-                                    ShardTransferMethod.StreamRecords),
+                                    shardTransferMethod : shardTransferMethod ?? ShardTransferMethod.StreamRecords),
                                 cancellationToken);
 
                             if (!isSuccessfullyStartOperationResponse.Status.IsSuccess

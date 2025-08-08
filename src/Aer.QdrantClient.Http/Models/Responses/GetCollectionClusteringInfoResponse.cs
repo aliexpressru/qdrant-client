@@ -1,4 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
+using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Shared;
 
@@ -80,6 +83,11 @@ public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<Get
         /// Ongoing shard transfers operations.
         /// </summary>
         public ShardTransferInfo[] ShardTransfers { set; get; }
+        
+        /// <summary>
+        /// Ongoing resharding operations.
+        /// </summary>
+        public ReshardingOperationInfo[] ReshardingOperations { set; get; }
     }
 
     /// <summary>
@@ -154,5 +162,37 @@ public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<Get
         /// If <c>false</c> transfer is a moving of a shard from one peer to another.
         /// </summary>
         public bool Sync { set; get; }
+    }
+    
+    /// <summary>
+    /// Represents a resharding operation information. 
+    /// </summary>
+    public class ReshardingOperationInfo
+    { 
+        /// <summary>
+        /// Resharding direction, scale up or down in number of shards.
+        /// </summary>
+        public ReshardingOperationDirection Direction { set; get; }
+        
+        /// <summary>
+        /// The id of the shards being added or removed.
+        /// </summary>
+        public uint ShardId { set; get; }
+        
+        /// <summary>
+        /// The peer id that the shard is being added or removed from.
+        /// </summary>
+        public uint PeerId { set; get; }
+        
+        /// <summary>
+        /// The peer uri that the shard is being added or removed from.
+        /// </summary>
+        public string PeerUri { set; get; }
+
+        /// <summary>
+        /// The shard key for the resharding operation.
+        /// </summary>
+        [JsonConverter(typeof(ShardKeyJsonConverter))]
+        public ShardKey ShardKey { set; get; }
     }
 }

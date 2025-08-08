@@ -90,13 +90,27 @@ public partial class QdrantHttpClient
             var clusterInfo = await GetClusterInfo(cancellationToken);
 
             collectionShardingInfo.Result.PeerUri = clusterInfo.Result.ParsedPeers[collectionShardingInfo.Result.PeerId].Uri;
-            
-            foreach(var shard in collectionShardingInfo.Result.RemoteShards)
+
+            if (collectionShardingInfo.Result.RemoteShards is not null)
             {
-                var shardPeer = shard.PeerId;
-                var shardPeerUri = clusterInfo.Result.ParsedPeers[shardPeer].Uri;
-                
-                shard.PeerUri = shardPeerUri;
+                foreach (var shard in collectionShardingInfo.Result.RemoteShards)
+                {
+                    var shardPeer = shard.PeerId;
+                    var shardPeerUri = clusterInfo.Result.ParsedPeers[shardPeer].Uri;
+
+                    shard.PeerUri = shardPeerUri;
+                }
+            }
+
+            if (collectionShardingInfo.Result.ReshardingOperations is not null)
+            {
+                foreach (var reshardingOperation in collectionShardingInfo.Result.ReshardingOperations)
+                {
+                    var shardPeer = reshardingOperation.PeerId;
+                    var shardPeerUri = clusterInfo.Result.ParsedPeers[shardPeer].Uri;
+
+                    reshardingOperation.PeerUri = shardPeerUri;
+                }
             }
         }
 

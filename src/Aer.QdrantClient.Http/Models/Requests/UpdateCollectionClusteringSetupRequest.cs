@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
+using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Requests;
@@ -53,6 +55,39 @@ public abstract class UpdateCollectionClusteringSetupRequest
     }
 
     /// <summary>
+    /// Represents a request to restart an ongoing shard transfer process.
+    /// </summary>
+    internal sealed class RestartShardTransferRequest : UpdateCollectionClusteringSetupRequest
+    {
+        /// <summary>
+        /// The restart shard replication or transfer operation description.
+        /// </summary>
+        public required ShardOperationDescription RestartTransfer { set; get; }
+    }
+
+    /// <summary>
+    /// Represents a request to start a resharding operation.
+    /// </summary>
+    internal sealed class StartReshardingOperationRequest : UpdateCollectionClusteringSetupRequest
+    {
+        /// <summary>
+        /// The start resharding operation description.
+        /// </summary>
+        public required ReshardingOperationDescription StartResharding { set; get; }
+    }
+
+    /// <summary>
+    /// Represents a request to abort a resharding operation.
+    /// </summary>
+    internal sealed class AbortReshardingOperationRequest : UpdateCollectionClusteringSetupRequest
+    {
+        /// <summary>
+        /// The abort resharding operation description.
+        /// </summary>
+        public object AbortResharding { set; get; } = new();
+    }
+
+    /// <summary>
     /// Represents a request to drop an existing shard replica.
     /// </summary>
     internal sealed class DropShardReplicaRequest : UpdateCollectionClusteringSetupRequest
@@ -76,6 +111,65 @@ public abstract class UpdateCollectionClusteringSetupRequest
             /// The peer identifier of the replica to drop.
             /// </summary>
             public ulong PeerId { set; get; }
+        }
+    }
+
+    /// <summary>
+    /// Represents a request to create a sharding key.
+    /// </summary>
+    internal sealed class CreateShardingKeyRequest : UpdateCollectionClusteringSetupRequest
+    {
+        /// <summary>
+        /// A sharing key operation description to create a sharding key.
+        /// </summary>
+        public required ShardKeyOperationDescription CreateShardingKey { set; get; }
+
+        /// <summary>
+        /// Represents a descriptor for the shard key operation to perform.
+        /// </summary>
+        internal sealed class ShardKeyOperationDescription
+        {
+            /// <summary>
+            /// The shard key to create.
+            /// </summary>
+            [JsonConverter(typeof(ShardKeyJsonConverter))]
+            public required ShardKey ShardKey { set; get; }
+
+            /// <summary>
+            /// How many shards to create for this key. If not specified, will use the default value from config.
+            /// </summary>
+            public uint? ShardsNumber { set; get; }
+
+            /// <summary>
+            /// How many replicas to create for each shard. If not specified, will use the default value from config.
+            /// </summary>
+            public uint? ReplicationFactor { set; get; }
+
+            /// <summary>
+            /// Placement of shards for this key - array of peer ids, that can be used to place shards for this key.
+            /// If not specified, will be randomly placed among all peers.
+            /// </summary>
+            public ulong[] Placement { set; get; }
+        }
+    }
+
+    /// <summary>
+    /// Represents a request to drop an exising a sharding key.
+    /// </summary>
+    internal sealed class DropShardingKeyRequest : UpdateCollectionClusteringSetupRequest
+    {
+        /// <summary>
+        /// A sharing key operation description to drop a sharding key.
+        /// </summary>
+        public required DropShardKeyOperationDescription DropShardingKey { set; get; }
+
+        internal sealed class DropShardKeyOperationDescription
+        {
+            /// <summary>
+            /// The shard key to drop.
+            /// </summary>
+            [JsonConverter(typeof(ShardKeyJsonConverter))]
+            public required ShardKey ShardKey { set; get; }
         }
     }
 
@@ -105,6 +199,28 @@ public abstract class UpdateCollectionClusteringSetupRequest
         public ShardTransferMethod? Method { set; get; }
     }
 
+    /// <summary>
+    /// Represents a descriptor for the resharding operation to perform.
+    /// </summary>
+    internal sealed class ReshardingOperationDescription
+    {
+        /// <summary>
+        /// Resharding direction, scale up or down in number of shards.
+        /// </summary>
+        public ReshardingOperationDirection Direction { set; get; }
+
+        /// <summary>
+        /// The peer id to perform resharding on.
+        /// </summary>
+        public ulong? PeerId { init; get; }
+
+        /// <summary>
+        /// The shard key for the resharding operation.
+        /// </summary>
+        [JsonConverter(typeof(ShardKeyJsonConverter))]
+        public ShardKey ShardKey { set; get; }
+    }
+
     #endregion
 
     /// <summary>
@@ -114,7 +230,7 @@ public abstract class UpdateCollectionClusteringSetupRequest
     /// <param name="fromPeerId">Source peer identifier.</param>
     /// <param name="toPeerId">Target peer identifier.</param>
     /// <param name="shardTransferMethod">
-    /// The shard transfer method.
+    /// Method for transferring the shard from one node to another.
     /// If not set, <see cref="ShardTransferMethod.StreamRecords"/> will be used.
     /// </param>
     public static UpdateCollectionClusteringSetupRequest CreateMoveShardRequest(
@@ -126,7 +242,8 @@ public abstract class UpdateCollectionClusteringSetupRequest
         if (fromPeerId == toPeerId)
         {
             // looks like an attempt to move collection shard from peer to itself causes qdrant to halt
-            throw new InvalidOperationException($"Can't move collection shard {shardId} from peer {fromPeerId} to itself.");
+            throw new InvalidOperationException(
+                $"Can't move collection shard {shardId} from peer {fromPeerId} to itself.");
         }
 
         return new MoveShardRequest()
@@ -147,15 +264,18 @@ public abstract class UpdateCollectionClusteringSetupRequest
     /// <param name="shardId">The identifier of the shard to replicate.</param>
     /// <param name="fromPeerId">Source peer identifier.</param>
     /// <param name="toPeerId">Target peer identifier.</param>
+    /// <param name="shardTransferMethod">Method for transferring the shard from one node to another.</param>
     public static UpdateCollectionClusteringSetupRequest CreateReplicateShardRequest(
         uint shardId,
         ulong fromPeerId,
-        ulong toPeerId)
+        ulong toPeerId,
+        ShardTransferMethod shardTransferMethod)
     {
         if (fromPeerId == toPeerId)
         {
             // looks like an attempt to move collection shard from peer to itself causes qdrant to halt
-            throw new InvalidOperationException($"Can't replicate collection shard {shardId} from peer {fromPeerId} to itself.");
+            throw new InvalidOperationException(
+                $"Can't replicate collection shard {shardId} from peer {fromPeerId} to itself.");
         }
 
         return new ReplicateShardRequest()
@@ -164,7 +284,8 @@ public abstract class UpdateCollectionClusteringSetupRequest
             {
                 ShardId = shardId,
                 FromPeerId = fromPeerId,
-                ToPeerId = toPeerId
+                ToPeerId = toPeerId,
+                Method = shardTransferMethod
             }
         };
     }
@@ -191,6 +312,30 @@ public abstract class UpdateCollectionClusteringSetupRequest
             };
 
     /// <summary>
+    /// Returns the abort shard transfer operation request.
+    /// </summary>
+    /// <param name="shardId">The identifier of the shard to abort transfer of.</param>
+    /// <param name="fromPeerId">Source peer identifier.</param>
+    /// <param name="toPeerId">Target peer identifier.</param>
+    /// <param name="shardTransferMethod">Method for transferring the shard from one node to another.</param>
+    public static UpdateCollectionClusteringSetupRequest CreateRestartShardTransferRequest(
+        uint shardId,
+        ulong fromPeerId,
+        ulong toPeerId,
+        ShardTransferMethod shardTransferMethod)
+        =>
+            new RestartShardTransferRequest()
+            {
+                RestartTransfer = new ShardOperationDescription()
+                {
+                    ShardId = shardId,
+                    FromPeerId = fromPeerId,
+                    ToPeerId = toPeerId,
+                    Method = shardTransferMethod
+                }
+            };
+
+    /// <summary>
     /// Returns the drop shard replica operation request.
     /// </summary>
     /// <param name="shardId">The identifier of the shard to drop.</param>
@@ -205,6 +350,49 @@ public abstract class UpdateCollectionClusteringSetupRequest
                 {
                     ShardId = shardId,
                     PeerId = peerId,
+                }
+            };
+
+    /// <summary>
+    /// Returns the create sharding key operation request.
+    /// </summary>
+    /// <param name="shardKey">The shard key for shards to create.</param>
+    /// <param name="shardsNumber">How many shards to create for this key. If not specified, will use the default value from config.</param>
+    /// <param name="replicationFactor">How many replicas to create for each shard. If not specified, will use the default value from config.</param>
+    /// <param name="placement">
+    /// Placement of shards for this key - array of peer ids, that can be used to place shards for this key.
+    /// If not specified, will be randomly placed among all peers.
+    /// </param>
+    public static UpdateCollectionClusteringSetupRequest CreateCreateShardingKeyRequest(
+        ShardKey shardKey,
+        uint? shardsNumber = null,
+        uint? replicationFactor = null,
+        ulong[] placement = null)
+        =>
+            new CreateShardingKeyRequest()
+            {
+                CreateShardingKey = new CreateShardingKeyRequest.ShardKeyOperationDescription()
+                {
+                    ShardKey = shardKey,
+                    ShardsNumber = shardsNumber,
+                    ReplicationFactor = replicationFactor,
+                    Placement = placement
+                }
+            };
+
+    /// <summary>
+    /// Returns the drop sharding key operation request.
+    /// </summary>
+    /// <param name="shardKey">The shard key for shards to drop.</param>
+    /// <returns></returns>
+    public static UpdateCollectionClusteringSetupRequest CreateDropShardingKeyRequest(
+        ShardKey shardKey)
+        =>
+            new DropShardingKeyRequest()
+            {
+                DropShardingKey = new DropShardingKeyRequest.DropShardKeyOperationDescription()
+                {
+                    ShardKey = shardKey
                 }
             };
 }
