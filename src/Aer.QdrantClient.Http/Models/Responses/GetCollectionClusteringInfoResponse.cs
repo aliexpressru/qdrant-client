@@ -22,6 +22,11 @@ public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<Get
         /// ID of this peer.
         /// </summary>
         public ulong PeerId { set; get; }
+        
+        /// <summary>
+        /// The uri of this peer.
+        /// </summary>
+        public string PeerUri { set; get; }
 
         /// <summary>
         /// Total number of shards.
@@ -79,6 +84,11 @@ public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<Get
         /// Peer identifier.
         /// </summary>
         public ulong PeerId { set; get; }
+
+        /// <summary>
+        /// Peer uri.
+        /// </summary>
+        public string PeerUri { set; get; }
 
         /// <summary>
         /// State of the single shard within a replica set.

@@ -40,16 +40,21 @@ public class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task GetCollectionClusteringInfo_ManualSharding()
+    public async Task GetCollectionClusteringInfo()
     {
         await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
         var collectionClusteringInfo =
-            await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None);
+            await _qdrantHttpClient.GetCollectionClusteringInfo(
+                TestCollectionName,
+                CancellationToken.None,
+                isTranslatePeerIdsToUris: true);
 
         collectionClusteringInfo.Status.IsSuccess.Should().BeTrue();
 
         collectionClusteringInfo.Result.PeerId.Should().NotBe(0);
+        collectionClusteringInfo.Result.PeerUri.Should().NotBeNullOrEmpty();
+        
         collectionClusteringInfo.Result.ShardCount.Should().Be(2);
         collectionClusteringInfo.Result.LocalShards.Length.Should().Be(1);
 
@@ -57,6 +62,8 @@ public class ClusterTests : QdrantTestsBase
         collectionClusteringInfo.Result.LocalShards[0].State.Should().Be(ShardState.Active);
 
         collectionClusteringInfo.Result.RemoteShards[0].State.Should().Be(ShardState.Active);
+        collectionClusteringInfo.Result.RemoteShards[0].PeerId.Should().NotBe(0);
+        collectionClusteringInfo.Result.RemoteShards[0].PeerUri.Should().NotBeNullOrEmpty();
 
         collectionClusteringInfo.Result.RemoteShards.Length.Should().Be(1);
         collectionClusteringInfo.Result.ShardTransfers.Length.Should().Be(0);

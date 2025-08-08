@@ -71,19 +71,36 @@ public partial class QdrantHttpClient
     /// </summary>
     /// <param name="collectionName">Collection name to get sharding info for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="isTranslatePeerIdsToUris">Is set to <c>true</c>, enriches collection cluster info response with peer URI values.</param>
     public async Task<GetCollectionClusteringInfoResponse> GetCollectionClusteringInfo(
         string collectionName,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool isTranslatePeerIdsToUris = false)
     {
         var url = $"/collections/{collectionName}/cluster";
 
-        var response = await ExecuteRequest<GetCollectionClusteringInfoResponse>(
+        var collectionShardingInfo = await ExecuteRequest<GetCollectionClusteringInfoResponse>(
             url,
             HttpMethod.Get,
             cancellationToken,
             retryCount: 0);
 
-        return response;
+        if (isTranslatePeerIdsToUris)
+        { 
+            var clusterInfo = await GetClusterInfo(cancellationToken);
+
+            collectionShardingInfo.Result.PeerUri = clusterInfo.Result.ParsedPeers[collectionShardingInfo.Result.PeerId].Uri;
+            
+            foreach(var shard in collectionShardingInfo.Result.RemoteShards)
+            {
+                var shardPeer = shard.PeerId;
+                var shardPeerUri = clusterInfo.Result.ParsedPeers[shardPeer].Uri;
+                
+                shard.PeerUri = shardPeerUri;
+            }
+        }
+
+        return collectionShardingInfo;
     }
 
     /// <summary>
