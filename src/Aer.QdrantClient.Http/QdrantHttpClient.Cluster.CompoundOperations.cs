@@ -519,51 +519,76 @@ public partial class QdrantHttpClient
         Stopwatch sw = Stopwatch.StartNew();
 
         var clusterInfo = await GetClusterInfoInternal(cancellationToken);
+        
+        // Here we need to check whether the cluster don't have duplicated peers by same URI.
 
-        var peerIdByNodeUrl = clusterInfo.ParsedPeers.ToDictionary(
-            ci => ci.Value.Uri,
-            ci => ci.Key);
+        HashSet<string> seenPeerUrls = new();
+        List<KeyValuePair<string, ulong>> peerIdsByNodeUrls = new();
+        List<KeyValuePair<string, ulong>> duplicatePeers = new();
+        
+        foreach (var peer in clusterInfo.ParsedPeers)
+        {
+            if (seenPeerUrls.Add(peer.Value.Uri))
+            { 
+                peerIdsByNodeUrls.Add(new KeyValuePair<string, ulong>(peer.Value.Uri, peer.Key));
+            }
+            else
+            { 
+                // Means we have already seen this peer URL, so we have a duplicate.
+                // This may indicate invalid cluster state.
+                
+                duplicatePeers.Add(new  KeyValuePair<string, ulong>(peer.Value.Uri, peer.Key));
+            }
+        }
 
-        var candidatePeersIds = peerIdByNodeUrl
-            .Where(
-                kv => kv.Key.Contains(clusterNodeUriSubstring, StringComparison.InvariantCulture)
-            )
+        if (duplicatePeers.Count > 0)
+        {
+            throw new QdrantInvalidClusterStateException(
+                $"Cluster contains peers with duplicated URIs [{string.Join(", ", duplicatePeers.Select(p => $"{p.Key} - {p.Value}"))}]. "
+                + $"All peers: [{string.Join(", ", clusterInfo.ParsedPeers.Select(p => $"{p.Value.Uri} - {p.Key}"))}]");
+        }
+        
+        var candidatePeerIds = peerIdsByNodeUrls
+            .Where(kv => kv.Key.Contains(clusterNodeUriSubstring, StringComparison.InvariantCulture))
             .ToList();
 
-        if (candidatePeersIds.Count == 0)
+        if (candidatePeerIds.Count == 0)
         {
             throw new QdrantNoPeersFoundForUriSubstringException(
                 clusterNodeUriSubstring,
-                peerIdByNodeUrl
+                peerIdsByNodeUrls
             );
         }
 
-        if (candidatePeersIds.Count > 1)
+        if (candidatePeerIds.Count > 1)
         {
             throw new QdrantMoreThanOnePeerFoundForUriSubstringException(
                 clusterNodeUriSubstring,
-                candidatePeersIds);
+                candidatePeerIds);
         }
 
-        var nodePeerId = candidatePeersIds[0].Value;
+        var nodePeerId = candidatePeerIds[0].Value;
 
-        var otherPeersIds = peerIdByNodeUrl.Where(
+        var otherPeerIds = peerIdsByNodeUrls.Where(
                 kv => kv.Value != nodePeerId)
             .Select(kv => kv.Value)
             .ToList();
 
         Dictionary<ulong, string> peerUriPerPeerId = new();
 
-        foreach (var peer in peerIdByNodeUrl)
+        foreach (var peer in peerIdsByNodeUrls)
         {
-            peerUriPerPeerId.Add(peer.Value, peer.Key);
+            var nodeUri = peer.Key;
+            var peerId = peer.Value;
+            
+            peerUriPerPeerId.Add(peerId, nodeUri);
         }
 
         var ret = new GetPeerResponse.PeerInfo()
         {
             PeerId = nodePeerId,
-            PeerUri = candidatePeersIds[0].Key,
-            OtherPeerIds = otherPeersIds,
+            PeerUri = candidatePeerIds[0].Key,
+            OtherPeerIds = otherPeerIds,
             PeerUriPerPeerIds = peerUriPerPeerId
         };
 
