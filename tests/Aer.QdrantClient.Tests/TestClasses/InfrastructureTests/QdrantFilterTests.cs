@@ -30,7 +30,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.GetPayloadFieldsWithTypes().Should().BeEquivalentTo(["whatever"]);
+        filter.GetPayloadFieldsWithTypes().Select(ft => ft.Name).Should().BeEquivalentTo(["whatever"]);
 
         filterString.AssertSameString(expectedFilter);
     }
@@ -74,7 +74,7 @@ internal class QdrantFilterTests
             }
             """;
 
-        filter.GetPayloadFieldsWithTypes().Should().BeEquivalentTo(["integer", "text"]);
+        filter.GetPayloadFieldsWithTypes().Select(ft => ft.Name).Should().BeEquivalentTo(["integer", "text"]);
 
         filterJson.AssertSameString(expectedFilter);
     }
@@ -334,8 +334,8 @@ internal class QdrantFilterTests
               ]
             }
             """;
-        
-        filter.GetPayloadFieldsWithTypes().Should().BeEquivalentTo(["int_property", "text"]);
+
+        filter.GetPayloadFieldsWithTypes().Select(ft => ft.Name).Should().BeEquivalentTo(["int_property", "text"]);
 
         filterString.AssertSameString(expectedFilter);
     }
@@ -1584,9 +1584,9 @@ internal class QdrantFilterTests
             """;
 
         var filter = QdrantFilter.Create(expectedFilter);
-        
+
         filter.GetPayloadFieldsWithTypes().Should().BeEmpty();
-        
+
         var filterString = filter.ToString();
 
         filterString.AssertSameString(expectedFilter);
