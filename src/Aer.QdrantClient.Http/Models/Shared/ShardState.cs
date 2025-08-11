@@ -28,5 +28,25 @@ public enum ShardState
     /// <summary>
     /// Shard is in listener mode.
     /// </summary>
-    Listener
+    Listener,
+
+    /// <summary>
+    /// Shard is in the process of being transferred to another node.
+    /// </summary>
+    PartialSnapshot,
+
+    /// <summary>
+    /// Shard is in the process of being recovered.
+    /// </summary>
+    Recovery,
+
+    /// <summary>
+    /// Shard is in the process of being resharded.
+    /// </summary>
+    Resharding,
+
+    /// <summary>
+    /// Shard is in the process of being resharded scaling down.
+    /// </summary>
+    ReshardingScaleDown
 }
