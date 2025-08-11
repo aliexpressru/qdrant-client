@@ -17,6 +17,50 @@ public partial class QdrantHttpClient
     /// <summary>
     /// Replicates shards for specified or all collections to specified peer.
     /// </summary>
+    /// <param name="targetPeerId">The peer id for the peer to replicate shards to.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="isIgnoreReplicationFactor">
+    /// If set to <c>false</c> - does not replicate collection more than its configured replication factor.
+    /// </param>
+    /// <param name="logger">The optional logger for state logging.</param>
+    /// <param name="isDryRun">
+    /// If set to <c>true</c>, this operation calculates and logs
+    /// all shard movements without actually executing them.
+    /// </param>
+    /// <param name="shardTransferMethod">
+    /// Method for transferring the shard from one node to another.
+    /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
+    /// </param>
+    /// <param name="collectionNamesToReplicate">
+    /// Collection names to replicate shards for.
+    /// If <c>null</c> or empty - replicates all collection shards.
+    /// </param>
+    public async Task<ReplicateShardsToPeerResponse> ReplicateShardsToPeer(
+        ulong targetPeerId,
+        CancellationToken cancellationToken,
+        bool isIgnoreReplicationFactor = true,
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod? shardTransferMethod = null,
+        params string[] collectionNamesToReplicate)
+    {
+        var peerInfo = await GetPeerInfo(
+            targetPeerId,
+            cancellationToken);
+
+        return await ReplicateShardsToPeerInternal(
+            peerInfo,
+            cancellationToken,
+            isIgnoreReplicationFactor,
+            logger,
+            isDryRun,
+            shardTransferMethod,
+            collectionNamesToReplicate);
+    }
+
+    /// <summary>
+    /// Replicates shards for specified or all collections to specified peer.
+    /// </summary>
     /// <param name="targetPeerUriSelectorString">The peer uri selector string for the peer to replicate shards to.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isIgnoreReplicationFactor">
@@ -44,12 +88,34 @@ public partial class QdrantHttpClient
         ShardTransferMethod? shardTransferMethod = null,
         params string[] collectionNamesToReplicate)
     {
+        var peerInfo = await GetPeerInfo(
+            targetPeerUriSelectorString,
+            cancellationToken);
+
+        return await ReplicateShardsToPeerInternal(
+            peerInfo,
+            cancellationToken,
+            isIgnoreReplicationFactor,
+            logger,
+            isDryRun,
+            shardTransferMethod,
+            collectionNamesToReplicate);
+    }
+
+    private async Task<ReplicateShardsToPeerResponse> ReplicateShardsToPeerInternal(
+        GetPeerResponse peerInfoResponse,
+        CancellationToken cancellationToken,
+        bool isIgnoreReplicationFactor = true,
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod? shardTransferMethod = null,
+        params string[] collectionNamesToReplicate)
+    {
         Stopwatch sw = Stopwatch.StartNew();
 
         try
         {
-            var (targetPeerId, _, sourcePeerIds, peerUriPerPeerId) =
-                (await GetPeerInfo(targetPeerUriSelectorString, cancellationToken)).EnsureSuccess();
+            var (targetPeerId, _, sourcePeerIds, peerUriPerPeerId) = peerInfoResponse.EnsureSuccess();
 
             var collectionInfos = (await ListCollectionInfo(
                 isCountExactPointsNumber: false,
@@ -260,6 +326,46 @@ public partial class QdrantHttpClient
     /// <summary>
     /// Removes all shards for all collections or specified collections from a peer by distributing them between another peers.
     /// </summary>
+    /// <param name="peerIdToEmpty">The peer id for the peer to move shards away from.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="logger">The optional logger for state logging.</param>
+    /// <param name="isDryRun">
+    /// If set to <c>true</c>, this operation calculates and logs
+    /// all shard movements without actually executing them.
+    /// </param>
+    /// <param name="shardTransferMethod">
+    /// Method for transferring the shard from one node to another.
+    /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
+    /// </param>
+    /// <param name="collectionNamesToMove">
+    /// Collection names to move shards for.
+    /// If <c>null</c> or empty - moves all collection shards.
+    /// </param>
+    public async Task<DrainPeerResponse> DrainPeer(
+        ulong peerIdToEmpty,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod? shardTransferMethod = null,
+        params string[] collectionNamesToMove
+    )
+    {
+        var peerInfo = await GetPeerInfo(
+            peerIdToEmpty,
+            cancellationToken);
+
+        return await DrainPeerInternal(
+            peerInfo,
+            cancellationToken,
+            logger,
+            isDryRun,
+            shardTransferMethod,
+            collectionNamesToMove);
+    }
+
+    /// <summary>
+    /// Removes all shards for all collections or specified collections from a peer by distributing them between another peers.
+    /// </summary>
     /// <param name="peerToEmptyUriSelectorString">The peer uri selector string for the peer to move shards away from.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="logger">The optional logger for state logging.</param>
@@ -284,12 +390,34 @@ public partial class QdrantHttpClient
         params string[] collectionNamesToMove
     )
     {
+        var peerInfo = await GetPeerInfo(
+            peerToEmptyUriSelectorString,
+            cancellationToken);
+        
+        return await DrainPeerInternal(
+            peerInfo,
+            cancellationToken,
+            logger,
+            isDryRun,
+            shardTransferMethod,
+            collectionNamesToMove);
+    }
+
+    private async Task<DrainPeerResponse> DrainPeerInternal(
+        GetPeerResponse peerInfoResponse,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod? shardTransferMethod = null,
+        params string[] collectionNamesToMove
+    )
+    {
         Stopwatch sw = Stopwatch.StartNew();
 
         try
         {
             var (sourcePeerId, _, targetPeerIds, peerUriPerPeerId) =
-                (await GetPeerInfo(peerToEmptyUriSelectorString, cancellationToken)).EnsureSuccess();
+                peerInfoResponse.EnsureSuccess();
 
             var collectionNames = (await ListCollections(cancellationToken))
                 .EnsureSuccess()
@@ -450,18 +578,48 @@ public partial class QdrantHttpClient
     /// <summary>
     /// Checks whether the specified cluster node does not have any collection shards on it.
     /// </summary>
-    /// <param name="clusterNodeUriSubstring">The cluster node URI substring.</param>
+    /// <param name="peerId">The cluster node peer id for the peer to check.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     public async Task<CheckIsPeerEmptyResponse> CheckIsPeerEmpty(
-        string clusterNodeUriSubstring,
+        ulong peerId,
+        CancellationToken cancellationToken)
+    {
+        var peerInfo = await GetPeerInfo(
+            peerId,
+            cancellationToken);
+        
+        return await CheckIsPeerEmptyInternal(
+            peerInfo,
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Checks whether the specified cluster node does not have any collection shards on it.
+    /// </summary>
+    /// <param name="peerToCheckUriSelectorString">The cluster node uri selector for the peer to check.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    public async Task<CheckIsPeerEmptyResponse> CheckIsPeerEmpty(
+        string peerToCheckUriSelectorString,
+        CancellationToken cancellationToken)
+    {
+        var peerInfo = await GetPeerInfo(
+            peerToCheckUriSelectorString,
+            cancellationToken);
+
+        return await CheckIsPeerEmptyInternal(
+            peerInfo,
+            cancellationToken);
+    }
+    
+    private async Task<CheckIsPeerEmptyResponse> CheckIsPeerEmptyInternal(
+        GetPeerResponse peerInfoResponse,
         CancellationToken cancellationToken)
     {
         Stopwatch sw = Stopwatch.StartNew();
 
         try
         {
-            var (peerIdToCheck, _, _, _) =
-                (await GetPeerInfo(clusterNodeUriSubstring, cancellationToken)).EnsureSuccess();
+            var (peerIdToCheck, _, _, _) = peerInfoResponse.EnsureSuccess();
 
             var collectionNames = (await ListCollections(cancellationToken))
                 .EnsureSuccess()
