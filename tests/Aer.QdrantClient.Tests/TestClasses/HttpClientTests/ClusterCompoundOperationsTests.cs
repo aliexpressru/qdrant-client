@@ -105,7 +105,8 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
 
         var clusterInfo = (await _qdrantHttpClient.GetClusterInfo(CancellationToken.None)).EnsureSuccess();
 
-        var firstPeerUri = clusterInfo.Peers.First().Value.Uri;
+        var firstPeerUri = clusterInfo.ParsedPeers.First().Value.Uri;
+        var firstPeerId = clusterInfo.ParsedPeers.First().Key;
 
         var checkPeerEmptyResult = await _qdrantHttpClient.CheckIsPeerEmpty(firstPeerUri, CancellationToken.None);
 
@@ -146,7 +147,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
 
         await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
 
-        checkPeerEmptyResult = await _qdrantHttpClient.CheckIsPeerEmpty(firstPeerUri, CancellationToken.None);
+        checkPeerEmptyResult = await _qdrantHttpClient.CheckIsPeerEmpty(firstPeerId, CancellationToken.None);
 
         checkPeerEmptyResult.Status.IsSuccess.Should().BeTrue();
         checkPeerEmptyResult.Result.Should().BeFalse();
@@ -191,7 +192,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
 
         var drainPeerResponse =
             await _qdrantHttpClient.DrainPeer(
-                "http://qdrant-1",
+                peerIdToDrain,
                 CancellationToken.None,
                 logger: _logger,
                 collectionNamesToMove: TestCollectionName);
@@ -459,7 +460,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
 
         var replicateCollectionResponse =
             await _qdrantHttpClient.ReplicateShardsToPeer(
-                "http://qdrant-1",
+                targetPeerId,
                 CancellationToken.None,
                 logger: _logger);
 
