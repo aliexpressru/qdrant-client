@@ -27,7 +27,7 @@ public class ClusterTests : QdrantTestsBase
     [SetUp]
     public async Task BeforeEachTest()
     {
-        await ResetStorage(_qdrantHttpClient, isDeleteCollectionFiles: false);
+        await ResetStorage(_qdrantHttpClient);
     }
 
     [Test]

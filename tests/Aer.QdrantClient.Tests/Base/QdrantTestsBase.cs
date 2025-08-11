@@ -33,13 +33,6 @@ public class QdrantTestsBase
     protected const string TestPayloadFieldName = "test_payload_field";
     protected const string TestPayloadFieldName2 = "test_payload_field_2";
 
-    // private static string _collectionsDataDirectoryToClear;
-    // private static string _snapshotsDataDirectoryToClear;
-
-    // private const string ROOT_SOLUTION_DIRECTORY_NAME = "qdrant-client";
-    // private const string QDRANT_COLLECTIONS_DATA_DIRECTORY_RELATIVE_PATH = "volumes/0/qdrant_storage/collections";
-    // private const string QDRANT_SNAPSHOTS_DATA_DIRECTORY_RELATIVE_PATH = "volumes/0/qdrant_snapshots";
-
     // shared random with constant seed to make tests repeatable
     protected static readonly Random Random = new(1567);
 
@@ -83,7 +76,7 @@ public class QdrantTestsBase
         ServiceProvider = services.BuildServiceProvider();
     }
 
-    protected async Task ResetStorage(QdrantHttpClient qdrantClient = null, bool isDeleteCollectionFiles = true)
+    protected async Task ResetStorage(QdrantHttpClient qdrantClient = null)
     {
         bool wasException = true;
         while (wasException)
@@ -91,108 +84,7 @@ public class QdrantTestsBase
             try
             {
                 await DeleteCollectionsAndSnapshots(qdrantClient);
-
-                // if (!IsCiEnvironment && isDeleteCollectionFiles)
-                // {
-                //     // drop collection files since on local machine they sometimes
-                //     // get left after the collection deletion preventing new collection
-                //     // with the same name from being created
-                //
-                //     if (_collectionsDataDirectoryToClear is null)
-                //     {
-                //         var currentPath = Assembly.GetExecutingAssembly().Location;
-                //         var currentDirectory = new DirectoryInfo(currentPath);
-                //
-                //         while (currentDirectory.Name != ROOT_SOLUTION_DIRECTORY_NAME)
-                //         {
-                //             currentDirectory = currentDirectory.Parent ?? throw new InvalidOperationException(
-                //                 $"The directory traverse for collection files deletion is in incorrect state. "
-                //                 + $"No directory '{ROOT_SOLUTION_DIRECTORY_NAME}' found along the traverse. Starting directory was '{currentPath}'");
-                //         }
-                //
-                //         // we are in "qdrant-client" dir which is the root of the project
-                //         // now descend into 'volumes' directory and find 'qdrant_storage' dir
-                //
-                //         // get collections data directory
-                //
-                //         var qdrantCollectionsDataDirectoryPath = Path.Combine(
-                //             currentDirectory.FullName,
-                //             QDRANT_COLLECTIONS_DATA_DIRECTORY_RELATIVE_PATH);
-                //
-                //         if (Directory.Exists(qdrantCollectionsDataDirectoryPath))
-                //         {
-                //             // cache directory path to avoid multiple traversing
-                //             _collectionsDataDirectoryToClear = qdrantCollectionsDataDirectoryPath;
-                //         }
-                //         else
-                //         {
-                //             await TestContext.Out.WriteAsync(
-                //                 $"The expected qdrant collection data directory '{qdrantCollectionsDataDirectoryPath}' does not exist check the path");
-                //             break;
-                //         }
-                //
-                //         // get snapshots data directory
-                //
-                //         var qdrantSnapshotsDataDirectoryPath = Path.Combine(
-                //             currentDirectory.FullName,
-                //             QDRANT_SNAPSHOTS_DATA_DIRECTORY_RELATIVE_PATH);
-                //
-                //         if (Directory.Exists(qdrantSnapshotsDataDirectoryPath))
-                //         {
-                //             // cache directory path to avoid multiple traversing
-                //             _snapshotsDataDirectoryToClear = qdrantSnapshotsDataDirectoryPath;
-                //         }
-                //         else
-                //         {
-                //             await TestContext.Out.WriteAsync(
-                //                 $"The expected qdrant snapshots data directory '{qdrantSnapshotsDataDirectoryPath}' does not exist check the path");
-                //             break;
-                //         }
-                //     }
-                //
-                //     // delete collections data
-                //
-                //     var qdrantCollectionsDataDirectory = new DirectoryInfo(_collectionsDataDirectoryToClear);
-                //
-                //     foreach (var collectionDataDirectory in qdrantCollectionsDataDirectory.EnumerateDirectories())
-                //     {
-                //         try
-                //         {
-                //             Directory.Delete(collectionDataDirectory.FullName, recursive: true);
-                //         }
-                //         catch (Exception e)
-                //         {
-                //             await TestContext.Out.WriteAsync(
-                //                 $"Can't delete collection data directory '{collectionDataDirectory.FullName}' : {e}");
-                //             // ignore
-                //         }
-                //     }
-                //
-                //     // delete snapshots data
-                //
-                //     var qdrantSnapshotsDataDirectory = new DirectoryInfo(_snapshotsDataDirectoryToClear);
-                //     foreach (var collectionSnapshotDirectory in qdrantSnapshotsDataDirectory.EnumerateDirectories())
-                //     {
-                //         if (collectionSnapshotDirectory.Name.Equals("tmp"))
-                //         {
-                //             // skip deleting "tmp" directory as it is created upon qdrant start,
-                //             // and it won't be recreated automatically which will corrupt snapshot APIs
-                //             continue;
-                //         }
-                //
-                //         try
-                //         {
-                //             Directory.Delete(collectionSnapshotDirectory.FullName, recursive: true);
-                //         }
-                //         catch (Exception e)
-                //         {
-                //             await TestContext.Out.WriteAsync(
-                //                 $"Can't delete collection snapshot directory '{collectionSnapshotDirectory.FullName}' : {e}");
-                //             // ignore
-                //         }
-                //     }
-                // }
-                //
+                
                 wasException = false;
             }
             catch (Exception e)
@@ -220,9 +112,6 @@ public class QdrantTestsBase
         await qdrantHttpClient.DeleteCollection(TestCollectionName2, CancellationToken.None);
 
         await qdrantHttpClient.DeleteAllCollectionSnapshots(CancellationToken.None);
-        
-        // await qdrantHttpClient.DeleteAllCollectionSnapshots(TestCollectionName, CancellationToken.None);
-        // await qdrantHttpClient.DeleteAllCollectionSnapshots(TestCollectionName2, CancellationToken.None);
     }
 
     protected float[] CreateTestVector(

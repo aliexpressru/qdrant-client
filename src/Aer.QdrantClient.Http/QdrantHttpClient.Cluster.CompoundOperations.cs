@@ -49,7 +49,7 @@ public partial class QdrantHttpClient
         try
         {
             var (targetPeerId, _, sourcePeerIds, peerUriPerPeerId) =
-                (await GetPeerInfoByUriSubstring(targetPeerUriSelectorString, cancellationToken)).EnsureSuccess();
+                (await GetPeerInfo(targetPeerUriSelectorString, cancellationToken)).EnsureSuccess();
 
             var collectionInfos = (await ListCollectionInfo(
                 isCountExactPointsNumber: false,
@@ -289,7 +289,7 @@ public partial class QdrantHttpClient
         try
         {
             var (sourcePeerId, _, targetPeerIds, peerUriPerPeerId) =
-                (await GetPeerInfoByUriSubstring(peerToEmptyUriSelectorString, cancellationToken)).EnsureSuccess();
+                (await GetPeerInfo(peerToEmptyUriSelectorString, cancellationToken)).EnsureSuccess();
 
             var collectionNames = (await ListCollections(cancellationToken))
                 .EnsureSuccess()
@@ -461,7 +461,7 @@ public partial class QdrantHttpClient
         try
         {
             var (peerIdToCheck, _, _, _) =
-                (await GetPeerInfoByUriSubstring(clusterNodeUriSubstring, cancellationToken)).EnsureSuccess();
+                (await GetPeerInfo(clusterNodeUriSubstring, cancellationToken)).EnsureSuccess();
 
             var collectionNames = (await ListCollections(cancellationToken))
                 .EnsureSuccess()
@@ -516,17 +516,37 @@ public partial class QdrantHttpClient
     }
 
     /// <summary>
+    /// Gets the peer information by the peer node uri substring or by peer id. Returns the found peer and other peers.
+    /// </summary>
+    /// <param name="clusterNodeUriSubstring">Cluster node uri substring to get peer info for or <c>null</c> if using <paramref name="peerId"/>.</param>
+    /// <param name="peerId">Cluster node peer id to get peer info for or <c>null</c> if using <paramref name="clusterNodeUriSubstring"/>.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <exception cref="QdrantNoPeersFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
+    /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
+    public Task<GetPeerResponse> GetPeerInfo(string clusterNodeUriSubstring, ulong? peerId, CancellationToken cancellationToken)
+    { 
+        if(string.IsNullOrWhiteSpace(clusterNodeUriSubstring) && !peerId.HasValue)
+        {
+            throw new ArgumentException($"Either {nameof(clusterNodeUriSubstring)} or {nameof(peerId)} must be provided.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(clusterNodeUriSubstring))
+        {
+            return GetPeerInfo(clusterNodeUriSubstring, cancellationToken);
+        }
+        
+        return GetPeerInfo(peerId!.Value, cancellationToken);
+    }
+
+    /// <summary>
     /// Gets the peer information by the peer node uri substring. Returns the found peer and other peers.
     /// </summary>
     /// <param name="clusterNodeUriSubstring">Cluster node uri substring to get peer info for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <exception cref="QdrantNoPeersFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
     /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
-    public async Task<GetPeerResponse>
-        GetPeerInfoByUriSubstring(
-            string clusterNodeUriSubstring,
-            CancellationToken cancellationToken)
-    {
+    public async Task<GetPeerResponse> GetPeerInfo(string clusterNodeUriSubstring, CancellationToken cancellationToken)
+    { 
         Stopwatch sw = Stopwatch.StartNew();
 
         var clusterInfo = await GetClusterInfoInternal(cancellationToken);
@@ -611,6 +631,77 @@ public partial class QdrantHttpClient
             Result = ret,
             Time = sw.Elapsed.TotalSeconds
         };
+    }
+
+    /// <summary>
+    /// Gets the peer information by the peer node uri substring. Returns the found peer and other peers.
+    /// </summary>
+    /// <param name="peerId">Cluster node peer is to get peer info for.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <exception cref="QdrantNoPeersFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
+    /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
+    public async Task<GetPeerResponse> GetPeerInfo(ulong peerId, CancellationToken cancellationToken)
+    {
+        Stopwatch sw = Stopwatch.StartNew();
+
+        var clusterInfo = await GetClusterInfoInternal(cancellationToken);
+
+        if (!clusterInfo.ParsedPeers.TryGetValue(peerId, out GetClusterInfoResponse.PeerInfoUint peerInfo))
+        {
+            throw new QdrantNoPeersFoundException(
+                peerId,
+                clusterInfo.ParsedPeers.Keys
+            );
+        }
+
+        var otherPeerIds = clusterInfo.ParsedPeers
+            .Where(p => p.Key != peerId)
+            .Select(p => p.Key)
+            .ToList();
+        
+        Dictionary<ulong, string> peerUriPerPeerId = new();
+        
+        foreach (var peer in clusterInfo.ParsedPeers)
+        {
+            var uri = peer.Value.Uri;
+            var id = peer.Key;
+            
+            peerUriPerPeerId.Add(id, uri);
+        }
+
+        var ret = new GetPeerResponse.PeerInfo()
+        {
+            PeerId = peerId,
+            PeerUri = peerInfo.Uri,
+            OtherPeerIds = otherPeerIds,
+            PeerUriPerPeerIds = peerUriPerPeerId
+        };
+
+        sw.Stop();
+
+        return new GetPeerResponse()
+        {
+            Status = QdrantStatus.Success(),
+            Result = ret,
+            Time = sw.Elapsed.TotalSeconds
+        };
+    }
+    
+    /// <summary>
+    /// Gets the peer information by the peer node uri substring. Returns the found peer and other peers.
+    /// </summary>
+    /// <param name="clusterNodeUriSubstring">Cluster node uri substring to get peer info for.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <exception cref="QdrantNoPeersFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
+    /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
+    [Obsolete($"Use one of the {nameof(GetPeerInfo)} methods.")]
+    [SuppressMessage("ReSharper", "UnusedMember.Global", Justification = "Obsolete method kept for backward compatibility.")]
+    public Task<GetPeerResponse>
+        GetPeerInfoByUriSubstring(
+            string clusterNodeUriSubstring,
+            CancellationToken cancellationToken)
+    {
+        return GetPeerInfo(clusterNodeUriSubstring, cancellationToken);
     }
 
     private (Dictionary<ulong, HashSet<uint>> ShardsPerPeers, Dictionary<uint, uint> ShardReplicationFactors)

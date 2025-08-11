@@ -33,7 +33,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
     [SetUp]
     public async Task BeforeEachTest()
     {
-        await ResetStorage(_qdrantHttpClient, isDeleteCollectionFiles: false);
+        await ResetStorage(_qdrantHttpClient);
     }
 
     [Test]
@@ -42,13 +42,13 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
         await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
         var collectionPeerInfoAct =
-            async () => await _qdrantHttpClient.GetPeerInfoByUriSubstring("://", CancellationToken.None);
+            async () => await _qdrantHttpClient.GetPeerInfo("://", CancellationToken.None);
 
         await collectionPeerInfoAct.Should().ThrowAsync<QdrantMoreThanOnePeerFoundForUriSubstringException>();
     }
 
     [Test]
-    public async Task GetPeerInfoByUriSubstring_Success()
+    public async Task GetPeerInfoByUriSubstring()
     {
         await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
@@ -62,13 +62,40 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
             .Single(p => p.Key != expectedPeer.Key);
 
         var collectionPeerInfoResponse =
-            await _qdrantHttpClient.GetPeerInfoByUriSubstring("http://qdrant-1", CancellationToken.None);
+            await _qdrantHttpClient.GetPeerInfo("http://qdrant-1", CancellationToken.None);
 
         collectionPeerInfoResponse.Status.IsSuccess.Should().BeTrue();
 
         collectionPeerInfoResponse.Result.PeerId.Should().Be(expectedPeer.Key);
         collectionPeerInfoResponse.Result.OtherPeerIds.Count.Should().Be(1);
         collectionPeerInfoResponse.Result.OtherPeerIds.Single().Should().Be(otherPeer.Key);
+        
+        collectionPeerInfoResponse.Result.PeerUriPerPeerIds.Should().NotBeNullOrEmpty();
+    }
+
+    [Test]
+    public async Task GetPeerInfoByPeerId()
+    {
+        await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
+
+        var clusterInfo =
+            (await _qdrantHttpClient.GetClusterInfo(CancellationToken.None)).EnsureSuccess();
+        
+        var peerIdToFind = clusterInfo.ParsedPeers.First().Key;
+        var otherPeerIds = clusterInfo.ParsedPeers
+            .Where(p => p.Key != peerIdToFind)
+            .Select(pi => pi.Key).ToList();
+        
+        var collectionPeerInfoResponse =
+            await _qdrantHttpClient.GetPeerInfo(peerIdToFind, CancellationToken.None);
+
+        collectionPeerInfoResponse.Status.IsSuccess.Should().BeTrue();
+
+        collectionPeerInfoResponse.Result.PeerId.Should().Be(peerIdToFind);
+        collectionPeerInfoResponse.Result.OtherPeerIds.Count.Should().Be(1);
+        collectionPeerInfoResponse.Result.OtherPeerIds.Should().BeEquivalentTo(otherPeerIds);
+
+        collectionPeerInfoResponse.Result.PeerUriPerPeerIds.Should().NotBeNullOrEmpty();
     }
 
     [Test]
@@ -157,7 +184,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
             replicationFactor: (uint) replicationFactor);
 
         var peerInfo =
-            (await _qdrantHttpClient.GetPeerInfoByUriSubstring("http://qdrant-1", CancellationToken.None))
+            (await _qdrantHttpClient.GetPeerInfo("http://qdrant-1", CancellationToken.None))
             .EnsureSuccess();
 
         var peerIdToDrain = peerInfo.PeerId;
@@ -244,7 +271,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
             replicationFactor: (uint) replicationFactor);
 
         var peerInfo =
-            (await _qdrantHttpClient.GetPeerInfoByUriSubstring("http://qdrant-1", CancellationToken.None))
+            (await _qdrantHttpClient.GetPeerInfo("http://qdrant-1", CancellationToken.None))
             .EnsureSuccess();
 
         var peerIdToDrain = peerInfo.PeerId;
@@ -338,7 +365,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
             replicationFactor: (uint) replicationFactor);
 
         var peerInfo =
-            (await _qdrantHttpClient.GetPeerInfoByUriSubstring("http://qdrant-1", CancellationToken.None))
+            (await _qdrantHttpClient.GetPeerInfo("http://qdrant-1", CancellationToken.None))
             .EnsureSuccess();
 
         var targetPeerId = peerInfo.PeerId;
@@ -425,7 +452,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
             replicationFactor: (uint) replicationFactor);
 
         var peerInfo =
-            (await _qdrantHttpClient.GetPeerInfoByUriSubstring("http://qdrant-1", CancellationToken.None))
+            (await _qdrantHttpClient.GetPeerInfo("http://qdrant-1", CancellationToken.None))
             .EnsureSuccess();
 
         var targetPeerId = peerInfo.PeerId;
@@ -512,7 +539,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
             replicationFactor: (uint) replicationFactor);
 
         var peerInfo =
-            (await _qdrantHttpClient.GetPeerInfoByUriSubstring("http://qdrant-1", CancellationToken.None))
+            (await _qdrantHttpClient.GetPeerInfo("http://qdrant-1", CancellationToken.None))
             .EnsureSuccess();
 
         var targetPeerId = peerInfo.PeerId;

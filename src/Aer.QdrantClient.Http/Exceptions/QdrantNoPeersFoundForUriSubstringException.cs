@@ -3,7 +3,7 @@
 namespace Aer.QdrantClient.Http.Exceptions;
 
 /// <summary>
-/// Occurs when more no peers found for uri substring.
+/// Occurs when no peers found for uri substring.
 /// </summary>
 /// <param name="peerUriSubstring">The peer uri substring.</param>
 /// <param name="existingPeers">The existing peers.</param>
