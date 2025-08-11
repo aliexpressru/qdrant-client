@@ -109,6 +109,12 @@ public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<Get
         /// State of the single shard within a replica set.
         /// </summary>
         public ShardState State { set; get; }
+        
+        /// <summary>
+        /// User-defined sharding key. If no user-defined sharding key created for this collection, this field is <c>null</c>.
+        /// </summary>
+        [JsonConverter(typeof(ShardKeyJsonConverter))]
+        public ShardKey ShardKey { set; get; }
     }
 
     /// <summary>
@@ -135,6 +141,12 @@ public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<Get
         /// State of the single shard within a replica set.
         /// </summary>
         public ShardState State { set; get; }
+
+        /// <summary>
+        /// User-defined sharding key. If no user-defined sharding key created for this collection, this field is <c>null</c>.
+        /// </summary>
+        [JsonConverter(typeof(ShardKeyJsonConverter))]
+        public ShardKey ShardKey { set; get; }
     }
 
     /// <summary>
