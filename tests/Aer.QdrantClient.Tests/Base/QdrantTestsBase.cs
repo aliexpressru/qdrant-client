@@ -16,6 +16,9 @@ namespace Aer.QdrantClient.Tests.Base;
 
 public class QdrantTestsBase
 {
+    // ReSharper disable once InconsistentNaming
+    private const string DEFAULT_QDRANT_VERSION = "1.15.2"; // We use this version 
+    
     protected bool IsCiEnvironment;
     protected IConfiguration Configuration;
     protected IServiceProvider ServiceProvider;
@@ -46,13 +49,9 @@ public class QdrantTestsBase
                 ? "Local"
                 : "Testing");
 
-        var qdrantVersion = Environment.GetEnvironmentVariable("QDRANT_VERSION") ?? "latest";
-        
-        QdrantVersion = qdrantVersion switch
-        {
-            "latest" => new Version(1, 15, 2),
-            _ => Version.Parse(qdrantVersion)
-        };
+        var qdrantVersion = Environment.GetEnvironmentVariable("QDRANT_VERSION") ?? DEFAULT_QDRANT_VERSION;
+
+        QdrantVersion = Version.Parse(qdrantVersion);
 
         var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ??
             throw new InvalidOperationException("ASPNETCORE_ENVIRONMENT in not set");
