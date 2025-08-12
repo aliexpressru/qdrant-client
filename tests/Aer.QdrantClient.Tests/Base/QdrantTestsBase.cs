@@ -17,7 +17,7 @@ namespace Aer.QdrantClient.Tests.Base;
 public class QdrantTestsBase
 {
     // ReSharper disable once InconsistentNaming
-    private const string DEFAULT_QDRANT_VERSION = "1.15.2"; // We use this version 
+    private const string DEFAULT_QDRANT_VERSION = "1.15.2"; // We use this version for local testing
     
     protected bool IsCiEnvironment;
     protected IConfiguration Configuration;
