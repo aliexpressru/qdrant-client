@@ -45,7 +45,12 @@ internal sealed class CreateFullTextPayloadIndexRequest
         /// <summary>
         /// If <c>true</c>, store the index on disk. Default: <c>false</c>.
         /// </summary>
-        public bool OnDisk { get; set; } = false;
+        public bool OnDisk { get; set; }
+
+        /// <summary>
+        /// If <c>true</c>, enable phrase matching for the indexed field.
+        /// </summary>
+        public bool PhraseMatching { get; set; }
     }
 
     /// <summary>

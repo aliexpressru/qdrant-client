@@ -13,17 +13,17 @@ jobs:
   test_qdrant_latest:
     uses: ./.github/workflows/test_template.yml
     with:
-      qdrant_image: qdrant/qdrant:latest
-      qdrant_version: latest
+      qdrant_image: qdrant/qdrant:v1.15.2
+      qdrant_version: 1.15.2
 
   test_qdrant_v1_14_1:
     uses: ./.github/workflows/test_template.yml
     with:
         qdrant_image: qdrant/qdrant:v1.14.1
-        qdrant_version: v1.14.1
+        qdrant_version: 1.14.1
 
   test_qdrant_v1_13_6:
     uses: ./.github/workflows/test_template.yml
     with:
         qdrant_image: qdrant/qdrant:v1.13.6
-        qdrant_version: v1.13.6
+        qdrant_version: 1.13.6

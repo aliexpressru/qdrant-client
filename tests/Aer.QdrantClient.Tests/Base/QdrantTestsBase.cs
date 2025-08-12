@@ -20,6 +20,8 @@ public class QdrantTestsBase
     protected IConfiguration Configuration;
     protected IServiceProvider ServiceProvider;
 
+    protected Version QdrantVersion { get; private set; }
+
     protected const string TestCollectionName = "test_collection";
     protected const string TestCollectionAlias = "test_collection_alias";
     protected const string TestCollectionAlias2 = "test_collection_alias_2";
@@ -43,6 +45,14 @@ public class QdrantTestsBase
             string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"))
                 ? "Local"
                 : "Testing");
+
+        var qdrantVersion = Environment.GetEnvironmentVariable("QDRANT_VERSION") ?? "latest";
+        
+        QdrantVersion = qdrantVersion switch
+        {
+            "latest" => new Version(1, 15, 2),
+            _ => Version.Parse(qdrantVersion)
+        };
 
         var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ??
             throw new InvalidOperationException("ASPNETCORE_ENVIRONMENT in not set");
@@ -398,5 +408,27 @@ public class QdrantTestsBase
         );
 
         services.AddSingleton(microsoftLogger);
+    }
+
+    protected void OnlyIfVersionAfterOrEqual(Version versionInclusive, string reason)
+    {
+        if (QdrantVersion >= versionInclusive)
+        { 
+            return;
+        }
+        
+        Assert.Ignore(
+            $"Test ignored because Qdrant version {QdrantVersion} is lower than required {versionInclusive}. Reason: {reason}");
+    }
+
+    protected void OnlyIfVersionBefore(Version versionExclusive, string reason)
+    { 
+        if (QdrantVersion < versionExclusive)
+        {
+            return;
+        }
+
+        Assert.Ignore(
+            $"Test ignored because Qdrant version {QdrantVersion} is higher than required {versionExclusive}. Reason: {reason}");
     }
 }

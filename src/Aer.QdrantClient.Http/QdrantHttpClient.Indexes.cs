@@ -137,6 +137,7 @@ public partial class QdrantHttpClient
     /// If set to <c>true</c> the payload will be stored on-disk instead of in-memory.
     /// On-disk payload index might affect cold requests latency, as it requires additional disk I/O operations.
     /// </param>
+    /// <param name="enablePhraseMatching">Enable phrase matching on this text field.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
@@ -148,11 +149,15 @@ public partial class QdrantHttpClient
         string collectionName,
         string payloadTextFieldName,
         PayloadIndexedTextFieldTokenizerType payloadTextFieldTokenizerType,
-        uint? minimalTokenLength,
-        uint? maximalTokenLength,
         CancellationToken cancellationToken,
+        
+        uint? minimalTokenLength = null,
+        uint? maximalTokenLength = null,
+        
         bool isLowercasePayloadTokens = true,
         bool onDisk = false,
+        bool enablePhraseMatching = false,
+        
         bool isWaitForResult = false,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
@@ -169,7 +174,8 @@ public partial class QdrantHttpClient
                 MinTokenLen = minimalTokenLength,
                 MaxTokenLen = maximalTokenLength,
                 Lowercase = isLowercasePayloadTokens,
-                OnDisk = onDisk
+                OnDisk = onDisk,
+                PhraseMatching = enablePhraseMatching
             });
 
         var url = $"/collections/{collectionName}/index?wait={ToUrlQueryString(isWaitForResult)}";

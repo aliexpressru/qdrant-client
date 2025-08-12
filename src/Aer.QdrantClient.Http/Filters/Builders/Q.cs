@@ -123,8 +123,21 @@ public static class Q
     /// </summary>
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
     /// <param name="substringValue">Payload value to substring match against.</param>
-    public static FilterConditionBase MatchSubstring(string payloadFieldName, string substringValue)
-        => new FieldMatchCondition<string>(payloadFieldName, substringValue, isSubstringMatch: true);
+    /// <param name="isPhraseMatch">If set to <c>true</c> use phrase matching for search. Requires phrase matching to be enabled for payload field index.</param>
+    /// <remarks>
+    /// Exact texts that will match the condition depend on full-text index configuration. Configuration is defined during the index creation and describe at full-text index.
+    /// If there is no full-text index for the field, the condition will work as exact substring match.
+    /// </remarks>
+    public static FilterConditionBase MatchFulltext(
+        string payloadFieldName,
+        string substringValue,
+        bool isPhraseMatch = false)
+        => 
+            new FieldMatchCondition<string>(
+            payloadFieldName,
+            substringValue,
+            isSubstringMatch: true,
+            isPhraseMatch: isPhraseMatch);
 
     /// <summary>
     /// Check if payload field value lies in a given range.

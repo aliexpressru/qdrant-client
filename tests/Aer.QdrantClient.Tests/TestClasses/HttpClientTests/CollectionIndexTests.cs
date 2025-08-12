@@ -179,7 +179,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateFulltextIndex_OneField()
+    public async Task CreateFulltextIndex()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -193,27 +193,56 @@ internal class CollectionIndexTests : QdrantTestsBase
             await _qdrantHttpClient.CreateFullTextPayloadIndex(
                 TestCollectionName,
                 TestPayloadFieldName,
-                PayloadIndexedTextFieldTokenizerType.Word,
-                3,
-                100,
+                PayloadIndexedTextFieldTokenizerType.Prefix,
                 CancellationToken.None,
+                minimalTokenLength: 3,
+                maximalTokenLength: 100,
+                
+                isLowercasePayloadTokens: true,
                 isWaitForResult: true,
                 onDisk: true);
 
+        var createCollectionPhraseIndexResult =
+            await _qdrantHttpClient.CreateFullTextPayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName2,
+                PayloadIndexedTextFieldTokenizerType.Word,
+                CancellationToken.None,
+                minimalTokenLength: 3,
+                maximalTokenLength: 100,
+
+                isLowercasePayloadTokens: false,
+                isWaitForResult: true,
+                onDisk: true,
+                enablePhraseMatching: true);
+
         createCollectionIndexResult.Status.IsSuccess.Should().BeTrue();
+        createCollectionPhraseIndexResult.Status.IsSuccess.Should().BeTrue();
 
         createCollectionIndexResult.Result.Should().NotBeNull();
+        createCollectionPhraseIndexResult.Result.Should().NotBeNull();
 
         var collectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
 
         collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
         collectionInfo.Status.IsSuccess.Should().BeTrue();
 
-        collectionInfo.Result.PayloadSchema.Count.Should().Be(1);
+        collectionInfo.Result.PayloadSchema.Count.Should().Be(2);
+        
         collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName);
+        collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName2);
 
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Text);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.OnDisk.Should().Be(true);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Tokenizer.Should().Be(PayloadIndexedTextFieldTokenizerType.Prefix);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Lowercase.Should().Be(true);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.PhraseMatching.Should().Be(false);
+        
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].DataType.Should().Be(PayloadIndexedFieldType.Text);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.OnDisk.Should().Be(true);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.Tokenizer.Should().Be(PayloadIndexedTextFieldTokenizerType.Word);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.Lowercase.Should().Be(false);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.PhraseMatching.Should().Be(true);
     }
 
     [Test]

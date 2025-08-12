@@ -64,7 +64,7 @@ public partial class QdrantHttpClient
     /// <summary>
     /// Get the detailed information about all existing collections.
     /// </summary>
-    /// <param name="isCountExactPointsNumber">Is set to <c>true</c> counts collection points for all collections.</param>
+    /// <param name="isCountExactPointsNumber">If set to <c>true</c> counts collection points for all collections.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>

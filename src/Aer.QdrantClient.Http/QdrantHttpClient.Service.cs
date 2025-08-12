@@ -79,11 +79,20 @@ public partial class QdrantHttpClient
     /// This feature enables administrators to prevent a qdrant process from using more disk space
     /// while permitting users to search and delete unnecessary data.
     /// </remarks>
+    [Obsolete("Lock API is deprecated and going to be removed in v1.16")]
     public async Task<SetLockOptionsResponse> SetLockOptions(
         bool areWritesDisabled,
         string reasonMessage,
         CancellationToken cancellationToken)
     {
+        
+        var qdrantVersion = (await GetInstanceDetails(cancellationToken)).ParsedVersion;
+
+        if (qdrantVersion.Minor >= 16)
+        {
+            throw new NotSupportedException("Qdrant Lock API is deprecated and removed in v1.16");
+        }
+
         var url = "/locks";
 
         var setLockOptionsRequest = new SetLockOptionsRequest(
@@ -105,6 +114,7 @@ public partial class QdrantHttpClient
     /// However, deletion operations or updates are not forbidden under the write lock.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
+    [Obsolete("Lock API is deprecated and going to be removed in v1.16")]
     public async Task<SetLockOptionsResponse> GetLockOptions(CancellationToken cancellationToken)
     {
         var url = "/locks";

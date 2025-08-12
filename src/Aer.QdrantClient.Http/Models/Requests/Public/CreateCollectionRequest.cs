@@ -95,6 +95,7 @@ public sealed class CreateCollectionRequest
     /// <summary>
     /// Specify other collection to copy data from.
     /// </summary>
+    [Obsolete("This parameter of the collection creation API is deprecated and going to be removed in v1.16")]
     public InitFromCollection InitFrom { get; set; }
 
     /// <summary>

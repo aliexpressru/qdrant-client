@@ -14,7 +14,7 @@ internal sealed class SetLockOptionsRequest
     public string ErrorMessage { get; }
 
     /// <summary>
-    /// Is set to <c>true</c> write operations are locked, otherwise - write operations are enabled.
+    /// If set to <c>true</c> write operations are locked, otherwise - write operations are enabled.
     /// </summary>
     public bool Write { get; }
 

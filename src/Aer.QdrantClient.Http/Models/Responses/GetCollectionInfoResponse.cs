@@ -222,7 +222,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// <summary>
             /// The tokenizer type. For full-text index only.
             /// </summary>
-            public string Tokenizer { set; get; }
+            public PayloadIndexedTextFieldTokenizerType? Tokenizer { set; get; }
 
             /// <summary>
             /// The minimal token length. For full-text index only.
@@ -233,11 +233,26 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// The maximal token length. For full-text index only.
             /// </summary>
             public ulong? MaxTokenLen { set; get; }
+            
+            /// <summary>
+            /// If <c>true</c> - full-text index supports phrase matching. Default: <c>false</c>.
+            /// </summary>
+            public bool PhraseMatching { set; get; }
 
             /// <summary>
             /// Whether to convert tokens to lowercase before indexing. For full-text index only.
             /// </summary>
-            public bool IsLowercase { set; get; }
+            public bool Lowercase { set; get; }
+
+            /// <summary>
+            /// If <c>true</c> - integer index supports ranges filters. Default is <c>true</c> for integer indexes.
+            /// </summary>
+            public bool Range { set; get; }
+
+            /// <summary>
+            /// If <c>true</c> - integer index supports direct lookups. Default is <c>true</c> for integer indexes.
+            /// </summary>
+            public bool Lookup { set; get; }
 
             /// <summary>
             /// Whether the payload index is stored on-disk instead of in-memory.

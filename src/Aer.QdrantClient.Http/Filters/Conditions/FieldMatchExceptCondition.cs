@@ -4,10 +4,6 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-/// <summary>
-/// Represents the match for field that does not have any of the given values.
-/// </summary>
-/// <typeparam name="T">The type of the payload field.</typeparam>
 internal class FieldMatchExceptCondition<T> : FilterConditionBase
 {
     private readonly T[] _exceptValues;

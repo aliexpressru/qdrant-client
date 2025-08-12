@@ -234,6 +234,8 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     [Test]
     public async Task CreateCollection_InitFrom()
     {
+        OnlyIfVersionBefore(Version.Parse("1.16.0"), "init_from parameter is removed in 1.16.0");
+        
         var vectorSize = 10U;
 
         var createCollectionResult = await _qdrantHttpClient.CreateCollection(
@@ -269,7 +271,9 @@ internal class CollectionLifetimeTests : QdrantTestsBase
             new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
             {
                 OnDiskPayload = true,
+#pragma warning disable CS0618 // Type or member is obsolete
                 InitFrom = CreateCollectionRequest.InitFromCollection.ByName(TestCollectionName)
+#pragma warning restore CS0618 // Type or member is obsolete
             },
             CancellationToken.None);
 
