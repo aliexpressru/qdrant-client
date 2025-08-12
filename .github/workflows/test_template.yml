@@ -1,20 +1,23 @@
-name: Build & Test
+name: Run Test Template
 
 on:
-# As per https://github.com/orgs/community/discussions/26276 - we run build\test on every push or pull request but not both
-  push:
-    branches:
-    - main
-  pull_request:
-    branches:
-    - main
+  workflow_call:
+    inputs:
+      qdrant_image:
+        description: 'Qdrant Docker image to use'
+        required: true
+        type: string
+      qdrant_version:
+        description: 'Qdrant version'
+        required: true
+        type: string
 
 jobs:
   build_test:
     runs-on: ubuntu-latest
     services:
       qdrant:
-        image: qdrant/qdrant:v1.14.1
+        image: ${{ inputs.qdrant_image }}
         ports:
           - "6333:6333"
           - "6334:6334"
@@ -22,6 +25,7 @@ jobs:
 
     env:
         CI: true
+        QDRANT_VERSION: ${{ inputs.qdrant_version }}
 
     steps:
     - uses: actions/checkout@v3
@@ -50,7 +54,16 @@ jobs:
     - name: Get version from the environment variable test
       run: echo "RELEASE_VERSION=${{ env.RELEASE_VERSION }}"
 
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
+    - name: Display current qdrant version and image
+      run: |
+        echo "Running with Qdrant image: ${{ inputs.qdrant_image }}"
+        echo "Qdrant version: ${{ inputs.qdrant_version }}"
+
+    # - name: Build
+    #   run: dotnet build --configuration Release --no-restore
+    
+    # - name: Test
+    #   run: dotnet test --configuration Release --no-build --verbosity normal
+
     - name: Test
-      run: dotnet test --configuration Release --no-build --verbosity normal
+      run: dotnet test --configuration Release --verbosity normal
