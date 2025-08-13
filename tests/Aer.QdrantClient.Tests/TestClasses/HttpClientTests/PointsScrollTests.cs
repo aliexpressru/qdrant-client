@@ -806,7 +806,7 @@ internal class PointsScrollTests : QdrantTestsBase
             (await _qdrantHttpClient.CreateFullTextPayloadIndex(
                 TestCollectionName,
                 "text",
-                PayloadIndexedTextFieldTokenizerType.Prefix,
+                FullTextIndexTokenizerType.Prefix,
                 cancellationToken: CancellationToken.None,
                 retryCount: 0)).EnsureSuccess();
         }
@@ -872,7 +872,7 @@ internal class PointsScrollTests : QdrantTestsBase
             TestCollectionName,
             "text",
         
-            PayloadIndexedTextFieldTokenizerType.Word,
+            FullTextIndexTokenizerType.Word,
             CancellationToken.None,
             minimalTokenLength: 0,
             maximalTokenLength: 100,

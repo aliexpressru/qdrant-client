@@ -193,7 +193,7 @@ internal class CollectionIndexTests : QdrantTestsBase
             await _qdrantHttpClient.CreateFullTextPayloadIndex(
                 TestCollectionName,
                 TestPayloadFieldName,
-                PayloadIndexedTextFieldTokenizerType.Prefix,
+                FullTextIndexTokenizerType.Prefix,
                 CancellationToken.None,
                 minimalTokenLength: 3,
                 maximalTokenLength: 100,
@@ -206,7 +206,7 @@ internal class CollectionIndexTests : QdrantTestsBase
             await _qdrantHttpClient.CreateFullTextPayloadIndex(
                 TestCollectionName,
                 TestPayloadFieldName2,
-                PayloadIndexedTextFieldTokenizerType.Word,
+                FullTextIndexTokenizerType.Word,
                 CancellationToken.None,
                 minimalTokenLength: 3,
                 maximalTokenLength: 100,
@@ -234,13 +234,13 @@ internal class CollectionIndexTests : QdrantTestsBase
 
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Text);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.OnDisk.Should().Be(true);
-        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Tokenizer.Should().Be(PayloadIndexedTextFieldTokenizerType.Prefix);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Tokenizer.Should().Be(FullTextIndexTokenizerType.Prefix);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Lowercase.Should().Be(true);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.PhraseMatching.Should().Be(false);
         
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].DataType.Should().Be(PayloadIndexedFieldType.Text);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.OnDisk.Should().Be(true);
-        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.Tokenizer.Should().Be(PayloadIndexedTextFieldTokenizerType.Word);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.Tokenizer.Should().Be(FullTextIndexTokenizerType.Word);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.Lowercase.Should().Be(false);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.PhraseMatching.Should().Be(true);
     }

@@ -148,7 +148,7 @@ public partial class QdrantHttpClient
     public async Task<PayloadIndexOperationResponse> CreateFullTextPayloadIndex(
         string collectionName,
         string payloadTextFieldName,
-        PayloadIndexedTextFieldTokenizerType payloadTextFieldTokenizerType,
+        FullTextIndexTokenizerType payloadTextFieldTokenizerType,
         CancellationToken cancellationToken,
         
         uint? minimalTokenLength = null,

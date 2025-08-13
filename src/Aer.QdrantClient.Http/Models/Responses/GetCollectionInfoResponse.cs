@@ -222,7 +222,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// <summary>
             /// The tokenizer type. For full-text index only.
             /// </summary>
-            public PayloadIndexedTextFieldTokenizerType? Tokenizer { set; get; }
+            public FullTextIndexTokenizerType? Tokenizer { set; get; }
 
             /// <summary>
             /// The minimal token length. For full-text index only.
@@ -238,6 +238,16 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// If <c>true</c> - full-text index supports phrase matching. Default: <c>false</c>.
             /// </summary>
             public bool PhraseMatching { set; get; }
+
+            /// <summary>
+            /// Ignore this set of tokens. Can select from predefined languages and/or provide a custom set.
+            /// </summary>
+            public FullTextIndexStopwords Stopwords { set; get; }
+            
+            /// <summary>
+            /// Algorithm for stemming. Default: disabled.
+            /// </summary>
+            public FullTextIndexStemmingAlgorithm Stemmer { set; get; }
 
             /// <summary>
             /// Whether to convert tokens to lowercase before indexing. For full-text index only.

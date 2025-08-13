@@ -25,7 +25,7 @@ internal sealed class CreateFullTextPayloadIndexRequest
         /// <summary>
         /// The type of the payload text tokenizer.
         /// </summary>
-        public PayloadIndexedTextFieldTokenizerType Tokenizer { get; set; }
+        public FullTextIndexTokenizerType Tokenizer { get; set; }
 
         /// <summary>
         /// The minimal token length.
