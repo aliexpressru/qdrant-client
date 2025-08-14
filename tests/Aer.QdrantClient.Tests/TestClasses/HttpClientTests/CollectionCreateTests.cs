@@ -479,8 +479,45 @@ public class CollectionCreateTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task BinaryQuantization_Before_1_15()
+    { 
+        OnlyIfVersionBefore(Version.Parse("1.15.0"), "Binary encoding and query encoding is not supported before 1.15.0");
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                QuantizationConfig = QuantizationConfiguration.Binary(
+                    isQuantizedVectorAlwaysInRam: true
+                )
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        // check quantization parameters
+
+        var createdCollectionInfo =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        createdCollectionInfo.Result.Config.QuantizationConfig.Should()
+            .BeOfType<QuantizationConfiguration.BinaryQuantizationConfiguration>();
+
+        var quantizationConfig = createdCollectionInfo.Result.Config.QuantizationConfig
+            .As<QuantizationConfiguration.BinaryQuantizationConfiguration>();
+
+        quantizationConfig.Method.Should()
+            .Be(QuantizationConfiguration.BinaryQuantizationConfiguration.QuantizationMethodName);
+
+        quantizationConfig.AlwaysRam.Should().BeTrue();
+    }
+
+    [Test]
     public async Task BinaryQuantization()
     {
+        OnlyIfVersionAfterOrEqual(Version.Parse("1.15.0"), "Binary encoding and query encoding is not supported before 1.15.0");
+        
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)

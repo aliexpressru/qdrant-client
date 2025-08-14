@@ -439,9 +439,11 @@ public class QdrantTestsBase
         services.AddSingleton(microsoftLogger);
     }
 
-    protected void OnlyIfVersionAfterOrEqual(Version versionInclusive, string reason)
+    protected void OnlyIfVersionAfterOrEqual(string versionInclusive, string reason)
     {
-        if (QdrantVersion >= versionInclusive)
+        var version = Version.Parse(versionInclusive);
+        
+        if (QdrantVersion >= version)
         {
             return;
         }
@@ -450,9 +452,11 @@ public class QdrantTestsBase
             $"Test ignored because Qdrant version {QdrantVersion} is lower than required {versionInclusive}. Reason: {reason}");
     }
 
-    protected void OnlyIfVersionBefore(Version versionExclusive, string reason)
+    protected void OnlyIfVersionBefore(string versionExclusive, string reason)
     {
-        if (QdrantVersion < versionExclusive)
+        var version = Version.Parse(versionExclusive);
+        
+        if (QdrantVersion < version)
         {
             return;
         }
