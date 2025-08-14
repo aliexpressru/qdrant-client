@@ -1,4 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Requests;
@@ -51,6 +53,18 @@ internal sealed class CreateFullTextPayloadIndexRequest
         /// If <c>true</c>, enable phrase matching for the indexed field.
         /// </summary>
         public bool PhraseMatching { get; set; }
+
+        /// <summary>
+        /// Ignore this set of tokens. Can select from predefined languages and/or provide a custom set.
+        /// </summary>
+        [JsonConverter(typeof(FullTextIndexStopwordsJsonConverter))]
+        public FullTextIndexStopwords Stopwords { set; get; }
+
+        /// <summary>
+        /// Algorithm for stemming. Default: disabled.
+        /// </summary>
+        [JsonConverter(typeof(FullTextIndexStemmingAlgorithmJsonConverter))]
+        public FullTextIndexStemmingAlgorithm Stemmer { set; get; }
     }
 
     /// <summary>

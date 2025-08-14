@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -23,7 +22,7 @@ internal class QuantizationConfigurationJsonConverter : JsonConverter<Quantizati
         // move to the quantization configuration object
         reader.Read();
 
-        var quantizationConfigurationObject = JsonNode.Parse(ref reader);
+        var quantizationConfigurationObject = JsonElement.ParseValue(ref reader);
 
         QuantizationConfiguration ret;
 

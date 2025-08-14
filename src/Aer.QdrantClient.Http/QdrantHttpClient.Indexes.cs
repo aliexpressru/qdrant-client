@@ -138,6 +138,8 @@ public partial class QdrantHttpClient
     /// On-disk payload index might affect cold requests latency, as it requires additional disk I/O operations.
     /// </param>
     /// <param name="enablePhraseMatching">Enable phrase matching on this text field.</param>
+    /// <param name="stemmer">Algorithm for stemming. If <c>null</c> stemming is disabled.</param>
+    /// <param name="stopwords">Ignore this set of tokens. Can select from predefined languages and/or provide a custom set.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
@@ -158,6 +160,9 @@ public partial class QdrantHttpClient
         bool onDisk = false,
         bool enablePhraseMatching = false,
         
+        FullTextIndexStemmingAlgorithm stemmer = null,
+        FullTextIndexStopwords stopwords = null,
+        
         bool isWaitForResult = false,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
@@ -175,7 +180,9 @@ public partial class QdrantHttpClient
                 MaxTokenLen = maximalTokenLength,
                 Lowercase = isLowercasePayloadTokens,
                 OnDisk = onDisk,
-                PhraseMatching = enablePhraseMatching
+                PhraseMatching = enablePhraseMatching,
+                Stemmer = stemmer,
+                Stopwords = stopwords
             });
 
         var url = $"/collections/{collectionName}/index?wait={ToUrlQueryString(isWaitForResult)}";

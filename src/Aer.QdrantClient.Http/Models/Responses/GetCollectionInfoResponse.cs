@@ -242,11 +242,13 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// <summary>
             /// Ignore this set of tokens. Can select from predefined languages and/or provide a custom set.
             /// </summary>
+            [JsonConverter(typeof(FullTextIndexStopwordsJsonConverter))]
             public FullTextIndexStopwords Stopwords { set; get; }
             
             /// <summary>
             /// Algorithm for stemming. Default: disabled.
             /// </summary>
+            [JsonConverter(typeof(FullTextIndexStemmingAlgorithmJsonConverter))]
             public FullTextIndexStemmingAlgorithm Stemmer { set; get; }
 
             /// <summary>

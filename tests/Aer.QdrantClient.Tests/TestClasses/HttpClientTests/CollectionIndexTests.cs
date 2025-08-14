@@ -180,8 +180,8 @@ internal class CollectionIndexTests : QdrantTestsBase
 
     [Test]
     public async Task CreateFulltextIndex()
-    {
-        await _qdrantHttpClient.CreateCollection(
+    { 
+    await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
             {
@@ -195,8 +195,9 @@ internal class CollectionIndexTests : QdrantTestsBase
                 TestPayloadFieldName,
                 FullTextIndexTokenizerType.Prefix,
                 CancellationToken.None,
-                minimalTokenLength: 3,
-                maximalTokenLength: 100,
+                
+                minimalTokenLength: 5,
+                maximalTokenLength: 10,
                 
                 isLowercasePayloadTokens: true,
                 isWaitForResult: true,
@@ -213,8 +214,7 @@ internal class CollectionIndexTests : QdrantTestsBase
 
                 isLowercasePayloadTokens: false,
                 isWaitForResult: true,
-                onDisk: true,
-                enablePhraseMatching: true);
+                onDisk: true);
 
         createCollectionIndexResult.Status.IsSuccess.Should().BeTrue();
         createCollectionPhraseIndexResult.Status.IsSuccess.Should().BeTrue();
@@ -235,14 +235,135 @@ internal class CollectionIndexTests : QdrantTestsBase
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Text);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.OnDisk.Should().Be(true);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Tokenizer.Should().Be(FullTextIndexTokenizerType.Prefix);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.MinTokenLen.Should().Be(5);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.MaxTokenLen.Should().Be(10);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Lowercase.Should().Be(true);
-        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.PhraseMatching.Should().Be(false);
         
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].DataType.Should().Be(PayloadIndexedFieldType.Text);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.OnDisk.Should().Be(true);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.Tokenizer.Should().Be(FullTextIndexTokenizerType.Word);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.MinTokenLen.Should().Be(3);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.MaxTokenLen.Should().Be(100);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.Lowercase.Should().Be(false);
+    }
+
+    [Test]
+    public async Task CreateFulltextIndex_StemmerAndStopwords()
+    {
+        OnlyIfVersionAfterOrEqual(Version.Parse("1.15.0"), "Stemmer and stopwords only supported since 1.15.0");
+        
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var createCollectionIndexResult =
+            await _qdrantHttpClient.CreateFullTextPayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                FullTextIndexTokenizerType.Prefix,
+                CancellationToken.None,
+                minimalTokenLength: 5,
+                maximalTokenLength: 10,
+
+                isLowercasePayloadTokens: true,
+
+                stemmer: FullTextIndexStemmingAlgorithm.CreateSnowball(SnowballStemmerLanguage.English),
+                stopwords: FullTextIndexStopwords.CreateDefault(StopwordsLanguage.English),
+
+                isWaitForResult: true,
+                onDisk: true);
+
+        var createCollectionPhraseIndexResult =
+            await _qdrantHttpClient.CreateFullTextPayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName2,
+                FullTextIndexTokenizerType.Multilingual,
+                CancellationToken.None,
+                minimalTokenLength: 3,
+                maximalTokenLength: 100,
+
+                stemmer: null,
+                stopwords: FullTextIndexStopwords.CreateCustom(
+                    [
+                        StopwordsLanguage.English,
+                        StopwordsLanguage.German
+                    ],
+                    [
+                        "test",
+                        "schule"
+                    ]
+                ),
+
+                isLowercasePayloadTokens: false,
+                isWaitForResult: true,
+                onDisk: true,
+                enablePhraseMatching: true);
+
+        createCollectionIndexResult.Status.IsSuccess.Should().BeTrue();
+        createCollectionPhraseIndexResult.Status.IsSuccess.Should().BeTrue();
+
+        createCollectionIndexResult.Result.Should().NotBeNull();
+        createCollectionPhraseIndexResult.Result.Should().NotBeNull();
+
+        var collectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionInfo.Status.IsSuccess.Should().BeTrue();
+
+        collectionInfo.Result.PayloadSchema.Count.Should().Be(2);
+
+        collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName);
+        collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName2);
+
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Text);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.OnDisk.Should().Be(true);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Tokenizer.Should()
+            .Be(FullTextIndexTokenizerType.Prefix);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.MinTokenLen.Should().Be(5);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.MaxTokenLen.Should().Be(10);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Lowercase.Should().Be(true);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.PhraseMatching.Should().Be(false);
+
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Stemmer.Should().NotBeNull();
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Stemmer.Type.Should()
+            .Be(StemmingAlgorithmType.Snowball);
+
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Stopwords.Should()
+            .BeOfType<FullTextIndexStopwords.DefaultStopwords>()
+            .Which.Language.Should().Be(StopwordsLanguage.English);
+
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].DataType.Should().Be(PayloadIndexedFieldType.Text);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.OnDisk.Should().Be(true);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.Tokenizer.Should()
+            .Be(FullTextIndexTokenizerType.Multilingual);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.MinTokenLen.Should().Be(3);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.MaxTokenLen.Should().Be(100);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.Lowercase.Should().Be(false);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.PhraseMatching.Should().Be(true);
+
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.Stemmer.Should().BeNull();
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.Stopwords.Should()
+            .BeOfType<FullTextIndexStopwords.CustomStopwordsSet>();
+
+        var customStopwords =
+            (FullTextIndexStopwords.CustomStopwordsSet) collectionInfo.Result.PayloadSchema[TestPayloadFieldName2]
+                .Params.Stopwords;
+
+        customStopwords.Languages.Should().BeEquivalentTo(
+        [
+            StopwordsLanguage.English,
+            StopwordsLanguage.German
+        ]);
+
+        customStopwords.Custom.Should().BeEquivalentTo(
+        [
+            "test",
+            "schule"
+        ]);
     }
 
     [Test]
