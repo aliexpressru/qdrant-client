@@ -237,7 +237,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// <summary>
             /// If <c>true</c> - full-text index supports phrase matching. Default: <c>false</c>.
             /// </summary>
-            public bool PhraseMatching { set; get; }
+            public bool? PhraseMatching { set; get; }
 
             /// <summary>
             /// Ignore this set of tokens. Can select from predefined languages and/or provide a custom set.
@@ -254,17 +254,17 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// <summary>
             /// Whether to convert tokens to lowercase before indexing. For full-text index only.
             /// </summary>
-            public bool Lowercase { set; get; }
+            public bool? Lowercase { set; get; }
 
             /// <summary>
             /// If <c>true</c> - integer index supports ranges filters. Default is <c>true</c> for integer indexes.
             /// </summary>
-            public bool Range { set; get; }
+            public bool? Range { set; get; }
 
             /// <summary>
             /// If <c>true</c> - integer index supports direct lookups. Default is <c>true</c> for integer indexes.
             /// </summary>
-            public bool Lookup { set; get; }
+            public bool? Lookup { set; get; }
 
             /// <summary>
             /// Whether the payload index is stored on-disk instead of in-memory.
@@ -274,12 +274,12 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// <summary>
             /// Whether the field index is a tenant index.
             /// </summary>
-            public bool IsTenant { set; get; }
+            public bool? IsTenant { set; get; }
 
             /// <summary>
             /// Whether the field index is a principal index.
             /// </summary>
-            public bool IsPrincipal { set; get; }
+            public bool? IsPrincipal { set; get; }
         }
     }
 }

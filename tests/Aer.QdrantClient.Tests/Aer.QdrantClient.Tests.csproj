@@ -55,6 +55,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="..\..\.env">
+      <Link>.env</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

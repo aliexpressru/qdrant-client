@@ -399,7 +399,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateIndex_Tenant()
+    public async Task CreateIndex_Tenant_Principal()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -421,8 +421,20 @@ internal class CollectionIndexTests : QdrantTestsBase
                 PayloadIndexedFieldType.Keyword,
                 CancellationToken.None,
                 isWaitForResult: true,
-                isTenant: true);
+                isTenant: true
+            );
 
+        var createCollectionPrincipalIndexResult =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName3,
+                PayloadIndexedFieldType.Integer,
+                CancellationToken.None,
+                isWaitForResult: true,
+                isPrincipal: true
+            );
+
+        // This is a control variable
         var createCollectionIndexResult =
             await _qdrantHttpClient.CreatePayloadIndex(
                 TestCollectionName,
@@ -434,16 +446,18 @@ internal class CollectionIndexTests : QdrantTestsBase
         createCollectionTenantIndexResult.Status.IsSuccess.Should().BeTrue();
         createCollectionTenantIndexResult.Result.Should().NotBeNull();
 
+        createCollectionPrincipalIndexResult.Status.IsSuccess.Should().BeTrue();
+        createCollectionPrincipalIndexResult.Result.Should().NotBeNull();
+
         createCollectionIndexResult.Status.IsSuccess.Should().BeTrue();
         createCollectionIndexResult.Result.Should().NotBeNull();
 
         var collectionInfo =
             (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
 
-        collectionInfo.PayloadSchema.Count.Should().Be(2);
+        collectionInfo.PayloadSchema.Count.Should().Be(3);
         collectionInfo.PayloadSchema.Should()
-            .ContainKey(TestPayloadFieldName)
-            .And.ContainKey(TestPayloadFieldName2);
+            .ContainKeys(TestPayloadFieldName, TestPayloadFieldName2, TestPayloadFieldName3);
 
         collectionInfo.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Keyword);
         collectionInfo.PayloadSchema[TestPayloadFieldName].Params.OnDisk.Should().BeFalse();
@@ -451,7 +465,12 @@ internal class CollectionIndexTests : QdrantTestsBase
 
         collectionInfo.PayloadSchema[TestPayloadFieldName2].DataType.Should().Be(PayloadIndexedFieldType.Integer);
         collectionInfo.PayloadSchema[TestPayloadFieldName2].Params.OnDisk.Should().BeFalse();
-        collectionInfo.PayloadSchema[TestPayloadFieldName2].Params.IsTenant.Should().BeFalse();
+        collectionInfo.PayloadSchema[TestPayloadFieldName2].Params.IsTenant.Should().BeNull();
+        collectionInfo.PayloadSchema[TestPayloadFieldName2].Params.IsPrincipal.Should().BeFalse();
+
+        collectionInfo.PayloadSchema[TestPayloadFieldName3].DataType.Should().Be(PayloadIndexedFieldType.Integer);
+        collectionInfo.PayloadSchema[TestPayloadFieldName3].Params.OnDisk.Should().BeFalse();
+        collectionInfo.PayloadSchema[TestPayloadFieldName3].Params.IsPrincipal.Should().BeTrue();
     }
 
     [Test]
@@ -493,46 +512,6 @@ internal class CollectionIndexTests : QdrantTestsBase
 
         await createCollectionTenantIndexAct.Should().ThrowAsync<QdrantUnsupportedFieldSchemaForIndexConfiguration>()
             .Where(e => e.Message.Contains("Tenant"));
-    }
-
-    [Test]
-    public async Task CreateIndex_Principal()
-    {
-        await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true,
-                HnswConfig = new HnswConfiguration()
-                {
-                    PayloadM = 16,
-                    M = 0
-                }
-            },
-            CancellationToken.None);
-
-        var createCollectionPrincipalIndexResult =
-            await _qdrantHttpClient.CreatePayloadIndex(
-                TestCollectionName,
-                TestPayloadFieldName,
-                PayloadIndexedFieldType.Integer,
-                CancellationToken.None,
-                isWaitForResult: true,
-                isPrincipal: true);
-
-        createCollectionPrincipalIndexResult.Status.IsSuccess.Should().BeTrue();
-        createCollectionPrincipalIndexResult.Result.Should().NotBeNull();
-
-        var collectionInfo =
-            (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
-
-        collectionInfo.PayloadSchema.Count.Should().Be(1);
-        collectionInfo.PayloadSchema.Should().ContainKey(TestPayloadFieldName);
-
-        collectionInfo.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Integer);
-        collectionInfo.PayloadSchema[TestPayloadFieldName].Params.OnDisk.Should().Be(false);
-        collectionInfo.PayloadSchema[TestPayloadFieldName].Params.IsTenant.Should().Be(false);
-        collectionInfo.PayloadSchema[TestPayloadFieldName].Params.IsPrincipal.Should().Be(true);
     }
 
     [Test]
