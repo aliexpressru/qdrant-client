@@ -1,17 +1,15 @@
-﻿using System.Collections.Concurrent;
-using Aer.QdrantClient.Http;
+﻿using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
-using Aer.QdrantClient.Tests.Infrastructure;
 using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
-public class CollectionParametersTests : QdrantTestsBase
+public class CollectionCreateTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
 
@@ -30,10 +28,45 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task CreateCollection()
+    {
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
+
+        collectionCreationResult.Should().NotBeNull();
+        collectionCreationResult.Result.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task VeryLongName()
+    {
+        var veryLongCollectionName = new string('t', 1024);
+
+        var collectionCreationAct = () => _qdrantHttpClient.CreateCollection(
+            veryLongCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        await collectionCreationAct.Should().ThrowAsync<QdrantInvalidEntityNameException>()
+            .Where(e => e.Message.Contains("1024"));
+    }
+    
+    [Test]
     [TestCase(VectorDataType.Float32)]
     [TestCase(VectorDataType.Uint8)]
     [TestCase(VectorDataType.Float16)]
-    public async Task CreateCollection_CheckParameters(VectorDataType vectorDataType)
+    public async Task CheckParameters(VectorDataType vectorDataType)
     {
         uint vectorSize = 10U;
 
@@ -87,14 +120,92 @@ public class CollectionParametersTests : QdrantTestsBase
 
         singleVectorConfig.Datatype.Should().Be(vectorDataType);
         singleVectorConfig.DistanceMetric.Should().Be(VectorDistanceMetric.Dot);
+    }
+    
+    [Test]
+    public async Task NamedVectors()
+    {
+        Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration> namedVectors = new()
+        {
+            ["Vector_1"] = new VectorConfigurationBase.SingleVectorConfiguration(
+                VectorDistanceMetric.Dot,
+                100,
+                isServeVectorsFromDisk: true),
+            ["Vector_2"] = new VectorConfigurationBase.SingleVectorConfiguration(
+                VectorDistanceMetric.Euclid,
+                5,
+                isServeVectorsFromDisk: false),
+            ["Vector_3"] = new VectorConfigurationBase.SingleVectorConfiguration(
+                VectorDistanceMetric.Cosine,
+                50,
+                isServeVectorsFromDisk: true),
+            ["Vector_4"] = new VectorConfigurationBase.SingleVectorConfiguration(
+                VectorDistanceMetric.Manhattan,
+                50,
+                isServeVectorsFromDisk: true,
+                multivectorConfiguration: new MultivectorConfiguration(MultivectorComparator.MaxSim))
+        };
 
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(namedVectors)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
+
+        collectionCreationResult.Should().NotBeNull();
+        collectionCreationResult.Result.Should().BeTrue();
+
+        // check named vector parameters
+
+        var createdCollectionInfo =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        createdCollectionInfo.Status.IsSuccess.Should().BeTrue();
+        createdCollectionInfo.Result.Config.Params.Vectors.IsMultipleVectorsConfiguration.Should().BeTrue();
+
+        var multipleVectorsConfiguration = createdCollectionInfo.Result.Config.Params.Vectors.AsMultipleVectorsConfiguration();
+
+        multipleVectorsConfiguration.NamedVectors.Count.Should().Be(namedVectors.Count);
+
+        foreach (var namedVectorConfig in multipleVectorsConfiguration.NamedVectors)
+        {
+            namedVectors.Should().ContainKey(namedVectorConfig.Key);
+            namedVectors[namedVectorConfig.Key].Should().BeEquivalentTo(namedVectorConfig.Value);
+        }
+    }
+    
+    [Test]
+    public async Task SameNamedVectors()
+    {
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                100,
+                isServeVectorsFromDisk: true,
+                CreateVectorNames(3))
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
+
+        collectionCreationResult.Should().NotBeNull();
+        collectionCreationResult.Result.Should().BeTrue();
     }
 
     [Test]
     [TestCase(VectorDataType.Float32)]
     [TestCase(VectorDataType.Uint8)]
     [TestCase(VectorDataType.Float16)]
-    public async Task CreateCollection_NamedVectors_CheckParameters(VectorDataType vectorDataType)
+    public async Task NamedVectors_WithUpsertPoints_CheckParameters(VectorDataType vectorDataType)
     {
         uint vectorSize = 10U;
 
@@ -161,8 +272,6 @@ public class CollectionParametersTests : QdrantTestsBase
 
         var collectionInfo = createdCollectionInfoResponse.Result;
 
-        // todo: check other collection parameters
-
         collectionInfo.Config.Params.SparseVectors.Should().ContainKey(VectorBase.DefaultVectorName);
         collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].VectorDataType.Should().Be(vectorDataType);
         collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].OnDisk.Should().Be(true);
@@ -179,56 +288,28 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateCollection_NamedVectors()
+    [TestCase(VectorDataType.Float32)]
+    [TestCase(VectorDataType.Uint8)]
+    [TestCase(VectorDataType.Float16)]
+    public async Task SparseVectors(VectorDataType vectorDataType)
     {
-        Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration> namedVectors = new()
-        {
-            ["Vector_1"] = new VectorConfigurationBase.SingleVectorConfiguration(
-                VectorDistanceMetric.Dot,
-                100,
-                isServeVectorsFromDisk: true),
-            ["Vector_2"] = new VectorConfigurationBase.SingleVectorConfiguration(
-                VectorDistanceMetric.Euclid,
-                5,
-                isServeVectorsFromDisk: false),
-            ["Vector_3"] = new VectorConfigurationBase.SingleVectorConfiguration(
-                VectorDistanceMetric.Cosine,
-                50,
-                isServeVectorsFromDisk: true),
-            ["Vector_4"] = new VectorConfigurationBase.SingleVectorConfiguration(
-                VectorDistanceMetric.Manhattan,
-                50,
-                isServeVectorsFromDisk: true,
-                multivectorConfiguration: new MultivectorConfiguration(MultivectorComparator.MaxSim))
-        };
-
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
-            new CreateCollectionRequest(namedVectors)
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
             {
-                OnDiskPayload = true
+                OnDiskPayload = true,
+                SparseVectors = new Dictionary<string, SparseVectorConfiguration>()
+                {
+                    ["test"] = new(onDisk: true, fullScanThreshold: 5000, vectorDataType: vectorDataType)
+                }
             },
             CancellationToken.None);
 
-        collectionCreationResult.EnsureSuccess();
+        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
 
-        // check named vector parameters
-
-        var createdCollectionInfo =
-            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
-
-        createdCollectionInfo.Status.IsSuccess.Should().BeTrue();
-        createdCollectionInfo.Result.Config.Params.Vectors.IsMultipleVectorsConfiguration.Should().BeTrue();
-
-        var multipleVectorsConfiguration = createdCollectionInfo.Result.Config.Params.Vectors.AsMultipleVectorsConfiguration();
-
-        multipleVectorsConfiguration.NamedVectors.Count.Should().Be(namedVectors.Count);
-
-        foreach (var namedVectorConfig in multipleVectorsConfiguration.NamedVectors)
-        {
-            namedVectors.Should().ContainKey(namedVectorConfig.Key);
-            namedVectors[namedVectorConfig.Key].Should().BeEquivalentTo(namedVectorConfig.Value);
-        }
+        collectionCreationResult.Should().NotBeNull();
+        collectionCreationResult.Result.Should().BeTrue();
     }
 
     [Test]
@@ -239,7 +320,7 @@ public class CollectionParametersTests : QdrantTestsBase
     [TestCase(VectorDataType.Float32, nameof(SparseVectorModifier.Idf))]
     [TestCase(VectorDataType.Uint8, null)]
     [TestCase(VectorDataType.Float16, nameof(SparseVectorModifier.None))]
-    public async Task CreateCollection_NamedVectors_SparseVectors(
+    public async Task NamedVectors_SparseVectors(
         VectorDataType vectorDataType,
         string sparseVectorModifierString)
     {
@@ -312,7 +393,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateCollection_ServeVectorsFromDisk()
+    public async Task ServeVectorsFromDisk()
     {
         var createCollectionRequest = new CreateCollectionRequest(
             VectorDistanceMetric.Dot,
@@ -338,7 +419,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateCollection_CustomShardingMethod()
+    public async Task CustomShardingMethod()
     {
         var createCollectionRequest = new CreateCollectionRequest(
             VectorDistanceMetric.Dot,
@@ -366,7 +447,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateCollection_ScalarQuantization()
+    public async Task ScalarQuantization()
     {
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -398,7 +479,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateCollection_BinaryQuantization()
+    public async Task BinaryQuantization()
     {
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -406,7 +487,9 @@ public class CollectionParametersTests : QdrantTestsBase
             {
                 OnDiskPayload = true,
                 QuantizationConfig = QuantizationConfiguration.Binary(
-                    isQuantizedVectorAlwaysInRam: true)
+                    isQuantizedVectorAlwaysInRam: true,
+                    encoding: BinaryQuantizationEncoding.TwoBits,
+                    queryEncoding: BinaryQuantizationQueryEncoding.Scalar4bits)
             },
             CancellationToken.None);
 
@@ -425,11 +508,18 @@ public class CollectionParametersTests : QdrantTestsBase
 
         quantizationConfig.Method.Should()
             .Be(QuantizationConfiguration.BinaryQuantizationConfiguration.QuantizationMethodName);
+        
         quantizationConfig.AlwaysRam.Should().BeTrue();
+        
+        quantizationConfig.Encoding.Should().NotBeNull();
+        quantizationConfig.Encoding.Should().Be(BinaryQuantizationEncoding.TwoBits);
+        
+        quantizationConfig.QueryEncoding.Should().NotBeNull();
+        quantizationConfig.QueryEncoding.Should().Be(BinaryQuantizationQueryEncoding.Scalar4bits);
     }
 
     [Test]
-    public async Task CreateCollection_ProductQuantization()
+    public async Task ProductQuantization()
     {
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -463,7 +553,7 @@ public class CollectionParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateCollection_VectorsParametersOverrideCollectionParameters()
+    public async Task VectorsParametersOverrideCollectionParameters()
     {
         var createCollectionRequest = new CreateCollectionRequest(
             VectorDistanceMetric.Dot,
@@ -514,261 +604,5 @@ public class CollectionParametersTests : QdrantTestsBase
 
         vectorsQuantizationConfig.Quantile.Should().Be(0.9f);
         vectorsQuantizationConfig.AlwaysRam.Should().BeTrue();
-    }
-
-    [Test]
-    public async Task UpdateCollectionParameters_CollectionDoesNotExist()
-    {
-        var updateNoCollectionParametersResult = await _qdrantHttpClient.UpdateCollectionParameters(
-            TestCollectionName,
-            new UpdateCollectionParametersRequest()
-            {
-                OptimizersConfig = new()
-                {
-                    MemmapThreshold = 1
-                }
-            },
-            CancellationToken.None);
-
-        updateNoCollectionParametersResult.Status.Type.Should().Be(QdrantOperationStatusType.Error);
-        updateNoCollectionParametersResult.Status.IsSuccess.Should().BeFalse();
-        updateNoCollectionParametersResult.Status.Error.Should()
-            .Contain(TestCollectionName).And
-            .Contain("doesn't exist");
-
-        updateNoCollectionParametersResult.Result.Should().BeNull();
-    }
-
-    [Test]
-    public async Task UpdateCollectionParameters_EmptyRequest()
-    {
-        await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true,
-                OptimizersConfig = new OptimizersConfiguration()
-                {
-                    MemmapThreshold = 1000,
-                    MaxOptimizationThreads = 1,
-                    IndexingThreshold = 1
-                },
-                HnswConfig = new HnswConfiguration()
-                {
-                    MaxIndexingThreads = 1
-                }
-            },
-            CancellationToken.None);
-
-        var triggerCollectionOptimizersResult = await _qdrantHttpClient.UpdateCollectionParameters(
-            TestCollectionName,
-            UpdateCollectionParametersRequest.Empty,
-            CancellationToken.None);
-
-        var updatedCollectionInfo =
-            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
-
-        triggerCollectionOptimizersResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        triggerCollectionOptimizersResult.Status.IsSuccess.Should().BeTrue();
-
-        triggerCollectionOptimizersResult.Result.Should().NotBeNull();
-
-        updatedCollectionInfo.Result.Status.Should().Be(QdrantCollectionStatus.Green);
-        updatedCollectionInfo.Result.OptimizerStatus.IsOk.Should().BeTrue();
-
-        // Collection parameters should not change
-
-        updatedCollectionInfo.Result.Config.OptimizerConfig.IndexingThreshold.Should().Be(1);
-        updatedCollectionInfo.Result.Config.OptimizerConfig.MaxOptimizationThreads.Should().Be(1);
-        updatedCollectionInfo.Result.Config.OptimizerConfig.MemmapThreshold.Should().Be(1000);
-        updatedCollectionInfo.Result.Config.HnswConfig.MaxIndexingThreads.Should().Be(1);
-    }
-
-    [Test]
-    public async Task UpdateCollectionParameters()
-    {
-        await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = false,
-                OptimizersConfig = new OptimizersConfiguration()
-                {
-                    MemmapThreshold = 1000,
-                    MaxOptimizationThreads = 1,
-                    IndexingThreshold = 1
-                },
-                HnswConfig = new HnswConfiguration(){
-                    MaxIndexingThreads = 1
-                }
-            },
-            CancellationToken.None);
-
-        const int newMemmapThreshold = 1;
-        const int newMaxOptimizationThreads = 10;
-        const int newMaxIndexingThreads = 11;
-
-        var updateCollectionParametersResult = await _qdrantHttpClient.UpdateCollectionParameters(
-            TestCollectionName,
-            new UpdateCollectionParametersRequest()
-            {
-                Params = new(){
-                    OnDiskPayload = true
-                },
-                OptimizersConfig = new()
-                {
-                    MemmapThreshold = newMemmapThreshold,
-                    MaxOptimizationThreads = newMaxOptimizationThreads
-                },
-                HnswConfig = new HnswConfiguration(){
-                    MaxIndexingThreads = newMaxIndexingThreads
-                }
-            },
-            CancellationToken.None);
-        
-        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
-
-        var updatedCollectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
-
-        updateCollectionParametersResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        updateCollectionParametersResult.Status.IsSuccess.Should().BeTrue();
-
-        updateCollectionParametersResult.Result.Should().NotBeNull();
-
-        updatedCollectionInfo.Result.Status.Should().Be(QdrantCollectionStatus.Green);
-        updatedCollectionInfo.Result.OptimizerStatus.IsOk.Should().BeTrue();
-
-        updatedCollectionInfo.Result.Config.OptimizerConfig.IndexingThreshold.Should().Be(1); // should not change
-
-        updatedCollectionInfo.Result.Config.OptimizerConfig.MemmapThreshold.Should().Be(newMemmapThreshold);
-        updatedCollectionInfo.Result.Config.OptimizerConfig.MaxOptimizationThreads.Should().Be(newMaxOptimizationThreads);
-        updatedCollectionInfo.Result.Config.HnswConfig.MaxIndexingThreads.Should().Be(newMaxIndexingThreads);
-        updatedCollectionInfo.Result.Config.Params.OnDiskPayload.Should().BeTrue();
-    }
-
-    [Test]
-    public async Task UpdateCollectionParameters_WithRetry()
-    {
-        await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = false,
-                OptimizersConfig = new OptimizersConfiguration()
-                {
-                    MemmapThreshold = 1000,
-                    MaxOptimizationThreads = 1,
-                    IndexingThreshold = 1
-                },
-                HnswConfig = new HnswConfiguration()
-                {
-                    MaxIndexingThreads = 1
-                }
-            },
-            CancellationToken.None);
-
-        const int newMemmapThreshold = 1;
-
-        var throwingQdrantHttpClient = new ThrowingQdrantHttpClient(_qdrantHttpClient.ApiClient);
-        
-        throwingQdrantHttpClient.ThrowOnce();
-        throwingQdrantHttpClient.BadRequestOnce();
-
-        int retryCount = 0;
-        ConcurrentBag<Exception> exceptions = new();
-
-        var updateCollectionParametersResult = await throwingQdrantHttpClient.UpdateCollectionParameters(
-            TestCollectionName,
-            new UpdateCollectionParametersRequest()
-            {
-                OptimizersConfig = new()
-                {
-                    MemmapThreshold = newMemmapThreshold,
-                }
-            },
-            CancellationToken.None,
-            retryCount: 3,
-            retryDelay: TimeSpan.FromMilliseconds(10),
-            onRetry: (ex, _, _, _) => { 
-                Interlocked.Increment(ref retryCount);
-                exceptions.Add(ex);
-            }
-        );
-
-        retryCount.Should().Be(2);
-        exceptions.Count.Should().Be(2);
-
-        // 1 retry exception because when retrying bad request we don't actually have any real exception but a special one.
-        exceptions.Count(e => e is QdrantRequestRetryException).Should().Be(1);
-        exceptions.Count(e => e is HttpRequestException).Should().Be(1); // 1 exception for requested request failure
-        
-        updateCollectionParametersResult.Status.IsSuccess.Should().BeTrue();
-        updateCollectionParametersResult.Result.Should().NotBeNull();
-
-        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
-
-        var updatedCollectionInfo =
-            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
-
-        // Just check that thew request to update collection parameters actually worked
-        updatedCollectionInfo.Result.Config.OptimizerConfig.MemmapThreshold.Should().Be(newMemmapThreshold);
-    }
-
-    [Test]
-    public async Task TriggerCollectionOptimizers_CollectionDoesNotExist()
-    {
-        var triggerCollectionOptimizersResult = await _qdrantHttpClient.TriggerOptimizers(
-            TestCollectionName,
-            CancellationToken.None);
-
-        triggerCollectionOptimizersResult.Status.Type.Should().Be(QdrantOperationStatusType.Error);
-        triggerCollectionOptimizersResult.Status.IsSuccess.Should().BeFalse();
-        triggerCollectionOptimizersResult.Status.Error.Should()
-            .Contain(TestCollectionName).And
-            .Contain("doesn't exist");
-
-        triggerCollectionOptimizersResult.Result.Should().BeNull();
-    }
-
-    [Test]
-    public async Task TriggerCollectionOptimizers()
-    {
-        await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true,
-                OptimizersConfig = new OptimizersConfiguration()
-                {
-                    MemmapThreshold = 1000,
-                    MaxOptimizationThreads = 1,
-                    IndexingThreshold = 1
-                },
-                HnswConfig = new HnswConfiguration(){
-                    MaxIndexingThreads = 1
-                }
-            },
-            CancellationToken.None);
-
-        var triggerCollectionOptimizersResult = await _qdrantHttpClient.TriggerOptimizers(
-            TestCollectionName,
-            CancellationToken.None);
-
-        var updatedCollectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
-
-        triggerCollectionOptimizersResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        triggerCollectionOptimizersResult.Status.IsSuccess.Should().BeTrue();
-
-        triggerCollectionOptimizersResult.Result.Should().NotBeNull();
-
-        updatedCollectionInfo.Result.Status.Should().Be(QdrantCollectionStatus.Green);
-        updatedCollectionInfo.Result.OptimizerStatus.IsOk.Should().BeTrue();
-
-        // Collection parameters should not change
-        
-        updatedCollectionInfo.Result.Config.OptimizerConfig.IndexingThreshold.Should().Be(1);
-        updatedCollectionInfo.Result.Config.OptimizerConfig.MaxOptimizationThreads.Should().Be(1);
-        updatedCollectionInfo.Result.Config.OptimizerConfig.MemmapThreshold.Should().Be(1000);
-        updatedCollectionInfo.Result.Config.HnswConfig.MaxIndexingThreads.Should().Be(1);
     }
 }

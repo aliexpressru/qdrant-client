@@ -160,6 +160,18 @@ public abstract class QuantizationConfiguration
         /// </ul>
         /// </remarks>
         public bool AlwaysRam { set; get; } = false;
+        
+        /// <summary>
+        /// The bit depth of the quantized vector components.
+        /// </summary>
+        public BinaryQuantizationEncoding? Encoding { set; get; }
+        
+        /// <summary>
+        /// Asymmetric quantization configuration.
+        /// Asymmetric quantization configuration allows a query to have different quantization than stored vectors.
+        /// It can increase the accuracy of search at the cost of performance.
+        /// </summary>
+        public BinaryQuantizationQueryEncoding? QueryEncoding { set; get; }
     }
 
     #endregion
@@ -199,10 +211,17 @@ public abstract class QuantizationConfiguration
     /// Creates a binary quantization configuration.
     /// </summary>
     /// <param name="isQuantizedVectorAlwaysInRam">Whether to keep quantized vectors always cached in RAM or not.</param>
-    public static QuantizationConfiguration Binary(bool isQuantizedVectorAlwaysInRam = false)
+    /// <param name="encoding">The quantization bit depth.</param>
+    /// <param name="queryEncoding">The asymmetric quantization configuration.</param>
+    public static QuantizationConfiguration Binary(
+        bool isQuantizedVectorAlwaysInRam = false,
+        BinaryQuantizationEncoding? encoding = null,
+        BinaryQuantizationQueryEncoding? queryEncoding = null)
         =>
             new BinaryQuantizationConfiguration()
             {
-                AlwaysRam = isQuantizedVectorAlwaysInRam
+                AlwaysRam = isQuantizedVectorAlwaysInRam,
+                Encoding = encoding,
+                QueryEncoding = queryEncoding
             };
 }
