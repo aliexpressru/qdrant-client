@@ -25,14 +25,60 @@ public abstract class PointsQuery
     internal sealed class NearestPointsQuery : PointsQuery
     {
         /// <summary>
+        /// Represents a Maximal Marginal Relevance parameters.
+        /// </summary>
+        public class MmrParameters
+        { 
+            /// <summary>
+            /// Tunable parameter for the MMR algorithm. Determines the balance between diversity and relevance.
+            /// A higher value favors diversity(dissimilarity to selected results), while a lower value favors relevance(similarity to the query vector).
+            /// Must be in the range[0, 1]. Default value is 0.5.
+            /// </summary>
+            public double? Diversity { get; init; }
+            
+            /// <summary>
+            /// The maximum number of candidates to consider for re-ranking.
+            /// If not specified, the limit query value is used.
+            /// </summary>
+            public uint? CandidatesLimit { get; init; }
+        }
+        
+        /// <summary>
         /// Look for vectors closest to this.
         /// </summary>
         [JsonConverter(typeof(PointIdOrQueryVectorJsonConverter))]
         public PointIdOrQueryVector Nearest { get; }
-
-        internal NearestPointsQuery(PointIdOrQueryVector nearest)
+        
+        /// <summary>
+        /// Is not <c>null</c> defines parameters for Maximal Marginal Relevance (MMR) algorithm.
+        /// </summary>
+        public MmrParameters Mmr { get; }
+        
+        internal NearestPointsQuery(PointIdOrQueryVector nearest, double? mmrDiversity = null, uint? mmrCandidatesLimit = null)
         {
             Nearest = nearest;
+            
+            if(mmrDiversity is not null 
+               || mmrCandidatesLimit is not null)
+            {
+                if(mmrDiversity is < 0 or > 1)
+                {
+                    throw new ArgumentException(
+                        $"MMR diversity value must be in the range [0, 1], but was {mmrDiversity}");
+                }
+
+                if (mmrCandidatesLimit is < 0 or > 16384)
+                { 
+                    throw new ArgumentException(
+                        $"MMR candidates limit value must be in the range [0, 16384], but was {mmrCandidatesLimit}");
+                }
+
+                Mmr = new MmrParameters()
+                {
+                    Diversity = mmrDiversity,
+                    CandidatesLimit = mmrCandidatesLimit
+                };
+            }
         }
     }
 
@@ -150,9 +196,21 @@ public abstract class PointsQuery
     /// Creates a "find nearest points" query.
     /// </summary>
     /// <param name="pointIdOrQueryVector">The point id or vector to find nearest to.</param>
-    public static PointsQuery CreateFindNearestPointsQuery(PointIdOrQueryVector pointIdOrQueryVector)
+    /// <param name="mmrDiversity">
+    /// Tunable parameter for the MMR algorithm. Determines the balance between diversity and relevance.
+    /// A higher value favors diversity(dissimilarity to selected results), while a lower value favors relevance(similarity to the query vector).
+    /// Must be in the range[0, 1]. Default value is 0.5.
+    /// </param>
+    /// <param name="mmrCandidatesLimit">The maximum number of candidates to consider for re-ranking. If not specified, the limit query value is used.</param>
+    public static PointsQuery CreateFindNearestPointsQuery(
+        PointIdOrQueryVector pointIdOrQueryVector,
+        double? mmrDiversity = null,
+        uint? mmrCandidatesLimit = null)
         =>
-            new NearestPointsQuery(pointIdOrQueryVector);
+            new NearestPointsQuery(
+                pointIdOrQueryVector,
+                mmrDiversity: mmrDiversity,
+                mmrCandidatesLimit: mmrCandidatesLimit);
 
     /// <summary>
     /// Creates a "recommend points" query.
