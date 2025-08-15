@@ -133,7 +133,7 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task StartCreatingCollectionIndexes()
+    public async Task StartCreatingCollectionPayloadIndexes()
     {
         var qdrantClient =
             new QdrantHttpClient(
