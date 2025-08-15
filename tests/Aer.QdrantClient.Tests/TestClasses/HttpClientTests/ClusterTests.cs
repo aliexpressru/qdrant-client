@@ -85,7 +85,7 @@ public class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CollectionShardMove_OneShard()
+    public async Task CollectionShardMove()
     {
         await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
@@ -148,7 +148,7 @@ public class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CollectionShardReplicate_OneShard()
+    public async Task CollectionShardReplicate()
     {
         await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
