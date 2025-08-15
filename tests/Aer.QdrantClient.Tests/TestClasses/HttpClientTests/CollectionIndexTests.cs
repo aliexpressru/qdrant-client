@@ -588,7 +588,7 @@ internal class CollectionIndexTests : QdrantTestsBase
         collectionInfo.PayloadSchema[TestPayloadFieldName2].DataType.Should().Be(PayloadIndexedFieldType.Integer);
         collectionInfo.PayloadSchema[TestPayloadFieldName2].Params.OnDisk.Should().BeFalse();
         collectionInfo.PayloadSchema[TestPayloadFieldName2].Params.IsTenant.Should().BeNull();
-        collectionInfo.PayloadSchema[TestPayloadFieldName2].Params.IsPrincipal.Should().BeFalse();
+        collectionInfo.PayloadSchema[TestPayloadFieldName2].Params.IsPrincipal.Should().BeNull();
 
         collectionInfo.PayloadSchema[TestPayloadFieldName3].DataType.Should().Be(PayloadIndexedFieldType.Integer);
         collectionInfo.PayloadSchema[TestPayloadFieldName3].Params.OnDisk.Should().BeFalse();
