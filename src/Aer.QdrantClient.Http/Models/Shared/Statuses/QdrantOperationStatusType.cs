@@ -6,13 +6,13 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 public enum QdrantOperationStatusType
 {
     /// <summary>
-    /// Represents the unkown qdrant operation status with raw status string.
+    /// Represents the unknown qdrant operation status with raw status string.
     /// Might indicate an exception or a bug.
     /// </summary>
     Unknown,
 
     /// <summary>
-    /// Represents the successfull qdrant operation status.
+    /// Represents the successful qdrant operation status.
     /// </summary>
     Ok,
 

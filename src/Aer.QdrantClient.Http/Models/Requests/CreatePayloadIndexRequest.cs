@@ -11,14 +11,14 @@ namespace Aer.QdrantClient.Http.Models.Requests;
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 internal sealed class CreatePayloadIndexRequest
 {
-    /// <summary>
-    /// Represents a field schema configuration.
-    /// </summary>
     internal sealed class FieldSchemaUnit(
         string type,
         bool onDisk,
-        bool isTenant,
-        bool isPrincipal)
+        bool? isTenant,
+        bool? isPrincipal,
+        
+        bool? isLookupEnabled,
+        bool? isRangeEnabled)
     {
         /// <summary>
         /// The type of the indexed payload field.
@@ -33,10 +33,14 @@ internal sealed class CreatePayloadIndexRequest
         /// <summary>
         /// Set to <c>true</c> to enable tenant index for specified payload field.
         /// </summary>
-        public bool IsTenant { get; } = isTenant;
+        public bool? IsTenant { get; } = isTenant;
 
         /// Set to <c>true</c> to enable principal index for specified payload field.
-        public bool IsPrincipal { get; } = isPrincipal;
+        public bool? IsPrincipal { get; } = isPrincipal;
+        
+        public bool? Lookup { get; } = isLookupEnabled;
+        
+        public bool? Range { get; } = isRangeEnabled;
     }
 
     /// <summary>
@@ -61,19 +65,27 @@ internal sealed class CreatePayloadIndexRequest
     /// The principal index is used to optimize storage for faster search,
     /// assuming that the search request is primarily filtered by the principal field.
     /// </param>
+    /// <param name="isLookupEnabled">For integer index only. If true - support direct lookups. Default and if not set is <c>true</c>.</param>
+    /// <param name="isRangeFilterEnabled">For integer index only. If true - support ranges filters. Default and if not set is <c>true</c>.</param>
     public CreatePayloadIndexRequest(
         string payloadFieldName,
         PayloadIndexedFieldType payloadFieldType,
         bool onDisk,
-        bool isTenant,
-        bool isPrincipal)
+        bool? isTenant = null,
+        bool? isPrincipal = null,
+        bool? isLookupEnabled = null,
+        bool? isRangeFilterEnabled = null)
     {
         FieldName = payloadFieldName;
         FieldSchema = new FieldSchemaUnit(
             type: payloadFieldType.ToString().ToLowerInvariant(),
             onDisk: onDisk,
+            
             isTenant: isTenant,
-            isPrincipal: isPrincipal
+            isPrincipal: isPrincipal,
+            
+            isLookupEnabled: isLookupEnabled,
+            isRangeEnabled: isRangeFilterEnabled
         );
     }
 }

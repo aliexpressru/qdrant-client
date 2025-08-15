@@ -64,7 +64,7 @@ public partial class QdrantHttpClient
     /// <summary>
     /// Get the detailed information about all existing collections.
     /// </summary>
-    /// <param name="isCountExactPointsNumber">Is set to <c>true</c> counts collection points for all collections.</param>
+    /// <param name="isCountExactPointsNumber">If set to <c>true</c> counts collection points for all collections.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
@@ -123,7 +123,7 @@ public partial class QdrantHttpClient
     /// Optional Maximum size (in KiloBytes) of vectors allowed for plain index.
     /// If not set the default value of 10000 is used.
     /// </param>
-    public void StartCreatingCollectionIndexes(
+    public void StartCreatingCollectionPayloadIndexes(
         string collectionName,
         ICollection<CollectionPayloadIndexDefinition> payloadIndexes,
         uint? collectionIndexingThreshold = null)
@@ -131,30 +131,6 @@ public partial class QdrantHttpClient
         Task.Run(async () => {
             try
             {
-                var collectionParametersUpdateResponse = await UpdateCollectionParameters(
-                    collectionName,
-                    new UpdateCollectionParametersRequest()
-                    {
-                        OptimizersConfig = new OptimizersConfiguration()
-                        {
-                            IndexingThreshold = collectionIndexingThreshold ?? DEFAULT_COLLECTION_INDEXING_THRESHOLD
-                        }
-                    },
-                    CancellationToken.None,
-                    timeout: _defaultOperationTimeout);
-
-                if (!collectionParametersUpdateResponse.Status.IsSuccess)
-                {
-                    _logger.LogError(
-                        "Failed to start collection {CollectionName} HNSW index creation. Details: {ErrorMessage}",
-                        collectionName,
-                        collectionParametersUpdateResponse.Status.GetErrorMessage());
-
-                    return;
-                }
-
-                // Then - create many payload indexes if they are defined
-
                 if (payloadIndexes is null or {Count: 0})
                 {
                     return;

@@ -133,7 +133,7 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task StartCreatingCollectionIndexes()
+    public async Task StartCreatingCollectionPayloadIndexes()
     {
         var qdrantClient =
             new QdrantHttpClient(
@@ -150,7 +150,7 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        qdrantClient.StartCreatingCollectionIndexes(
+        qdrantClient.StartCreatingCollectionPayloadIndexes(
             TestCollectionName,
             [
                 new CollectionPayloadIndexDefinition(
@@ -174,8 +174,6 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
         
         collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
         collectionInfo.Status.IsSuccess.Should().BeTrue();
-
-        collectionInfo.Result.Config.OptimizerConfig.IndexingThreshold.Should().Be(QdrantHttpClient.DEFAULT_COLLECTION_INDEXING_THRESHOLD);
 
         collectionInfo.Result.PayloadSchema.Count.Should().Be(2);
         collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName);

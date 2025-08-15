@@ -102,6 +102,7 @@ public class PointsQueryTests : QdrantTestsBase
         if (!IsCiEnvironment)
         {
             // CI environment container does not have usage statistics enabled
+            
             nearestPointsByVectorResponse.Usage.Cpu.Should().BeGreaterThan(0);
             nearestPointsByVectorResponse.Usage.PayloadIoRead.Should().BeGreaterThan(0);
             nearestPointsByVectorResponse.Usage.VectorIoRead.Should().BeGreaterThan(0);
@@ -529,5 +530,43 @@ public class PointsQueryTests : QdrantTestsBase
                     : 1
             );
         }
+    }
+
+    [Test]
+    public async Task QueryPoints_Mmr()
+    { 
+        OnlyIfVersionAfterOrEqual("1.15.0", "MMR query parameters is supported starting from Qdrant 1.15.0");
+
+        var vectorCount = 10;
+
+        var (upsertPoints, _, _) =
+            await PrepareCollection(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorCount: vectorCount,
+                payloadInitializerFunction: i => new TestPayload()
+                {
+                    Integer = i,
+                    Text = (i + 1).ToString()
+                });
+
+        var nearestPointsResponse = await _qdrantHttpClient.QueryPoints(
+            TestCollectionName,
+            new QueryPointsRequest(
+                PointsQuery.CreateFindNearestPointsQuery(
+                    upsertPoints.First().Vector,
+                    mmrDiversity: 0.3,
+                    mmrCandidatesLimit: 3
+                )
+            )
+            {
+                WithPayload = true,
+                WithVector = true,
+                Limit = 5 // This value gets overridden by MMR limit
+            },
+            CancellationToken.None);
+
+        nearestPointsResponse.Status.IsSuccess.Should().BeTrue();
+        nearestPointsResponse.Result.Points.Length.Should().Be(3); // Using mmr limit 3 therefore we get only 3 points
     }
 }

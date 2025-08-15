@@ -1,4 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Requests;
@@ -25,7 +27,7 @@ internal sealed class CreateFullTextPayloadIndexRequest
         /// <summary>
         /// The type of the payload text tokenizer.
         /// </summary>
-        public PayloadIndexedTextFieldTokenizerType Tokenizer { get; set; }
+        public FullTextIndexTokenizerType Tokenizer { get; set; }
 
         /// <summary>
         /// The minimal token length.
@@ -45,7 +47,24 @@ internal sealed class CreateFullTextPayloadIndexRequest
         /// <summary>
         /// If <c>true</c>, store the index on disk. Default: <c>false</c>.
         /// </summary>
-        public bool OnDisk { get; set; } = false;
+        public bool OnDisk { get; set; }
+
+        /// <summary>
+        /// If <c>true</c>, enable phrase matching for the indexed field.
+        /// </summary>
+        public bool PhraseMatching { get; set; }
+
+        /// <summary>
+        /// Ignore this set of tokens. Can select from predefined languages and/or provide a custom set.
+        /// </summary>
+        [JsonConverter(typeof(FullTextIndexStopwordsJsonConverter))]
+        public FullTextIndexStopwords Stopwords { set; get; }
+
+        /// <summary>
+        /// Algorithm for stemming. Default: disabled.
+        /// </summary>
+        [JsonConverter(typeof(FullTextIndexStemmingAlgorithmJsonConverter))]
+        public FullTextIndexStemmingAlgorithm Stemmer { set; get; }
     }
 
     /// <summary>

@@ -52,22 +52,31 @@ public partial class QdrantHttpClient
     /// <see cref="PayloadIndexedFieldType.Uuid"/>,
     /// <see cref="PayloadIndexedFieldType.Text"/>,
     /// <see cref="PayloadIndexedFieldType.Geo"/>.
-    ///
+    /// 
     /// Tenant optimization is supported for the following datatypes:
     /// <see cref="PayloadIndexedFieldType.Keyword"/>,
     /// <see cref="PayloadIndexedFieldType.Uuid"/>
-    ///
+    /// 
     /// Principal optimization is supported for following types:
     /// <see cref="PayloadIndexedFieldType.Integer"/>,
     /// <see cref="PayloadIndexedFieldType.Float"/>,
     /// <see cref="PayloadIndexedFieldType.Datetime"/>
     /// </remarks>
+    /// 
+    /// <param name="isLookupEnabled">
+    /// For <see cref="PayloadIndexedFieldType.Integer"/> index only. If <c>true</c> - index supports direct lookups. Default and if not set is <c>true</c>.
+    /// </param>
+    /// <param name="isRangeEnabled">
+    /// For <see cref="PayloadIndexedFieldType.Integer"/> index only. If <c>true</c> - support ranges filters. Default and if not set is <c>true</c>.
+    /// </param>
+    /// 
     /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    
     public async Task<PayloadIndexOperationResponse> CreatePayloadIndex(
         string collectionName,
         string payloadFieldName,
@@ -75,8 +84,13 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         bool isWaitForResult = false,
         bool onDisk = false,
-        bool isTenant = false,
-        bool isPrincipal = false,
+        
+        bool? isTenant = null,
+        bool? isPrincipal = null,
+
+        bool? isLookupEnabled = null,
+        bool? isRangeEnabled = null,
+        
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
@@ -84,16 +98,28 @@ public partial class QdrantHttpClient
         EnsureQdrantNameCorrect(collectionName);
         EnsureQdrantNameCorrect(payloadFieldName);
 
-        if (isTenant && !_allowedPayloadFieldTypesForTenantIndex.Contains(payloadFieldType))
+        if (isTenant.HasValue && isTenant.Value && !_allowedPayloadFieldTypesForTenantIndex.Contains(payloadFieldType))
         {
             throw new QdrantUnsupportedFieldSchemaForIndexConfiguration(
                 $"Tenant index is not supported for payload field {payloadFieldName} with type {payloadFieldType}. Supported types: [{string.Join(", ", _allowedPayloadFieldTypesForTenantIndex)}]");
         }
 
-        if (isPrincipal && !_allowedPayloadFieldTypesForPrincipalIndex.Contains(payloadFieldType))
+        if (isPrincipal.HasValue && isPrincipal.Value && !_allowedPayloadFieldTypesForPrincipalIndex.Contains(payloadFieldType))
         {
             throw new QdrantUnsupportedFieldSchemaForIndexConfiguration(
                 $"Principal index is not supported for payload field {payloadFieldName} with type {payloadFieldType}. Supported types: [{string.Join(", ", _allowedPayloadFieldTypesForPrincipalIndex)}]");
+        }
+        
+        if(isLookupEnabled.HasValue && isLookupEnabled.Value && payloadFieldType != PayloadIndexedFieldType.Integer)
+        {
+            throw new QdrantUnsupportedFieldSchemaForIndexConfiguration(
+                $"Lookup index is only supported for payload field {payloadFieldName} with type {PayloadIndexedFieldType.Integer}");
+        }
+        
+        if(isRangeEnabled.HasValue && isRangeEnabled.Value && payloadFieldType != PayloadIndexedFieldType.Integer)
+        {
+            throw new QdrantUnsupportedFieldSchemaForIndexConfiguration(
+                $"Range index is only supported for payload field {payloadFieldName} with type {PayloadIndexedFieldType.Integer}");
         }
 
         if (payloadFieldType == PayloadIndexedFieldType.Text)
@@ -102,7 +128,20 @@ public partial class QdrantHttpClient
                 $"Direct creation of the text type indexes (fulltext search indexes) is not supported. To create fulltext index please use {nameof(CreateFullTextPayloadIndex)} method");
         }
 
-        var index = new CreatePayloadIndexRequest(payloadFieldName, payloadFieldType, onDisk, isTenant, isPrincipal);
+        var index = new CreatePayloadIndexRequest(
+            payloadFieldName,
+            payloadFieldType,
+            onDisk: onDisk,
+            isTenant: isTenant,
+            isPrincipal: isPrincipal,
+
+            isLookupEnabled: payloadFieldType == PayloadIndexedFieldType.Integer
+                ? isLookupEnabled ?? true
+                : null,
+            isRangeFilterEnabled: payloadFieldType == PayloadIndexedFieldType.Integer
+                ? isRangeEnabled ?? true
+                : null
+        );
 
         var url = $"/collections/{collectionName}/index?wait={ToUrlQueryString(isWaitForResult)}";
 
@@ -137,6 +176,9 @@ public partial class QdrantHttpClient
     /// If set to <c>true</c> the payload will be stored on-disk instead of in-memory.
     /// On-disk payload index might affect cold requests latency, as it requires additional disk I/O operations.
     /// </param>
+    /// <param name="enablePhraseMatching">Enable phrase matching on this text field.</param>
+    /// <param name="stemmer">Algorithm for stemming. If <c>null</c> stemming is disabled.</param>
+    /// <param name="stopwords">Ignore this set of tokens. Can select from predefined languages and/or provide a custom set.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
@@ -147,12 +189,19 @@ public partial class QdrantHttpClient
     public async Task<PayloadIndexOperationResponse> CreateFullTextPayloadIndex(
         string collectionName,
         string payloadTextFieldName,
-        PayloadIndexedTextFieldTokenizerType payloadTextFieldTokenizerType,
-        uint? minimalTokenLength,
-        uint? maximalTokenLength,
+        FullTextIndexTokenizerType payloadTextFieldTokenizerType,
         CancellationToken cancellationToken,
+        
+        uint? minimalTokenLength = null,
+        uint? maximalTokenLength = null,
+        
         bool isLowercasePayloadTokens = true,
         bool onDisk = false,
+        bool enablePhraseMatching = false,
+        
+        FullTextIndexStemmingAlgorithm stemmer = null,
+        FullTextIndexStopwords stopwords = null,
+        
         bool isWaitForResult = false,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
@@ -169,7 +218,10 @@ public partial class QdrantHttpClient
                 MinTokenLen = minimalTokenLength,
                 MaxTokenLen = maximalTokenLength,
                 Lowercase = isLowercasePayloadTokens,
-                OnDisk = onDisk
+                OnDisk = onDisk,
+                PhraseMatching = enablePhraseMatching,
+                Stemmer = stemmer,
+                Stopwords = stopwords
             });
 
         var url = $"/collections/{collectionName}/index?wait={ToUrlQueryString(isWaitForResult)}";

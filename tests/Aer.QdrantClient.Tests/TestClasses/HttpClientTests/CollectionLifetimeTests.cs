@@ -81,121 +81,6 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateCollection()
-    {
-        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true
-            },
-            CancellationToken.None);
-
-        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
-
-        collectionCreationResult.Should().NotBeNull();
-        collectionCreationResult.Result.Should().BeTrue();
-    }
-
-    [Test]
-    public async Task CreateCollection_VeryLongName()
-    {
-        var veryLongCollectionName = new string('t', 1024);
-
-        var collectionCreationAct = () => _qdrantHttpClient.CreateCollection(
-            veryLongCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true
-            },
-            CancellationToken.None);
-
-        await collectionCreationAct.Should().ThrowAsync<QdrantInvalidEntityNameException>()
-            .Where(e => e.Message.Contains("1024"));
-    }
-
-    [Test]
-    [TestCase(VectorDataType.Float32)]
-    [TestCase(VectorDataType.Uint8)]
-    [TestCase(VectorDataType.Float16)]
-    public async Task CreateCollection_WithSparseVectors(VectorDataType vectorDataType)
-    {
-        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true,
-                SparseVectors = new Dictionary<string, SparseVectorConfiguration>(){
-                    ["test"] = new (onDisk: true, fullScanThreshold: 5000, vectorDataType: vectorDataType)
-                }
-            },
-            CancellationToken.None);
-
-        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
-
-        collectionCreationResult.Should().NotBeNull();
-        collectionCreationResult.Result.Should().BeTrue();
-    }
-
-    [Test]
-    public async Task CreateCollection_SameNamedVectors()
-    {
-        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(
-                VectorDistanceMetric.Dot,
-                100,
-                isServeVectorsFromDisk: true,
-                CreateVectorNames(3))
-            {
-                OnDiskPayload = true
-            },
-            CancellationToken.None);
-
-        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
-
-        collectionCreationResult.Should().NotBeNull();
-        collectionCreationResult.Result.Should().BeTrue();
-    }
-
-    [Test]
-    public async Task CreateCollection_DifferentNamedVectors()
-    {
-        Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration> namedVectors = new()
-        {
-            ["Vector_1"] = new VectorConfigurationBase.SingleVectorConfiguration(
-                VectorDistanceMetric.Dot,
-                100,
-                isServeVectorsFromDisk: true),
-            ["Vector_2"] = new VectorConfigurationBase.SingleVectorConfiguration(
-                VectorDistanceMetric.Euclid,
-                5,
-                isServeVectorsFromDisk: false),
-            ["Vector_3"] = new VectorConfigurationBase.SingleVectorConfiguration(
-                VectorDistanceMetric.Cosine,
-                50,
-                isServeVectorsFromDisk: true),
-        };
-
-        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(namedVectors)
-            {
-                OnDiskPayload = true
-            },
-            CancellationToken.None);
-
-        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
-
-        collectionCreationResult.Should().NotBeNull();
-        collectionCreationResult.Result.Should().BeTrue();
-    }
-
-    [Test]
     public async Task CreateCollection_Delete_RecreateSameCollection()
     {
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
@@ -234,6 +119,8 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     [Test]
     public async Task CreateCollection_InitFrom()
     {
+        OnlyIfVersionBefore("1.16.0", "init_from parameter is removed in 1.16.0");
+        
         var vectorSize = 10U;
 
         var createCollectionResult = await _qdrantHttpClient.CreateCollection(
@@ -269,7 +156,9 @@ internal class CollectionLifetimeTests : QdrantTestsBase
             new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
             {
                 OnDiskPayload = true,
+#pragma warning disable CS0618 // Type or member is obsolete
                 InitFrom = CreateCollectionRequest.InitFromCollection.ByName(TestCollectionName)
+#pragma warning restore CS0618 // Type or member is obsolete
             },
             CancellationToken.None);
 
@@ -380,101 +269,5 @@ internal class CollectionLifetimeTests : QdrantTestsBase
 
         collectionDoubleDeletionResult.Should().NotBeNull();
         collectionDoubleDeletionResult.Result.Should().BeFalse();
-    }
-
-    [Test]
-    public async Task ListCollections_EmptyCollectionList()
-    {
-        var existingCollections = await _qdrantHttpClient.ListCollections(CancellationToken.None);
-
-        existingCollections.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        existingCollections.Status.IsSuccess.Should().BeTrue();
-
-        existingCollections.Result.Should().NotBeNull();
-        existingCollections.Result.Collections.Should().BeEmpty();
-    }
-
-    [Test]
-    public async Task ListCollections()
-    {
-        // create collection
-        await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true
-            },
-            CancellationToken.None);
-
-        var oneExistingCollection = await _qdrantHttpClient.ListCollections(CancellationToken.None);
-
-        oneExistingCollection.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        oneExistingCollection.Status.IsSuccess.Should().BeTrue();
-
-        oneExistingCollection.Result.Should().NotBeNull();
-        oneExistingCollection.Result.Collections.Length.Should().Be(1);
-        oneExistingCollection.Result.Collections[0].Name.Should().Be(TestCollectionName);
-
-        // create second collection
-        await _qdrantHttpClient.CreateCollection(
-            TestCollectionName2,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true
-            },
-            CancellationToken.None);
-
-        var twoExistingCollections = await _qdrantHttpClient.ListCollections(CancellationToken.None);
-
-        twoExistingCollections.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        twoExistingCollections.Status.IsSuccess.Should().BeTrue();
-
-        twoExistingCollections.Result.Should().NotBeNull();
-        twoExistingCollections.Result.Collections.Length.Should().Be(2);
-
-        twoExistingCollections.Result.Collections
-            .SingleOrDefault(c => c.Name.Equals(TestCollectionName)).Should().NotBeNull();
-        twoExistingCollections.Result.Collections
-            .SingleOrDefault(c => c.Name.Equals(TestCollectionName2)).Should().NotBeNull();
-    }
-
-    [Test]
-    public async Task GetCollectionInfo_NoCollection()
-    {
-        var nonExistentCollectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
-
-        nonExistentCollectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Error);
-        nonExistentCollectionInfo.Status.IsSuccess.Should().BeFalse();
-        nonExistentCollectionInfo.Status.Error.Should()
-            .Contain("doesn't exist").And
-            .Contain(TestCollectionName);
-
-        nonExistentCollectionInfo.Result.Should().BeNull();
-    }
-
-    [Test]
-    public async Task GetCollectionInfo()
-    {
-        // create collection
-        await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true
-            },
-            CancellationToken.None);
-
-        var collectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
-
-        collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionInfo.Status.IsSuccess.Should().BeTrue();
-
-        collectionInfo.Result.Should().NotBeNull();
-        collectionInfo.Result.Status.Should().Be(QdrantCollectionStatus.Green);
-
-        collectionInfo.Result.OptimizerStatus.IsOk.Should().BeTrue();
-        collectionInfo.Result.OptimizerStatus.Status.Should().Be(QdrantOptimizerStatus.Ok);
-
-        collectionInfo.Result.Config.Params.OnDiskPayload.Should().BeTrue();
     }
 }

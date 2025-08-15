@@ -121,10 +121,15 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         public WalConfiguration WalConfig { get; set; }
 
         /// <summary>
-        /// Represents quantization configuration.
+        /// Quantization configuration.
         /// </summary>
         [JsonConverter(typeof(QuantizationConfigurationJsonConverter))]
         public QuantizationConfiguration QuantizationConfig { get; set; }
+        
+        /// <summary>
+        /// Strict mode configuration.
+        /// </summary>
+        public StrictModeConfiguration StrictModeConfig { get; set; }
 
         /// <summary>
         /// Represents the collection parameters.
@@ -222,7 +227,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// <summary>
             /// The tokenizer type. For full-text index only.
             /// </summary>
-            public string Tokenizer { set; get; }
+            public FullTextIndexTokenizerType? Tokenizer { set; get; }
 
             /// <summary>
             /// The minimal token length. For full-text index only.
@@ -233,11 +238,38 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// The maximal token length. For full-text index only.
             /// </summary>
             public ulong? MaxTokenLen { set; get; }
+            
+            /// <summary>
+            /// If <c>true</c> - full-text index supports phrase matching. Default: <c>false</c>.
+            /// </summary>
+            public bool? PhraseMatching { set; get; }
+
+            /// <summary>
+            /// Ignore this set of tokens. Can select from predefined languages and/or provide a custom set.
+            /// </summary>
+            [JsonConverter(typeof(FullTextIndexStopwordsJsonConverter))]
+            public FullTextIndexStopwords Stopwords { set; get; }
+            
+            /// <summary>
+            /// Algorithm for stemming. Default: disabled.
+            /// </summary>
+            [JsonConverter(typeof(FullTextIndexStemmingAlgorithmJsonConverter))]
+            public FullTextIndexStemmingAlgorithm Stemmer { set; get; }
 
             /// <summary>
             /// Whether to convert tokens to lowercase before indexing. For full-text index only.
             /// </summary>
-            public bool IsLowercase { set; get; }
+            public bool? Lowercase { set; get; }
+
+            /// <summary>
+            /// If <c>true</c> - integer index supports ranges filters. Default is <c>true</c> for integer indexes.
+            /// </summary>
+            public bool? Range { set; get; }
+
+            /// <summary>
+            /// If <c>true</c> - integer index supports direct lookups. Default is <c>true</c> for integer indexes.
+            /// </summary>
+            public bool? Lookup { set; get; }
 
             /// <summary>
             /// Whether the payload index is stored on-disk instead of in-memory.
@@ -247,12 +279,12 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// <summary>
             /// Whether the field index is a tenant index.
             /// </summary>
-            public bool IsTenant { set; get; }
+            public bool? IsTenant { set; get; }
 
             /// <summary>
             /// Whether the field index is a principal index.
             /// </summary>
-            public bool IsPrincipal { set; get; }
+            public bool? IsPrincipal { set; get; }
         }
     }
 }

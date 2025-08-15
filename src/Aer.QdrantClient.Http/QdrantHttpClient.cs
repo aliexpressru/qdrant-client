@@ -98,7 +98,7 @@ public partial class QdrantHttpClient
     /// <param name="apiKey">The Qdrant api key value.</param>
     /// <param name="httpClientTimeout">Http client timeout. Default value is <c>100 seconds</c>.</param>
     /// <param name="logger">The optional logger to log internal messages.</param>
-    /// <param name="disableTracing">Is set to <c>true</c>, http client activity tracing is disabled.</param>
+    /// <param name="disableTracing">If set to <c>true</c>, http client activity tracing is disabled.</param>
     public QdrantHttpClient(
         string host,
         int port = 6334,
@@ -126,7 +126,7 @@ public partial class QdrantHttpClient
     /// <param name="apiKey">The Qdrant api key value.</param>
     /// <param name="httpClientTimeout">Http client timeout. Default value is <c>100 seconds</c>.</param>
     /// <param name="logger">The optional logger to log internal messages.</param>
-    /// <param name="disableTracing">Is set to <c>true</c>, http client activity tracing is disabled.</param>
+    /// <param name="disableTracing">If set to <c>true</c>, http client activity tracing is disabled.</param>
     public QdrantHttpClient(
         Uri httpAddress,
         string apiKey = null,

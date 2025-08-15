@@ -95,6 +95,7 @@ public sealed class CreateCollectionRequest
     /// <summary>
     /// Specify other collection to copy data from.
     /// </summary>
+    [Obsolete("This parameter of the collection creation API is deprecated and going to be removed in v1.16")]
     public InitFromCollection InitFrom { get; set; }
 
     /// <summary>
@@ -107,6 +108,11 @@ public sealed class CreateCollectionRequest
     /// The sparse vector configuration.
     /// </summary>
     public Dictionary<string, SparseVectorConfiguration> SparseVectors { get; set; }
+    
+    /// <summary>
+    /// The strict-mode configuration.
+    /// </summary>
+    public StrictModeConfiguration StrictModeConfig { get; set; }
 
     /// <summary>Initializes a new instance of the <see cref="CreateCollectionRequest" /> class with singe vector
     /// or multiple named vectors with identical configuration.</summary>

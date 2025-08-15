@@ -51,6 +51,7 @@ public sealed class OptimizersConfiguration
     /// Segments larger than this threshold will be stored as read-only memmaped file.
     /// To enable memmap storage, lower the threshold. 1Kb = 1 vector of size 256
     /// </summary>
+    [Obsolete("mmap_threshold parameter of the collection optimizer is deprecated and going to be removed in v1.16")]
     public ulong? MemmapThreshold { set; get; }
 
     /// <summary>

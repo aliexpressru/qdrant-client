@@ -22,7 +22,7 @@ public sealed class SetLockOptionsResponse : QdrantResponseBase<SetLockOptionsRe
         public string ErrorMessage { set; get; }
 
         /// <summary>
-        /// Is set to <c>true</c> write operations are locked, otherwise - write oprations are enabled.
+        /// If set to <c>true</c> write operations are locked, otherwise - write oprations are enabled.
         /// </summary>
         public bool Write { set; get; }
     }

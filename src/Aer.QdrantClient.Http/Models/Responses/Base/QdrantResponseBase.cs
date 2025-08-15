@@ -42,11 +42,10 @@ public abstract class QdrantResponseBase
         public HardwareUsageReport Hardware { get; set; }
 
         private long _cpu;
+        
         /// <summary>
         /// Cpu usage to execute request.
         /// </summary>
-        [Obsolete(
-            $"From qdrant 1.14.0 this property is deprecated. Use {nameof(Hardware.Cpu)} instead.")]
         public long Cpu
         {
             get => _cpu == 0 && Hardware is not null
@@ -57,11 +56,10 @@ public abstract class QdrantResponseBase
         }
 
         private long _payloadIoRead;
+        
         /// <summary>
         /// Payload IO read operations.
         /// </summary>
-        [Obsolete(
-            $"From qdrant 1.14.0 this property is deprecated. Use {nameof(Hardware.PayloadIoRead)} instead.")]
         public long PayloadIoRead
         {
             get => _payloadIoRead == 0 && Hardware is not null
@@ -72,11 +70,10 @@ public abstract class QdrantResponseBase
         }
 
         private long _payloadIoWrite;
+        
         /// <summary>
         /// Payload IO write operations.
         /// </summary>
-        [Obsolete(
-            $"From qdrant 1.14.0 this property is deprecated. Use {nameof(Hardware.PayloadIoWrite)} instead.")]
         public long PayloadIoWrite
         {
             get => _payloadIoWrite == 0 && Hardware is not null
@@ -87,11 +84,10 @@ public abstract class QdrantResponseBase
         }
 
         private long _vectorIoRead;
+        
         /// <summary>
         /// Vector IO read operations.
         /// </summary>
-        [Obsolete(
-            $"From qdrant 1.14.0 this property is deprecated. Use {nameof(Hardware.VectorIoRead)} instead.")]
         public long VectorIoRead
         {
             get => _vectorIoRead == 0 && Hardware is not null
@@ -105,8 +101,6 @@ public abstract class QdrantResponseBase
         /// <summary>
         /// Vector IO write operations.
         /// </summary>
-        [Obsolete(
-            $"From qdrant 1.14.0 this property is deprecated. Use {nameof(Hardware.VectorIoWrite)} instead.")]
         public long VectorIoWrite
         {
             get => _vectorIoWrite == 0 && Hardware is not null

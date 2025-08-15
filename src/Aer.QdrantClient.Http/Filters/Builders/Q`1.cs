@@ -75,7 +75,7 @@ public static class Q<TPayload>
     /// <summary>
     /// Check if point has a field with any given value.
     /// This filter variant is optimised so the MatchAny is substituted with
-    /// a bunch of MatchVBalue conditions combined with Should.
+    /// a bunch of MatchValue conditions combined with Should.
     /// </summary>
     /// <typeparam name="TField">The type of the payload field.</typeparam>
     /// <typeparam name="TValue">The type of the value to match payload field value against.</typeparam>
@@ -92,7 +92,7 @@ public static class Q<TPayload>
     /// <summary>
     /// Check if point has a field with any given value.
     /// This filter variant is optimised so the MatchAny is substituted with
-    /// a bunch of MatchVBalue conditions combined with Should.
+    /// a bunch of MatchValue conditions combined with Should.
     /// </summary>
     /// <typeparam name="TField">The type of the payload field.</typeparam>
     /// <typeparam name="TValue">The type of the value to match payload field value against.</typeparam>
@@ -127,12 +127,23 @@ public static class Q<TPayload>
     /// <typeparam name="TField">The type of the payload field.</typeparam>
     /// <param name="payloadFieldSelectorExpression">The payload field selector expression.</param>
     /// <param name="substringValue">Payload value to substring match against.</param>
-    public static FilterConditionBase MatchSubstring<TField>(
+    /// <param name="isPhraseMatch">If set to <c>true</c> use phrase matching for search. Requires phrase matching to be enabled for payload field index.</param>
+    /// <remarks>
+    /// Exact texts that will match the condition depend on full-text index configuration. Configuration is defined during the index creation and describe at full-text index.
+    /// If there is no full-text index for the field, the condition will work as exact substring match.
+    /// </remarks>
+    public static FilterConditionBase MatchFulltext<TField>(
         Expression<Func<TPayload, TField>> payloadFieldSelectorExpression,
-        string substringValue)
+        string substringValue,
+        bool isPhraseMatch = false)
     {
         var payloadFieldName = ReflectionHelper.GetPayloadFieldName(payloadFieldSelectorExpression);
-        return new FieldMatchCondition<string>(payloadFieldName, substringValue, isSubstringMatch: true);
+        
+        return new FieldMatchCondition<string>(
+            payloadFieldName,
+            substringValue,
+            isSubstringMatch: true,
+            isPhraseMatch: isPhraseMatch);
     }
 
     /// <summary>
@@ -141,9 +152,9 @@ public static class Q<TPayload>
     /// </summary>
     /// <typeparam name="TField">The type of the payload field.</typeparam>
     /// <param name="payloadFieldSelectorExpression">The payload field selector expression.</param>
-    /// <param name="lessThan">Value that palyload value must be less than.</param>
-    /// <param name="lessThanOrEqual">Value that palyload value must be less than or equal.</param>
-    /// <param name="greaterThan">Value that palyload value must be greater than.</param>
+    /// <param name="lessThan">Value that payload value must be less than.</param>
+    /// <param name="lessThanOrEqual">Value that payload value must be less than or equal.</param>
+    /// <param name="greaterThan">Value that payload value must be greater than.</param>
     /// <param name="greaterThanOrEqual">Value that payload value must be greater than or equal.</param>
     public static FilterConditionBase BeInRange<TField>(
         Expression<Func<TPayload, TField>> payloadFieldSelectorExpression,
@@ -168,8 +179,8 @@ public static class Q<TPayload>
     /// </summary>
     /// <typeparam name="TField">The type of the payload field.</typeparam>
     /// <param name="payloadFieldSelectorExpression">The payload field selector expression.</param>
-    /// <param name="lessThan">Value that palyload value must be less than.</param>
-    /// <param name="lessThanOrEqual">Value that palyload value must be less than or equal.</param>
+    /// <param name="lessThan">Value that payload value must be less than.</param>
+    /// <param name="lessThanOrEqual">Value that payload value must be less than or equal.</param>
     /// <param name="greaterThan">Value that payload value must be greater than.</param>
     /// <param name="greaterThanOrEqual">Value that payload value must be greater than or equal.</param>
     public static FilterConditionBase BeInRange<TField>(
@@ -195,8 +206,8 @@ public static class Q<TPayload>
     /// </summary>
     /// <typeparam name="TField">The type of the payload field.</typeparam>
     /// <param name="payloadFieldSelectorExpression">The payload field selector expression.</param>
-    /// <param name="lessThan">Value that palyload value must be less than.</param>
-    /// <param name="lessThanOrEqual">Value that palyload value must be less than or equal.</param>
+    /// <param name="lessThan">Value that payload value must be less than.</param>
+    /// <param name="lessThanOrEqual">Value that payload value must be less than or equal.</param>
     /// <param name="greaterThan">Value that payload value must be greater than.</param>
     /// <param name="greaterThanOrEqual">Value that payload value must be greater than or equal.</param>
     public static FilterConditionBase BeInRange<TField>(
@@ -217,14 +228,14 @@ public static class Q<TPayload>
     }
 
     /// <summary>
-    /// Check number of values of the payload agains the range of possible integer values.
+    /// Check number of values of the payload against the range of possible integer values.
     /// </summary>
     /// <typeparam name="TField">The type of the payload field.</typeparam>
     /// <param name="payloadFieldSelectorExpression">The payload field selector expression.</param>
-    /// <param name="lessThan">Count that palyload values count must be less than.</param>
-    /// <param name="lessThanOrEqual">Count that palyload values count must be less than or equal.</param>
-    /// <param name="greaterThan">Count that palyload values count must be greater than.</param>
-    /// <param name="greaterThanOrEqual">Count that palyload values count must be greater than or equal.</param>
+    /// <param name="lessThan">Count that payload values count must be less than.</param>
+    /// <param name="lessThanOrEqual">Count that payload values count must be less than or equal.</param>
+    /// <param name="greaterThan">Count that payload values count must be greater than.</param>
+    /// <param name="greaterThanOrEqual">Count that payload values count must be greater than or equal.</param>
     /// <remarks>
     /// If value stored under the <paramref name="payloadFieldSelectorExpression"/> is not an array - it is assumed
     /// that the amount of values is equals to 1.
@@ -270,13 +281,13 @@ public static class Q<TPayload>
     }
 
     /// <summary>
-    /// Check if points geo location lies in a given area designated by a binding box.
+    /// Check if points geolocation lies in a given area designated by a binding box.
     /// </summary>
     /// <typeparam name="TField">The type of the payload field.</typeparam>
     /// <param name="payloadFieldSelectorExpression">The payload field selector expression.</param>
-    /// <param name="topLeftLongitude">Area bounding box top left longtitude.</param>
+    /// <param name="topLeftLongitude">Area bounding box top left longitude.</param>
     /// <param name="topLeftLatitude">Area bounding box top left latitude.</param>
-    /// <param name="bottomRightLongitude">Area bounding box bottom right longtitude.</param>
+    /// <param name="bottomRightLongitude">Area bounding box bottom right longitude.</param>
     /// <param name="bottomRightLatitude">Area bounding box bottom right latitude.</param>
     public static FilterConditionBase BeWithinGeoBoundingBox<TField>(
         Expression<Func<TPayload, TField>> payloadFieldSelectorExpression,
@@ -300,7 +311,7 @@ public static class Q<TPayload>
     /// </summary>
     /// <typeparam name="TField">The type of the payload field.</typeparam>
     /// <param name="payloadFieldSelectorExpression">The payload field selector expression.</param>
-    /// <param name="centerLongitude">Area center longtitude.</param>
+    /// <param name="centerLongitude">Area center longitude.</param>
     /// <param name="centerLatitude">Area center latitude.</param>
     /// <param name="radius">Radius of the area in meters.</param>
     public static FilterConditionBase BeWithinGeoRadius<TField>(

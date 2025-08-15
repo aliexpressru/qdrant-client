@@ -31,7 +31,7 @@ internal class PointsScrollTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task ScrollPoints_CollectionDoesNotExist()
+    public async Task CollectionDoesNotExist()
     {
         var getPointFromNonexistentCollectionResult
             = await _qdrantHttpClient.ScrollPoints(
@@ -47,7 +47,7 @@ internal class PointsScrollTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task ScrollPoints_PointDoesNotExist()
+    public async Task PointDoesNotExist()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -67,9 +67,42 @@ internal class PointsScrollTests : QdrantTestsBase
         getNonexistentPointResult.Status.IsSuccess.Should().BeTrue();
         getNonexistentPointResult.Result.Points.Length.Should().Be(0);
     }
+    
+    [Test]
+    public async Task BlockedByStrictMode()
+    {
+        OnlyIfVersionAfterOrEqual("1.13.0", "Strict mode is not supported before 1.13.0");
+
+        var vectorCount = 10;
+        
+        var (_, upsertPointsByPointIds, _) =
+            await PrepareCollection<TestPayload>(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorCount: vectorCount,
+                strictModeConfig: new StrictModeConfiguration
+                {
+                    Enabled = true,
+                    UnindexedFilteringRetrieve = false, // This setting will cause an error upon query
+                });
+
+        var readPointsResult = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            Q.Must(
+                Q<TestPayload>.MatchAny(p => p.Integer, 1)
+            ),
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true);
+        
+        readPointsResult.Status.IsSuccess.Should().BeFalse();
+
+        readPointsResult.Status.Error.Should().Contain(
+            "Bad request: Index required but not found for \"integer\" of one of the following types: [integer]. Help: Create an index for this key or use a different filter.");
+    }
 
     [Test]
-    public async Task ScrollPoints_WithoutFilter()
+    public async Task WithoutFilter()
     {
         var vectorCount = 10;
 
@@ -104,7 +137,7 @@ internal class PointsScrollTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task ScrollPoints_WithFilter()
+    public async Task WithFilter()
     {
         // NOTE: there is no point of testing this with every possible filter
         // since we are testing this library, not the Qdrant engine
@@ -198,7 +231,7 @@ internal class PointsScrollTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task ScrollPoints_WithFilter_ArrayPayloadProperty()
+    public async Task WithFilter_ArrayPayloadProperty()
     {
         var vectorSize = 10U;
 
@@ -283,7 +316,7 @@ internal class PointsScrollTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task ScrollPoints_Paginated()
+    public async Task Paginated()
     {
         // arrange
 
@@ -357,7 +390,7 @@ internal class PointsScrollTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task ScrollPoints_OrderBy()
+    public async Task OrderBy()
     {
         var vectorCount = 10;
 
@@ -515,7 +548,7 @@ internal class PointsScrollTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task ScrollPoints_OrderBy_StartFrom()
+    public async Task OrderBy_StartFrom()
     {
         var vectorCount = 10;
 
@@ -783,5 +816,157 @@ internal class PointsScrollTests : QdrantTestsBase
         
         foundPointIds.Should().Contain(1);
         foundPointIds.Should().Contain(3);
+    }
+
+    [Test]
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task FullText(bool createFullTextIndex)
+    {
+        var vectorSize = 10U;
+        var vectorCount = 10;
+
+        (await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None)).EnsureSuccess();
+
+        if (createFullTextIndex)
+        {
+            (await _qdrantHttpClient.CreateFullTextPayloadIndex(
+                TestCollectionName,
+                "text",
+                FullTextIndexTokenizerType.Prefix,
+                cancellationToken: CancellationToken.None,
+                retryCount: 0)).EnsureSuccess();
+        }
+
+        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+
+        for (int i = 0; i < vectorCount; i++)
+        {
+            upsertPoints.Add(
+                new(
+                    PointId.Integer((ulong) i),
+                    CreateTestVector(vectorSize),
+                    new TestPayload()
+                    {
+                        Text = $"test text_{i} {i}"
+                    }
+                )
+            );
+        }
+        
+        (await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest<TestPayload>()
+            {
+                Points = upsertPoints
+            },
+            CancellationToken.None)).EnsureSuccess();
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        var readPointsResult = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            Q.Must(
+                Q<TestPayload>.MatchFulltext(p => p.Text, "test")
+            ),
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: false,
+            retryCount: 0);
+        
+        readPointsResult.Status.IsSuccess.Should().BeTrue();
+        
+        readPointsResult.Result.Points.Length.Should().Be(vectorCount);
+    }
+
+    [Test]
+    public async Task FullText_PhraseMatch()
+    {
+        OnlyIfVersionAfterOrEqual("1.15.0", "Phrase search available since 1.15.0");
+
+        var vectorSize = 10U;
+        var vectorCount = 10;
+
+        (await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None)).EnsureSuccess();
+
+        (await _qdrantHttpClient.CreateFullTextPayloadIndex(
+            TestCollectionName,
+            "text",
+        
+            FullTextIndexTokenizerType.Word,
+            CancellationToken.None,
+            minimalTokenLength: 0,
+            maximalTokenLength: 100,
+        
+            isLowercasePayloadTokens: false,
+            isWaitForResult: true,
+            onDisk: true,
+            enablePhraseMatching: true)).EnsureSuccess();
+
+        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+
+        for (int i = 0; i < vectorCount; i++)
+        {
+            upsertPoints.Add(
+                new(
+                    PointId.Integer((ulong) i),
+                    CreateTestVector(vectorSize),
+                    new TestPayload()
+                    {
+                        Text = $"text_{i} {i} test"
+                    }
+                )
+            );
+        }
+
+        (await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest<TestPayload>()
+            {
+                Points = upsertPoints
+            },
+            CancellationToken.None)).EnsureSuccess();
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        var readPointsResult = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            Q.Must(
+                // No points should match this filter without a phrase match enabled
+                Q<TestPayload>.MatchFulltext(p => p.Text, "test 1", isPhraseMatch: true)
+            ),
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: false,
+            retryCount: 0);
+
+        readPointsResult.Status.IsSuccess.Should().BeTrue();
+        readPointsResult.Result.Points.Length.Should().Be(0);
+
+        var readPointsResult2 = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            Q.Must(
+                // Only one point should match this phrase
+                Q<TestPayload>.MatchFulltext(p => p.Text, "1 test", isPhraseMatch: true)
+            ),
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: false,
+            retryCount: 0);
+
+        readPointsResult2.Status.IsSuccess.Should().BeTrue();
+        readPointsResult2.Result.Points.Length.Should().Be(1);
     }
 }

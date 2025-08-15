@@ -98,4 +98,9 @@ public sealed class UpdateCollectionParametersRequest
     /// The sparse vector configuration to update.
     /// </summary>
     public Dictionary<string, SparseVectorConfiguration> SparseVectors { get; set; }
+
+    /// <summary>
+    /// Strict mode configuration.
+    /// </summary>
+    public StrictModeConfiguration StrictModeConfig { get; set; }
 }

@@ -15,7 +15,7 @@ internal class PointIdIEnumerableJsonConverter : JsonConverter<IEnumerable<Point
     {
         if (reader.TokenType == JsonTokenType.Null)
         {
-            return Array.Empty<PointId>();
+            return [];
         }
 
         if (reader.TokenType != JsonTokenType.StartArray)

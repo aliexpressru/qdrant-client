@@ -35,6 +35,10 @@ public class ServiceMethodsTests : QdrantTestsBase
         instanceDetails.Title.Should().NotBeEmpty();
         instanceDetails.Version.Should().NotBeEmpty();
         instanceDetails.Commit.Should().NotBeEmpty();
+
+        instanceDetails.ParsedVersion.Should().NotBeNull();
+        instanceDetails.ParsedVersion.Major.Should().BeGreaterThanOrEqualTo(1);
+        instanceDetails.ParsedVersion.Minor.Should().BeGreaterThan(0);
     }
     
     [TestCase(true)]
@@ -163,12 +167,16 @@ public class ServiceMethodsTests : QdrantTestsBase
     [Test]
     public async Task StorageLock()
     {
+        OnlyIfVersionBefore("1.16.0", "lock API is removed in 1.16.0");
+        
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         var lockReason = "Writes disabled";
 
         var setLockOptionsResult =
+#pragma warning disable CS0618 // Type or member is obsolete
             await _qdrantHttpClient.SetLockOptions(areWritesDisabled: true, lockReason, CancellationToken.None);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         setLockOptionsResult.Status.IsSuccess.Should().BeTrue();
         setLockOptionsResult.Result.Write.Should().BeFalse();
@@ -191,7 +199,9 @@ public class ServiceMethodsTests : QdrantTestsBase
         );
 
         var setNewLockOptionsResult =
+#pragma warning disable CS0618 // Type or member is obsolete
             await _qdrantHttpClient.SetLockOptions(areWritesDisabled: false, lockReason, CancellationToken.None);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         setNewLockOptionsResult.Status.IsSuccess.Should().BeTrue();
 

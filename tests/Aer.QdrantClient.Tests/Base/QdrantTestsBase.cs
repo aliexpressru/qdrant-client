@@ -20,6 +20,8 @@ public class QdrantTestsBase
     protected IConfiguration Configuration;
     protected IServiceProvider ServiceProvider;
 
+    protected Version QdrantVersion { get; private set; }
+
     protected const string TestCollectionName = "test_collection";
     protected const string TestCollectionAlias = "test_collection_alias";
     protected const string TestCollectionAlias2 = "test_collection_alias_2";
@@ -32,6 +34,7 @@ public class QdrantTestsBase
 
     protected const string TestPayloadFieldName = "test_payload_field";
     protected const string TestPayloadFieldName2 = "test_payload_field_2";
+    protected const string TestPayloadFieldName3 = "test_payload_field_3";
 
     // shared random with constant seed to make tests repeatable
     protected static readonly Random Random = new(1567);
@@ -43,6 +46,10 @@ public class QdrantTestsBase
             string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"))
                 ? "Local"
                 : "Testing");
+
+        var qdrantVersion = Environment.GetEnvironmentVariable("QDRANT_VERSION") ?? GetQdrantVersionFromEnvFile();
+
+        QdrantVersion = Version.Parse(qdrantVersion);
 
         var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ??
             throw new InvalidOperationException("ASPNETCORE_ENVIRONMENT in not set");
@@ -75,6 +82,43 @@ public class QdrantTestsBase
 
         ServiceProvider = services.BuildServiceProvider();
     }
+    
+    private string GetQdrantVersionFromEnvFile()
+    {
+        var envFilePath = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            ".env");
+
+        var envFileLines = File.ReadAllLines(envFilePath);
+
+        string foundVersion = null;
+        
+        foreach (var fileLine in envFileLines)
+        {
+            if (fileLine.StartsWith("#"))
+            { 
+                continue;
+            }
+
+            if (fileLine.StartsWith("QDRANT_VERSION"))
+            {
+                if (foundVersion is not null)
+                {
+                    throw new InvalidOperationException(
+                        "More than one active QDRANT_VERSION is set in .env file. Comment out all versions but the one you want to use");
+                }
+
+                foundVersion = fileLine.Split("=v")[1];
+            }
+        }
+
+        if (foundVersion == null)
+        { 
+            throw new InvalidOperationException("QDRANT_VERSION is not set in .env file");
+        }
+        
+        return foundVersion;
+    }
 
     protected async Task ResetStorage(QdrantHttpClient qdrantClient = null)
     {
@@ -84,7 +128,7 @@ public class QdrantTestsBase
             try
             {
                 await DeleteCollectionsAndSnapshots(qdrantClient);
-                
+
                 wasException = false;
             }
             catch (Exception e)
@@ -106,7 +150,16 @@ public class QdrantTestsBase
     {
         var qdrantHttpClient = qdrantClient ?? ServiceProvider.GetRequiredService<QdrantHttpClient>();
 
-        await qdrantHttpClient.SetLockOptions(areWritesDisabled: false, "", CancellationToken.None);
+        try
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            await qdrantHttpClient.SetLockOptions(areWritesDisabled: false, "", CancellationToken.None);
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+        catch
+        { 
+            // ignore
+        }
 
         await qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None);
         await qdrantHttpClient.DeleteCollection(TestCollectionName2, CancellationToken.None);
@@ -175,7 +228,7 @@ public class QdrantTestsBase
 #if NET7_0_OR_GREATER
                 .Select(_ => (float) Half.CreateTruncating(Random.NextDouble()))
 #else
-                .Select(_ => (float) ((Half)Random.NextSingle()))
+                .Select(_ => (float) ((Half) Random.NextSingle()))
 #endif
                 .ToArray();
 
@@ -185,7 +238,7 @@ public class QdrantTestsBase
 #if NET7_0_OR_GREATER
                 .Select(_ => (float) byte.CreateTruncating(Random.Next()))
 #else
-                .Select(_ => (float) unchecked((byte)Random.Next()))
+                .Select(_ => (float) unchecked((byte) Random.Next()))
 #endif
                 .ToArray();
 
@@ -247,7 +300,8 @@ public class QdrantTestsBase
             uint vectorSize = 10U,
             int vectorCount = 10,
             Func<int, TPayload> payloadInitializerFunction = null,
-            QuantizationConfiguration quantizationConfig = null)
+            QuantizationConfiguration quantizationConfig = null,
+            StrictModeConfiguration strictModeConfig = null)
         where TPayload : Payload, new()
     {
         await qdrantHttpClient.CreateCollection(
@@ -255,7 +309,8 @@ public class QdrantTestsBase
             new CreateCollectionRequest(distanceMetric, vectorSize, isServeVectorsFromDisk: true)
             {
                 OnDiskPayload = true,
-                QuantizationConfig = quantizationConfig
+                QuantizationConfig = quantizationConfig,
+                StrictModeConfig = strictModeConfig
             },
             CancellationToken.None);
 
@@ -267,7 +322,10 @@ public class QdrantTestsBase
             var pointId = PointId.Integer((ulong) i);
 
             Payload payload = payloadInitializerFunction is null
-                ? new TestPayload() {Integer = i}
+                ? new TestPayload()
+                {
+                    Integer = i
+                }
                 : payloadInitializerFunction(i);
 
             upsertPoints.Add(
@@ -398,5 +456,31 @@ public class QdrantTestsBase
         );
 
         services.AddSingleton(microsoftLogger);
+    }
+
+    protected void OnlyIfVersionAfterOrEqual(string versionInclusive, string reason)
+    {
+        var version = Version.Parse(versionInclusive);
+        
+        if (QdrantVersion >= version)
+        {
+            return;
+        }
+
+        Assert.Ignore(
+            $"Test ignored because Qdrant version {QdrantVersion} is lower than required {versionInclusive}. Reason: {reason}");
+    }
+
+    protected void OnlyIfVersionBefore(string versionExclusive, string reason)
+    {
+        var version = Version.Parse(versionExclusive);
+        
+        if (QdrantVersion < version)
+        {
+            return;
+        }
+
+        Assert.Ignore(
+            $"Test ignored because Qdrant version {QdrantVersion} is higher than required {versionExclusive}. Reason: {reason}");
     }
 }

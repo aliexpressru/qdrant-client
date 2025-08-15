@@ -71,7 +71,7 @@ public partial class QdrantHttpClient
     /// </summary>
     /// <param name="collectionName">Collection name to get sharding info for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="isTranslatePeerIdsToUris">Is set to <c>true</c>, enriches collection cluster info response with peer URI values.</param>
+    /// <param name="isTranslatePeerIdsToUris">If set to <c>true</c>, enriches collection cluster info response with peer URI values.</param>
     public async Task<GetCollectionClusteringInfoResponse> GetCollectionClusteringInfo(
         string collectionName,
         CancellationToken cancellationToken,
