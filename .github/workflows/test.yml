@@ -21,9 +21,3 @@ jobs:
     with:
         qdrant_image: qdrant/qdrant:v1.14.1
         qdrant_version: 1.14.1
-
-  test_qdrant_v1_13_6:
-    uses: ./.github/workflows/test_template.yml
-    with:
-        qdrant_image: qdrant/qdrant:v1.13.6
-        qdrant_version: 1.13.6

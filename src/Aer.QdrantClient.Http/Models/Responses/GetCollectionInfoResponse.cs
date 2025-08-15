@@ -121,10 +121,15 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         public WalConfiguration WalConfig { get; set; }
 
         /// <summary>
-        /// Represents quantization configuration.
+        /// Quantization configuration.
         /// </summary>
         [JsonConverter(typeof(QuantizationConfigurationJsonConverter))]
         public QuantizationConfiguration QuantizationConfig { get; set; }
+        
+        /// <summary>
+        /// Strict mode configuration.
+        /// </summary>
+        public StrictModeConfiguration StrictModeConfig { get; set; }
 
         /// <summary>
         /// Represents the collection parameters.

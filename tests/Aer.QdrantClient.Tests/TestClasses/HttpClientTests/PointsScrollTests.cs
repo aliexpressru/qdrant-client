@@ -67,6 +67,39 @@ internal class PointsScrollTests : QdrantTestsBase
         getNonexistentPointResult.Status.IsSuccess.Should().BeTrue();
         getNonexistentPointResult.Result.Points.Length.Should().Be(0);
     }
+    
+    [Test]
+    public async Task BlockedByStrictMode()
+    {
+        OnlyIfVersionAfterOrEqual("1.13.0", "Strict mode is not supported before 1.13.0");
+
+        var vectorCount = 10;
+        
+        var (_, upsertPointsByPointIds, _) =
+            await PrepareCollection<TestPayload>(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorCount: vectorCount,
+                strictModeConfig: new StrictModeConfiguration
+                {
+                    Enabled = true,
+                    UnindexedFilteringRetrieve = false, // This setting will cause an error upon query
+                });
+
+        var readPointsResult = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            Q.Must(
+                Q<TestPayload>.MatchAny(p => p.Integer, 1)
+            ),
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true);
+        
+        readPointsResult.Status.IsSuccess.Should().BeFalse();
+
+        readPointsResult.Status.Error.Should().Contain(
+            "Bad request: Index required but not found for \"integer\" of one of the following types: [integer]. Help: Create an index for this key or use a different filter.");
+    }
 
     [Test]
     public async Task WithoutFilter()

@@ -108,6 +108,11 @@ public sealed class CreateCollectionRequest
     /// The sparse vector configuration.
     /// </summary>
     public Dictionary<string, SparseVectorConfiguration> SparseVectors { get; set; }
+    
+    /// <summary>
+    /// The strict-mode configuration.
+    /// </summary>
+    public StrictModeConfiguration StrictModeConfig { get; set; }
 
     /// <summary>Initializes a new instance of the <see cref="CreateCollectionRequest" /> class with singe vector
     /// or multiple named vectors with identical configuration.</summary>

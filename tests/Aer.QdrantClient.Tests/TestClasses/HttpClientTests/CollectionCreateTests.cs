@@ -642,4 +642,92 @@ public class CollectionCreateTests : QdrantTestsBase
         vectorsQuantizationConfig.Quantile.Should().Be(0.9f);
         vectorsQuantizationConfig.AlwaysRam.Should().BeTrue();
     }
+
+    [Test]
+    public async Task StrictMode()
+    {
+        OnlyIfVersionAfterOrEqual("1.13.0", "Strict mode is not supported before 1.13.0");
+        
+        var strictModeConfig = new StrictModeConfiguration
+        {
+            Enabled = true,
+            MaxQueryLimit = 1000,
+            MaxTimeout = 5000,
+            UnindexedFilteringRetrieve = true,
+            UnindexedFilteringUpdate = false,
+            SearchMaxHnswEf = 200,
+            SearchAllowExact = true,
+            SearchMaxOversampling = 2.3,
+            UpsertMaxBatchsize = 10,
+            MaxCollectionVectorSizeBytes = 100,
+            ReadRateLimit = 10,
+            WriteRateLimit = 10,
+            MaxCollectionPayloadSizeBytes = 100,
+            MaxPointsCount = 10,
+            FilterMaxConditions = 3,
+            ConditionMaxSize = 2, // This setting will cause an error upon query
+            MultivectorConfig = new(){
+                ["Vector1"] = new(){
+                    MaxVectors = 10
+                }
+            },
+            SparseConfig =new(){
+                ["Vector2"] = new(){
+                    MaxLength = 1000
+                }
+            }
+        };
+        
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 10, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                StrictModeConfig = strictModeConfig
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
+
+        collectionCreationResult.Should().NotBeNull();
+        collectionCreationResult.Result.Should().BeTrue();
+
+        var createdCollectionInfo =
+            (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
+
+        createdCollectionInfo.Config.StrictModeConfig.Should().BeEquivalentTo(strictModeConfig);
+        
+        // Try to insert more points than allowed by MaxPointsCount
+
+        var upsertPointsToNonExistentCollectionResult
+            = await _qdrantHttpClient.UpsertPoints(
+                TestCollectionName,
+                new UpsertPointsRequest<TestPayload>()
+                {
+                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    {
+                        new(
+                            PointId.Integer(1),
+                            CreateTestVector(10),
+                            "test1"
+                        ),
+
+                        new(
+                            PointId.Integer(2),
+                            CreateTestVector(10),
+                            "test2"
+                        ),
+
+                        new(
+                            PointId.Integer(3),
+                            CreateTestVector(10),
+                            "test3"
+                        )
+                    }
+                },
+                CancellationToken.None);
+
+        upsertPointsToNonExistentCollectionResult.EnsureSuccess();
+    }
 }

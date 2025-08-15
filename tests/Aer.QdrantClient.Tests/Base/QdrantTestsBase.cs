@@ -291,7 +291,8 @@ public class QdrantTestsBase
             uint vectorSize = 10U,
             int vectorCount = 10,
             Func<int, TPayload> payloadInitializerFunction = null,
-            QuantizationConfiguration quantizationConfig = null)
+            QuantizationConfiguration quantizationConfig = null,
+            StrictModeConfiguration strictModeConfig = null)
         where TPayload : Payload, new()
     {
         await qdrantHttpClient.CreateCollection(
@@ -299,7 +300,8 @@ public class QdrantTestsBase
             new CreateCollectionRequest(distanceMetric, vectorSize, isServeVectorsFromDisk: true)
             {
                 OnDiskPayload = true,
-                QuantizationConfig = quantizationConfig
+                QuantizationConfig = quantizationConfig,
+                StrictModeConfig = strictModeConfig
             },
             CancellationToken.None);
 
@@ -311,7 +313,10 @@ public class QdrantTestsBase
             var pointId = PointId.Integer((ulong) i);
 
             Payload payload = payloadInitializerFunction is null
-                ? new TestPayload() {Integer = i}
+                ? new TestPayload()
+                {
+                    Integer = i
+                }
                 : payloadInitializerFunction(i);
 
             upsertPoints.Add(

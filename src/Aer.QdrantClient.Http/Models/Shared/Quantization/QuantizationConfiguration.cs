@@ -7,7 +7,6 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 /// </summary>
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "ReplaceAutoPropertyWithComputedProperty")]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public abstract class QuantizationConfiguration
@@ -32,7 +31,6 @@ public abstract class QuantizationConfiguration
         /// <summary>
         /// The type of the quantized vector components. Currently, Qdrant supports only <c>int8</c>.
         /// </summary>
-        [SuppressMessage("ReSharper", "UnusedMember.Global")]
         public string Type { get; } = "int8";
 
         /// <summary>

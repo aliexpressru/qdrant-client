@@ -28,7 +28,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateIndex_CollectionDoesNotExist()
+    public async Task CollectionDoesNotExist()
     {
         var createNonExistentCollectionIndexResult =
             await _qdrantHttpClient.CreatePayloadIndex(
@@ -44,9 +44,9 @@ internal class CollectionIndexTests : QdrantTestsBase
             .Should().Contain(TestCollectionName)
             .And.Contain("doesn't exist");
     }
-
+    
     [Test]
-    public async Task CreateIndex_OneField()
+    public async Task CreateIndex()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -56,7 +56,128 @@ internal class CollectionIndexTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var createCollectionIndexResult =
+        var createCollectionIndexResult1 =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                PayloadIndexedFieldType.Integer,
+                CancellationToken.None,
+                isWaitForResult: true,
+                isLookupEnabled: false,
+                isRangeEnabled: true);
+
+        var createCollectionIndexResult2 =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName2,
+                PayloadIndexedFieldType.Keyword,
+                CancellationToken.None,
+                isWaitForResult: true);
+
+        // Default lookup\range parameters integer index
+        var createCollectionIndexResult3 =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName3,
+                PayloadIndexedFieldType.Integer,
+                CancellationToken.None,
+                isWaitForResult: true);
+
+        createCollectionIndexResult1.Status.IsSuccess.Should().BeTrue();
+        createCollectionIndexResult1.Result.Should().NotBeNull();
+
+        createCollectionIndexResult2.Status.IsSuccess.Should().BeTrue();
+        createCollectionIndexResult2.Result.Should().NotBeNull();
+        
+        createCollectionIndexResult3.Status.IsSuccess.Should().BeTrue();
+        createCollectionIndexResult3.Result.Should().NotBeNull();
+
+        var collectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionInfo.Status.IsSuccess.Should().BeTrue();
+
+        collectionInfo.Result.PayloadSchema.Count.Should().Be(3);
+        collectionInfo.Result.PayloadSchema.Should().ContainKeys(
+            TestPayloadFieldName,
+            TestPayloadFieldName2,
+            TestPayloadFieldName3);
+
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Integer);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Lookup.Should().BeFalse();
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Range.Should().BeTrue();
+        
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].DataType.Should().Be(PayloadIndexedFieldType.Keyword);
+
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName3].DataType.Should().Be(PayloadIndexedFieldType.Integer);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName3].Params.Lookup.Should().BeTrue();
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName3].Params.Range.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task TwoIdenticalFields()
+    {
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var createCollectionIndexResult1 =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                PayloadIndexedFieldType.Keyword,
+                CancellationToken.None,
+                isWaitForResult: true);
+
+        var createCollectionIndexResult2 =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                PayloadIndexedFieldType.Keyword,
+                CancellationToken.None,
+                isWaitForResult: true);
+
+        createCollectionIndexResult1.Status.IsSuccess.Should().BeTrue();
+        createCollectionIndexResult1.Result.Should().NotBeNull();
+
+        createCollectionIndexResult2.Status.IsSuccess.Should().BeTrue();
+        createCollectionIndexResult2.Result.Should().NotBeNull();
+
+        var collectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionInfo.Status.IsSuccess.Should().BeTrue();
+
+        collectionInfo.Result.PayloadSchema.Count.Should().Be(1);
+        collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName);
+
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Keyword);
+    }
+
+    [Test]
+    public async Task TwoIdenticalFields_DifferentTypes()
+    {
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var createCollectionIndexResult1 =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                PayloadIndexedFieldType.Keyword,
+                CancellationToken.None,
+                isWaitForResult: true);
+
+        var createCollectionIndexResult2 =
             await _qdrantHttpClient.CreatePayloadIndex(
                 TestCollectionName,
                 TestPayloadFieldName,
@@ -64,15 +185,16 @@ internal class CollectionIndexTests : QdrantTestsBase
                 CancellationToken.None,
                 isWaitForResult: true);
 
-        createCollectionIndexResult.Status.IsSuccess.Should().BeTrue();
+        createCollectionIndexResult1.Status.IsSuccess.Should().BeTrue();
+        createCollectionIndexResult1.Result.Should().NotBeNull();
 
-        createCollectionIndexResult.Result.Should().NotBeNull();
+        createCollectionIndexResult2.Status.IsSuccess.Should().BeTrue();
+        createCollectionIndexResult2.Result.Should().NotBeNull();
 
         var collectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
 
         collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
         collectionInfo.Status.IsSuccess.Should().BeTrue();
-
         collectionInfo.Result.PayloadSchema.Count.Should().Be(1);
         collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName);
 
@@ -179,7 +301,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateFulltextIndex()
+    public async Task FulltextIndex()
     { 
     await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -248,7 +370,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateFulltextIndex_StemmerAndStopwords()
+    public async Task FulltextIndex_StemmerAndStopwords()
     {
         OnlyIfVersionAfterOrEqual("1.15.0", "Stemmer and stopwords only supported since 1.15.0");
         
@@ -367,7 +489,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateIndex_OnDisk()
+    public async Task OnDisk()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -399,7 +521,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateIndex_Tenant_Principal()
+    public async Task Tenant_Principal()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -474,7 +596,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateIndex_RestrictedTypes()
+    public async Task RestrictedTypes()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -488,6 +610,16 @@ internal class CollectionIndexTests : QdrantTestsBase
                 }
             },
             CancellationToken.None);
+
+        var createCollectionIntegerIndexWithoutLookupAndRangeAct = async ()=>
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                PayloadIndexedFieldType.Integer,
+                CancellationToken.None,
+                isWaitForResult: true,
+                isLookupEnabled: false,
+                isRangeEnabled: false);
 
         var createCollectionPrincipalIndexAct = async ()=>
             await _qdrantHttpClient.CreatePayloadIndex(
@@ -507,144 +639,39 @@ internal class CollectionIndexTests : QdrantTestsBase
                 isWaitForResult: true,
                 isTenant: true);
 
+        var createCollectionRangeIndexAct = async () =>
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                PayloadIndexedFieldType.Keyword,
+                CancellationToken.None,
+                isWaitForResult: true,
+                isRangeEnabled: true);
+
+        var createCollectionLookupIndexAct = async () =>
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                PayloadIndexedFieldType.Keyword,
+                CancellationToken.None,
+                isWaitForResult: true,
+                isLookupEnabled: true);
+
+        await createCollectionIntegerIndexWithoutLookupAndRangeAct.Should().ThrowAsync<QdrantCommunicationException>()
+            .Where(e => e.Message.Contains(
+                "Validation error: the 'lookup' and 'range' capabilities can't be both disabled"));
+        
         await createCollectionPrincipalIndexAct.Should().ThrowAsync<QdrantUnsupportedFieldSchemaForIndexConfiguration>()
             .Where(e => e.Message.Contains("Principal"));
 
         await createCollectionTenantIndexAct.Should().ThrowAsync<QdrantUnsupportedFieldSchemaForIndexConfiguration>()
             .Where(e => e.Message.Contains("Tenant"));
-    }
-
-    [Test]
-    public async Task CreateIndex_TwoFields()
-    {
-        await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true
-            },
-            CancellationToken.None);
-
-        var createCollectionIndexResult1 =
-            await _qdrantHttpClient.CreatePayloadIndex(
-                TestCollectionName,
-                TestPayloadFieldName,
-                PayloadIndexedFieldType.Float,
-                CancellationToken.None,
-                isWaitForResult: true);
-
-        var createCollectionIndexResult2 =
-            await _qdrantHttpClient.CreatePayloadIndex(
-                TestCollectionName,
-                TestPayloadFieldName2,
-                PayloadIndexedFieldType.Keyword,
-                CancellationToken.None,
-                isWaitForResult: true);
-
-        createCollectionIndexResult1.Status.IsSuccess.Should().BeTrue();
-        createCollectionIndexResult1.Result.Should().NotBeNull();
-
-        createCollectionIndexResult2.Status.IsSuccess.Should().BeTrue();
-        createCollectionIndexResult2.Result.Should().NotBeNull();
-
-        var collectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
-
-        collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionInfo.Status.IsSuccess.Should().BeTrue();
-
-        collectionInfo.Result.PayloadSchema.Count.Should().Be(2);
-        collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName);
-        collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName2);
-
-        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Float);
-        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].DataType.Should().Be(PayloadIndexedFieldType.Keyword);
-    }
-
-    [Test]
-    public async Task CreateIndex_TwoIdenticalFields()
-    {
-        await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true
-            },
-            CancellationToken.None);
-
-        var createCollectionIndexResult1 =
-            await _qdrantHttpClient.CreatePayloadIndex(
-                TestCollectionName,
-                TestPayloadFieldName,
-                PayloadIndexedFieldType.Keyword,
-                CancellationToken.None,
-                isWaitForResult: true);
-
-        var createCollectionIndexResult2 =
-            await _qdrantHttpClient.CreatePayloadIndex(
-                TestCollectionName,
-                TestPayloadFieldName,
-                PayloadIndexedFieldType.Keyword,
-                CancellationToken.None,
-                isWaitForResult: true);
-
-        createCollectionIndexResult1.Status.IsSuccess.Should().BeTrue();
-        createCollectionIndexResult1.Result.Should().NotBeNull();
-
-        createCollectionIndexResult2.Status.IsSuccess.Should().BeTrue();
-        createCollectionIndexResult2.Result.Should().NotBeNull();
-
-        var collectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
-
-        collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionInfo.Status.IsSuccess.Should().BeTrue();
-
-        collectionInfo.Result.PayloadSchema.Count.Should().Be(1);
-        collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName);
-
-        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Keyword);
-    }
-
-    [Test]
-    public async Task CreateIndex_TwoIdenticalFields_DifferentTypes()
-    {
-        await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true
-            },
-            CancellationToken.None);
-
-        var createCollectionIndexResult1 =
-            await _qdrantHttpClient.CreatePayloadIndex(
-                TestCollectionName,
-                TestPayloadFieldName,
-                PayloadIndexedFieldType.Keyword,
-                CancellationToken.None,
-                isWaitForResult: true);
-
-        var createCollectionIndexResult2 =
-            await _qdrantHttpClient.CreatePayloadIndex(
-                TestCollectionName,
-                TestPayloadFieldName,
-                PayloadIndexedFieldType.Float,
-                CancellationToken.None,
-                isWaitForResult: true);
-
-        createCollectionIndexResult1.Status.IsSuccess.Should().BeTrue();
-        createCollectionIndexResult1.Result.Should().NotBeNull();
-
-        createCollectionIndexResult2.Status.IsSuccess.Should().BeTrue();
-        createCollectionIndexResult2.Result.Should().NotBeNull();
-
-        var collectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
-
-        collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionInfo.Status.IsSuccess.Should().BeTrue();
-        collectionInfo.Result.PayloadSchema.Count.Should().Be(1);
-        collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName);
-
-        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Float);
+        
+        await createCollectionRangeIndexAct.Should().ThrowAsync<QdrantUnsupportedFieldSchemaForIndexConfiguration>()
+            .Where(e => e.Message.Contains("Range"));
+        
+        await createCollectionLookupIndexAct.Should().ThrowAsync<QdrantUnsupportedFieldSchemaForIndexConfiguration>()
+            .Where(e => e.Message.Contains("Lookup"));
     }
 
     [Test]
