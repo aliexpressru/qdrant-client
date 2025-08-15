@@ -85,11 +85,14 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
-        if (isTranslatePeerIdsToUris)
-        { 
+        if (isTranslatePeerIdsToUris
+            && collectionShardingInfo.Status.IsSuccess
+            && collectionShardingInfo.Result is not null)
+        {
             var clusterInfo = await GetClusterInfo(cancellationToken);
 
-            collectionShardingInfo.Result.PeerUri = clusterInfo.Result.ParsedPeers[collectionShardingInfo.Result.PeerId].Uri;
+            collectionShardingInfo.Result.PeerUri =
+                clusterInfo.Result.ParsedPeers[collectionShardingInfo.Result.PeerId].Uri;
 
             if (collectionShardingInfo.Result.RemoteShards is not null)
             {

@@ -40,6 +40,18 @@ public class ClusterTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task GetCollectionClusteringInfo_NonExistentCollection()
+    {
+        var collectionClusteringInfo =
+            await _qdrantHttpClient.GetCollectionClusteringInfo(
+                TestCollectionName,
+                CancellationToken.None,
+                isTranslatePeerIdsToUris: true);
+
+        collectionClusteringInfo.Status.IsSuccess.Should().BeFalse();
+    }
+
+    [Test]
     public async Task GetCollectionClusteringInfo()
     {
         await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
