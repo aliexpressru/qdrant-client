@@ -167,7 +167,7 @@ public class ServiceMethodsTests : QdrantTestsBase
     [Test]
     public async Task StorageLock()
     {
-        OnlyIfVersionBefore(Version.Parse("1.16.0"), "lock API is removed in 1.16.0");
+        OnlyIfVersionBefore("1.16.0", "lock API is removed in 1.16.0");
         
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 

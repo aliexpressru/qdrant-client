@@ -250,7 +250,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     [Test]
     public async Task CreateFulltextIndex_StemmerAndStopwords()
     {
-        OnlyIfVersionAfterOrEqual(Version.Parse("1.15.0"), "Stemmer and stopwords only supported since 1.15.0");
+        OnlyIfVersionAfterOrEqual("1.15.0", "Stemmer and stopwords only supported since 1.15.0");
         
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,

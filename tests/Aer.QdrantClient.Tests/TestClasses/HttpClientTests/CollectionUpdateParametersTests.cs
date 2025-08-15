@@ -29,7 +29,7 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
     [Test]
     public async Task CollectionDoesNotExist()
     {
-        OnlyIfVersionBefore(Version.Parse("1.16.0"), "mmap_threshold parameter of the collection optimizer is deprecated and going to be removed in v1.16");
+        OnlyIfVersionBefore("1.16.0", "mmap_threshold parameter of the collection optimizer is deprecated and going to be removed in v1.16");
         
         var updateNoCollectionParametersResult = await _qdrantHttpClient.UpdateCollectionParameters(
             TestCollectionName,

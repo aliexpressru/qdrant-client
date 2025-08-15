@@ -855,7 +855,7 @@ internal class PointsScrollTests : QdrantTestsBase
     [Test]
     public async Task FullText_PhraseMatch()
     {
-        OnlyIfVersionAfterOrEqual(Version.Parse("1.15.0"), "Phrase search available since 1.15.0");
+        OnlyIfVersionAfterOrEqual("1.15.0", "Phrase search available since 1.15.0");
 
         var vectorSize = 10U;
         var vectorCount = 10;

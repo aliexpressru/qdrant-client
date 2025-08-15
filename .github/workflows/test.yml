@@ -10,7 +10,7 @@ on:
     - main
 
 jobs:
-  test_qdrant_latest:
+  test_qdrant_1_15_2:
     uses: ./.github/workflows/test_template.yml
     with:
       qdrant_image: qdrant/qdrant:v1.15.2

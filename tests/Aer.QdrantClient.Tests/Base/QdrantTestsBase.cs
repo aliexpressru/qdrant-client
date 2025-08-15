@@ -101,15 +101,20 @@ public class QdrantTestsBase
             }
 
             if (fileLine.StartsWith("QDRANT_VERSION"))
-            { 
+            {
+                if (foundVersion is not null)
+                {
+                    throw new InvalidOperationException(
+                        "More than one active QDRANT_VERSION is set in .env file. Comment out all versions but the one you want to use");
+                }
+
                 foundVersion = fileLine.Split("=v")[1];
             }
         }
 
         if (foundVersion == null)
         { 
-            throw new InvalidOperationException(
-                "QDRANT_VERSION is not set in .env file. Please set it to the desired version.");
+            throw new InvalidOperationException("QDRANT_VERSION is not set in .env file");
         }
         
         return foundVersion;

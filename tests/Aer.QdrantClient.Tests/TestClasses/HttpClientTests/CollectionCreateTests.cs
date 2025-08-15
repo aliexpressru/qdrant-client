@@ -481,7 +481,7 @@ public class CollectionCreateTests : QdrantTestsBase
     [Test]
     public async Task BinaryQuantization_Before_1_15()
     { 
-        OnlyIfVersionBefore(Version.Parse("1.15.0"), "Binary encoding and query encoding is not supported before 1.15.0");
+        OnlyIfVersionBefore("1.15.0", "Binary encoding and query encoding is not supported before 1.15.0");
 
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -516,7 +516,7 @@ public class CollectionCreateTests : QdrantTestsBase
     [Test]
     public async Task BinaryQuantization()
     {
-        OnlyIfVersionAfterOrEqual(Version.Parse("1.15.0"), "Binary encoding and query encoding is not supported before 1.15.0");
+        OnlyIfVersionAfterOrEqual("1.15.0", "Binary encoding and query encoding is not supported before 1.15.0");
         
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,

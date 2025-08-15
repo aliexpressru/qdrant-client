@@ -119,7 +119,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     [Test]
     public async Task CreateCollection_InitFrom()
     {
-        OnlyIfVersionBefore(Version.Parse("1.16.0"), "init_from parameter is removed in 1.16.0");
+        OnlyIfVersionBefore("1.16.0", "init_from parameter is removed in 1.16.0");
         
         var vectorSize = 10U;
 
