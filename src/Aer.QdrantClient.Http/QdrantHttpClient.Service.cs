@@ -85,7 +85,6 @@ public partial class QdrantHttpClient
         string reasonMessage,
         CancellationToken cancellationToken)
     {
-        
         var qdrantVersion = (await GetInstanceDetails(cancellationToken)).ParsedVersion;
 
         if (qdrantVersion.Minor >= 16)

@@ -150,7 +150,16 @@ public class QdrantTestsBase
     {
         var qdrantHttpClient = qdrantClient ?? ServiceProvider.GetRequiredService<QdrantHttpClient>();
 
-        await qdrantHttpClient.SetLockOptions(areWritesDisabled: false, "", CancellationToken.None);
+        try
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            await qdrantHttpClient.SetLockOptions(areWritesDisabled: false, "", CancellationToken.None);
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+        catch
+        { 
+            // ignore
+        }
 
         await qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None);
         await qdrantHttpClient.DeleteCollection(TestCollectionName2, CancellationToken.None);

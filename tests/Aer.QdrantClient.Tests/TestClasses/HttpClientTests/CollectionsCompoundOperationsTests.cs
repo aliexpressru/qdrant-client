@@ -150,7 +150,7 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        qdrantClient.StartCreatingCollectionIndexes(
+        qdrantClient.StartCreatingCollectionPayloadIndexes(
             TestCollectionName,
             [
                 new CollectionPayloadIndexDefinition(

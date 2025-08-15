@@ -29,17 +29,13 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
     [Test]
     public async Task CollectionDoesNotExist()
     {
-        OnlyIfVersionBefore("1.16.0", "mmap_threshold parameter of the collection optimizer is deprecated and going to be removed in v1.16");
-        
         var updateNoCollectionParametersResult = await _qdrantHttpClient.UpdateCollectionParameters(
             TestCollectionName,
             new UpdateCollectionParametersRequest()
             {
                 OptimizersConfig = new()
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    MemmapThreshold = 1
-#pragma warning restore CS0618 // Type or member is obsolete
+                    MaxSegmentSize = 10
                 }
             },
             CancellationToken.None);
@@ -63,7 +59,6 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
                 OnDiskPayload = true,
                 OptimizersConfig = new OptimizersConfiguration()
                 {
-                    MemmapThreshold = 1000,
                     MaxOptimizationThreads = 1,
                     IndexingThreshold = 1
                 },
@@ -94,13 +89,15 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
 
         updatedCollectionInfo.Result.Config.OptimizerConfig.IndexingThreshold.Should().Be(1);
         updatedCollectionInfo.Result.Config.OptimizerConfig.MaxOptimizationThreads.Should().Be(1);
-        updatedCollectionInfo.Result.Config.OptimizerConfig.MemmapThreshold.Should().Be(1000);
         updatedCollectionInfo.Result.Config.HnswConfig.MaxIndexingThreads.Should().Be(1);
     }
 
     [Test]
-    public async Task UpdateCollectionParameters()
+    [Obsolete("Testing obsolete functionality")]
+    public async Task UpdateCollectionParameters_Before_1_16_0()
     {
+        OnlyIfVersionBefore("1.16.0", "mmap_threshold parameter of the collection optimizer is deprecated and going to be removed in v1.16");
+        
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
@@ -161,6 +158,71 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task UpdateCollectionParameters()
+    { 
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = false,
+                OptimizersConfig = new OptimizersConfiguration()
+                {
+                    MaxOptimizationThreads = 1,
+                    IndexingThreshold = 1
+                },
+                HnswConfig = new HnswConfiguration(){
+                    MaxIndexingThreads = 1
+                }
+            },
+            CancellationToken.None);
+
+        const int newMaxOptimizationThreads = 10;
+        const int newMaxIndexingThreads = 11;
+
+        var updateCollectionParametersResult = await _qdrantHttpClient.UpdateCollectionParameters(
+            TestCollectionName,
+            new UpdateCollectionParametersRequest()
+            {
+                Params = new(){
+                    OnDiskPayload = true
+                },
+                OptimizersConfig = new()
+                {
+                    MaxOptimizationThreads = newMaxOptimizationThreads
+                },
+                HnswConfig = new HnswConfiguration(){
+                    MaxIndexingThreads = newMaxIndexingThreads
+                },
+                StrictModeConfig = new StrictModeConfiguration(){
+                    Enabled = true,
+                    MaxPointsCount = 1000
+                }
+            },
+            CancellationToken.None);
+        
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        var updatedCollectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        updateCollectionParametersResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        updateCollectionParametersResult.Status.IsSuccess.Should().BeTrue();
+
+        updateCollectionParametersResult.Result.Should().NotBeNull();
+
+        updatedCollectionInfo.Result.Status.Should().Be(QdrantCollectionStatus.Green);
+        updatedCollectionInfo.Result.OptimizerStatus.IsOk.Should().BeTrue();
+
+        updatedCollectionInfo.Result.Config.OptimizerConfig.IndexingThreshold.Should().Be(1); // should not change
+
+        updatedCollectionInfo.Result.Config.OptimizerConfig.MaxOptimizationThreads.Should().Be(newMaxOptimizationThreads);
+        updatedCollectionInfo.Result.Config.HnswConfig.MaxIndexingThreads.Should().Be(newMaxIndexingThreads);
+        updatedCollectionInfo.Result.Config.Params.OnDiskPayload.Should().BeTrue();
+        
+        updatedCollectionInfo.Result.Config.StrictModeConfig.Enabled.Should().BeTrue();
+        updatedCollectionInfo.Result.Config.StrictModeConfig.MaxPointsCount.Should().Be(1000);
+    }
+
+    [Test]
     public async Task WithRetry()
     {
         await _qdrantHttpClient.CreateCollection(
@@ -170,7 +232,6 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
                 OnDiskPayload = false,
                 OptimizersConfig = new OptimizersConfiguration()
                 {
-                    MemmapThreshold = 1000,
                     MaxOptimizationThreads = 1,
                     IndexingThreshold = 1
                 },
@@ -181,7 +242,7 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        const int newMemmapThreshold = 1;
+        const int newOptimizationThreads = 10;
 
         var throwingQdrantHttpClient = new ThrowingQdrantHttpClient(_qdrantHttpClient.ApiClient);
         
@@ -197,7 +258,7 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
             {
                 OptimizersConfig = new()
                 {
-                    MemmapThreshold = newMemmapThreshold,
+                    MaxOptimizationThreads = newOptimizationThreads,
                 }
             },
             CancellationToken.None,
@@ -225,7 +286,7 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
             await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
 
         // Just check that thew request to update collection parameters actually worked
-        updatedCollectionInfo.Result.Config.OptimizerConfig.MemmapThreshold.Should().Be(newMemmapThreshold);
+        updatedCollectionInfo.Result.Config.OptimizerConfig.MaxOptimizationThreads.Should().Be(newOptimizationThreads);
     }
 
     [Test]
@@ -254,7 +315,6 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
                 OnDiskPayload = true,
                 OptimizersConfig = new OptimizersConfiguration()
                 {
-                    MemmapThreshold = 1000,
                     MaxOptimizationThreads = 1,
                     IndexingThreshold = 1
                 },
@@ -282,7 +342,6 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
         
         updatedCollectionInfo.Result.Config.OptimizerConfig.IndexingThreshold.Should().Be(1);
         updatedCollectionInfo.Result.Config.OptimizerConfig.MaxOptimizationThreads.Should().Be(1);
-        updatedCollectionInfo.Result.Config.OptimizerConfig.MemmapThreshold.Should().Be(1000);
         updatedCollectionInfo.Result.Config.HnswConfig.MaxIndexingThreads.Should().Be(1);
     }
 }
