@@ -102,6 +102,7 @@ public class PointsQueryTests : QdrantTestsBase
         if (!IsCiEnvironment)
         {
             // CI environment container does not have usage statistics enabled
+            
             nearestPointsByVectorResponse.Usage.Cpu.Should().BeGreaterThan(0);
             nearestPointsByVectorResponse.Usage.PayloadIoRead.Should().BeGreaterThan(0);
             nearestPointsByVectorResponse.Usage.VectorIoRead.Should().BeGreaterThan(0);
