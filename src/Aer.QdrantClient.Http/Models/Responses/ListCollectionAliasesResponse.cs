@@ -9,7 +9,8 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public sealed class ListCollectionAliasesResponse : QdrantResponseBase<ListCollectionAliasesResponse.CollectionAliasesResult>
+public sealed class ListCollectionAliasesResponse
+    : QdrantResponseBase<ListCollectionAliasesResponse.CollectionAliasesResult>
 {
     /// <summary>
     /// Represents collection aliases result.

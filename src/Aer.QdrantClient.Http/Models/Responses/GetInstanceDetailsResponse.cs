@@ -6,6 +6,7 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// Represents the Qdrant instance details response.
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public sealed class GetInstanceDetailsResponse
 {
     private Version _parsedVersion;

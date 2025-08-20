@@ -15,7 +15,7 @@ namespace Aer.QdrantClient.Http;
 public partial class QdrantHttpClient
 {
     #region Create \ Update \ Delete operations
-    
+
     /// <summary>
     /// Delete points by specified ids.
     /// </summary>
@@ -116,7 +116,8 @@ public partial class QdrantHttpClient
 
         var orderingValue = (ordering ?? OrderingType.Weak).ToString().ToLowerInvariant();
 
-        var url = $"/collections/{collectionName}/points?wait={ToUrlQueryString(isWaitForResult)}&ordering={orderingValue}";
+        var url =
+            $"/collections/{collectionName}/points?wait={ToUrlQueryString(isWaitForResult)}&ordering={orderingValue}";
 
         var response = await ExecuteRequest<UpsertPointsRequest<TPayload>, PointsOperationResponse>(
             url,
@@ -733,7 +734,8 @@ public partial class QdrantHttpClient
     {
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
-        var url = $"/collections/{collectionName}/points/search/matrix/pairs?consistency={consistencyValue}&timeout={GetTimeoutValueOrDefault(timeout)}";
+        var url =
+            $"/collections/{collectionName}/points/search/matrix/pairs?consistency={consistencyValue}&timeout={GetTimeoutValueOrDefault(timeout)}";
 
         var response = await ExecuteRequest<SearchPointsDistanceMatrixRequest, SearchPointsDistanceMatrixPairsResponse>(
             url,
@@ -776,14 +778,15 @@ public partial class QdrantHttpClient
         var url =
             $"/collections/{collectionName}/points/search/matrix/offsets?consistency={consistencyValue}&timeout={GetTimeoutValueOrDefault(timeout)}";
 
-        var response = await ExecuteRequest<SearchPointsDistanceMatrixRequest, SearchPointsDistanceMatrixOffsetsResponse>(
-            url,
-            HttpMethod.Post,
-            searchPointsDistanceMatrixRequest,
-            cancellationToken,
-            retryCount,
-            retryDelay,
-            onRetry);
+        var response =
+            await ExecuteRequest<SearchPointsDistanceMatrixRequest, SearchPointsDistanceMatrixOffsetsResponse>(
+                url,
+                HttpMethod.Post,
+                searchPointsDistanceMatrixRequest,
+                cancellationToken,
+                retryCount,
+                retryDelay,
+                onRetry);
 
         return response;
     }

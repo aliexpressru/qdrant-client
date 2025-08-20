@@ -1,15 +1,13 @@
-﻿using Aer.QdrantClient.Http.Models.Responses.Base;
+﻿using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Shared;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Aer.QdrantClient.Http.Models.Responses;
 
 /// <summary>
 /// Represents the response of the download snapshot operation.
 /// </summary>
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public sealed class DownloadSnapshotResponse : QdrantResponseBase<DownloadSnapshotResponse.DownloadSnapshotUnit>
 {
     // NOTE: this class is manually created unlike any other response classes which are deserialized.

@@ -12,8 +12,6 @@ namespace Aer.QdrantClient.Http;
 [SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public partial class QdrantHttpClient
 {
-    internal const uint DEFAULT_COLLECTION_INDEXING_THRESHOLD = 10000;
-
     /// <summary>
     /// Get the detailed information about specified existing collection.
     /// </summary>

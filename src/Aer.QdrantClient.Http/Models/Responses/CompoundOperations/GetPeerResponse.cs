@@ -35,7 +35,7 @@ public sealed class GetPeerResponse : QdrantResponseBase<GetPeerResponse.PeerInf
         /// <summary>
         /// The all peer uris per peer ids.
         /// </summary>
-        public  Dictionary<ulong, string> PeerUriPerPeerIds { init; get; }
+        public Dictionary<ulong, string> PeerUriPerPeerIds { init; get; }
 
         /// <summary>
         /// Deconstruct <see cref="PeerInfo"/> to a value tuple.

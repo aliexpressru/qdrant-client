@@ -31,7 +31,7 @@ public abstract class VectorConfigurationBase
         [JsonIgnore]
         public VectorDistanceMetric DistanceMetric =>
 #if NETSTANDARD2_0
-            (VectorDistanceMetric) Enum.Parse(typeof(VectorDistanceMetric), Distance, ignoreCase: true);      
+            (VectorDistanceMetric) Enum.Parse(typeof(VectorDistanceMetric), Distance, ignoreCase: true);
 #else
             Enum.Parse<VectorDistanceMetric>(Distance, ignoreCase: true);
 #endif
@@ -44,7 +44,7 @@ public abstract class VectorConfigurationBase
         /// <summary>
         /// Custom params for HNSW index. If none - values from collection configuration are used.
         /// </summary>
-        public HnswConfiguration HnswConfig { get; set; }
+        public HnswConfiguration HnswConfig { get; init; }
 
         /// <summary>
         /// Custom params for quantization. If none - values from collection configuration are used.
@@ -55,18 +55,18 @@ public abstract class VectorConfigurationBase
         /// <summary>
         /// If <c>true</c>, vectors are served from disk, improving RAM usage at the cost of latency.
         /// </summary>
-        public bool OnDisk { get; set; }
+        public bool OnDisk { get; init; }
 
         /// <summary>
         /// Defines which datatype should be used to represent vectors in the storage.
         /// Choosing different datatypes allows to optimize memory usage and performance vs accuracy.
         /// </summary>
-        public VectorDataType Datatype { get; set; }
+        public VectorDataType Datatype { get; init; }
 
         /// <summary>
         /// The multivector configuration.
         /// </summary>
-        public MultivectorConfiguration MultivectorConfig { get; set; }
+        public MultivectorConfiguration MultivectorConfig { get; init; }
 
         [JsonConstructor]
         internal SingleVectorConfiguration()
@@ -176,7 +176,7 @@ public abstract class VectorConfigurationBase
     public bool IsMultipleVectorsConfiguration => this is NamedVectorsConfiguration;
 
     /// <summary>
-    /// Casts this instance to <see cref="NamedVectorsConfiguration"/> multiple named vectors configuraiton.
+    /// Casts this instance to <see cref="NamedVectorsConfiguration"/> multiple named vectors configuration.
     /// </summary>
     /// <returns></returns>
     /// <exception cref="InvalidCastException">Occurs if this instance is not <see cref="NamedVectorsConfiguration"/></exception>

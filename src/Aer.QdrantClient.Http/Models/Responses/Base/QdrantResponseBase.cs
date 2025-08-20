@@ -42,7 +42,7 @@ public abstract class QdrantResponseBase
         public HardwareUsageReport Hardware { get; set; }
 
         private long _cpu;
-        
+
         /// <summary>
         /// Cpu usage to execute request.
         /// </summary>
@@ -56,7 +56,7 @@ public abstract class QdrantResponseBase
         }
 
         private long _payloadIoRead;
-        
+
         /// <summary>
         /// Payload IO read operations.
         /// </summary>
@@ -70,7 +70,7 @@ public abstract class QdrantResponseBase
         }
 
         private long _payloadIoWrite;
-        
+
         /// <summary>
         /// Payload IO write operations.
         /// </summary>
@@ -84,7 +84,7 @@ public abstract class QdrantResponseBase
         }
 
         private long _vectorIoRead;
-        
+
         /// <summary>
         /// Vector IO read operations.
         /// </summary>

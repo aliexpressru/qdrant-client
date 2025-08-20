@@ -14,7 +14,7 @@ public partial class QdrantHttpClient
     public async Task<GetInstanceDetailsResponse> GetInstanceDetails(CancellationToken cancellationToken)
     {
         var url = "/";
-        
+
         HttpRequestMessage message = new(HttpMethod.Get, url);
 
         var response = await ExecuteRequest<GetInstanceDetailsResponse>(
@@ -23,7 +23,7 @@ public partial class QdrantHttpClient
 
         return response;
     }
-    
+
     /// <summary>
     /// Get the Qdrant telemetry information.
     /// </summary>

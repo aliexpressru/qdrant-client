@@ -50,7 +50,7 @@ public class QdrantStatus
     /// <summary>
     /// Get qdrant status that indicates success.
     /// </summary>
-    public static QdrantStatus Success() => new (QdrantOperationStatusType.Ok);
+    public static QdrantStatus Success() => new(QdrantOperationStatusType.Ok);
 
     /// <summary>
     /// Get qdrant status that indicates error.
@@ -59,7 +59,7 @@ public class QdrantStatus
     /// <param name="exception">The exception that happened during qdrant operation execution.</param>
     public static QdrantStatus Fail(string errorMessage, Exception exception = null)
         =>
-            new (QdrantOperationStatusType.Error)
+            new(QdrantOperationStatusType.Error)
             {
                 Error = errorMessage,
                 Exception = exception
@@ -69,5 +69,6 @@ public class QdrantStatus
     /// Returns a string representation of the Qdrant status.
     /// </summary>
     public override string ToString()
-        => $"[{Type}]; IsSuccess: '{IsSuccess}'; Error: '{GetErrorMessage() ?? "NONE"}'; Exception: {Exception?.ToString() ?? "NONE"}";
+        =>
+            $"[{Type}]; IsSuccess: '{IsSuccess}'; Error: '{GetErrorMessage() ?? "NONE"}'; Exception: {Exception?.ToString() ?? "NONE"}";
 }

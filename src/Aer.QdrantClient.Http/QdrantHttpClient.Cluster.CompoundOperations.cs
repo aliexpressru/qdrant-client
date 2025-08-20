@@ -393,7 +393,7 @@ public partial class QdrantHttpClient
         var peerInfo = await GetPeerInfo(
             peerToEmptyUriSelectorString,
             cancellationToken);
-        
+
         return await DrainPeerInternal(
             peerInfo,
             cancellationToken,
@@ -515,7 +515,7 @@ public partial class QdrantHttpClient
                                     shardId: shardToMoveToPeer,
                                     fromPeerId: sourcePeerId,
                                     toPeerId: targetPeerId,
-                                    shardTransferMethod : shardTransferMethod ?? ShardTransferMethod.StreamRecords),
+                                    shardTransferMethod: shardTransferMethod ?? ShardTransferMethod.StreamRecords),
                                 cancellationToken);
 
                             if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
@@ -587,7 +587,7 @@ public partial class QdrantHttpClient
         var peerInfo = await GetPeerInfo(
             peerId,
             cancellationToken);
-        
+
         return await CheckIsPeerEmptyInternal(
             peerInfo,
             cancellationToken);
@@ -610,7 +610,7 @@ public partial class QdrantHttpClient
             peerInfo,
             cancellationToken);
     }
-    
+
     private async Task<CheckIsPeerEmptyResponse> CheckIsPeerEmptyInternal(
         GetPeerResponse peerInfoResponse,
         CancellationToken cancellationToken)
@@ -645,7 +645,8 @@ public partial class QdrantHttpClient
                 else
                 {
                     // means we are not on the peer to check - check if no remote shards on peer to check
-                    isPeerEmptyForCollection = collectionShardingInfo.RemoteShards.All(si => si.PeerId != peerIdToCheck);
+                    isPeerEmptyForCollection =
+                        collectionShardingInfo.RemoteShards.All(si => si.PeerId != peerIdToCheck);
                 }
 
                 isPeerEmpty &= isPeerEmptyForCollection;
@@ -681,18 +682,23 @@ public partial class QdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <exception cref="QdrantNoPeersFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
     /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
-    public Task<GetPeerResponse> GetPeerInfo(string clusterNodeUriSubstring, ulong? peerId, CancellationToken cancellationToken)
-    { 
-        if(string.IsNullOrWhiteSpace(clusterNodeUriSubstring) && !peerId.HasValue)
+    public Task<GetPeerResponse> GetPeerInfo(
+        string clusterNodeUriSubstring,
+        ulong? peerId,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(clusterNodeUriSubstring)
+            && !peerId.HasValue)
         {
-            throw new ArgumentException($"Either {nameof(clusterNodeUriSubstring)} or {nameof(peerId)} must be provided.");
+            throw new ArgumentException(
+                $"Either {nameof(clusterNodeUriSubstring)} or {nameof(peerId)} must be provided.");
         }
 
         if (!string.IsNullOrWhiteSpace(clusterNodeUriSubstring))
         {
             return GetPeerInfo(clusterNodeUriSubstring, cancellationToken);
         }
-        
+
         return GetPeerInfo(peerId!.Value, cancellationToken);
     }
 
@@ -704,29 +710,29 @@ public partial class QdrantHttpClient
     /// <exception cref="QdrantNoPeersFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
     /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
     public async Task<GetPeerResponse> GetPeerInfo(string clusterNodeUriSubstring, CancellationToken cancellationToken)
-    { 
+    {
         Stopwatch sw = Stopwatch.StartNew();
 
         var clusterInfo = await GetClusterInfoInternal(cancellationToken);
-        
+
         // Here we need to check whether the cluster don't have duplicated peers by same URI.
 
         HashSet<string> seenPeerUrls = new();
         List<KeyValuePair<string, ulong>> peerIdsByNodeUrls = new();
         List<KeyValuePair<string, ulong>> duplicatePeers = new();
-        
+
         foreach (var peer in clusterInfo.ParsedPeers)
         {
             if (seenPeerUrls.Add(peer.Value.Uri))
-            { 
+            {
                 peerIdsByNodeUrls.Add(new KeyValuePair<string, ulong>(peer.Value.Uri, peer.Key));
             }
             else
-            { 
+            {
                 // Means we have already seen this peer URL, so we have a duplicate.
                 // This may indicate invalid cluster state.
-                
-                duplicatePeers.Add(new  KeyValuePair<string, ulong>(peer.Value.Uri, peer.Key));
+
+                duplicatePeers.Add(new KeyValuePair<string, ulong>(peer.Value.Uri, peer.Key));
             }
         }
 
@@ -736,7 +742,7 @@ public partial class QdrantHttpClient
                 $"Cluster contains peers with duplicated URIs [{string.Join(", ", duplicatePeers.Select(p => $"{p.Key} - {p.Value}"))}]. "
                 + $"All peers: [{string.Join(", ", clusterInfo.ParsedPeers.Select(p => $"{p.Value.Uri} - {p.Key}"))}]");
         }
-        
+
         var candidatePeerIds = peerIdsByNodeUrls
             .Where(kv => kv.Key.Contains(clusterNodeUriSubstring, StringComparison.InvariantCulture))
             .ToList();
@@ -758,8 +764,7 @@ public partial class QdrantHttpClient
 
         var nodePeerId = candidatePeerIds[0].Value;
 
-        var otherPeerIds = peerIdsByNodeUrls.Where(
-                kv => kv.Value != nodePeerId)
+        var otherPeerIds = peerIdsByNodeUrls.Where(kv => kv.Value != nodePeerId)
             .Select(kv => kv.Value)
             .ToList();
 
@@ -769,7 +774,7 @@ public partial class QdrantHttpClient
         {
             var nodeUri = peer.Key;
             var peerId = peer.Value;
-            
+
             peerUriPerPeerId.Add(peerId, nodeUri);
         }
 
@@ -816,14 +821,14 @@ public partial class QdrantHttpClient
             .Where(p => p.Key != peerId)
             .Select(p => p.Key)
             .ToList();
-        
+
         Dictionary<ulong, string> peerUriPerPeerId = new();
-        
+
         foreach (var peer in clusterInfo.ParsedPeers)
         {
             var uri = peer.Value.Uri;
             var id = peer.Key;
-            
+
             peerUriPerPeerId.Add(id, uri);
         }
 
@@ -844,7 +849,7 @@ public partial class QdrantHttpClient
             Time = sw.Elapsed.TotalSeconds
         };
     }
-    
+
     /// <summary>
     /// Gets the peer information by the peer node uri substring. Returns the found peer and other peers.
     /// </summary>
@@ -853,7 +858,10 @@ public partial class QdrantHttpClient
     /// <exception cref="QdrantNoPeersFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
     /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
     [Obsolete($"Use one of the {nameof(GetPeerInfo)} methods.")]
-    [SuppressMessage("ReSharper", "UnusedMember.Global", Justification = "Obsolete method kept for backward compatibility.")]
+    [SuppressMessage(
+        "ReSharper",
+        "UnusedMember.Global",
+        Justification = "Obsolete method kept for backward compatibility.")]
     public Task<GetPeerResponse>
         GetPeerInfoByUriSubstring(
             string clusterNodeUriSubstring,
@@ -893,9 +901,9 @@ public partial class QdrantHttpClient
             }
 
             collectionShardsPerPeers[collectionShardingInfo.PeerId].Add(localShard.ShardId);
-            
+
 #if NETSTANDARD2_0
-            if (!shardReplicationFactors.TryAdd(localShard.ShardId, (uint)1))
+            if (!shardReplicationFactors.TryAdd(localShard.ShardId, (uint) 1))
 #else
             if (!shardReplicationFactors.TryAdd(localShard.ShardId, 1))
 #endif

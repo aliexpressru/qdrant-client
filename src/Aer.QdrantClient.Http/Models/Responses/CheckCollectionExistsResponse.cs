@@ -1,15 +1,13 @@
-﻿using Aer.QdrantClient.Http.Models.Responses.Base;
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
+﻿using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Models.Responses.Base;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
 
 /// <summary>
 /// Represents the check collection exists operation response.
 /// </summary>
-public class CheckCollectionExistsResponse : QdrantResponseBase<CheckCollectionExistsResponse.CollectionExistenceResult>
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+public sealed class CheckCollectionExistsResponse : QdrantResponseBase<CheckCollectionExistsResponse.CollectionExistenceResult>
 {
     /// <summary>
     /// Represents the state of existence of a collection.

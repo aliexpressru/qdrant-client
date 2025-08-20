@@ -11,7 +11,8 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public class SearchPointsDistanceMatrixOffsetsResponse : QdrantResponseBase<SearchPointsDistanceMatrixOffsetsResponse.PointsDistanceMatrixOffsetsUnit>
+public class SearchPointsDistanceMatrixOffsetsResponse
+    : QdrantResponseBase<SearchPointsDistanceMatrixOffsetsResponse.PointsDistanceMatrixOffsetsUnit>
 {
     /// <summary>
     /// Represents the distance matrix.

@@ -14,7 +14,8 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<GetCollectionClusteringInfoResponse.CollectionClusteringInfo>
+public sealed class GetCollectionClusteringInfoResponse
+    : QdrantResponseBase<GetCollectionClusteringInfoResponse.CollectionClusteringInfo>
 {
     /// <summary>
     /// Represents information about the collection sharding.
@@ -25,7 +26,7 @@ public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<Get
         /// ID of this peer.
         /// </summary>
         public ulong PeerId { set; get; }
-        
+
         /// <summary>
         /// The uri of this peer.
         /// </summary>
@@ -83,7 +84,7 @@ public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<Get
         /// Ongoing shard transfers operations.
         /// </summary>
         public ShardTransferInfo[] ShardTransfers { set; get; }
-        
+
         /// <summary>
         /// Ongoing resharding operations.
         /// </summary>
@@ -109,7 +110,7 @@ public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<Get
         /// State of the single shard within a replica set.
         /// </summary>
         public ShardState State { set; get; }
-        
+
         /// <summary>
         /// User-defined sharding key. If no user-defined sharding key created for this collection, this field is <c>null</c>.
         /// </summary>
@@ -175,27 +176,27 @@ public sealed class GetCollectionClusteringInfoResponse : QdrantResponseBase<Get
         /// </summary>
         public bool Sync { set; get; }
     }
-    
+
     /// <summary>
     /// Represents a resharding operation information. 
     /// </summary>
     public class ReshardingOperationInfo
-    { 
+    {
         /// <summary>
         /// Resharding direction, scale up or down in number of shards.
         /// </summary>
         public ReshardingOperationDirection Direction { set; get; }
-        
+
         /// <summary>
         /// The id of the shards being added or removed.
         /// </summary>
         public uint ShardId { set; get; }
-        
+
         /// <summary>
         /// The peer id that the shard is being added or removed from.
         /// </summary>
         public uint PeerId { set; get; }
-        
+
         /// <summary>
         /// The peer uri that the shard is being added or removed from.
         /// </summary>

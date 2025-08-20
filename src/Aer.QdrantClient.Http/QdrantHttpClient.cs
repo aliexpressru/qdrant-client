@@ -27,7 +27,7 @@ namespace Aer.QdrantClient.Http;
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public partial class QdrantHttpClient
-{ 
+{
     private readonly ILogger _logger;
 
     private const int DEFAULT_OPERATION_TIMEOUT_SECONDS = 30;
@@ -65,7 +65,7 @@ public partial class QdrantHttpClient
         HttpStatusCode.NotFound,
         .. _unauthorizedStatusCodes
     ];
-    
+
     private static readonly List<string> _invalidQdrantNameSymbols =
     [
         "/",
@@ -273,7 +273,9 @@ public partial class QdrantHttpClient
                 }
 
                 var deserializedResult =
-                    JsonSerializer.Deserialize<TResponse>(resultString, JsonSerializerConstants.DefaultSerializerOptions);
+                    JsonSerializer.Deserialize<TResponse>(
+                        resultString,
+                        JsonSerializerConstants.DefaultSerializerOptions);
 
                 return deserializedResult;
             },
@@ -402,7 +404,8 @@ public partial class QdrantHttpClient
 #endif
 
                 )
-                .OrResult<HttpResponseMessage>(r=>!r.IsSuccessStatusCode && !_noRetryStatusCodes.Contains(r.StatusCode))
+                .OrResult<HttpResponseMessage>(r =>
+                    !r.IsSuccessStatusCode && !_noRetryStatusCodes.Contains(r.StatusCode))
                 .WaitAndRetryAsync(
                     (int) retryCount,
                     _ => retryDelay ?? _defaultPointsReadRetryDelay,
@@ -410,7 +413,11 @@ public partial class QdrantHttpClient
                     {
                         // result.Exception can be null when retrying not the exceptional case but unsuccessful status code
                         // To avoid null reference exception we substitute null exceptions with a special QdrantRequestRetryException
-                        onRetry?.Invoke(result.Exception ?? new QdrantRequestRetryException(result.Result), currentRetryDelay, retryNumber, retryCount);
+                        onRetry?.Invoke(
+                            result.Exception ?? new QdrantRequestRetryException(result.Result),
+                            currentRetryDelay,
+                            retryNumber,
+                            retryCount);
                     }
                 )
                 .ExecuteAsync(
@@ -426,17 +433,19 @@ public partial class QdrantHttpClient
 
         // createMessage() should never be called unless there is some non-standard http message handler in HttpClient that does not set the RequestMessage property.
         // See https://github.com/dotnet/runtime/discussions/104113 for details.
-        var requestMessage = responseMessage.RequestMessage ?? createMessage(); 
+        var requestMessage = responseMessage.RequestMessage ?? createMessage();
 
         var result = await ReadResponseAndHandleErrors(
-            requestMessage, 
+            requestMessage,
             responseMessage,
             responseReader: async rm =>
             {
                 var resultString = await rm.Content.ReadAsStringAsync(cancellationToken);
 
                 var deserializedObject =
-                    JsonSerializer.Deserialize<TResponse>(resultString, JsonSerializerConstants.DefaultSerializerOptions);
+                    JsonSerializer.Deserialize<TResponse>(
+                        resultString,
+                        JsonSerializerConstants.DefaultSerializerOptions);
 
                 return deserializedObject;
             },
@@ -457,13 +466,13 @@ public partial class QdrantHttpClient
                 {
                     // means that the response is a simple string
                     var errorResponse = Activator.CreateInstance<TResponse>();
-                    
+
                     errorResponse.Status = new QdrantStatus(QdrantOperationStatusType.Unknown)
                     {
                         Error = errorContent,
                         RawStatusString = errorContent,
                     };
-                    
+
                     errorResponse.Time = -1;
 
                     return errorResponse;
@@ -479,7 +488,7 @@ public partial class QdrantHttpClient
                         RawStatusString = errorContent,
                         Exception = ex
                     };
-                    
+
                     errorResponse.Time = -1;
 
                     return errorResponse;

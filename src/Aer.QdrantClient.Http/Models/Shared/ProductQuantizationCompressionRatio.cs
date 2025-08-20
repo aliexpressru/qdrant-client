@@ -1,10 +1,11 @@
-﻿// ReSharper disable InconsistentNaming | Justification = "Named as per Qdrant documentation"
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
 /// Represents a product quantization compression ratio.
 /// </summary>
+[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Named according to Qdrant API specification.")]
 public enum ProductQuantizationCompressionRatio
 {
     /// <summary>

@@ -9,7 +9,7 @@ public abstract class FullTextIndexStemmingAlgorithm
     /// The type of the stemming algorithm.
     /// </summary>
     public abstract StemmingAlgorithmType Type { init; get; }
-    
+
     /// <summary>
     /// The snowball stemming algorithm.
     /// </summary>
@@ -17,7 +17,7 @@ public abstract class FullTextIndexStemmingAlgorithm
     {
         /// <inheritdoc/>
         public sealed override StemmingAlgorithmType Type { init; get; }
-        
+
         /// <summary>
         /// The language of the Snowball stemming algorithm.
         /// </summary>
@@ -38,7 +38,7 @@ public abstract class FullTextIndexStemmingAlgorithm
     /// Creates a new instance of the <see cref="FullTextIndexStemmingAlgorithm.SnowballStemmingAlgorithm"/> class with the specified language.
     /// </summary>
     /// <param name="language">The snowball stemming algorithm language.</param>
-    public static FullTextIndexStemmingAlgorithm CreateSnowball(SnowballStemmerLanguage language) 
-        => 
+    public static FullTextIndexStemmingAlgorithm CreateSnowball(SnowballStemmerLanguage language)
+        =>
             new SnowballStemmingAlgorithm(language);
 }

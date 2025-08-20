@@ -110,7 +110,7 @@ internal partial class PointsCrudTests
     public async Task SetPointsPayloadByKey()
     {
         var (upsertPoints, _, upsertPointIds) =
-            await PrepareCollection<TestComplexPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName,
                 payloadInitializerFunction: (i) => new TestComplexPayload() {IntProperty = i + 1});
@@ -217,7 +217,7 @@ internal partial class PointsCrudTests
     [Test]
     public async Task OverwritePointsPayload_BatchOperation_NonExistentPoints()
     {
-        var (upsertPoints, _, upsertPointIds) =
+        var (upsertPoints, _, _) =
             await PrepareCollection<TestPayload>(
                 _qdrantHttpClient,
                 TestCollectionName,

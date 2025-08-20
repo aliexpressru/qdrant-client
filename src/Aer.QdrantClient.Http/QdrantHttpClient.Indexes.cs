@@ -9,12 +9,14 @@ namespace Aer.QdrantClient.Http;
 [SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public partial class QdrantHttpClient
 {
-    private readonly HashSet<PayloadIndexedFieldType> _allowedPayloadFieldTypesForTenantIndex = [
+    private readonly HashSet<PayloadIndexedFieldType> _allowedPayloadFieldTypesForTenantIndex =
+    [
         PayloadIndexedFieldType.Keyword,
         PayloadIndexedFieldType.Uuid
     ];
 
-    private readonly HashSet<PayloadIndexedFieldType> _allowedPayloadFieldTypesForPrincipalIndex = [
+    private readonly HashSet<PayloadIndexedFieldType> _allowedPayloadFieldTypesForPrincipalIndex =
+    [
         PayloadIndexedFieldType.Integer,
         PayloadIndexedFieldType.Float,
         PayloadIndexedFieldType.Datetime
@@ -76,7 +78,7 @@ public partial class QdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
-    
+
     public async Task<PayloadIndexOperationResponse> CreatePayloadIndex(
         string collectionName,
         string payloadFieldName,
@@ -84,13 +86,13 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         bool isWaitForResult = false,
         bool onDisk = false,
-        
+
         bool? isTenant = null,
         bool? isPrincipal = null,
 
         bool? isLookupEnabled = null,
         bool? isRangeEnabled = null,
-        
+
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
@@ -98,25 +100,33 @@ public partial class QdrantHttpClient
         EnsureQdrantNameCorrect(collectionName);
         EnsureQdrantNameCorrect(payloadFieldName);
 
-        if (isTenant.HasValue && isTenant.Value && !_allowedPayloadFieldTypesForTenantIndex.Contains(payloadFieldType))
+        if (isTenant.HasValue
+            && isTenant.Value
+            && !_allowedPayloadFieldTypesForTenantIndex.Contains(payloadFieldType))
         {
             throw new QdrantUnsupportedFieldSchemaForIndexConfiguration(
                 $"Tenant index is not supported for payload field {payloadFieldName} with type {payloadFieldType}. Supported types: [{string.Join(", ", _allowedPayloadFieldTypesForTenantIndex)}]");
         }
 
-        if (isPrincipal.HasValue && isPrincipal.Value && !_allowedPayloadFieldTypesForPrincipalIndex.Contains(payloadFieldType))
+        if (isPrincipal.HasValue
+            && isPrincipal.Value
+            && !_allowedPayloadFieldTypesForPrincipalIndex.Contains(payloadFieldType))
         {
             throw new QdrantUnsupportedFieldSchemaForIndexConfiguration(
                 $"Principal index is not supported for payload field {payloadFieldName} with type {payloadFieldType}. Supported types: [{string.Join(", ", _allowedPayloadFieldTypesForPrincipalIndex)}]");
         }
-        
-        if(isLookupEnabled.HasValue && isLookupEnabled.Value && payloadFieldType != PayloadIndexedFieldType.Integer)
+
+        if (isLookupEnabled.HasValue
+            && isLookupEnabled.Value
+            && payloadFieldType != PayloadIndexedFieldType.Integer)
         {
             throw new QdrantUnsupportedFieldSchemaForIndexConfiguration(
                 $"Lookup index is only supported for payload field {payloadFieldName} with type {PayloadIndexedFieldType.Integer}");
         }
-        
-        if(isRangeEnabled.HasValue && isRangeEnabled.Value && payloadFieldType != PayloadIndexedFieldType.Integer)
+
+        if (isRangeEnabled.HasValue
+            && isRangeEnabled.Value
+            && payloadFieldType != PayloadIndexedFieldType.Integer)
         {
             throw new QdrantUnsupportedFieldSchemaForIndexConfiguration(
                 $"Range index is only supported for payload field {payloadFieldName} with type {PayloadIndexedFieldType.Integer}");
@@ -191,17 +201,17 @@ public partial class QdrantHttpClient
         string payloadTextFieldName,
         FullTextIndexTokenizerType payloadTextFieldTokenizerType,
         CancellationToken cancellationToken,
-        
+
         uint? minimalTokenLength = null,
         uint? maximalTokenLength = null,
-        
+
         bool isLowercasePayloadTokens = true,
         bool onDisk = false,
         bool enablePhraseMatching = false,
-        
+
         FullTextIndexStemmingAlgorithm stemmer = null,
         FullTextIndexStopwords stopwords = null,
-        
+
         bool isWaitForResult = false,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,

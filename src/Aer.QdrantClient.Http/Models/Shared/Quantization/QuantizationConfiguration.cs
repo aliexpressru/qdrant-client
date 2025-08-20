@@ -12,7 +12,7 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 public abstract class QuantizationConfiguration
 {
     #region Quantization types
-    
+
     /// <summary>
     /// The quantization method.
     /// </summary>
@@ -24,10 +24,10 @@ public abstract class QuantizationConfiguration
     public sealed class ScalarQuantizationConfiguration : QuantizationConfiguration
     {
         internal const string QuantizationMethodName = "scalar";
-        
+
         /// <inheritdoc/>
         public override string Method => QuantizationMethodName;
-        
+
         /// <summary>
         /// The type of the quantized vector components. Currently, Qdrant supports only <c>int8</c>.
         /// </summary>
@@ -117,7 +117,7 @@ public abstract class QuantizationConfiguration
         /// </li>
         /// </ul>
         /// </remarks>
-        public bool AlwaysRam { set; get; } = false;
+        public bool AlwaysRam { set; get; }
     }
 
     /// <summary>
@@ -157,13 +157,13 @@ public abstract class QuantizationConfiguration
         /// </li>
         /// </ul>
         /// </remarks>
-        public bool AlwaysRam { set; get; } = false;
-        
+        public bool AlwaysRam { set; get; }
+
         /// <summary>
         /// The bit depth of the quantized vector components.
         /// </summary>
         public BinaryQuantizationEncoding? Encoding { set; get; }
-        
+
         /// <summary>
         /// Asymmetric quantization configuration.
         /// Asymmetric quantization configuration allows a query to have different quantization than stored vectors.

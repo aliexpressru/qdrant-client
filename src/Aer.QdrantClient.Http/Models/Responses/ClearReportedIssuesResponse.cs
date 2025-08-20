@@ -7,5 +7,5 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// Represents the qdrant issues clear response.
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class ClearReportedIssuesResponse : QdrantResponseBase<bool>
+public sealed class ClearReportedIssuesResponse : QdrantResponseBase<bool>
 { }

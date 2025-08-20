@@ -25,8 +25,11 @@ public partial class QdrantHttpClient
         storageSnapshots.EnsureSuccess();
 
         foreach (var storageSnapshot in storageSnapshots.Result)
-        { 
-            var deleteSnapshotResult = await DeleteStorageSnapshot(storageSnapshot.Name, cancellationToken, isWaitForResult);
+        {
+            var deleteSnapshotResult = await DeleteStorageSnapshot(
+                storageSnapshot.Name,
+                cancellationToken,
+                isWaitForResult);
             deleteSnapshotResult.EnsureSuccess();
         }
 
@@ -36,7 +39,7 @@ public partial class QdrantHttpClient
             Status = new QdrantStatus(QdrantOperationStatusType.Ok)
         };
     }
-    
+
     /// <summary>
     /// A compound operation that deletes all existing collection snapshots.
     /// </summary>

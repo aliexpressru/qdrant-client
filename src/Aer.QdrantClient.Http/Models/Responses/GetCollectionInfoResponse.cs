@@ -125,7 +125,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// </summary>
         [JsonConverter(typeof(QuantizationConfigurationJsonConverter))]
         public QuantizationConfiguration QuantizationConfig { get; set; }
-        
+
         /// <summary>
         /// Strict mode configuration.
         /// </summary>
@@ -238,7 +238,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// The maximal token length. For full-text index only.
             /// </summary>
             public ulong? MaxTokenLen { set; get; }
-            
+
             /// <summary>
             /// If <c>true</c> - full-text index supports phrase matching. Default: <c>false</c>.
             /// </summary>
@@ -249,7 +249,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// </summary>
             [JsonConverter(typeof(FullTextIndexStopwordsJsonConverter))]
             public FullTextIndexStopwords Stopwords { set; get; }
-            
+
             /// <summary>
             /// Algorithm for stemming. Default: disabled.
             /// </summary>
