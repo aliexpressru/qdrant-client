@@ -1,5 +1,6 @@
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Filters.Builders;
+using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Tests.Helpers;
@@ -211,6 +212,60 @@ internal partial class PointsCrudTests
 
         pointsThatShouldNotBeUpdated.Should()
             .AllSatisfy(p => p.Payload.As<TestComplexPayload>().Nested.Nested.Should().BeNull());
+    }
+
+    [Test]
+    public async Task OverwritePointsPayload_BatchOperation_NonExistentPoints()
+    {
+        var (upsertPoints, _, upsertPointIds) =
+            await PrepareCollection<TestPayload>(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorCount: 3,
+                payloadInitializerFunction: (i) => i + 1
+            );
+
+        // One present and two non-existent point ids
+        PointId[] pointIdsToUpdatePayloadFor = [upsertPoints[0].Id, 1567, 1568];
+
+        var expectedText = "overwritten";
+        
+        var newPayload = new TestPayload()
+        {
+            Text = expectedText
+        };
+        
+        var batchUpdateRequest = BatchUpdatePointsRequest.Create();
+        
+        batchUpdateRequest.OverwritePointsPayload(
+            newPayload,
+            pointsToOverwritePayloadFor: pointIdsToUpdatePayloadFor);
+
+        var overwritePayloadResult = await _qdrantHttpClient.BatchUpdate(
+            TestCollectionName,
+            batchUpdateRequest,
+            CancellationToken.None,
+            isWaitForResult: true);
+        
+        // Success is false since we haven't found points by non-existent ids 1567 and 1568
+        // Error message contains only one point id though - the first not found
+        // The update operation for existent points are successful though
+        // Yeah, this API is a mess
+        overwritePayloadResult.Status.IsSuccess.Should().BeFalse();
+        overwritePayloadResult.Status.GetErrorMessage().Should().Contain("1567");
+        overwritePayloadResult.Status.GetErrorMessage().Should().NotContain("1568");
+
+        var readModifiedPointsBackResponse = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            Q.HaveAnyId(upsertPoints[0].Id),
+            true,
+            CancellationToken.None);
+
+        readModifiedPointsBackResponse.Status.IsSuccess.Should().BeTrue();
+
+        readModifiedPointsBackResponse.Result.Points.Length.Should().Be(1);
+        readModifiedPointsBackResponse.Result.Points[0].Payload.As<TestPayload>().Text.Should().Be(expectedText);
+        readModifiedPointsBackResponse.Result.Points[0].Payload.As<TestPayload>().Integer.Should().BeNull();
     }
 
     [Test]
