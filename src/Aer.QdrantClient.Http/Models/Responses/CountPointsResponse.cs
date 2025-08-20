@@ -7,7 +7,6 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// Represents the count points operation response.
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class CountPointsResponse : QdrantResponseBase<CountPointsResponse.CountPointsResult>
 {
     /// <summary>

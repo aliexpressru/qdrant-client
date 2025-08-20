@@ -6,7 +6,6 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 /// The optimizer configuration.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public sealed class OptimizersConfiguration
 {

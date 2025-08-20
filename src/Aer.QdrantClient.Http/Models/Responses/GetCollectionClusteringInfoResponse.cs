@@ -10,10 +10,8 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// <summary>
 /// Represents current clustering information for the collection.
 /// </summary>
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class GetCollectionClusteringInfoResponse
     : QdrantResponseBase<GetCollectionClusteringInfoResponse.CollectionClusteringInfo>
 {

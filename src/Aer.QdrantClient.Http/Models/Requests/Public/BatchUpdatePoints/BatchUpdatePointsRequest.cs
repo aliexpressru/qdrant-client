@@ -12,8 +12,6 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public sealed class BatchUpdatePointsRequest
 {
     /// <summary>

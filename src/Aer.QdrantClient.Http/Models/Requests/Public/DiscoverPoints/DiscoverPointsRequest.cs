@@ -10,7 +10,6 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
 /// Represents a discovery API request.
 /// </summary>
 [SuppressMessage("ReSharper", "CollectionNeverQueried.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public sealed class DiscoverPointsRequest
 {

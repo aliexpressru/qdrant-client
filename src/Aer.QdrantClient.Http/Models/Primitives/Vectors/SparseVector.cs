@@ -10,8 +10,6 @@ namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 /// Represents a sparse vector.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public sealed class SparseVector : VectorBase
 {
     /// <summary>

@@ -6,10 +6,9 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// <summary>
 /// Represents the points search request.
 /// </summary>
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
+
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class SearchPointsGroupedRequest : SearchPointsRequest
 {
     /// <summary>

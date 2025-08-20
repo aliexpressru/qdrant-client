@@ -9,7 +9,6 @@ namespace Aer.QdrantClient.Http.Models.Responses.Base;
 /// <typeparam name="TResult">The type of the class into which the <c>result</c> response json property should be deserialized.</typeparam>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public abstract class QdrantResponseBase<TResult> : QdrantResponseBase
 {
     /// <summary>

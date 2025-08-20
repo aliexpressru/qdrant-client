@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
@@ -9,7 +8,6 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 /// <summary>
 /// Represents a vector that used as search request. Either a dense or sparse vector.
 /// </summary>
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public abstract class QueryVector
 {
     #region Nested classes

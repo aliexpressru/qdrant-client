@@ -8,7 +8,6 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 /// Represents a grouped search lookup parameters.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public sealed class LookupSearchParameters
 {

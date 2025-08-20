@@ -6,7 +6,6 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 /// Full text index stopwords definition language.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public enum StopwordsLanguage
 {
     /// <summary>

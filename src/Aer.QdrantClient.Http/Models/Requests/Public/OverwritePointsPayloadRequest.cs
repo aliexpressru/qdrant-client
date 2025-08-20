@@ -13,7 +13,6 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// <typeparam name="TPayload">The type of the point payload.</typeparam>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class OverwritePointsPayloadRequest<TPayload>
     where TPayload : class
 {

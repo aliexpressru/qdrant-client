@@ -1,11 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Aer.QdrantClient.Http.Models.Requests.Public;
+﻿namespace Aer.QdrantClient.Http.Models.Requests.Public;
 
 /// <summary>
 /// Represents the overwrite points payload operation.
 /// </summary>
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 internal sealed class OverwritePointsPayloadOperation : BatchUpdatePointsOperationBase
 {
     /// <summary>

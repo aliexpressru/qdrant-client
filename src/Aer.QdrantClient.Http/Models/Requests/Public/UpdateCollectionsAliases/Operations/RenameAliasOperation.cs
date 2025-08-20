@@ -7,7 +7,6 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 internal sealed class RenameAliasOperation : UpdateCollectionAliasOperationBase
 {
     /// <summary>

@@ -9,10 +9,8 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// <summary>
 /// Represents the detailed collection information.
 /// </summary>
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollectionInfoResponse.CollectionInfo>
 {
     /// <summary>

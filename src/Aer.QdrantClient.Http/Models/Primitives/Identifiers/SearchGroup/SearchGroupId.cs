@@ -7,7 +7,6 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 /// Represents integer or string point identifier.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public abstract class SearchGroupId : IEquatable<SearchGroupId>
 {
     #region Nested classes

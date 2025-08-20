@@ -8,7 +8,6 @@ namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 /// Represents a named vectors collection.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class NamedVectors : VectorBase
 {
     /// <summary>

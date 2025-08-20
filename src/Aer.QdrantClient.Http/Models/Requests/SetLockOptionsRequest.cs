@@ -1,11 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Aer.QdrantClient.Http.Models.Requests;
+﻿namespace Aer.QdrantClient.Http.Models.Requests;
 
 /// <summary>
 /// Represents the request to set qdrant lock options.
 /// </summary>
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 internal sealed class SetLockOptionsRequest
 {
     /// <summary>

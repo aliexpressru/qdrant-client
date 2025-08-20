@@ -7,7 +7,6 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// Represents the result of listing existing collection names.
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class ListCollectionsResponse : QdrantResponseBase<ListCollectionsResponse.CollectionNamesUnit>
 {
     /// <summary>

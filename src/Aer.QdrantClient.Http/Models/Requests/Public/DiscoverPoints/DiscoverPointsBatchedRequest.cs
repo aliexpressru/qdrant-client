@@ -10,7 +10,6 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
 /// Its semantic is straightforward : 1 batched discover request is equivalent to n singular discover requests.
 /// </remarks>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class DiscoverPointsBatchedRequest
 {
     /// <summary>

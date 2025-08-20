@@ -10,7 +10,6 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 [SuppressMessage("ReSharper", "AutoPropertyCanBeMadeGetOnly.Global")]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public abstract class VectorConfigurationBase
 {
     #region Nested classes

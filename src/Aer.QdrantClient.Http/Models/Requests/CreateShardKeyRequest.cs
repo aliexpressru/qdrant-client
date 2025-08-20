@@ -10,7 +10,6 @@ namespace Aer.QdrantClient.Http.Models.Requests;
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 internal sealed class CreateShardKeyRequest
 {
     /// <summary>

@@ -10,7 +10,6 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// Its semantic is straightforward : 1 batched search request is equivalent to n singular search requests.
 /// </remarks>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class SearchPointsBatchedRequest
 {
     /// <summary>

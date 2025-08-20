@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
@@ -10,7 +9,6 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 /// Represents a vector that used as search request. Either an array of <see cref="float"/> without a name
 /// or a named vector - array of <see cref="float"/> with associated name property.
 /// </summary>
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public abstract class SearchVector
 {
     #region Nested classes

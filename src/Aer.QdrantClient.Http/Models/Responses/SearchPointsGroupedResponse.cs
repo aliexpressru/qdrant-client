@@ -10,7 +10,6 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// Represents the search points grouped operation response.
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class SearchPointsGroupedResponse : QdrantResponseBase<SearchPointsGroupedResponse.GroupedPointsResponse>
 {
     /// <summary>

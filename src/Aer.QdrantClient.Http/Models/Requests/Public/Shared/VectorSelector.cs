@@ -5,9 +5,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 /// <summary>
 /// Represents a returned point vector selector. Used to select named vectors in return result.
 /// </summary>
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public abstract class VectorSelector
 {
     internal sealed class AllVectorsSelector : VectorSelector

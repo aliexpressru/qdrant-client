@@ -10,7 +10,6 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// Represents the scroll points operation response.
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class ScrollPointsResponse : QdrantResponseBase<ScrollPointsResponse.ScrollResult>
 {
     /// <summary>

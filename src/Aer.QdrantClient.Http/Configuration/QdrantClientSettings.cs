@@ -1,11 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Aer.QdrantClient.Http.Configuration;
+﻿namespace Aer.QdrantClient.Http.Configuration;
 
 /// <summary>
 /// Represents a Qdrant client configuration.
 /// </summary>
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class QdrantClientSettings
 {
     private Uri _httpAddressUri;

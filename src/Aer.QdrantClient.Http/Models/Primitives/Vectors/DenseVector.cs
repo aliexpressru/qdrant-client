@@ -7,7 +7,6 @@ namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 /// Represents a dense vector.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class DenseVector : VectorBase
 {
     /// <summary>

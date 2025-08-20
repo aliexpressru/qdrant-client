@@ -15,8 +15,6 @@ namespace Aer.QdrantClient.Http.Models.Requests;
 [JsonDerivedType(typeof(DropShardReplicaRequest))]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public abstract class UpdateCollectionClusteringSetupRequest
 {
     #region Nested classes

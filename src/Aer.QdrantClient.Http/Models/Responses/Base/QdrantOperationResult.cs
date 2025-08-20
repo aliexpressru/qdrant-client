@@ -8,7 +8,6 @@ namespace Aer.QdrantClient.Http.Models.Responses.Base;
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public class QdrantOperationResult
 {
     /// <summary>

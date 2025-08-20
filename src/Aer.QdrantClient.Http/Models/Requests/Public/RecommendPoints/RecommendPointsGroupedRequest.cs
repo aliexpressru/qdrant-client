@@ -6,7 +6,6 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// <summary>
 /// Represents the recommend points grouped by specified field request.
 /// </summary>
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public sealed class RecommendPointsGroupedRequest : RecommendPointsRequest
 {

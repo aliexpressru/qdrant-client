@@ -10,7 +10,6 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// Its semantic is straightforward : 1 batched recommend request is equivalent to n singular recommend requests.
 /// </remarks>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public sealed class RecommendPointsBatchedRequest
 {
     /// <summary>

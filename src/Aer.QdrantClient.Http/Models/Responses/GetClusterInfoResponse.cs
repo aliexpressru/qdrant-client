@@ -7,8 +7,6 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// Represents information about current cluster status and structure.
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoResponse.ClusterInfo>

@@ -6,7 +6,6 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 /// Represents a multivector configuration.
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public sealed class MultivectorConfiguration
 {

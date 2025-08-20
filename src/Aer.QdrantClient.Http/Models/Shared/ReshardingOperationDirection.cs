@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Aer.QdrantClient.Http.Models.Shared;
+﻿namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
 /// The resharding operation direction.

@@ -10,7 +10,6 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public class FacetCountPointsResponse : QdrantResponseBase<FacetCountPointsResponse.FacetCountHitsUnit>
 {
     /// <summary>

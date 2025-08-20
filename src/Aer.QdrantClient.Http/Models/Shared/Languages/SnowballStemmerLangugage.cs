@@ -1,11 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Aer.QdrantClient.Http.Models.Shared;
+﻿namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
 /// Languages supported by snowball stemmer.
 /// </summary>
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public enum SnowballStemmerLanguage
 {
     /// <summary>
