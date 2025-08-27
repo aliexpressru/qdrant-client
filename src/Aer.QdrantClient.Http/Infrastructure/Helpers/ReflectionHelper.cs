@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Infrastructure.Json;
+using Polly;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Helpers;
 
@@ -13,7 +14,39 @@ namespace Aer.QdrantClient.Http.Infrastructure.Helpers;
 internal static class ReflectionHelper
 {
     private static readonly Type _collectionType = typeof(ICollection);
+
+    private class MethodCallVisitor : ExpressionVisitor
+    {
+        public List<MethodCallExpression> MethodCalls { get; } = new();
+        protected override Expression VisitMethodCall(MethodCallExpression node)
+        {
+            MethodCalls.Add(node);
+            return base.VisitMethodCall(node);
+        }
+    }
     
+    /// <summary>
+    /// Checks whether the retry strategy is configured in the resilience pipeline builder action.
+    /// </summary>
+    /// <param name="actionToInspect">The resilience action to inspect.</param>
+    public static bool CheckRetryStrategyConfigured(
+        Expression<Action<ResiliencePipelineBuilder<HttpResponseMessage>>> actionToInspect)
+    {
+        var visitor = new MethodCallVisitor();
+        visitor.Visit(actionToInspect);
+        
+        foreach(var methodCall in visitor.MethodCalls)
+        {
+            if (methodCall.Method.Name.Contains(
+                nameof(RetryResiliencePipelineBuilderExtensions.AddRetry)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// <summary>
     /// Gets the JSON property name for the property specified in selector expression.
     /// </summary>

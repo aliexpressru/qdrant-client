@@ -1,5 +1,10 @@
+using System.Linq.Expressions;
+using System.Threading.RateLimiting;
 using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Tests.Model;
+using Microsoft.Extensions.Http.Resilience;
+using Polly;
+using Polly.CircuitBreaker;
 
 namespace Aer.QdrantClient.Tests.TestClasses.InfrastructureTests;
 
@@ -67,5 +72,43 @@ internal class ReflectionHelperTests
             ReflectionHelper.GetPayloadFieldName((TestComplexPayload t) => t.NestedArray[0].NestedNestedArray[0].Name);
 
         payloadMemberName.Should().Be("nested_array[].nested_nested_array[].name");
+    }
+
+    [Test]
+    public void CheckRetryStrategyConfigured()
+    {
+        var delay = TimeSpan.FromMilliseconds(200);
+
+        Expression<Action<ResiliencePipelineBuilder<HttpResponseMessage>>> resilienceStrategyConfiguredAction =
+            builder =>
+                builder
+                    .AddConcurrencyLimiter(new ConcurrencyLimiterOptions(){
+                        PermitLimit = 2
+                    })
+                    .AddRetry(
+                        new HttpRetryStrategyOptions()
+                        {
+                            MaxRetryAttempts = 3,
+                            Delay = delay
+                        })
+                    .AddCircuitBreaker(
+                        new CircuitBreakerStrategyOptions<HttpResponseMessage>()
+                        {
+                            FailureRatio = 1
+                        });
+
+        var isConfigured = ReflectionHelper.CheckRetryStrategyConfigured(resilienceStrategyConfiguredAction);
+        isConfigured.Should().BeTrue();
+
+        Expression<Action<ResiliencePipelineBuilder<HttpResponseMessage>>> resilienceStrategyNotConfiguredAction =
+            builder =>
+                builder.AddCircuitBreaker(
+                    new CircuitBreakerStrategyOptions<HttpResponseMessage>()
+                    {
+                        FailureRatio = 1
+                    });
+
+        isConfigured = ReflectionHelper.CheckRetryStrategyConfigured(resilienceStrategyNotConfiguredAction);
+        isConfigured.Should().BeFalse();
     }
 }
