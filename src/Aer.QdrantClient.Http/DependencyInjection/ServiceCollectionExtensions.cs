@@ -1,9 +1,10 @@
 using Aer.QdrantClient.Http.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
-
-// ReSharper disable MemberCanBeInternal
+using Polly;
+using Polly.CircuitBreaker;
 
 namespace Aer.QdrantClient.Http.DependencyInjection;
 
@@ -19,11 +20,16 @@ public static class ServiceCollectionExtensions
     /// <param name="configuration">The application configuration.</param>
     /// <param name="clientConfigurationSectionName">The name of the appsettings.json file section where <see cref="QdrantClientSettings"/> is configured.</param>
     /// <param name="configureOptions">The configure the <see cref="QdrantClientSettings"/> parameters action.</param>
+    /// <param name="circuitBreakerStrategyOptions">
+    /// If set, configures the circuit breaker strategy for all qdrant backend calls with specified options.
+    /// The circuit breaker strategy is cached by authority (host + port).
+    /// </param>
     public static IServiceCollection AddQdrantHttpClient(
         this IServiceCollection services,
         IConfiguration configuration,
         string clientConfigurationSectionName = nameof(QdrantClientSettings),
-        Action<QdrantClientSettings> configureOptions = null)
+        Action<QdrantClientSettings> configureOptions = null,
+        CircuitBreakerStrategyOptions<HttpResponseMessage> circuitBreakerStrategyOptions= null)
     {
         services.Configure<QdrantClientSettings>(configuration.GetSection(clientConfigurationSectionName));
 
@@ -32,24 +38,54 @@ public static class ServiceCollectionExtensions
             services.PostConfigure(configureOptions);
         }
 
-        services.AddHttpClient<QdrantHttpClient, QdrantHttpClient>(
-            static (serviceProvider, client) =>
-            {
-                var qdrantSettings =
-                    serviceProvider.GetRequiredService<IOptions<QdrantClientSettings>>().Value;
+        if (circuitBreakerStrategyOptions is not null)
+        {
+            services
+                .AddHttpClient<QdrantHttpClient, QdrantHttpClient>(static (serviceProvider, client) =>
+                    {
+                        var qdrantSettings =
+                            serviceProvider.GetRequiredService<IOptions<QdrantClientSettings>>().Value;
 
-                client.BaseAddress = new Uri(qdrantSettings.HttpAddress);
-                client.Timeout = qdrantSettings.HttpClientTimeout;
+                        client.BaseAddress = new Uri(qdrantSettings.HttpAddress);
+                        client.Timeout = qdrantSettings.HttpClientTimeout;
 
-                if (qdrantSettings.ApiKey is {Length: > 0})
+                        if (qdrantSettings.ApiKey is {Length: > 0})
+                        {
+                            client.DefaultRequestHeaders.Add(
+                                "api-key",
+                                qdrantSettings.ApiKey
+                            );
+                        }
+                    }
+                )
+                .AddResilienceHandler(
+                    "QdrantHttpClientResiliencePipeline",
+                    builder =>
+                    {
+                        builder.AddCircuitBreaker(circuitBreakerStrategyOptions);
+                    })
+                .SelectPipelineByAuthority();
+        }
+        else
+        {
+            services.AddHttpClient<QdrantHttpClient, QdrantHttpClient>(static (serviceProvider, client) =>
                 {
-                    client.DefaultRequestHeaders.Add(
-                        "api-key",
-                        qdrantSettings.ApiKey
-                    );
+                    var qdrantSettings =
+                        serviceProvider.GetRequiredService<IOptions<QdrantClientSettings>>().Value;
+
+                    client.BaseAddress = new Uri(qdrantSettings.HttpAddress);
+                    client.Timeout = qdrantSettings.HttpClientTimeout;
+
+                    if (qdrantSettings.ApiKey is {Length: > 0})
+                    {
+                        client.DefaultRequestHeaders.Add(
+                            "api-key",
+                            qdrantSettings.ApiKey
+                        );
+                    }
                 }
-            }
-        );
+            );
+        }
 
         return services;
     }

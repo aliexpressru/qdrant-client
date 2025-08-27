@@ -7,6 +7,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Model;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Polly.CircuitBreaker;
 using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
@@ -73,7 +74,13 @@ public class QdrantTestsBase
         {
             services.AddQdrantHttpClient(
                 Configuration,
-                configureOptions: config => config.ApiKey = null);
+                configureOptions: config => config.ApiKey = null,
+                circuitBreakerStrategyOptions: new CircuitBreakerStrategyOptions<HttpResponseMessage>()
+                {
+                    FailureRatio = 0.5,
+                    BreakDuration = TimeSpan.FromMilliseconds(500)
+                }
+            );
         }
         else
         {
