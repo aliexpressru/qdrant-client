@@ -18,6 +18,7 @@ internal static class ReflectionHelper
     private class MethodCallVisitor : ExpressionVisitor
     {
         public List<MethodCallExpression> MethodCalls { get; } = new();
+        
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
             MethodCalls.Add(node);
@@ -28,7 +29,7 @@ internal static class ReflectionHelper
     /// <summary>
     /// Checks whether the retry strategy is configured in the resilience pipeline builder action.
     /// </summary>
-    /// <param name="actionToInspect">The resilience action to inspect.</param>
+    /// <param name="actionToInspect">The resilience configuration action to inspect.</param>
     public static bool CheckRetryStrategyConfigured(
         Expression<Action<ResiliencePipelineBuilder<HttpResponseMessage>>> actionToInspect)
     {

@@ -1,12 +1,10 @@
-using System.Linq.Expressions;
 using Aer.QdrantClient.Http.Configuration;
-using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
 using Polly;
-
-// ReSharper disable MemberCanBeInternal
+using Polly.CircuitBreaker;
 
 namespace Aer.QdrantClient.Http.DependencyInjection;
 
@@ -15,8 +13,6 @@ namespace Aer.QdrantClient.Http.DependencyInjection;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
-    internal static bool IsResiliencePipelineRetryStrategyConfigured { get; set; }
-
     /// <summary>
     /// Adds Qdrant HTTP client to the <see cref="IServiceCollection"/>.
     /// </summary>
@@ -24,18 +20,16 @@ public static class ServiceCollectionExtensions
     /// <param name="configuration">The application configuration.</param>
     /// <param name="clientConfigurationSectionName">The name of the appsettings.json file section where <see cref="QdrantClientSettings"/> is configured.</param>
     /// <param name="configureOptions">The configure the <see cref="QdrantClientSettings"/> parameters action.</param>
-    /// <param name="resiliencePipelineName">The optional resilience pipeline name. Default value is <c>QdrantHttpClientResiliencePipeline</c>.</param>
-    /// <param name="configureResiliencePipeline">
-    /// The optional action to configure resilience options such as circuit breaker or custom retries.
-    /// If you configure retry strategy this way, then the retry-related parameters on the API calls will be ignored. 
+    /// <param name="circuitBreakerStrategyOptions">
+    /// If set, configures the circuit breaker strategy for all qdrant backend calls with specified options.
+    /// The circuit breaker strategy is cached by authority (host + port).
     /// </param>
     public static IServiceCollection AddQdrantHttpClient(
         this IServiceCollection services,
         IConfiguration configuration,
         string clientConfigurationSectionName = nameof(QdrantClientSettings),
         Action<QdrantClientSettings> configureOptions = null,
-        string resiliencePipelineName = "QdrantHttpClientResiliencePipeline",
-        Expression<Action<ResiliencePipelineBuilder<HttpResponseMessage>>> configureResiliencePipeline = null)
+        CircuitBreakerStrategyOptions<HttpResponseMessage> circuitBreakerStrategyOptions= null)
     {
         services.Configure<QdrantClientSettings>(configuration.GetSection(clientConfigurationSectionName));
 
@@ -44,30 +38,33 @@ public static class ServiceCollectionExtensions
             services.PostConfigure(configureOptions);
         }
 
-        if (configureResiliencePipeline is not null)
+        if (circuitBreakerStrategyOptions is not null)
         {
-            var configureResiliencePipelineAction = configureResiliencePipeline.Compile();
-            
-            services.AddHttpClient<QdrantHttpClient, QdrantHttpClient>(static (serviceProvider, client) =>
-                {
-                    var qdrantSettings =
-                        serviceProvider.GetRequiredService<IOptions<QdrantClientSettings>>().Value;
-
-                    client.BaseAddress = new Uri(qdrantSettings.HttpAddress);
-                    client.Timeout = qdrantSettings.HttpClientTimeout;
-
-                    if (qdrantSettings.ApiKey is {Length: > 0})
+            services
+                .AddHttpClient<QdrantHttpClient, QdrantHttpClient>(static (serviceProvider, client) =>
                     {
-                        client.DefaultRequestHeaders.Add(
-                            "api-key",
-                            qdrantSettings.ApiKey
-                        );
-                    }
-                }
-            ).AddResilienceHandler(resiliencePipelineName, configureResiliencePipelineAction);
+                        var qdrantSettings =
+                            serviceProvider.GetRequiredService<IOptions<QdrantClientSettings>>().Value;
 
-            IsResiliencePipelineRetryStrategyConfigured =
-                ReflectionHelper.CheckRetryStrategyConfigured(configureResiliencePipeline);
+                        client.BaseAddress = new Uri(qdrantSettings.HttpAddress);
+                        client.Timeout = qdrantSettings.HttpClientTimeout;
+
+                        if (qdrantSettings.ApiKey is {Length: > 0})
+                        {
+                            client.DefaultRequestHeaders.Add(
+                                "api-key",
+                                qdrantSettings.ApiKey
+                            );
+                        }
+                    }
+                )
+                .AddResilienceHandler(
+                    "QdrantHttpClientResiliencePipeline",
+                    builder =>
+                    {
+                        builder.AddCircuitBreaker(circuitBreakerStrategyOptions);
+                    })
+                .SelectPipelineByAuthority();
         }
         else
         {
