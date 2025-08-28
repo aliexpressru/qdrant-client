@@ -7,6 +7,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Model;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MoreLinq;
 using Polly.CircuitBreaker;
 using Serilog;
 using Serilog.Events;
@@ -210,10 +211,9 @@ public class QdrantTestsBase
         var values = CreateTestVector(numberOfNonZeroIndices, vectorDataType);
 
         var indices = Enumerable.Range(0, (int) vectorLength)
-            .Select(_ => (uint) Random.Next((int) vectorLength + 1))
-            .Distinct()
-            .Take((int) numberOfNonZeroIndices)
+            .RandomSubset((int) numberOfNonZeroIndices)
             .OrderBy(v => v)
+            .Select(v => (uint) v)
             .ToArray();
 
         return (indices, values);

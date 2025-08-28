@@ -44,7 +44,7 @@ internal class ResilienceTests : QdrantTestsBase
 		int operationCancelledExceptionCount = 0;
 		int circuitBreakerExceptionCount = 0;
 		
-		for (int i = 1; i < 20; i++)
+		for (int i = 1; i < 100; i++)
 		{
 			try
 			{
@@ -55,7 +55,7 @@ internal class ResilienceTests : QdrantTestsBase
 				
 				CancellationTokenSource cts = new();
 				// While debugging this test it might be beneficial to set this to 10
-				cts.CancelAfter(TimeSpan.FromMilliseconds(5));
+				cts.CancelAfter(TimeSpan.FromMilliseconds(3));
 				
 				await faultyQdrantClient.GetClusterInfo(cts.Token);
 			}
