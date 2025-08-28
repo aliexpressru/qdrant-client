@@ -5,7 +5,7 @@ namespace Aer.QdrantClient.Http.Formulas.Expressions;
 /// <summary>
 /// Represents a divide expression that divides left part to its right optionally specifying divide by zero default value.
 /// </summary>
-internal class DivideExpression : ExpressionBase
+internal sealed class DivideExpression : ExpressionBase
 {
 	private readonly ExpressionBase _left;
 	private readonly ExpressionBase _right;

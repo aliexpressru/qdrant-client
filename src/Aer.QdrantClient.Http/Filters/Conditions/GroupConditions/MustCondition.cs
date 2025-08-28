@@ -5,7 +5,7 @@ namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 /// <summary>
 /// Represents "all nested conditions must match" filter condition group.
 /// </summary>
-internal class MustCondition : FilterGroupConditionBase
+internal sealed class MustCondition : FilterGroupConditionBase
 {
     public MustCondition(FilterConditionBase condition) : base(DiscardPayloadFieldName)
     {

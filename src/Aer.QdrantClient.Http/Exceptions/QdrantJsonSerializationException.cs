@@ -7,4 +7,4 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// </summary>
 /// <param name="reason">The reason for serialization failure.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantJsonSerializationException(string reason) : Exception($"Unable to serialize JSON. {reason}");
+public sealed class QdrantJsonSerializationException(string reason) : Exception($"Unable to serialize JSON. {reason}");

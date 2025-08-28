@@ -5,7 +5,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class QuantizationConfigurationJsonConverter : JsonConverter<QuantizationConfiguration>
+internal sealed class QuantizationConfigurationJsonConverter : JsonConverter<QuantizationConfiguration>
 {
     public override QuantizationConfiguration Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

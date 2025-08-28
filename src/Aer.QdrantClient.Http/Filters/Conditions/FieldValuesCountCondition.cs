@@ -3,7 +3,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal class FieldValuesCountCondition : FilterConditionBase
+internal sealed class FieldValuesCountCondition : FilterConditionBase
 {
     private readonly int? _lessThan;
     private readonly int? _lessThanOrEqual;

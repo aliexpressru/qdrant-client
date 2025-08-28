@@ -7,6 +7,6 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// </summary>
 /// <param name="invalidGroupId">The invalid group identifier.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantInvalidNumericSearchGroupIdException(object invalidGroupId)
+public sealed class QdrantInvalidNumericSearchGroupIdException(object invalidGroupId)
 	: Exception(
 		$"Invalid numeric search group id {invalidGroupId}. Numeric search group id should be greater than zero.");

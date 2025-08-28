@@ -5,7 +5,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class FullTextIndexStopwordsJsonConverter : JsonConverter<FullTextIndexStopwords>
+internal sealed class FullTextIndexStopwordsJsonConverter : JsonConverter<FullTextIndexStopwords>
 {
     public override FullTextIndexStopwords Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

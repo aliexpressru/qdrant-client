@@ -4,7 +4,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal class FieldMatchAnyConditionFast<T> : FilterConditionBase
+internal sealed class FieldMatchAnyConditionFast<T> : FilterConditionBase
 {
     private readonly ShouldCondition _optimizedShouldCondition;
 

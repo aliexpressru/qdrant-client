@@ -14,7 +14,7 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
     /// <summary>
     /// Represents information about current cluster status and structure.
     /// </summary>
-    public class ClusterInfo
+    public sealed class ClusterInfo
     {
         /// <summary>
         /// Current cluster status <c>enabled</c>, <c>disabled</c>.
@@ -65,7 +65,7 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
     /// <summary>
     /// Represents a consensus message send failure information.
     /// </summary>
-    public class MessageSendFailureUnit
+    public sealed class MessageSendFailureUnit
     {
         /// <summary>
         /// Failures count.
@@ -81,7 +81,7 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
     /// <summary>
     /// Represents a consensus status information.
     /// </summary>
-    public class ConsensusThreadStatusUnit
+    public sealed class ConsensusThreadStatusUnit
     {
         /// <summary>
         /// The consensus thread status.
@@ -103,7 +103,7 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
     /// <summary>
     /// Represents one cluster node information.
     /// </summary>
-    public class PeerInfoUint
+    public sealed class PeerInfoUint
     {
         /// <summary>
         /// The peer URI.
@@ -114,7 +114,7 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
     /// <summary>
     /// Represents RAFT consensus protocol status.
     /// </summary>
-    public class RaftInfoUnit
+    public sealed class RaftInfoUnit
     {
         /// <summary>
         /// The term number.

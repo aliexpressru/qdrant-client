@@ -4,7 +4,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal class FieldMatchExceptCondition<T> : FilterConditionBase
+internal sealed class FieldMatchExceptCondition<T> : FilterConditionBase
 {
     private readonly T[] _exceptValues;
 

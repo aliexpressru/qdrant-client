@@ -18,7 +18,7 @@ public sealed class GetCollectionClusteringInfoResponse
     /// <summary>
     /// Represents information about the collection sharding.
     /// </summary>
-    public class CollectionClusteringInfo
+    public sealed class CollectionClusteringInfo
     {
         /// <summary>
         /// ID of this peer.
@@ -92,7 +92,7 @@ public sealed class GetCollectionClusteringInfoResponse
     /// <summary>
     /// Information about a single shard.
     /// </summary>
-    public class LocalShardInfo
+    public sealed class LocalShardInfo
     {
         /// <summary>
         /// Local shard identifier.
@@ -119,7 +119,7 @@ public sealed class GetCollectionClusteringInfoResponse
     /// <summary>
     /// Information about a single remote shard.
     /// </summary>
-    public class RemoteShardInfo
+    public sealed class RemoteShardInfo
     {
         /// <summary>
         /// Remote shard identifier.
@@ -151,7 +151,7 @@ public sealed class GetCollectionClusteringInfoResponse
     /// <summary>
     /// Represents information about ongoing shard transfer operation.
     /// </summary>
-    public class ShardTransferInfo
+    public sealed class ShardTransferInfo
     {
         /// <summary>
         /// The transferring shard identifier.
@@ -178,7 +178,7 @@ public sealed class GetCollectionClusteringInfoResponse
     /// <summary>
     /// Represents a resharding operation information. 
     /// </summary>
-    public class ReshardingOperationInfo
+    public sealed class ReshardingOperationInfo
     {
         /// <summary>
         /// Resharding direction, scale up or down in number of shards.

@@ -8,5 +8,5 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// <param name="pointIdConcreteTypeName">Name of the point identifier concrete type.</param>
 /// <param name="targetTypeName">Name of the target type to read point id as.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantPointIdConversionException(string pointIdConcreteTypeName, string targetTypeName)
+public sealed class QdrantPointIdConversionException(string pointIdConcreteTypeName, string targetTypeName)
 	: Exception($"Can't read point id from type {pointIdConcreteTypeName} as {targetTypeName}");

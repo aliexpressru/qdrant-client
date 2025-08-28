@@ -9,7 +9,7 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// </summary>
 /// <param name="payloadTypeName">Name of the payload type.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantInvalidPayloadTypeException(string payloadTypeName)
+public sealed class QdrantInvalidPayloadTypeException(string payloadTypeName)
 	: Exception(
 		$"Payload of type {payloadTypeName} is not supported. Use complex type or a {nameof(Dictionary<string, object>)}. "
 		+ $"If you want to upsert raw json payload either use System.Text.Json {nameof(JsonObject)} or Newtonsoft.Json {nameof(JObject)}.");

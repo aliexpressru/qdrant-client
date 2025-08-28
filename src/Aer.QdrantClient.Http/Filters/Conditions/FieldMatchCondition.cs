@@ -4,7 +4,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal class FieldMatchCondition<T> : FilterConditionBase
+internal sealed class FieldMatchCondition<T> : FilterConditionBase
 {
     private readonly bool _isSubstringMatch;
     private readonly bool _isPhraseMatch;

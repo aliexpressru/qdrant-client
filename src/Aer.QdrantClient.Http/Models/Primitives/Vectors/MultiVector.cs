@@ -7,7 +7,7 @@ namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 /// Represents a multivector that consists of multiple dense vectors.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class MultiVector : VectorBase
+public sealed class MultiVector : VectorBase
 {
     /// <summary>
     /// The multiple vectors array.

@@ -13,10 +13,10 @@ public abstract class FullTextIndexStemmingAlgorithm
     /// <summary>
     /// The snowball stemming algorithm.
     /// </summary>
-    public class SnowballStemmingAlgorithm : FullTextIndexStemmingAlgorithm
+    public sealed class SnowballStemmingAlgorithm : FullTextIndexStemmingAlgorithm
     {
         /// <inheritdoc/>
-        public sealed override StemmingAlgorithmType Type { init; get; }
+        public override StemmingAlgorithmType Type { init; get; }
 
         /// <summary>
         /// The language of the Snowball stemming algorithm.

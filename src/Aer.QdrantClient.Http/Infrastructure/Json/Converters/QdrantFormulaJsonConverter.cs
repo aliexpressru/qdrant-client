@@ -4,7 +4,7 @@ using Aer.QdrantClient.Http.Formulas;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class QdrantFormulaJsonConverter : JsonConverter<QdrantFormula>
+internal sealed class QdrantFormulaJsonConverter : JsonConverter<QdrantFormula>
 {
     public override QdrantFormula Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

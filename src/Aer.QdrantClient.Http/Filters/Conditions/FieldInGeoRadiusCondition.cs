@@ -3,7 +3,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal class FieldInGeoRadiusCondition : FilterConditionBase
+internal sealed class FieldInGeoRadiusCondition : FilterConditionBase
 {
     private readonly double _centerLongitude;
     private readonly double _centerLatitude;

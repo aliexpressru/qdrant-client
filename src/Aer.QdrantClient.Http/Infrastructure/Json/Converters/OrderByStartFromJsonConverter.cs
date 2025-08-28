@@ -4,7 +4,7 @@ using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class OrderByStartFromJsonConverter : JsonConverter<OrderByStartFrom>
+internal sealed class OrderByStartFromJsonConverter : JsonConverter<OrderByStartFrom>
 {
     public override OrderByStartFrom Read(
         ref Utf8JsonReader reader,

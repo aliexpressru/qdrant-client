@@ -3,7 +3,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal class HasNamedVectorCondition : FilterConditionBase
+internal sealed class HasNamedVectorCondition : FilterConditionBase
 {
 	private readonly string _namedVectorName;
 

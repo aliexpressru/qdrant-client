@@ -5,7 +5,7 @@ namespace Aer.QdrantClient.Http.Formulas.Expressions;
 /// <summary>
 /// Represents a unary expression in Qdrant formulas.
 /// </summary>
-internal class UnaryExpression : ExpressionBase
+internal sealed class UnaryExpression : ExpressionBase
 {
 	private readonly string _operator;
 	private readonly ExpressionBase _operand;

@@ -72,6 +72,8 @@ public partial class QdrantHttpClient
         " "
     ];
 
+    internal const string ApiKeyHeaderName = "api-key";
+
     /// <summary>
     /// The actual HTTP client used to make calls to Qdrant API.
     /// </summary>
@@ -160,7 +162,7 @@ public partial class QdrantHttpClient
         if (apiKey is {Length: > 0})
         {
             apiClient.DefaultRequestHeaders.Add(
-                "api-key",
+                ApiKeyHeaderName,
                 apiKey
             );
         }

@@ -98,7 +98,7 @@ public abstract class UpdateCollectionClusteringSetupRequest
         /// <summary>
         /// Represents a description of a replica to drop.
         /// </summary>
-        public class DropShardReplicaDescriptor
+        public sealed class DropShardReplicaDescriptor
         {
             /// <summary>
             /// The shard identifier of the replica to drop.

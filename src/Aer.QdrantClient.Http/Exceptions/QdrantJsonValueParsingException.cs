@@ -7,4 +7,4 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// </summary>
 /// <param name="value">The value that was failed to parse.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantJsonValueParsingException(string value) : Exception($"Unable to parse JSON value {value}");
+public sealed class QdrantJsonValueParsingException(string value) : Exception($"Unable to parse JSON value {value}");

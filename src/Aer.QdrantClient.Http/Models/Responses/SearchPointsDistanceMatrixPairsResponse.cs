@@ -10,13 +10,13 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// Represents the vector distance matrix response.
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class SearchPointsDistanceMatrixPairsResponse
+public sealed class SearchPointsDistanceMatrixPairsResponse
     : QdrantResponseBase<SearchPointsDistanceMatrixPairsResponse.PointsDistanceMatrixPairsUnit>
 {
     /// <summary>
     /// Represents the distance matrix.
     /// </summary>
-    public class PointsDistanceMatrixPairsUnit
+    public sealed class PointsDistanceMatrixPairsUnit
     {
         /// <summary>
         /// The distance matrix pairs.

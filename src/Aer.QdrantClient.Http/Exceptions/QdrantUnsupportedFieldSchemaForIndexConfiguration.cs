@@ -7,5 +7,5 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// </summary>
 /// <param name="unsupportedReason">The reason this schema is not supported.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantUnsupportedFieldSchemaForIndexConfiguration(string unsupportedReason) 
+public sealed class QdrantUnsupportedFieldSchemaForIndexConfiguration(string unsupportedReason) 
 	: Exception($"Payload field schema doses not support selected index configuration. Reason : {unsupportedReason}");

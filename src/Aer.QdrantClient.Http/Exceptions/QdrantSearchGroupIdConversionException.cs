@@ -8,5 +8,5 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// <param name="searchGroupIdConcreteTypeName">Name of the search group identifier concrete type.</param>
 /// <param name="targetTypeName">Name of the target type to read search group id as.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantSearchGroupIdConversionException(string searchGroupIdConcreteTypeName, string targetTypeName)
+public sealed class QdrantSearchGroupIdConversionException(string searchGroupIdConcreteTypeName, string targetTypeName)
 	: Exception($"Can't read search group id from type {searchGroupIdConcreteTypeName} as {targetTypeName}");

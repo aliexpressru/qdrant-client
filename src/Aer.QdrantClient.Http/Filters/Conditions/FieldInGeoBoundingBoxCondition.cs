@@ -3,7 +3,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal class FieldInGeoBoundingBoxCondition : FilterConditionBase
+internal sealed class FieldInGeoBoundingBoxCondition : FilterConditionBase
 {
     private readonly double _topLeftLongitude;
     private readonly double _topLeftLatitude;

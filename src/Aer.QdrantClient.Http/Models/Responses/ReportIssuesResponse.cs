@@ -12,7 +12,7 @@ public class ReportIssuesResponse : QdrantResponseBase<ReportIssuesResponse.Qdra
     /// <summary>
     /// Represents a qdrant issues report.
     /// </summary>
-    public class QdrantIssuesUint
+    public sealed class QdrantIssuesUint
     {
         /// <summary>
         /// Reported qdrant issues.

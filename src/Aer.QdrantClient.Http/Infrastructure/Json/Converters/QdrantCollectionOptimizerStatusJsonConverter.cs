@@ -7,7 +7,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class QdrantCollectionOptimizerStatusJsonConverter : JsonConverter<GetCollectionInfoResponse.QdrantOptimizerStatusUint>
+internal sealed class QdrantCollectionOptimizerStatusJsonConverter : JsonConverter<GetCollectionInfoResponse.QdrantOptimizerStatusUint>
 {
     public override GetCollectionInfoResponse.QdrantOptimizerStatusUint Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

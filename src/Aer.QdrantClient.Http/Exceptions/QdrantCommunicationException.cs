@@ -12,7 +12,7 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// <param name="reasonPhrase">The Qdrant fail reason phrase.</param>
 /// <param name="errorContent">The Qdrant fail raw response content.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantCommunicationException(
+public sealed class QdrantCommunicationException(
 	string method,
 	string url,
 	HttpStatusCode statusCode,

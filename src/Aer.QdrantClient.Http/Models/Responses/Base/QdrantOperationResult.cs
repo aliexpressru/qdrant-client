@@ -8,7 +8,7 @@ namespace Aer.QdrantClient.Http.Models.Responses.Base;
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class QdrantOperationResult
+public sealed class QdrantOperationResult
 {
     /// <summary>
     /// Sequential number of the operation.

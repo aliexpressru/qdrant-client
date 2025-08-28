@@ -4,7 +4,7 @@ using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class PointIdOrQueryVectorJsonConverter : JsonConverter<PointIdOrQueryVector>
+internal sealed class PointIdOrQueryVectorJsonConverter : JsonConverter<PointIdOrQueryVector>
 {
     private static readonly JsonSerializerOptions _serializerOptions =
         JsonSerializerConstants.CreateSerializerOptions(

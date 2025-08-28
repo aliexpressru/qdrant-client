@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
@@ -6,6 +7,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 /// <summary>
 /// Represents the location used to lookup vectors.
 /// </summary>
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public sealed class VectorsLookupLocation
 {
     /// <summary>

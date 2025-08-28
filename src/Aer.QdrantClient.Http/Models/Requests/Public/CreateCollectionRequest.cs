@@ -17,7 +17,7 @@ public sealed class CreateCollectionRequest
     /// <summary>
     /// Represents other collection to copy data from configuration.
     /// </summary>
-    public class InitFromCollection
+    public sealed class InitFromCollection
     {
         /// <summary>
         /// Specify other collection name to copy data from.

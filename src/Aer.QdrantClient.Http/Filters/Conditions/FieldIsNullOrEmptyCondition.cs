@@ -3,7 +3,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal class FieldIsNullOrEmptyCondition : FilterConditionBase
+internal sealed class FieldIsNullOrEmptyCondition : FilterConditionBase
 {
     protected internal override PayloadIndexedFieldType? PayloadFieldType => null;
     

@@ -6,7 +6,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class QdrantStatusJsonConverter : JsonConverter<QdrantStatus>
+internal sealed class QdrantStatusJsonConverter : JsonConverter<QdrantStatus>
 {
     public override QdrantStatus Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

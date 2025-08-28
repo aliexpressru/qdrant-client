@@ -3,7 +3,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal class FieldRangeDateTimeCondition : FilterConditionBase
+internal sealed class FieldRangeDateTimeCondition : FilterConditionBase
 {
     private readonly DateTimeOffset? _lessThan;
     private readonly DateTimeOffset? _lessThanOrEqual;

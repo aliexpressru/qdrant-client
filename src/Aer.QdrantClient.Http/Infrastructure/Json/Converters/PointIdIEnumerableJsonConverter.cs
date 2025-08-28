@@ -6,7 +6,7 @@ using Aer.QdrantClient.Http.Models.Primitives;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class PointIdIEnumerableJsonConverter : JsonConverter<IEnumerable<PointId>>
+internal sealed class PointIdIEnumerableJsonConverter : JsonConverter<IEnumerable<PointId>>
 {
     private static readonly JsonSerializerOptions _serializerOptions =
         JsonSerializerConstants.CreateSerializerOptions(new PointIdJsonConverter());

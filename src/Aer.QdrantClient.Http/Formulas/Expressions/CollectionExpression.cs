@@ -5,7 +5,7 @@ namespace Aer.QdrantClient.Http.Formulas.Expressions;
 /// <summary>
 /// Represents a collection expression in Qdrant formulas.
 /// </summary>
-internal class CollectionExpression: ExpressionBase
+internal sealed class CollectionExpression: ExpressionBase
 {
 	private readonly string _collectionOperator;
 	private readonly ICollection<ExpressionBase> _expressions;

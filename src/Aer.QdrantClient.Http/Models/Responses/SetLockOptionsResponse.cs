@@ -12,7 +12,7 @@ public sealed class SetLockOptionsResponse : QdrantResponseBase<SetLockOptionsRe
     /// <summary>
     /// Represents a previous set lock options state.
     /// </summary>
-    public class PreviousSetLockOptionsState
+    public sealed class PreviousSetLockOptionsState
     {
         /// <summary>
         /// The write operations lock reason.

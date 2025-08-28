@@ -5,7 +5,7 @@ namespace Aer.QdrantClient.Http.Formulas.Expressions;
 /// <summary>
 /// Represents a power expression that raises base expression to the power of another expression.
 /// </summary>
-internal class PowerExpression : ExpressionBase
+internal sealed class PowerExpression : ExpressionBase
 {
 	private readonly ExpressionBase _base;
 	private readonly ExpressionBase _exponent;

@@ -5,7 +5,7 @@ using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class QueryVectorJsonConverter : JsonConverter<QueryVector>
+internal sealed class QueryVectorJsonConverter : JsonConverter<QueryVector>
 {
     public override QueryVector Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

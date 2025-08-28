@@ -5,7 +5,7 @@ using Aer.QdrantClient.Http.Models.Primitives;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class SearchGroupIdJsonConverter : JsonConverter<SearchGroupId>
+internal sealed class SearchGroupIdJsonConverter : JsonConverter<SearchGroupId>
 {
     public override SearchGroupId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

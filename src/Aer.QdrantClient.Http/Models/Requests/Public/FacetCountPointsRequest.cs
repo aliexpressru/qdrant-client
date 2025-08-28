@@ -43,8 +43,8 @@ public sealed class FacetCountPointsRequest
     /// Initializes a new instance of <see cref="FacetCountPointsRequest"/>.
     /// </summary>
     /// <param name="key">Payload key to use for faceting.</param>
-    /// <param name="limit">Max number of hits to return. Default is 10.</param>
-    /// <param name="exact">Whether to do a more expensive exact count for each of the values in the facet. Default is false.</param>
+    /// <param name="limit">Max number of hits to return. Default is <c>10</c>.</param>
+    /// <param name="exact">Whether to do a more expensive exact count for each of the values in the facet. Default is <c>false</c>.</param>
     /// <param name="filter">Filter conditions - only consider points that satisfy these conditions.</param>
     /// <param name="shardSelector">The shard selector to perform operation only on specified shards.</param>
     public FacetCountPointsRequest(
@@ -58,5 +58,6 @@ public sealed class FacetCountPointsRequest
         Limit = limit;
         Filter = filter;
         ShardKey = shardSelector;
+        Exact = exact;
     }
 }

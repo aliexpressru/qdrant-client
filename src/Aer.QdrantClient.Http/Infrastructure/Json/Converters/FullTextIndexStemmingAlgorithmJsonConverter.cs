@@ -5,7 +5,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class FullTextIndexStemmingAlgorithmJsonConverter : JsonConverter<FullTextIndexStemmingAlgorithm>
+internal sealed class FullTextIndexStemmingAlgorithmJsonConverter : JsonConverter<FullTextIndexStemmingAlgorithm>
 {
     public override FullTextIndexStemmingAlgorithm Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

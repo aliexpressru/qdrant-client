@@ -4,7 +4,7 @@ using Aer.QdrantClient.Http.Filters;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class QdrantFilterJsonConverter : JsonConverter<QdrantFilter>
+internal sealed class QdrantFilterJsonConverter : JsonConverter<QdrantFilter>
 {
     public override QdrantFilter Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

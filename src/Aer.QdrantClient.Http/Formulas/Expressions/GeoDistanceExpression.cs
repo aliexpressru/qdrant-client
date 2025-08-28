@@ -5,7 +5,7 @@ namespace Aer.QdrantClient.Http.Formulas.Expressions;
 /// <summary>
 /// Represents a Haversine geo distance expression that calculates distance between origin and target geographic point.
 /// </summary>
-internal class GeoDistanceExpression : ExpressionBase
+internal sealed class GeoDistanceExpression : ExpressionBase
 {
 	private readonly double _originLongitude;
 	private readonly double _originLatitude;

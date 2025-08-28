@@ -5,7 +5,7 @@ namespace Aer.QdrantClient.Http.Infrastructure.Tracing;
 /// <summary>
 /// The http client handler that disables activity propagation.
 /// </summary>
-internal class DisableActivityHandler : DelegatingHandler
+internal sealed class DisableActivityHandler : DelegatingHandler
 {
 	public DisableActivityHandler(HttpMessageHandler innerHandler) : base(innerHandler)
 	{ }

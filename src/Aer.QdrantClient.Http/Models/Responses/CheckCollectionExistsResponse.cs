@@ -12,7 +12,7 @@ public sealed class CheckCollectionExistsResponse : QdrantResponseBase<CheckColl
     /// <summary>
     /// Represents the state of existence of a collection.
     /// </summary>
-    public class CollectionExistenceResult
+    public sealed class CollectionExistenceResult
     {
         /// <summary>
         /// State of existence of a collection, <c>true</c> means the collection exists,

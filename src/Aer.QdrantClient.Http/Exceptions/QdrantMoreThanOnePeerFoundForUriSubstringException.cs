@@ -8,7 +8,7 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// <param name="peerUriSubstring">The peer uri substring.</param>
 /// <param name="foundPeers">The found peers.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantMoreThanOnePeerFoundForUriSubstringException(
+public sealed class QdrantMoreThanOnePeerFoundForUriSubstringException(
 	string peerUriSubstring,
 	IEnumerable<KeyValuePair<string, ulong>> foundPeers)
 	: Exception(

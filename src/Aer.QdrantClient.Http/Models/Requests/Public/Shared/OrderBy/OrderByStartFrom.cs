@@ -3,7 +3,7 @@
 /// <summary>
 /// Which payload value to start scrolling from. Default is the lowest value for asc and the highest for desc.
 /// </summary>
-public class OrderByStartFrom
+public abstract class OrderByStartFrom
 {
     internal sealed class OrderByStartFromInteger : OrderByStartFrom
     {

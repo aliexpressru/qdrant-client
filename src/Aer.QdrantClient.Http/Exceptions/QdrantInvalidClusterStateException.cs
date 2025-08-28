@@ -7,4 +7,4 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// </summary>
 /// <param name="reason">The invalid state reason.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantInvalidClusterStateException(string reason) : Exception($"Qdrant cluster seems to be in invalid state: {reason}");
+public sealed class QdrantInvalidClusterStateException(string reason) : Exception($"Qdrant cluster seems to be in invalid state: {reason}");

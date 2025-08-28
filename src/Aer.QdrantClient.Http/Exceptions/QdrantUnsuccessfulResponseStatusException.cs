@@ -9,5 +9,5 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// <param name="qdrantResponseType">The type of the qdrant response.</param>
 /// <param name="status">The status of the qdrant response.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantUnsuccessfulResponseStatusException(Type qdrantResponseType, QdrantStatus status)
+public sealed class QdrantUnsuccessfulResponseStatusException(Type qdrantResponseType, QdrantStatus status)
 	: Exception($"Qdrant response '{qdrantResponseType}' status '{status}' does not indicate success");

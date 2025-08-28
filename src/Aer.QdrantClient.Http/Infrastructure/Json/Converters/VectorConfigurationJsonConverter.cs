@@ -6,7 +6,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class VectorConfigurationJsonConverter : JsonConverter<VectorConfigurationBase>
+internal sealed class VectorConfigurationJsonConverter : JsonConverter<VectorConfigurationBase>
 {
     public override VectorConfigurationBase Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

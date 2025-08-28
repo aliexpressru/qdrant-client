@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a Qdrant client configuration.
 /// </summary>
-public class QdrantClientSettings
+public sealed class QdrantClientSettings
 {
     private Uri _httpAddressUri;
     
@@ -15,7 +15,7 @@ public class QdrantClientSettings
     /// <summary>
     /// The HTTP or HTTPs host and port that Qdrant db engine listens to.
     /// </summary>
-    public required string HttpAddress { init; get; }
+    public required string HttpAddress { set; get; }
 
     /// <summary>
     /// The http address as an <see cref="Uri"/> object.
@@ -32,5 +32,5 @@ public class QdrantClientSettings
     /// <summary>
     /// The default timeout for http client which ios used to call Qdrant HTTP API.
     /// </summary>
-    public TimeSpan HttpClientTimeout { init; get; } = DefaultHttpClientTimeout;
+    public TimeSpan HttpClientTimeout { set; get; } = DefaultHttpClientTimeout;
 }

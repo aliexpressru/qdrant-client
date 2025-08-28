@@ -12,7 +12,7 @@ public sealed class CountPointsResponse : QdrantResponseBase<CountPointsResponse
     /// <summary>
     /// Represents the count points result.
     /// </summary>
-    public class CountPointsResult
+    public sealed class CountPointsResult
     {
         /// <summary>
         /// Number of points which satisfy the count points conditions.

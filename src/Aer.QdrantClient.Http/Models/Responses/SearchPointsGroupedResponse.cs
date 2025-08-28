@@ -15,7 +15,7 @@ public sealed class SearchPointsGroupedResponse : QdrantResponseBase<SearchPoint
     /// <summary>
     /// Represents the search points grouped operation response.
     /// </summary>
-    public class GroupedPointsResponse
+    public sealed class GroupedPointsResponse
     {
         /// <summary>
         /// Found search groups.
@@ -25,7 +25,7 @@ public sealed class SearchPointsGroupedResponse : QdrantResponseBase<SearchPoint
         /// <summary>
         /// Search groups.
         /// </summary>
-        public class SearchGroupsUnit
+        public sealed class SearchGroupsUnit
         {
             /// <summary>
             /// Scored points that have the same value of the group_by key.

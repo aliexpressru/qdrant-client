@@ -8,7 +8,7 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// <param name="peerId">The peer id.</param>
 /// <param name="existingPeers">The existing peers.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantNoPeersFoundException(
+public sealed class QdrantNoPeersFoundException(
     ulong peerId,
     IEnumerable<ulong> existingPeers)
     : Exception(

@@ -12,7 +12,7 @@ public sealed class ListCollectionsResponse : QdrantResponseBase<ListCollections
     /// <summary>
     /// Represents a set of existing collection names.
     /// </summary>
-    public class CollectionNamesUnit
+    public sealed class CollectionNamesUnit
     {
         /// <summary>
         /// The collection name objects.

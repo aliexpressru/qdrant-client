@@ -5,7 +5,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal class FieldMatchAnyCondition<T> : FilterConditionBase, IOptimizableCondition
+internal sealed class FieldMatchAnyCondition<T> : FilterConditionBase, IOptimizableCondition
 {
     private readonly IEnumerable<T> _anyValuesToMatch;
 

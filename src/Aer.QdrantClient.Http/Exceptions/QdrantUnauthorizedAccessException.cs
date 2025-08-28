@@ -7,6 +7,6 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// </summary>
 /// <param name="unauthorizedReason">The Qdrant engine unauthorized access reason message.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantUnauthorizedAccessException(string unauthorizedReason)
+public sealed class QdrantUnauthorizedAccessException(string unauthorizedReason)
 	: Exception(
 		$"Qdrant secure backend detected unauthorized access. Reason: '{unauthorizedReason}'. Check configuration.");

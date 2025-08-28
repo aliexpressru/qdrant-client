@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
@@ -6,7 +7,8 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 /// <summary>
 /// Represents a points discovery context.
 /// </summary>
-public class PointsDiscoveryContext
+[SuppressMessage("ReSharper", "MemberCanBeInternal")]
+public sealed class PointsDiscoveryContext
 {
     /// <summary>
     /// Look for vectors closest to those.

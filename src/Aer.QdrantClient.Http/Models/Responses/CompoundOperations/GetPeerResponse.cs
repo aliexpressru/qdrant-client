@@ -13,7 +13,7 @@ public sealed class GetPeerResponse : QdrantResponseBase<GetPeerResponse.PeerInf
     /// <summary>
     /// The peer information.
     /// </summary>
-    public class PeerInfo
+    public sealed class PeerInfo
     {
         /// <summary>
         /// The found peer identifier.

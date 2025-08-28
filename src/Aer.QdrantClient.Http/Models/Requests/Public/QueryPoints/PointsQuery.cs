@@ -27,7 +27,7 @@ public abstract class PointsQuery
         /// <summary>
         /// Represents a Maximal Marginal Relevance parameters.
         /// </summary>
-        public class MmrParameters
+        public sealed class MmrParameters
         { 
             /// <summary>
             /// Tunable parameter for the MMR algorithm. Determines the balance between diversity and relevance.
@@ -84,7 +84,7 @@ public abstract class PointsQuery
 
     internal sealed class RecommendPointsQuery : PointsQuery
     {
-        public class RecommendPointsQueryUnit
+        public sealed class RecommendPointsQueryUnit
         {
             [JsonConverter(typeof(PointIdOrQueryVectorCollectionJsonConverter))]
             public IEnumerable<PointIdOrQueryVector> Positive { get; init; }
@@ -117,7 +117,7 @@ public abstract class PointsQuery
 
     internal sealed class DiscoverPointsQuery : PointsQuery
     {
-        public class DiscoverPointsQueryUnit
+        public sealed class DiscoverPointsQueryUnit
         {
             [JsonConverter(typeof(PointIdOrQueryVectorJsonConverter))]
             public PointIdOrQueryVector Target { get; init; }

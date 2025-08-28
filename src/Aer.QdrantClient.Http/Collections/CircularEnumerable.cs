@@ -2,9 +2,9 @@
 
 namespace Aer.QdrantClient.Http.Collections;
 
-internal class CircularEnumerable<T> : IEnumerable<T>
+internal sealed class CircularEnumerable<T> : IEnumerable<T>
 {
-    private class CircleDetector : IDisposable
+    private sealed class CircleDetector : IDisposable
     {
         private readonly int _circleStartElementPointer;
         private readonly CircularEnumerable<T> _enumerable;

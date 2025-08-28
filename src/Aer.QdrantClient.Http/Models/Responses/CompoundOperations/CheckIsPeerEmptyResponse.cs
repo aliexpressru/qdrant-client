@@ -5,5 +5,5 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// <summary>
 /// Represents a cluster node emptiness check result.
 /// </summary>
-public class CheckIsPeerEmptyResponse : QdrantResponseBase<bool>
+public sealed class CheckIsPeerEmptyResponse : QdrantResponseBase<bool>
 { }

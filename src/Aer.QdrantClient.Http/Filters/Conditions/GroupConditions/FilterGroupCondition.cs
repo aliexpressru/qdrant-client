@@ -5,7 +5,7 @@ namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 /// <summary>
 /// Represents a plain group of conditions that are located on one level.
 /// </summary>
-internal class FilterGroupCondition : FilterGroupConditionBase
+internal sealed class FilterGroupCondition : FilterGroupConditionBase
 {
     public FilterGroupCondition(params FilterConditionBase[] conditions) : this((IEnumerable<FilterConditionBase>)conditions)
     { }

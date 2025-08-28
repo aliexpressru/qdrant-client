@@ -9,5 +9,5 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// <param name="collectionName">The collection to wait to become green.</param>
 /// <param name="waitForCollectionGreenTimeout">The time to wait for collection to become green.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantCollectionNotGreenException(string collectionName, TimeSpan waitForCollectionGreenTimeout) 
+public sealed class QdrantCollectionNotGreenException(string collectionName, TimeSpan waitForCollectionGreenTimeout) 
 	: Exception($"The collection {collectionName} is not {QdrantCollectionStatus.Green} for the timeout duration {waitForCollectionGreenTimeout:g}");

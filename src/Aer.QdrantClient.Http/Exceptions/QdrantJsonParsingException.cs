@@ -7,4 +7,4 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// </summary>
 /// <param name="reason">The reason for parsing failure.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantJsonParsingException(string reason) : Exception($"Unable to parse JSON. {reason}");
+public sealed class QdrantJsonParsingException(string reason) : Exception($"Unable to parse JSON. {reason}");

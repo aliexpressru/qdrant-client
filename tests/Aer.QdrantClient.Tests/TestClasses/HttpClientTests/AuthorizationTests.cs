@@ -27,7 +27,7 @@ public class AuthorizationTests : QdrantTestsBase
 
         _qdrantHttpClient = ServiceProvider.GetRequiredService<QdrantHttpClient>();
 
-        var unauthorizedAct = async ()=> await _qdrantHttpClient.CreateCollection(
+        var unauthorizedAct = async () => await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(
                 VectorDistanceMetric.Dot,
@@ -38,8 +38,8 @@ public class AuthorizationTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        await unauthorizedAct.Should().ThrowAsync<QdrantUnauthorizedAccessException>().Where(
-            e => e.Message.Contains("Unauthorized : Must provide an API key or an Authorization bearer token")
+        await unauthorizedAct.Should().ThrowAsync<QdrantUnauthorizedAccessException>().Where(e =>
+            e.Message.Contains("Unauthorized : Must provide an API key or an Authorization bearer token")
         );
     }
 }

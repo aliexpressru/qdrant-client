@@ -6,7 +6,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class SparseVectorConfigurationJsonConverter : JsonConverter<SparseVectorConfiguration>
+internal sealed class SparseVectorConfigurationJsonConverter : JsonConverter<SparseVectorConfiguration>
 {
     public override SparseVectorConfiguration Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

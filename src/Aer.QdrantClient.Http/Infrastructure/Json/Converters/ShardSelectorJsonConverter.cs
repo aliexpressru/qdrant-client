@@ -5,7 +5,7 @@ using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class ShardSelectorJsonConverter : JsonConverter<ShardSelector>
+internal sealed class ShardSelectorJsonConverter : JsonConverter<ShardSelector>
 {
     public override ShardSelector Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

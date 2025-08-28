@@ -40,7 +40,10 @@ public class QdrantTestsBase
     // shared random with constant seed to make tests repeatable
     protected static readonly Random Random = new(1567);
 
-    protected void Initialize(bool isDisableAuthorization = false)
+    protected void Initialize(
+        bool isDisableAuthorization = false,
+        CircuitBreakerStrategyOptions<HttpResponseMessage> circuitBreakerOptions = null,
+        TimeSpan? clientTimeout = null)
     {
         Environment.SetEnvironmentVariable(
             "ASPNETCORE_ENVIRONMENT",
@@ -69,27 +72,39 @@ public class QdrantTestsBase
 
         AddTestLogger(services);
 
-        // add qdrant clients
+        // Add qdrant client
         if (isDisableAuthorization)
         {
             services.AddQdrantHttpClient(
                 Configuration,
-                configureOptions: config => config.ApiKey = null,
-                circuitBreakerStrategyOptions: new CircuitBreakerStrategyOptions<HttpResponseMessage>()
+                configureQdrantClientSettings: config =>
                 {
-                    FailureRatio = 0.5,
-                    BreakDuration = TimeSpan.FromMilliseconds(500)
-                }
+                    config.ApiKey = null;
+
+                    if (clientTimeout.HasValue)
+                    {
+                        config.HttpClientTimeout = clientTimeout.Value;
+                    }
+                },
+                circuitBreakerStrategyOptions: circuitBreakerOptions
             );
         }
         else
         {
-            services.AddQdrantHttpClient(Configuration);
+            services.AddQdrantHttpClient(
+                Configuration,
+                configureQdrantClientSettings: config =>
+                {
+                    if (clientTimeout.HasValue)
+                    {
+                        config.HttpClientTimeout = clientTimeout.Value;
+                    }
+                },
+                circuitBreakerStrategyOptions: circuitBreakerOptions);
         }
-
         ServiceProvider = services.BuildServiceProvider();
     }
-    
+
     private string GetQdrantVersionFromEnvFile()
     {
         var envFilePath = Path.Combine(

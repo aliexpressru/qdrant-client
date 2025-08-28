@@ -16,7 +16,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
     /// <summary>
     /// Represents a single collection information.
     /// </summary>
-    public class CollectionInfo
+    public sealed class CollectionInfo
     {
         /// <summary>
         /// Current state of the collection.
@@ -61,7 +61,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
     /// <summary>
     /// Represents qdrant collection optimizer status.
     /// </summary>
-    public class QdrantOptimizerStatusUint
+    public sealed class QdrantOptimizerStatusUint
     {
         /// <summary>
         /// The qdrant collection optimizer status.
@@ -96,7 +96,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
     /// <summary>
     /// Represents the collection configuration.
     /// </summary>
-    public class CollectionConfiguration
+    public sealed class CollectionConfiguration
     {
         /// <summary>
         /// The collection parameters.
@@ -132,7 +132,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// <summary>
         /// Represents the collection parameters.
         /// </summary>
-        public class Parameters
+        public sealed class Parameters
         {
             /// <summary>
             /// The vector parameters.
@@ -178,7 +178,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// <summary>
         /// Represents the write-ahead log configuration.
         /// </summary>
-        public class WalConfiguration
+        public sealed class WalConfiguration
         {
             /// <summary>
             /// The write-ahead log capacity in megabytes.
@@ -195,7 +195,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
     /// <summary>
     /// Represents one payload indexed field schema.
     /// </summary>
-    public class PayloadSchemaPropertyDefinition
+    public sealed class PayloadSchemaPropertyDefinition
     {
         /// <summary>
         /// The payload field data type.
@@ -215,7 +215,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// <summary>
         /// Represents the payload field indexing parameters.
         /// </summary>
-        public class PayloadSchemaPropertyParameters
+        public sealed class PayloadSchemaPropertyParameters
         {
             /// <summary>
             /// The index type.

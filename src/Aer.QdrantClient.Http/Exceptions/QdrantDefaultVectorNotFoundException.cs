@@ -7,5 +7,5 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// </summary>
 /// <param name="defaultVectorName">The name of the default vector that is not found for point.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantDefaultVectorNotFoundException(string defaultVectorName)
+public sealed class QdrantDefaultVectorNotFoundException(string defaultVectorName)
 	: Exception($"Can't find default vector with name {defaultVectorName}");

@@ -7,7 +7,7 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// </summary>
 /// <param name="responseThatCausedRetry">The response that caused the retry to be executed.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantRequestRetryException(HttpResponseMessage responseThatCausedRetry)
+public sealed class QdrantRequestRetryException(HttpResponseMessage responseThatCausedRetry)
 	: Exception(
 		// There are loads of conditional access operators in the following string interpolation, due to possibility of RequestMessage being null.
 		// This is an exotic case though. See https://github.com/dotnet/runtime/discussions/104113 for details.

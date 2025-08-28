@@ -3,7 +3,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal class FieldRangeDoubleCondition : FilterConditionBase
+internal sealed class FieldRangeDoubleCondition : FilterConditionBase
 {
     private readonly double? _gt;
     private readonly double? _gte;

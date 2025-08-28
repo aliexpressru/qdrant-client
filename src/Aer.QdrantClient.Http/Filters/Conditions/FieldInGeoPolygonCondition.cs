@@ -4,7 +4,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal class FieldInGeoPolygonCondition : FilterConditionBase
+internal sealed class FieldInGeoPolygonCondition : FilterConditionBase
 {
     private readonly IEnumerable<GeoPoint> _exteriorPolygonPoints;
     private readonly IEnumerable<GeoPoint>[] _interiorPolygonsPoints;

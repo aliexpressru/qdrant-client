@@ -5,7 +5,7 @@ namespace Aer.QdrantClient.Http.Formulas.Expressions;
 /// <summary>
 /// Represents the constant double of string value.
 /// </summary>
-internal class ConstantExpression : ExpressionBase
+internal sealed class ConstantExpression : ExpressionBase
 {
 	private readonly double _valueNumber;
 	private readonly string _valueString;

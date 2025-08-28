@@ -6,7 +6,7 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 /// Represents the qdrant operation status.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class QdrantStatus
+public sealed class QdrantStatus
 {
     /// <summary>
     /// The qdrant status type.

@@ -14,7 +14,7 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
     /// <summary>
     /// Integer search group identifier.
     /// </summary>
-    private class IntegerSearchGroupId : SearchGroupId
+    private sealed class IntegerSearchGroupId : SearchGroupId
     {
         /// <summary>
         /// The identifier value.
@@ -71,7 +71,7 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
     /// <summary>
     /// string search group identifier.
     /// </summary>
-    private class StringSearchGroupId : SearchGroupId
+    private sealed class StringSearchGroupId : SearchGroupId
     {
         /// <summary>
         /// The identifier value.

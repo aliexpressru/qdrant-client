@@ -8,7 +8,7 @@ namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 /// The json converter to support JToken payload serialization \ deserialization.
 /// See https://github.com/dotnet/runtime/discussions/82180 for details.
 /// </summary>
-internal class JTokenJsonConverter : JsonConverter<JToken>
+internal sealed class JTokenJsonConverter : JsonConverter<JToken>
 {
     public override bool CanConvert(Type typeToConvert) => typeof(JToken).IsAssignableFrom(typeToConvert);
 

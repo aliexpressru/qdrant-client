@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Aer.QdrantClient.Http.Models.Responses.Base;
+﻿using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
@@ -7,7 +6,6 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// <summary>
 /// Represents the response of the download snapshot operation.
 /// </summary>
-[SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public sealed class DownloadSnapshotResponse : QdrantResponseBase<DownloadSnapshotResponse.DownloadSnapshotUnit>
 {
     // NOTE: this class is manually created unlike any other response classes which are deserialized.
@@ -18,7 +16,7 @@ public sealed class DownloadSnapshotResponse : QdrantResponseBase<DownloadSnapsh
     /// <summary>
     /// Represents downloaded snapshot information.
     /// </summary>
-    public class DownloadSnapshotUnit
+    public sealed class DownloadSnapshotUnit
     {
         /// <summary>
         /// The name of the snapshot. Used to name the temporary file on qdrant side.

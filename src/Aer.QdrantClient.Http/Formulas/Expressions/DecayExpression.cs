@@ -5,7 +5,7 @@ namespace Aer.QdrantClient.Http.Formulas.Expressions;
 /// <summary>
 /// Represents a decay expression with specified decay function and parameters.
 /// </summary>
-internal class DecayExpression : ExpressionBase
+internal sealed class DecayExpression : ExpressionBase
 {
 	private readonly string _decayOperator;
 	private readonly ExpressionBase _x;

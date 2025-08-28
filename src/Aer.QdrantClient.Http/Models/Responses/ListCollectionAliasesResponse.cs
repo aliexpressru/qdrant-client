@@ -14,7 +14,7 @@ public sealed class ListCollectionAliasesResponse
     /// <summary>
     /// Represents collection aliases result.
     /// </summary>
-    public class CollectionAliasesResult
+    public sealed class CollectionAliasesResult
     {
         /// <summary>
         /// The existing collection aliases.
@@ -38,7 +38,7 @@ public sealed class ListCollectionAliasesResponse
     /// <summary>
     /// Represents a collection alias information.
     /// </summary>
-    public class CollectionAlias
+    public sealed class CollectionAlias
     {
         /// <summary>
         /// The collection alias.

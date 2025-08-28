@@ -11,7 +11,7 @@ public abstract class FullTextIndexStopwords
     /// <summary>
     /// The custom stopwords set.
     /// </summary>
-    public class CustomStopwordsSet : FullTextIndexStopwords
+    public sealed class CustomStopwordsSet : FullTextIndexStopwords
     {
         /// <summary>
         /// The stopwords language.
@@ -38,7 +38,7 @@ public abstract class FullTextIndexStopwords
     /// <summary>
     /// Default stopwords set for a specific language.
     /// </summary>
-    public class DefaultStopwords : FullTextIndexStopwords
+    public sealed class DefaultStopwords : FullTextIndexStopwords
     {
         /// <summary>
         /// The stopwords language to get default stopwords for.

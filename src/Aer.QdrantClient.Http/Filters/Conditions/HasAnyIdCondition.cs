@@ -5,7 +5,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal class HasAnyIdCondition : FilterConditionBase
+internal sealed class HasAnyIdCondition : FilterConditionBase
 {
     private readonly IEnumerable<PointId> _pointIds;
 

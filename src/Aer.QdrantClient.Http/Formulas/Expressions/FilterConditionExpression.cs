@@ -6,7 +6,7 @@ namespace Aer.QdrantClient.Http.Formulas.Expressions;
 /// <summary>
 /// Represents a filter condition expression.
 /// </summary>
-internal class FilterConditionExpression : ExpressionBase
+internal sealed class FilterConditionExpression : ExpressionBase
 {
 	private readonly FilterConditionBase _condition;
 

@@ -13,7 +13,7 @@ public sealed class QueryPointsBatchedResponse : QdrantResponseBase<QueryPointsR
     /// <summary>
     /// The query points response.
     /// </summary>
-    public class QueryPointResults
+    public sealed class QueryPointResults
     {
         /// <summary>
         /// The found points.

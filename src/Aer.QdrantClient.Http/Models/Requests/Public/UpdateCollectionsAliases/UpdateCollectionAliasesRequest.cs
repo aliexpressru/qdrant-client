@@ -37,7 +37,7 @@ public sealed class UpdateCollectionAliasesRequest
     }
 
     /// <summary>
-    /// Append a create collection alternative name (alias) operation to batch.
+    /// Append a "create collection alternative name (alias)" operation to batch.
     /// </summary>
     /// <param name="collectionName">The name of the collection to create alias for.</param>
     /// <param name="aliasName">The collection alias name.</param>
@@ -51,7 +51,7 @@ public sealed class UpdateCollectionAliasesRequest
     }
 
     /// <summary>
-    /// Append a delete alternative name (alias) operation to batch.
+    /// Append a "delete alternative name (alias)" operation to batch.
     /// </summary>
     /// <param name="aliasName">The collection alias name.</param>
     public UpdateCollectionAliasesRequest DeleteAlias(string aliasName)
@@ -64,7 +64,7 @@ public sealed class UpdateCollectionAliasesRequest
     }
 
     /// <summary>
-    /// Append a rename collection alternative name (alias) operation to batch.
+    /// Append a "rename collection alternative name (alias)" operation to batch.
     /// </summary>
     /// <param name="oldAliasName">The old collection alias name to change.</param>
     /// <param name="newAliasName">The new collection alias name to change old name to.</param>

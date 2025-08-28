@@ -17,7 +17,7 @@ public sealed class UpdateCollectionParametersRequest
     /// <summary>
     /// Represents basic collection parameters.
     /// </summary>
-    public class CollectionParameters
+    public sealed class CollectionParameters
     {
         /// <summary>
         /// Number of shards replicas. Default is 1 Minimum is 1.

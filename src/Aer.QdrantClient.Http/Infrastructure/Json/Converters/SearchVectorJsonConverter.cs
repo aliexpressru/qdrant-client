@@ -5,7 +5,7 @@ using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class SearchVectorJsonConverter : JsonConverter<SearchVector>
+internal sealed class SearchVectorJsonConverter : JsonConverter<SearchVector>
 {
     public override SearchVector Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

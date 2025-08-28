@@ -5,7 +5,7 @@ using Aer.QdrantClient.Http.Models.Primitives;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class ShardKeyJsonConverter : JsonConverter<ShardKey>
+internal sealed class ShardKeyJsonConverter : JsonConverter<ShardKey>
 {
     public override ShardKey Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

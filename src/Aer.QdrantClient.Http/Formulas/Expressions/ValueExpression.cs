@@ -5,7 +5,7 @@ namespace Aer.QdrantClient.Http.Formulas.Expressions;
 /// <summary>
 /// Represents a simple name-value expression.
 /// </summary>
-internal class ValueExpression : ExpressionBase
+internal sealed class ValueExpression : ExpressionBase
 {
 	private readonly string _valueName;
 	private readonly string _value;

@@ -15,7 +15,7 @@ public class FacetCountPointsResponse : QdrantResponseBase<FacetCountPointsRespo
     /// <summary>
     /// Represents all filed values facet counts.
     /// </summary>
-    public class FacetCountHitsUnit
+    public sealed class FacetCountHitsUnit
     {
         /// <summary>
         /// The facet fount for each existing field value.
@@ -26,7 +26,7 @@ public class FacetCountPointsResponse : QdrantResponseBase<FacetCountPointsRespo
     /// <summary>
     /// Represents a one filed value facet count.
     /// </summary>
-    public class FacetCountHitUnit
+    public sealed class FacetCountHitUnit
     {
         /// <summary>
         /// The field value to count facet for.

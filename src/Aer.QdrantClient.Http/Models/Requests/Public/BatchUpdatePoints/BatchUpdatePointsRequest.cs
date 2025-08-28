@@ -40,7 +40,7 @@ public sealed class BatchUpdatePointsRequest
     }
 
     /// <summary>
-    /// Append an upsert points operation to batch.
+    /// Append an "upsert points" operation to batch.
     /// </summary>
     /// <param name="upsertPoints">Points to upsert.</param>
     /// <param name="shardSelector">
@@ -68,7 +68,7 @@ public sealed class BatchUpdatePointsRequest
     }
 
     /// <summary>
-    /// Append a delete points operation to batch.
+    /// Append a "delete points" operation to batch.
     /// </summary>
     /// <param name="pointsToDelete">Points to delete.</param>
     /// <param name="shardSelector">
@@ -94,7 +94,7 @@ public sealed class BatchUpdatePointsRequest
     }
 
     /// <summary>
-    /// Append a delete points operation to batch.
+    /// Append a "delete points operation" to batch.
     /// </summary>
     /// <param name="filter">Filter to find points to delete.</param>
     /// <param name="shardSelector">
@@ -120,7 +120,7 @@ public sealed class BatchUpdatePointsRequest
     }
 
     /// <summary>
-    /// Append a set points payload operation to batch.
+    /// Append a "set points payload" operation to batch.
     /// </summary>
     /// <param name="payload">Payload to set.</param>
     /// <param name="pointsToSetPayloadFor">Point ids to set payload for.</param>
@@ -152,7 +152,7 @@ public sealed class BatchUpdatePointsRequest
     }
 
     /// <summary>
-    /// Append a set points payload operation to batch.
+    /// Append a "set points payload" operation to batch.
     /// </summary>
     /// <param name="payload">Payload to set.</param>
     /// <param name="pointsFilterToSetPayloadFor">Points filter to set payload for.</param>
@@ -184,7 +184,7 @@ public sealed class BatchUpdatePointsRequest
     }
 
     /// <summary>
-    /// Append an overwrite points payload operation to batch.
+    /// Append an "overwrite points payload" operation to batch.
     /// </summary>
     /// <param name="payload">Payload to overwrite.</param>
     /// <param name="pointsToOverwritePayloadFor">Point ids to overwrite payload for.</param>
@@ -219,7 +219,7 @@ public sealed class BatchUpdatePointsRequest
     }
 
     /// <summary>
-    /// Append an overwrite points payload operation to batch.
+    /// Append an "overwrite points payload" operation to batch.
     /// </summary>
     /// <param name="payload">Payload to overwrite.</param>
     /// <param name="pointsFilterToOverwritePayloadFor">Points filter to overwrite payload for.</param>
@@ -254,7 +254,7 @@ public sealed class BatchUpdatePointsRequest
     }
 
     /// <summary>
-    /// Append a delete points payload keys operation to batch.
+    /// Append a "delete points payload keys" operation to batch.
     /// </summary>
     /// <param name="payloadKeysToDelete">Payload keys to delete.</param>
     /// <param name="pointsToDeletePayloadKeysFor">Point ids to delete payload keys for.</param>
@@ -283,7 +283,7 @@ public sealed class BatchUpdatePointsRequest
     }
 
     /// <summary>
-    /// Append a delete points payload keys operation to batch.
+    /// Append a "delete points payload keys" operation to batch.
     /// </summary>
     /// <param name="payloadKeysToDelete">Payload keys to delete.</param>
     /// <param name="pointsFilterToDeletePayloadKeysFor">Points filter to delete payload for.</param>
@@ -312,7 +312,7 @@ public sealed class BatchUpdatePointsRequest
     }
 
     /// <summary>
-    /// Append a clear points payload operation to batch.
+    /// Append a "clear points payload" operation to batch.
     /// </summary>
     /// <param name="pointIdsToClearPayloadFor">Point ids to clear payload for.</param>
     /// <param name="shardSelector">
@@ -337,7 +337,7 @@ public sealed class BatchUpdatePointsRequest
     }
 
     /// <summary>
-    /// Append a clear points payload operation to batch.
+    /// Append a "clear points payload" operation to batch.
     /// </summary>
     /// <param name="pointsFilterToClearPayloadFor">Points filter to clear payload for.</param>
     /// <param name="shardSelector">
@@ -362,7 +362,7 @@ public sealed class BatchUpdatePointsRequest
     }
 
     /// <summary>
-    /// Append an update points vectors operation to batch.
+    /// Append an "update points vectors" operation to batch.
     /// </summary>
     /// <param name="updatedPointVectors">Points with updated vectors.</param>
     /// <param name="shardSelector">
@@ -388,7 +388,7 @@ public sealed class BatchUpdatePointsRequest
     }
 
     /// <summary>
-    /// Append a delete points vectors operation to batch.
+    /// Append a "delete points vectors" operation to batch.
     /// </summary>
     /// <param name="vectorNamesToDelete">Names of vectors to delete.</param>
     /// <param name="pointsToDeleteVectorsFor">Point ids to delete vectors for.</param>
@@ -415,7 +415,7 @@ public sealed class BatchUpdatePointsRequest
     }
 
     /// <summary>
-    /// Append a delete points vectors operation to batch.
+    /// Append a "delete points vectors" operation to batch.
     /// </summary>
     /// <param name="vectorNamesToDelete">Names of vectors to delete.</param>>
     /// <param name="pointsFilterToDeleteVectorsFor">Points filter to delete vectors for.</param>

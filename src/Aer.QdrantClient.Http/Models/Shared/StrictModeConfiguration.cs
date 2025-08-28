@@ -6,12 +6,12 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 /// Represents the qdrant strict mode collection configuration.
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class StrictModeConfiguration
+public sealed class StrictModeConfiguration
 {
     /// <summary>
     /// Multivector configuration.
     /// </summary>
-    public class StrictModeMultivectorConfiguration
+    public sealed class StrictModeMultivectorConfiguration
     {
         /// <summary>
         /// Max number of vectors in a multivector.
@@ -22,7 +22,7 @@ public class StrictModeConfiguration
     /// <summary>
     /// Sparse vector configuration.
     /// </summary>
-    public class StrictModeSparseVectorConfiguration
+    public sealed class StrictModeSparseVectorConfiguration
     {
         /// <summary>
         /// Max length of sparse vector.
