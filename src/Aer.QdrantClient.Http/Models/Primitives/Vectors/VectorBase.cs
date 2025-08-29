@@ -109,7 +109,7 @@ public abstract class VectorBase
             VectorKind.Named => NamedVectors.ReadFromStream(reader),
             VectorKind.Sparse => SparseVector.ReadFromStream(reader),
             VectorKind.Multi => MultiVector.ReadFromStream(reader),
-            _ => throw new ArgumentOutOfRangeException(nameof(vectorKind), vectorKind, null)
+            _ => throw new ArgumentOutOfRangeException(nameof(vectorKind), vectorKind, $"Reading {vectorKind} vectors is not supported")
         };
 
     #region Operators

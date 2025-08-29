@@ -188,7 +188,7 @@ public sealed class NamedVectors : VectorBase
                 VectorKind.Dense => DenseVector.ReadFromStream(reader),
                 VectorKind.Sparse => SparseVector.ReadFromStream(reader),
                 VectorKind.Multi => MultiVector.ReadFromStream(reader),
-                VectorKind.Named => NamedVectors.ReadFromStream(reader),
+                VectorKind.Named => ReadFromStream(reader),
                 _ => throw new InvalidOperationException($"Vector kind '{vectorKind}' is not supported")
             };
 
