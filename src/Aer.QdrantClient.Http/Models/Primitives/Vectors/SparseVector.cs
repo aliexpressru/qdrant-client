@@ -117,4 +117,42 @@ public sealed class SparseVector : VectorBase
           "values":[{{string.Join(",", Values.Select(v => v.ToString(CultureInfo.InvariantCulture)))}}]
         }
         """;
+
+    /// <inheritdoc/>
+    public override void WriteToStream(StreamWriter streamWriter)
+    {
+        if (streamWriter == null) throw new ArgumentNullException(nameof(streamWriter));
+
+        streamWriter.Write('{');
+
+        streamWriter.Write("\"indexes\":[");
+        
+        for (int i = 0; i < Indices.Count; i++)
+        {
+            if (i > 0)
+            {
+                streamWriter.Write(',');
+            }
+
+            streamWriter.Write(Indices.ElementAt(i));
+        }
+
+        streamWriter.Write("],");
+
+        streamWriter.Write("\"values\":[");
+        
+        for (int i = 0; i < Values.Length; i++)
+        {
+            if (i > 0)
+            {
+                streamWriter.Write(',');
+            }
+
+            streamWriter.Write(Values[i].ToString(CultureInfo.InvariantCulture));
+        }
+
+        streamWriter.Write(']');
+
+        streamWriter.Write('}');
+    }
 }

@@ -88,11 +88,10 @@ internal class VectorTests : QdrantTestsBase
             """
         );
 
-        VectorBase sparseVectorSingleComponent = new SparseVector(
-            new[] {5U},
-            [0.345f]
-        );
-
+        VectorBase sparseVectorSingleComponent = (Indices: new[] {5U}, Values: [0.345f]);
+        
+        sparseVectorSingleComponent.VectorKind.Should().Be(VectorKind.Sparse);
+            
         var sparseVectorSingleComponentString = sparseVectorSingleComponent.ToString();
 
         sparseVectorSingleComponentString.AssertSameString(
@@ -228,5 +227,171 @@ internal class VectorTests : QdrantTestsBase
               }
             }
             """);
+    }
+
+    [Test]
+    public void GetVectorStringRepresentationToStream()
+    { 
+        VectorBase denseVector = new[]
+        {
+            0.3667106f,
+            0.6042991f,
+            0.08220377f
+        };
+
+        AssertVectorStreamContainsString(denseVector, "[0.3667106,0.6042991,0.08220377]");
+
+        VectorBase sparseVector = (
+            Indices: new[] {1U, 5U, 7U},
+            Values: [0.4f, 0.345f, 0.99f]
+        );
+
+        AssertVectorStreamContainsString(
+            sparseVector,
+            """
+            {
+              "indexes" : [1, 5, 7],
+              "values" : [0.4, 0.345, 0.99]
+            }
+            """);
+
+        VectorBase sparseVectorSingleComponent = (Indices: new[] {5U}, Values: [0.345f]);
+
+        AssertVectorStreamContainsString(
+            sparseVectorSingleComponent,
+            """
+            {
+              "indexes" : [5],
+              "values" : [0.345]
+            }
+            """);
+
+        float[][] multivectorSingleVectorRaw =
+        [
+            [
+                0.3667106f,
+                0.6042991f,
+                0.08220377f
+            ]
+        ];
+
+        VectorBase multivectorSingleVector = multivectorSingleVectorRaw;
+
+        AssertVectorStreamContainsString(
+            multivectorSingleVector,
+            """
+            [ 
+                [0.3667106,0.6042991,0.08220377] 
+            ]
+            """);
+        
+        float[][] multivectorRaw =
+        [
+            [
+                0.3667106f,
+                0.6042991f,
+                0.08220377f
+            ],
+            [
+                0.1f,
+                0.2f,
+                0.3f
+            ],
+            [
+                0.9f,
+                0.8f,
+                0.7f
+            ]
+        ];
+        
+        VectorBase multivector = multivectorRaw;
+        AssertVectorStreamContainsString(
+            multivector,
+            """
+            [
+                [
+                    0.3667106,
+                    0.6042991,
+                    0.08220377
+                ],
+                [
+                    0.1,
+                    0.2,
+                    0.3
+                ],
+                [
+                    0.9,
+                    0.8,
+                    0.7
+                ]
+            ]
+            """);
+        
+        VectorBase namedVectors = new Dictionary<string, VectorBase>()
+        {
+            ["Dense"] = denseVector,
+            ["Sparse"] = sparseVector,
+            ["SparseSingle"] = sparseVectorSingleComponent,
+            ["MultivectorSingle"] = multivectorSingleVector,
+            ["Multivector"] = multivector
+        };
+
+        AssertVectorStreamContainsString(
+            namedVectors,
+            """
+            {
+              "Dense" : [ 0.3667106, 0.6042991, 0.08220377 ],
+              "Sparse" : {
+                "indexes" : [ 1, 5, 7 ],
+                "values" : [ 0.4, 0.345, 0.99 ]
+              },
+              "SparseSingle" : {
+                "indexes" : [ 5 ],
+                "values" : [ 0.345 ]
+              },
+              "MultivectorSingle" : [ [ 0.3667106, 0.6042991, 0.08220377 ] ],
+              "Multivector" : [ [ 0.3667106, 0.6042991, 0.08220377 ], [ 0.1, 0.2, 0.3 ], [ 0.9, 0.8, 0.7 ] ]
+            }
+            """);
+        
+        VectorBase namedVectorsNestedNamed = new Dictionary<string, VectorBase>()
+        {
+            ["Named"] = namedVectors
+        };
+
+        AssertVectorStreamContainsString(
+            namedVectorsNestedNamed,
+            """
+            {
+              "Named" : {
+                "Dense" : [ 0.3667106, 0.6042991, 0.08220377 ],
+                "Sparse" : {
+                  "indexes" : [ 1, 5, 7 ],
+                  "values" : [ 0.4, 0.345, 0.99 ]
+                },
+                "SparseSingle" : {
+                  "indexes" : [ 5 ],
+                  "values" : [ 0.345 ]
+                },
+                "MultivectorSingle" : [ [ 0.3667106, 0.6042991, 0.08220377 ] ],
+                "Multivector" : [ [ 0.3667106, 0.6042991, 0.08220377 ], [ 0.1, 0.2, 0.3 ], [ 0.9, 0.8, 0.7 ] ]
+              }
+            }
+            """);
+    }
+
+    private void AssertVectorStreamContainsString(VectorBase vector, string expectedString)
+    { 
+        using MemoryStream ms = new();
+        using StreamWriter sw = new(ms);
+
+        vector.WriteToStream(sw);
+        sw.Flush();
+        ms.Position = 0;
+
+        using StreamReader sr = new(ms);
+        var vectorString = sr.ReadToEnd();
+
+        vectorString.AssertSameString(expectedString);
     }
 }

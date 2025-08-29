@@ -73,4 +73,36 @@ public sealed class MultiVector : VectorBase
 
         return sb.ToString();
     }
+
+    /// <inheritdoc/>
+    public override void WriteToStream(StreamWriter streamWriter)
+    {
+        if (streamWriter == null) throw new ArgumentNullException(nameof(streamWriter));
+
+        streamWriter.Write('[');
+
+        for (int vectorIndex = 0; vectorIndex < Vectors.Length; vectorIndex++)
+        {
+            if (vectorIndex > 0)
+            {
+                streamWriter.Write(',');
+            }
+
+            streamWriter.Write('[');
+
+            for (int i = 0; i < Vectors[vectorIndex].Length; i++)
+            {
+                if (i > 0)
+                {
+                    streamWriter.Write(',');
+                }
+
+                streamWriter.Write(Vectors[vectorIndex][i].ToString(CultureInfo.InvariantCulture));
+            }
+
+            streamWriter.Write(']');
+        }
+
+        streamWriter.Write(']');
+    }
 }

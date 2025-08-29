@@ -87,6 +87,30 @@ public sealed class NamedVectors : VectorBase
     }
 
     /// <inheritdoc/>
+    public override void WriteToStream(StreamWriter streamWriter)
+    {
+        if (streamWriter == null) throw new ArgumentNullException(nameof(streamWriter));
+
+        streamWriter.Write('{');
+
+        int vectorNumber = 0;
+        foreach (var (name, vector) in Vectors)
+        {
+            if (vectorNumber > 0)
+            {
+                streamWriter.Write(',');
+            }
+
+            streamWriter.Write($"\"{name}\":");
+            vector.WriteToStream(streamWriter);
+
+            vectorNumber++;
+        }
+
+        streamWriter.Write('}');
+    }
+
+    /// <inheritdoc/>
     public override VectorBase this[string vectorName]
     {
         get

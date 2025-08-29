@@ -82,6 +82,12 @@ public abstract class VectorBase
     /// </summary>
     public abstract override string ToString();
 
+    /// <summary>
+    /// Writes the vector representation to the provided <see cref="StreamWriter"/>.
+    /// </summary>
+    /// <param name="streamWriter">The writer to write vector representation to.</param>
+    public abstract void WriteToStream(StreamWriter streamWriter);
+
     #region Operators
 
     /// <summary>

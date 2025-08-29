@@ -41,4 +41,24 @@ public sealed class DenseVector : VectorBase
     /// <inheritdoc/>
     public override string ToString() =>
         $"[{string.Join(",", VectorValues.Select(v => v.ToString(CultureInfo.InvariantCulture)))}]";
+
+    /// <inheritdoc/>
+    public override void WriteToStream(StreamWriter streamWriter)
+    {
+        if (streamWriter == null) throw new ArgumentNullException(nameof(streamWriter));
+
+        streamWriter.Write('[');
+
+        for (int i = 0; i < VectorValues.Length; i++)
+        {
+            if (i > 0)
+            {
+                streamWriter.Write(',');
+            }
+
+            streamWriter.Write(VectorValues[i].ToString(CultureInfo.InvariantCulture));
+        }
+
+        streamWriter.Write(']');
+    }
 }
