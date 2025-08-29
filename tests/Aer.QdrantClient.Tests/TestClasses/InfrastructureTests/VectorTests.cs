@@ -200,5 +200,33 @@ internal class VectorTests : QdrantTestsBase
               "Multivector" : [ [ 0.3667106, 0.6042991, 0.08220377 ], [ 0.1, 0.2, 0.3 ], [ 0.9, 0.8, 0.7 ] ]
             }
             """);
+
+        VectorBase namedVectorsNestedNamed = new Dictionary<string, VectorBase>()
+        {
+            ["Named"] = namedVectors
+        };
+        
+        namedVectorsNestedNamed.VectorKind.Should().Be(VectorKind.Named);
+        
+        var namedVectorsNestedNamedString = namedVectorsNestedNamed.ToString();
+        
+        namedVectorsNestedNamedString.AssertSameString(
+            """
+            {
+              "Named" : {
+                "Dense" : [ 0.3667106, 0.6042991, 0.08220377 ],
+                "Sparse" : {
+                  "indexes" : [ 1, 5, 7 ],
+                  "values" : [ 0.4, 0.345, 0.99 ]
+                },
+                "SparseSingle" : {
+                  "indexes" : [ 5 ],
+                  "values" : [ 0.345 ]
+                },
+                "MultivectorSingle" : [ [ 0.3667106, 0.6042991, 0.08220377 ] ],
+                "Multivector" : [ [ 0.3667106, 0.6042991, 0.08220377 ], [ 0.1, 0.2, 0.3 ], [ 0.9, 0.8, 0.7 ] ]
+              }
+            }
+            """);
     }
 }
