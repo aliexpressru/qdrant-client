@@ -404,16 +404,9 @@ internal class VectorTests : QdrantTestsBase
         bw.Flush();
         msBinary.Position = 0;
         
-        using BinaryReader srBinary = new(msBinary);
+        using BinaryReader br = new(msBinary);
         
-        VectorBase vb = vector.VectorKind switch
-        {
-            VectorKind.Dense => DenseVector.ReadFromStream(srBinary),
-            VectorKind.Sparse => SparseVector.ReadFromStream(srBinary),
-            VectorKind.Multi => MultiVector.ReadFromStream(srBinary),
-            VectorKind.Named => NamedVectors.ReadFromStream(srBinary),
-            _ => throw new InvalidOperationException($"Vector kind '{vector.VectorKind}' is not supported")
-        };
+        VectorBase vb = VectorBase.ReadFromStream(vector.VectorKind, br);
         
         var vectorStringFromBinary = vb.ToString();
         vectorStringFromBinary.AssertSameString(expectedString);
