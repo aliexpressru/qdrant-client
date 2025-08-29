@@ -45,7 +45,7 @@ public static class ServiceCollectionExtensions
             services,
             circuitBreakerStrategyOptions,
             resiliencePipelineTelemetryOptions,
-            shouldSelectResiliencePipelineByAuthority: false);
+            shouldSelectResiliencePipelineByAuthority: true);
 
         return services;
     }
@@ -88,7 +88,7 @@ public static class ServiceCollectionExtensions
             services,
             circuitBreakerStrategyOptions,
             resiliencePipelineTelemetryOptions,
-            shouldSelectResiliencePipelineByAuthority: false);
+            shouldSelectResiliencePipelineByAuthority: true);
 
         return services;
     }
