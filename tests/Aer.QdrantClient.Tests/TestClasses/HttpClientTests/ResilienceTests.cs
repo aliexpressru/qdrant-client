@@ -55,7 +55,7 @@ internal class ResilienceTests : QdrantTestsBase
 				
 				CancellationTokenSource cts = new();
 				// While debugging this test it might be beneficial to set this to 10
-				cts.CancelAfter(TimeSpan.FromMilliseconds(3));
+				cts.CancelAfter(TimeSpan.FromMilliseconds(1));
 				
 				await faultyQdrantClient.GetClusterInfo(cts.Token);
 			}
