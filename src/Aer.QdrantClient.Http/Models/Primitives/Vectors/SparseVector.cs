@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text.Json.Serialization;
 #if NETSTANDARD2_0
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
@@ -107,4 +108,13 @@ public sealed class SparseVector : VectorBase
     public override bool ContainsVector(string vectorName)
         =>
             throw new NotSupportedException($"Vector names are not supported for sparse vector values {GetType()}");
+
+    /// <inheritdoc/>
+    public override string ToString() =>
+        $$"""
+        {
+          "indexes":[{{string.Join(",", Indices)}}],
+          "values":[{{string.Join(",", Values.Select(v=> v.ToString(CultureInfo.InvariantCulture)))}}]
+        }
+        """;
 }

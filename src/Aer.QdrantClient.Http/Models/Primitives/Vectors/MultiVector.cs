@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
@@ -42,4 +44,33 @@ public sealed class MultiVector : VectorBase
         =>
             throw new NotSupportedException(
                 $"Vector names are not supported for multivector values {GetType()}");
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        StringBuilder sb = new StringBuilder();
+        
+        sb.AppendLine("[");
+        
+        for (int vectorIndex = 0; vectorIndex < Vectors.Length; vectorIndex++)
+        {
+            sb.Append('[');
+            sb.Append(string.Join(",", Vectors[vectorIndex].Select(v => v.ToString(CultureInfo.InvariantCulture))));
+            sb.Append(']');
+            
+            if (vectorIndex < Vectors.Length - 1)
+            {
+                sb.AppendLine(",");
+            }
+            else
+            {
+                // For pretty printing
+                sb.AppendLine();
+            }
+        }
+
+        sb.Append(']');
+        
+        return sb.ToString();
+    }
 }

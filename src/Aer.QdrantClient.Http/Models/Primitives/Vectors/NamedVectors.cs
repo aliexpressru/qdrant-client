@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
@@ -50,6 +52,38 @@ public sealed class NamedVectors : VectorBase
         EnsureNotEmpty();
 
         return Vectors.ContainsKey(vectorName);
+    }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        StringBuilder sb = new StringBuilder();
+        
+        sb.AppendLine("{");
+        
+        int vectorNumber = 0;
+        foreach (var (name, vector) in Vectors)
+        {
+            sb.Append($"\"{name}\"");
+            sb.Append(':');
+            sb.Append(vector);
+
+            if (vectorNumber != Vectors.Count - 1)
+            {
+                sb.AppendLine(",");
+            }
+            else
+            { 
+                // For pretty printing
+                sb.AppendLine();
+            }
+
+            vectorNumber++;
+        }
+
+        sb.Append("}");
+        
+        return sb.ToString();
     }
 
     /// <inheritdoc/>

@@ -77,6 +77,11 @@ public abstract class VectorBase
     public MultiVector AsMultiVector() => this as MultiVector
         ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(MultiVector)}");
 
+    /// <summary>
+    /// Gets the string representation of this vector instance.
+    /// </summary>
+    public abstract override string ToString();
+    
     #region Operators
 
     /// <summary>

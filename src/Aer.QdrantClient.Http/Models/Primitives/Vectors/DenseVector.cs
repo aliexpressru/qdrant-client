@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
@@ -36,4 +37,7 @@ public sealed class DenseVector : VectorBase
         =>
             throw new NotSupportedException(
                 $"Vector names are not supported for single vector values {GetType()}");
+
+    /// <inheritdoc/>
+    public override string ToString() => $"[{string.Join(",", VectorValues.Select(v=>v.ToString(CultureInfo.InvariantCulture)))}]";
 }
