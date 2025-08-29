@@ -87,27 +87,121 @@ public sealed class NamedVectors : VectorBase
     }
 
     /// <inheritdoc/>
-    public override void WriteToStream(StreamWriter streamWriter)
+    public override void WriteToStream(StreamWriter writer)
     {
-        if (streamWriter == null) throw new ArgumentNullException(nameof(streamWriter));
+        if (writer == null)
+        {
+            throw new ArgumentNullException(nameof(writer));
+        }
 
-        streamWriter.Write('{');
+        writer.Write('{');
 
         int vectorNumber = 0;
         foreach (var (name, vector) in Vectors)
         {
             if (vectorNumber > 0)
             {
-                streamWriter.Write(',');
+                writer.Write(',');
             }
 
-            streamWriter.Write($"\"{name}\":");
-            vector.WriteToStream(streamWriter);
+            writer.Write($"\"{name}\":");
+            vector.WriteToStream(writer);
 
             vectorNumber++;
         }
 
-        streamWriter.Write('}');
+        writer.Write('}');
+    }
+
+    /// <inheritdoc/>
+    public override void WriteToStream(BinaryWriter writer)
+    {
+        if (writer == null)
+        {
+            throw new ArgumentNullException(nameof(writer));
+        }
+
+        writer.Write('{');
+        
+        writer.Write(Vectors.Count);
+
+        int vectorNumber = 0;
+        foreach (var (name, vector) in Vectors)
+        {
+            if (vectorNumber > 0)
+            {
+                writer.Write(',');
+            }
+
+            writer.Write($"\"{name}\":");
+
+            writer.Write(vector.VectorKind.ToString());
+            
+            vector.WriteToStream(writer);
+
+            vectorNumber++;
+        }
+
+        writer.Write('}');
+    }
+
+    /// <summary>
+    /// Reads a <see cref="DenseVector"/> instance from a binary stream.
+    /// </summary>
+    /// <param name="reader">The reader to read vector from.</param>
+    public static VectorBase ReadFromStream(BinaryReader reader)
+    {
+        if (reader == null)
+        {
+            throw new ArgumentNullException(nameof(reader));
+        }
+
+        // "{"
+        reader.ReadChar();
+        
+        int vectorCount = reader.ReadInt32();
+
+        var vectors = new Dictionary<string, VectorBase>(vectorCount);
+
+        for (int i = 0; i < vectorCount; i++)
+        {
+            if (i > 0)
+            {
+                // ","
+                reader.ReadChar();
+            }
+
+            // "\"name\":"
+            var namePart = reader.ReadString();
+            
+            var name = namePart.Substring(1, namePart.Length - 3); // Remove quotes and colon
+
+            var vectorKindString = reader.ReadString();
+            
+            if (!Enum.TryParse<VectorKind>(vectorKindString, out var vectorKind))
+            {
+                throw new InvalidOperationException($"Vector kind '{vectorKindString}' is not supported");
+            }
+
+            VectorBase vector = vectorKind switch
+            {
+                VectorKind.Dense => DenseVector.ReadFromStream(reader),
+                VectorKind.Sparse => SparseVector.ReadFromStream(reader),
+                VectorKind.Multi => MultiVector.ReadFromStream(reader),
+                VectorKind.Named => NamedVectors.ReadFromStream(reader),
+                _ => throw new InvalidOperationException($"Vector kind '{vectorKind}' is not supported")
+            };
+
+            vectors.Add(name, vector);
+        }
+
+        // "}"
+        reader.ReadChar();
+
+        return new NamedVectors()
+        {
+            Vectors = vectors
+        };
     }
 
     /// <inheritdoc/>

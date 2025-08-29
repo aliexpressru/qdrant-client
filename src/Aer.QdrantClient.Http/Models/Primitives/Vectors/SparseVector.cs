@@ -119,40 +119,145 @@ public sealed class SparseVector : VectorBase
         """;
 
     /// <inheritdoc/>
-    public override void WriteToStream(StreamWriter streamWriter)
+    public override void WriteToStream(StreamWriter writer)
     {
-        if (streamWriter == null) throw new ArgumentNullException(nameof(streamWriter));
-
-        streamWriter.Write('{');
-
-        streamWriter.Write("\"indexes\":[");
-        
-        for (int i = 0; i < Indices.Count; i++)
+        if (writer == null)
         {
-            if (i > 0)
-            {
-                streamWriter.Write(',');
-            }
-
-            streamWriter.Write(Indices.ElementAt(i));
+            throw new ArgumentNullException(nameof(writer));
         }
 
-        streamWriter.Write("],");
+        writer.Write("{\"indexes\":[");
 
-        streamWriter.Write("\"values\":[");
+        int indexNumber = 0;
+        foreach (var index in Indices)
+        {
+            if (indexNumber > 0)
+            {
+                writer.Write(',');
+            }
+
+            writer.Write(index);
+            
+            indexNumber++;
+        }
+        
+        writer.Write("],");
+
+        writer.Write("\"values\":[");
         
         for (int i = 0; i < Values.Length; i++)
         {
             if (i > 0)
             {
-                streamWriter.Write(',');
+                writer.Write(',');
             }
 
-            streamWriter.Write(Values[i].ToString(CultureInfo.InvariantCulture));
+            writer.Write(Values[i].ToString(CultureInfo.InvariantCulture));
         }
 
-        streamWriter.Write(']');
+        writer.Write("]}");
+    }
 
-        streamWriter.Write('}');
+    /// <inheritdoc/>
+    public override void WriteToStream(BinaryWriter writer)
+    {
+        if (writer == null)
+        {
+            throw new ArgumentNullException(nameof(writer));
+        }
+
+        writer.Write('{');
+        
+        writer.Write(Indices.Count);
+
+        writer.Write("\"indexes\":[");
+
+        int indexNumber = 0;
+        foreach (var index in Indices)
+        {
+            if (indexNumber > 0)
+            {
+                writer.Write(',');
+            }
+
+            writer.Write(index);
+
+            indexNumber++;
+        }
+
+        writer.Write("],");
+        
+        writer.Write(Values.Length);
+
+        writer.Write("\"values\":[");
+
+        for (int i = 0; i < Values.Length; i++)
+        {
+            if (i > 0)
+            {
+                writer.Write(',');
+            }
+
+            writer.Write(Values[i]);
+        }
+
+        writer.Write("]}");
+    }
+
+    /// <summary>
+    /// Reads a <see cref="DenseVector"/> instance from a binary stream.
+    /// </summary>
+    /// <param name="reader">The reader to read vector from.</param>
+    public static VectorBase ReadFromStream(BinaryReader reader)
+    {
+        if (reader == null)
+        {
+            throw new ArgumentNullException(nameof(reader));
+        }
+
+        // "{"
+        reader.ReadChar();
+
+        int indicesCount = reader.ReadInt32();
+        var indices = new uint[indicesCount];
+        
+        // "indexes":[
+        reader.ReadString();
+
+        for (int i = 0; i < indicesCount; i++)
+        {
+            if (i > 0)
+            {
+                // ,
+                reader.ReadChar();
+            }
+
+            indices[i] = reader.ReadUInt32();
+        }
+
+        // ],
+        reader.ReadString();
+
+        int valuesCount = reader.ReadInt32();
+        var values = new float[valuesCount];
+
+        // "values":[
+        reader.ReadString();
+
+        for (int i = 0; i < valuesCount; i++)
+        {
+            if (i > 0)
+            {
+                // ,
+                reader.ReadChar();
+            }
+
+            values[i] = reader.ReadSingle();
+        }
+
+        // ]}
+        reader.ReadString();
+
+        return new SparseVector(indices, values);
     }
 }

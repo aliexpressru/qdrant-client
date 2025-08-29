@@ -75,34 +75,131 @@ public sealed class MultiVector : VectorBase
     }
 
     /// <inheritdoc/>
-    public override void WriteToStream(StreamWriter streamWriter)
+    public override void WriteToStream(StreamWriter writer)
     {
-        if (streamWriter == null) throw new ArgumentNullException(nameof(streamWriter));
+        if (writer == null)
+        {
+            throw new ArgumentNullException(nameof(writer));
+        }
 
-        streamWriter.Write('[');
+        writer.Write('[');
 
         for (int vectorIndex = 0; vectorIndex < Vectors.Length; vectorIndex++)
         {
             if (vectorIndex > 0)
             {
-                streamWriter.Write(',');
+                writer.Write(',');
             }
 
-            streamWriter.Write('[');
+            writer.Write('[');
 
             for (int i = 0; i < Vectors[vectorIndex].Length; i++)
             {
                 if (i > 0)
                 {
-                    streamWriter.Write(',');
+                    writer.Write(',');
                 }
 
-                streamWriter.Write(Vectors[vectorIndex][i].ToString(CultureInfo.InvariantCulture));
+                writer.Write(Vectors[vectorIndex][i].ToString(CultureInfo.InvariantCulture));
             }
 
-            streamWriter.Write(']');
+            writer.Write(']');
         }
 
-        streamWriter.Write(']');
+        writer.Write(']');
+    }
+
+    /// <inheritdoc/>
+    public override void WriteToStream(BinaryWriter writer)
+    {
+        if (writer == null)
+        {
+            throw new ArgumentNullException(nameof(writer));
+        }
+
+        writer.Write("[");
+        
+        writer.Write(Vectors.Length);
+
+        for (int vectorIndex = 0; vectorIndex < Vectors.Length; vectorIndex++)
+        {
+            if (vectorIndex > 0)
+            {
+                writer.Write(',');
+            }
+
+            writer.Write('[');
+
+            writer.Write(Vectors[vectorIndex].Length);
+
+            for (int i = 0; i < Vectors[vectorIndex].Length; i++)
+            {
+                if (i > 0)
+                {
+                    writer.Write(',');
+                }
+
+                writer.Write(Vectors[vectorIndex][i]);
+            }
+
+            writer.Write(']');
+        }
+        
+        writer.Write("]");
+    }
+
+    /// <summary>
+    /// Reads a <see cref="DenseVector"/> instance from a binary stream.
+    /// </summary>
+    /// <param name="reader">The reader to read vector from.</param>
+    public static VectorBase ReadFromStream(BinaryReader reader)
+    {
+        if (reader == null)
+        {
+            throw new ArgumentNullException(nameof(reader));
+        }
+
+        // "["
+        reader.ReadString();
+
+        int vectorsCount = reader.ReadInt32();
+        float[][] vectors = new float[vectorsCount][];
+
+        for (int vectorIndex = 0; vectorIndex < vectorsCount; vectorIndex++)
+        {
+            if (vectorIndex > 0)
+            {
+                // ","
+                reader.ReadChar();
+            }
+
+            // "["
+            reader.ReadChar();
+
+            int vectorLength = reader.ReadInt32();
+            vectors[vectorIndex] = new float[vectorLength];
+
+            for (int i = 0; i < vectorLength; i++)
+            {
+                if (i > 0)
+                {
+                    // ","
+                    reader.ReadChar();
+                }
+
+                vectors[vectorIndex][i] = reader.ReadSingle();
+            }
+
+            // "]"
+            reader.ReadChar();
+        }
+
+        // "]"
+        reader.ReadString();
+
+        return new MultiVector()
+        {
+            Vectors = vectors
+        };
     }
 }

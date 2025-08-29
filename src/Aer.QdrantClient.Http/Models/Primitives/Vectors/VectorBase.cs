@@ -83,10 +83,34 @@ public abstract class VectorBase
     public abstract override string ToString();
 
     /// <summary>
-    /// Writes the vector representation to the provided <see cref="StreamWriter"/>.
+    /// Writes the string vector representation to the provided <see cref="StreamWriter"/>.
     /// </summary>
-    /// <param name="streamWriter">The writer to write vector representation to.</param>
-    public abstract void WriteToStream(StreamWriter streamWriter);
+    /// <param name="writer">The writer to write vector representation to.</param>
+    public abstract void WriteToStream(StreamWriter writer);
+
+    /// <summary>
+    /// Writes the binary vector representation to the provided <see cref="BinaryWriter"/>.
+    /// </summary>
+    /// <param name="writer">The writer to write vector representation to.</param>
+    public abstract void WriteToStream(BinaryWriter writer);
+
+    /// <summary>
+    /// Reads the vector representation from the provided <see cref="BinaryReader"/>.
+    /// </summary>
+    /// <param name="vectorKind">The kind of vector to read from stream.</param>
+    /// <param name="reader">The reader to read vector representation from.</param>
+    public static VectorBase ReadFromStream(
+        VectorKind vectorKind,
+        BinaryReader reader) 
+        =>
+        vectorKind switch
+        {
+            VectorKind.Dense => DenseVector.ReadFromStream(reader),
+            VectorKind.Named => NamedVectors.ReadFromStream(reader),
+            VectorKind.Sparse => SparseVector.ReadFromStream(reader),
+            VectorKind.Multi => MultiVector.ReadFromStream(reader),
+            _ => throw new ArgumentOutOfRangeException(nameof(vectorKind), vectorKind, null)
+        };
 
     #region Operators
 

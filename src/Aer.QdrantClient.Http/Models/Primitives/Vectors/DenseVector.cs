@@ -43,22 +43,84 @@ public sealed class DenseVector : VectorBase
         $"[{string.Join(",", VectorValues.Select(v => v.ToString(CultureInfo.InvariantCulture)))}]";
 
     /// <inheritdoc/>
-    public override void WriteToStream(StreamWriter streamWriter)
+    public override void WriteToStream(StreamWriter writer)
     {
-        if (streamWriter == null) throw new ArgumentNullException(nameof(streamWriter));
+        if (writer == null)
+        {
+            throw new ArgumentNullException(nameof(writer));
+        }
 
-        streamWriter.Write('[');
+        writer.Write('[');
 
         for (int i = 0; i < VectorValues.Length; i++)
         {
             if (i > 0)
             {
-                streamWriter.Write(',');
+                writer.Write(',');
             }
 
-            streamWriter.Write(VectorValues[i].ToString(CultureInfo.InvariantCulture));
+            writer.Write(VectorValues[i].ToString(CultureInfo.InvariantCulture));
         }
 
-        streamWriter.Write(']');
+        writer.Write(']');
+    }
+
+    /// <inheritdoc/>
+    public override void WriteToStream(BinaryWriter writer)
+    {
+        if (writer == null)
+        {
+            throw new ArgumentNullException(nameof(writer));
+        }
+
+        writer.Write("[");
+        
+        writer.Write(VectorValues.Length);
+
+        for (int i = 0; i < VectorValues.Length; i++)
+        {
+            if (i > 0)
+            {
+                writer.Write(',');
+            }
+
+            writer.Write(VectorValues[i]);
+        }
+        
+        writer.Write("]");
+    }
+
+    /// <summary>
+    /// Reads a <see cref="DenseVector"/> instance from a binary stream.
+    /// </summary>
+    /// <param name="reader">The reader to read vector from.</param>
+    public static VectorBase ReadFromStream(BinaryReader reader)
+    {
+        if (reader == null)
+        {
+            throw new ArgumentNullException(nameof(reader));
+        }
+
+        // "["
+        reader.ReadString();
+        
+        int length = reader.ReadInt32();
+        var values = new float[length];
+        
+        for (int i = 0; i < length; i++)
+        {
+            // ","
+            if (i > 0)
+            {
+                reader.ReadChar();
+            }
+            
+            values[i] = reader.ReadSingle();
+        }
+        
+        // "]"
+        reader.ReadString();
+
+        return new DenseVector() {VectorValues = values};
     }
 }

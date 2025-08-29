@@ -239,14 +239,14 @@ internal class VectorTests : QdrantTestsBase
             0.08220377f
         };
 
-        AssertVectorStreamContainsString(denseVector, "[0.3667106,0.6042991,0.08220377]");
+        AssertVectorStreamsContainsString(denseVector, "[0.3667106,0.6042991,0.08220377]");
 
         VectorBase sparseVector = (
             Indices: new[] {1U, 5U, 7U},
             Values: [0.4f, 0.345f, 0.99f]
         );
 
-        AssertVectorStreamContainsString(
+        AssertVectorStreamsContainsString(
             sparseVector,
             """
             {
@@ -257,7 +257,7 @@ internal class VectorTests : QdrantTestsBase
 
         VectorBase sparseVectorSingleComponent = (Indices: new[] {5U}, Values: [0.345f]);
 
-        AssertVectorStreamContainsString(
+        AssertVectorStreamsContainsString(
             sparseVectorSingleComponent,
             """
             {
@@ -277,7 +277,7 @@ internal class VectorTests : QdrantTestsBase
 
         VectorBase multivectorSingleVector = multivectorSingleVectorRaw;
 
-        AssertVectorStreamContainsString(
+        AssertVectorStreamsContainsString(
             multivectorSingleVector,
             """
             [ 
@@ -305,7 +305,7 @@ internal class VectorTests : QdrantTestsBase
         ];
         
         VectorBase multivector = multivectorRaw;
-        AssertVectorStreamContainsString(
+        AssertVectorStreamsContainsString(
             multivector,
             """
             [
@@ -336,7 +336,7 @@ internal class VectorTests : QdrantTestsBase
             ["Multivector"] = multivector
         };
 
-        AssertVectorStreamContainsString(
+        AssertVectorStreamsContainsString(
             namedVectors,
             """
             {
@@ -359,7 +359,7 @@ internal class VectorTests : QdrantTestsBase
             ["Named"] = namedVectors
         };
 
-        AssertVectorStreamContainsString(
+        AssertVectorStreamsContainsString(
             namedVectorsNestedNamed,
             """
             {
@@ -380,8 +380,9 @@ internal class VectorTests : QdrantTestsBase
             """);
     }
 
-    private void AssertVectorStreamContainsString(VectorBase vector, string expectedString)
+    private void AssertVectorStreamsContainsString(VectorBase vector, string expectedString)
     { 
+        // String stream representation
         using MemoryStream ms = new();
         using StreamWriter sw = new(ms);
 
@@ -393,5 +394,28 @@ internal class VectorTests : QdrantTestsBase
         var vectorString = sr.ReadToEnd();
 
         vectorString.AssertSameString(expectedString);
+        
+        // Since we don't have methods to read 
+        
+        using MemoryStream msBinary = new();
+        using BinaryWriter bw = new(msBinary);
+        
+        vector.WriteToStream(bw);
+        bw.Flush();
+        msBinary.Position = 0;
+        
+        using BinaryReader srBinary = new(msBinary);
+        
+        VectorBase vb = vector.VectorKind switch
+        {
+            VectorKind.Dense => DenseVector.ReadFromStream(srBinary),
+            VectorKind.Sparse => SparseVector.ReadFromStream(srBinary),
+            VectorKind.Multi => MultiVector.ReadFromStream(srBinary),
+            VectorKind.Named => NamedVectors.ReadFromStream(srBinary),
+            _ => throw new InvalidOperationException($"Vector kind '{vector.VectorKind}' is not supported")
+        };
+        
+        var vectorStringFromBinary = vb.ToString();
+        vectorStringFromBinary.AssertSameString(expectedString);
     }
 }
