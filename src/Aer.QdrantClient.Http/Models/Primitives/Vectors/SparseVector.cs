@@ -114,7 +114,7 @@ public sealed class SparseVector : VectorBase
         $$"""
         {
           "indexes":[{{string.Join(",", Indices)}}],
-          "values":[{{string.Join(",", Values.Select(v=> v.ToString(CultureInfo.InvariantCulture)))}}]
+          "values":[{{string.Join(",", Values.Select(v => v.ToString(CultureInfo.InvariantCulture)))}}]
         }
         """;
 }

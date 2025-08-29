@@ -39,5 +39,6 @@ public sealed class DenseVector : VectorBase
                 $"Vector names are not supported for single vector values {GetType()}");
 
     /// <inheritdoc/>
-    public override string ToString() => $"[{string.Join(",", VectorValues.Select(v=>v.ToString(CultureInfo.InvariantCulture)))}]";
+    public override string ToString() =>
+        $"[{string.Join(",", VectorValues.Select(v => v.ToString(CultureInfo.InvariantCulture)))}]";
 }

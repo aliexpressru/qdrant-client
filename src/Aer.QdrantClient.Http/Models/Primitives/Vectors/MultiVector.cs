@@ -49,15 +49,15 @@ public sealed class MultiVector : VectorBase
     public override string ToString()
     {
         StringBuilder sb = new StringBuilder();
-        
+
         sb.AppendLine("[");
-        
+
         for (int vectorIndex = 0; vectorIndex < Vectors.Length; vectorIndex++)
         {
             sb.Append('[');
             sb.Append(string.Join(",", Vectors[vectorIndex].Select(v => v.ToString(CultureInfo.InvariantCulture))));
             sb.Append(']');
-            
+
             if (vectorIndex < Vectors.Length - 1)
             {
                 sb.AppendLine(",");
@@ -70,7 +70,7 @@ public sealed class MultiVector : VectorBase
         }
 
         sb.Append(']');
-        
+
         return sb.ToString();
     }
 }

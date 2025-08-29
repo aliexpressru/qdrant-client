@@ -1,7 +1,7 @@
 ﻿namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
 /// <summary>
-/// Determines the kind of the vector that is contained in <see cref="VectorBase"/>.
+/// Describes the kind of the vector that is contained in <see cref="VectorBase"/>.
 /// </summary>
 public enum VectorKind
 {

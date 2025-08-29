@@ -81,7 +81,7 @@ public abstract class VectorBase
     /// Gets the string representation of this vector instance.
     /// </summary>
     public abstract override string ToString();
-    
+
     #region Operators
 
     /// <summary>
@@ -203,7 +203,8 @@ public abstract class VectorBase
             MultiVector multiVector => multiVector.Default.AsDenseVector().VectorValues,
             NamedVectors namedVectors => (float[]) namedVectors.Default,
             SparseVector =>
-                throw new NotSupportedException("Conversion from sparse vector to float[] is not supported since sparse vector is a multi-component value"),
+                throw new NotSupportedException(
+                    "Conversion from sparse vector to float[] is not supported since sparse vector is a multi-component value"),
             null => null,
             _ => throw new ArgumentOutOfRangeException(nameof(vector))
         };

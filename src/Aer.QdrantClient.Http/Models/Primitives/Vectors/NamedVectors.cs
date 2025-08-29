@@ -58,9 +58,9 @@ public sealed class NamedVectors : VectorBase
     public override string ToString()
     {
         StringBuilder sb = new StringBuilder();
-        
+
         sb.AppendLine("{");
-        
+
         int vectorNumber = 0;
         foreach (var (name, vector) in Vectors)
         {
@@ -73,7 +73,7 @@ public sealed class NamedVectors : VectorBase
                 sb.AppendLine(",");
             }
             else
-            { 
+            {
                 // For pretty printing
                 sb.AppendLine();
             }
@@ -82,7 +82,7 @@ public sealed class NamedVectors : VectorBase
         }
 
         sb.Append("}");
-        
+
         return sb.ToString();
     }
 
