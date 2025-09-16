@@ -202,6 +202,54 @@ public class CollectionCreateTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task SparseVector()
+    {
+        var sparseVectorName = "test";
+
+        var sparseVectorsConfiguration = new Dictionary<string, SparseVectorConfiguration>()
+        {
+            [sparseVectorName] = new(
+                onDisk: true,
+                fullScanThreshold: 5000,
+                vectorDataType: VectorDataType.Float32)
+        };
+        
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(sparseVectorsConfiguration: sparseVectorsConfiguration){
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
+
+        collectionCreationResult.Should().NotBeNull();
+        collectionCreationResult.Result.Should().BeTrue();
+
+        var createdCollectionInfo =
+            (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
+
+        createdCollectionInfo.Config.Params.Vectors.Should().BeNull();
+        
+        createdCollectionInfo.Config.Params.SparseVectors.Should().ContainKey(sparseVectorName);
+
+        var sparseVectorConfig = createdCollectionInfo.Config.Params.SparseVectors[sparseVectorName];
+
+        sparseVectorConfig.OnDisk.Should().BeTrue();
+        sparseVectorConfig.FullScanThreshold.Should().Be(5000);
+        sparseVectorConfig.VectorDataType.Should().Be(VectorDataType.Float32);
+        
+        sparseVectorConfig.Modifier.Should().Be(SparseVectorModifier.None);
+
+        sparseVectorConfig.Index.Should().NotBeNull();
+
+        sparseVectorConfig.Index.OnDisk.Should().BeTrue();
+        sparseVectorConfig.Index.FullScanThreshold.Should().Be(5000);
+        sparseVectorConfig.Index.VectorDataType.Should().Be(VectorDataType.Float32);
+    }
+
+    [Test]
     [TestCase(VectorDataType.Float32)]
     [TestCase(VectorDataType.Uint8)]
     [TestCase(VectorDataType.Float16)]
@@ -286,32 +334,7 @@ public class CollectionCreateTests : QdrantTestsBase
         multipleVectorsConfiguration.NamedVectors["Vector_1"].MultivectorConfig.Comparator.Should()
             .Be(MultivectorComparator.MaxSim);
     }
-
-    [Test]
-    [TestCase(VectorDataType.Float32)]
-    [TestCase(VectorDataType.Uint8)]
-    [TestCase(VectorDataType.Float16)]
-    public async Task SparseVectors(VectorDataType vectorDataType)
-    {
-        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true,
-                SparseVectors = new Dictionary<string, SparseVectorConfiguration>()
-                {
-                    ["test"] = new(onDisk: true, fullScanThreshold: 5000, vectorDataType: vectorDataType)
-                }
-            },
-            CancellationToken.None);
-
-        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
-        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
-
-        collectionCreationResult.Should().NotBeNull();
-        collectionCreationResult.Result.Should().BeTrue();
-    }
-
+    
     [Test]
     // this ugly string as second test case argument is a workaround for NUnit analyzer that
     // can't for some reason parse several enum values like this

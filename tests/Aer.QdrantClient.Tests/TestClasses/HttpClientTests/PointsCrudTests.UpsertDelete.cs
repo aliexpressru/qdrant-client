@@ -577,9 +577,8 @@ internal partial class PointsCrudTests
             .BeOneOf(QdrantOperationStatus.Acknowledged);
     }
 
-    [TestCase(0U)]
-    //[TestCase(3U)]
-    public async Task UpsertPoints(uint readRetryCount)
+    [Test]
+    public async Task UpsertPoints()
     {
         var vectorSize = 10U;
         var vectorCount = 10;
@@ -624,7 +623,7 @@ internal partial class PointsCrudTests
             PayloadPropertiesSelector.All,
             CancellationToken.None,
             withVector: true,
-            retryCount: readRetryCount);
+            retryCount: 0);
 
         upsertPointsResult.Status.IsSuccess.Should().BeTrue();
         upsertPointsResult.Result.Status.Should()
@@ -1192,8 +1191,7 @@ internal partial class PointsCrudTests
 
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
-            new CreateCollectionRequest(
-                sparseVectorsConfiguration: sparseVectors)
+            new CreateCollectionRequest(sparseVectorsConfiguration: sparseVectors)
             {
                 OnDiskPayload = true
             },

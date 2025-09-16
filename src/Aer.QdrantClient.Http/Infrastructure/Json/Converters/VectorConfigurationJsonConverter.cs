@@ -12,6 +12,11 @@ internal sealed class VectorConfigurationJsonConverter : JsonConverter<VectorCon
     {
         var configurationObject = JsonNode.Parse(ref reader);
 
+        if (configurationObject is null || configurationObject.AsObject().Count == 0)
+        { 
+            return null;
+        }
+
         try
         {
             // try read as multiple vectors configuration

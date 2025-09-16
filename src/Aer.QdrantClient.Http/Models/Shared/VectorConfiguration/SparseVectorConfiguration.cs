@@ -35,6 +35,36 @@ public sealed class SparseVectorConfiguration
     /// Configures additional value modifications for sparse vectors.
     /// </summary>
     public SparseVectorModifier Modifier { set; get; }
+    
+    /// <summary>
+    /// Custom params for index. If none - values from collection configuration are used.
+    /// </summary>
+    public SparseVectorIndexConfiguration Index { set; get; }
+    
+    /// <summary>
+    /// Custom sparse vector index parameters.
+    /// </summary>
+    public class SparseVectorIndexConfiguration
+    {
+        /// <summary>
+        /// Indicates whether to store sparse vector index on disk.
+        /// If set to <c>false</c>, the index will be stored in RAM. Default: false.
+        /// </summary>
+        public bool OnDisk { set; get; }
+
+        /// <summary>
+        /// Indicates that index full scan should be employed for queries inspecting
+        /// less than specified number of vectors. This upper bound is exclusive.
+        /// </summary>
+        /// <remarks>This is number of vectors, not KiloBytes.</remarks>
+        public ulong? FullScanThreshold { set; get; }
+
+        /// <summary>
+        /// Defines which datatype should be used for the index.
+        /// Choosing different datatypes allows to optimize memory usage and performance vs accuracy.
+        /// </summary>
+        public VectorDataType VectorDataType { set; get; }
+    }
 
     /// <summary>
     /// Creates an instance of the sparse vector configuration with specified parameters.
@@ -53,5 +83,12 @@ public sealed class SparseVectorConfiguration
         FullScanThreshold = fullScanThreshold;
         VectorDataType = vectorDataType;
         Modifier = sparseVectorValueModifier;
+
+        Index = new()
+        {
+            OnDisk = onDisk,
+            FullScanThreshold = fullScanThreshold,
+            VectorDataType = vectorDataType
+        };
     }
 }
