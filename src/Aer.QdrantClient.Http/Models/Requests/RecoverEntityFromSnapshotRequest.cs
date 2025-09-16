@@ -25,9 +25,16 @@ internal sealed class RecoverEntityFromSnapshotRequest
     /// as a source of truth, and after recovery it will be synchronized with the snapshot.
     /// </summary>
     public SnapshotPriority? Priority { set; get; }
+    
+    /// <summary>
+    /// Optional SHA256 checksum to verify snapshot integrity before recovery.
+    /// </summary>
+    public string Checksum { set; get; }
 
-    public RecoverEntityFromSnapshotRequest(Uri location)
+    public RecoverEntityFromSnapshotRequest(Uri location, SnapshotPriority? priority, string checksum)
     {
         Location = location;
+        Priority = priority;
+        Checksum = checksum;
     }
 }

@@ -9,7 +9,8 @@ namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots;
 // Replace attribute when shard snapshot api will be functional
 // [Ignore("Since snapshot has a minimal size of roughly 100MB these tests are time-consuming"
 // +" and we only run these tests on local machine, not in CI")]
-[Ignore("Shard snapshot API seems to be buggy, so we skip testing it altogether")]
+// [Ignore("Shard snapshot API seems to be buggy, so we skip testing it altogether")]
+[Ignore("WiP on Snapshot API support")]
 public class ShardSnapshotTests : QdrantTestsBase
 {
     // NOTE: since we don't have a cluster in test and thus have only one shard
@@ -32,8 +33,6 @@ public class ShardSnapshotTests : QdrantTestsBase
     {
         await ResetStorage();
     }
-
-    #region Invalid cases and non-existent colelctions
 
     [Test]
     public async Task NonExistentCollectionSnapshotsOperations()
@@ -106,8 +105,6 @@ public class ShardSnapshotTests : QdrantTestsBase
         listSnapshotsResult.Status.IsSuccess.Should().BeTrue();
         listSnapshotsResult.Result.Length.Should().Be(0);
     }
-
-    #endregion
 
     [Test]
     public async Task CreateSnapshot()

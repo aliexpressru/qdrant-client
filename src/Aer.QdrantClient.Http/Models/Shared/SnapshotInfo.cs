@@ -22,6 +22,11 @@ public sealed class SnapshotInfo
     /// Size in bytes.
     /// </summary>
     public long Size { set; get; }
+    
+    /// <summary>
+    /// The snapshot checksum.
+    /// </summary>
+    public string Checksum { set; get; }
 
     /// <summary>
     /// Snapshot size in megabytes.

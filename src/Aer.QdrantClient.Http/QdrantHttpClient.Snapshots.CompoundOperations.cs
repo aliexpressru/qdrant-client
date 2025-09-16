@@ -13,11 +13,11 @@ namespace Aer.QdrantClient.Http;
 public partial class QdrantHttpClient
 {
     /// <summary>
-    /// A compound operation that deletes all existing snapshots.
+    /// A compound operation that deletes all existing storage snapshots.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="isWaitForResult">If true, wait for changes to actually happen. If false - let changes happen in background.</param>
-    public async Task<DefaultOperationResponse> DeleteAllCollectionSnapshots(
+    /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
+    public async Task<DefaultOperationResponse> DeleteAllStorageSnapshots(
         CancellationToken cancellationToken,
         bool isWaitForResult = true)
     {
@@ -43,11 +43,9 @@ public partial class QdrantHttpClient
     /// <summary>
     /// A compound operation that deletes all existing collection snapshots.
     /// </summary>
-    /// <param name="collectionName">Name of the collection to delete all snapshots for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="isWaitForResult">If true, wait for changes to actually happen. If false - let changes happen in background.</param>
+    /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
     public async Task<DefaultOperationResponse> DeleteAllCollectionSnapshots(
-        string collectionName,
         CancellationToken cancellationToken,
         bool isWaitForResult = true)
     {
@@ -56,46 +54,127 @@ public partial class QdrantHttpClient
 
         var allCollectionNames = listAllCollectionsResponse.Result.Collections.Select(cn => cn.Name).ToHashSet();
 
-        if (!allCollectionNames.Contains(collectionName))
+        foreach (var collectionName in allCollectionNames)
         {
-            // means collection does not exist
-            // just return success since it does not have any visible snapshots
-            return new DefaultOperationResponse()
-            {
-                Result = true,
-                Status = new QdrantStatus(QdrantOperationStatusType.Ok)
-            };
-        }
+            var listCollectionSnapshotsResponse = await ListCollectionSnapshots(collectionName, cancellationToken);
 
-        var listCollectionSnapshotsResponse = await ListCollectionSnapshots(collectionName, cancellationToken);
-
-        if (!listCollectionSnapshotsResponse.Status.IsSuccess)
-        {
-            // return original error
-
-            return new DefaultOperationResponse()
-            {
-                Result = false,
-                Status = listCollectionSnapshotsResponse.Status
-            };
-        }
-
-        foreach (var collectionSnapshot in listCollectionSnapshotsResponse.Result)
-        {
-            var deleteCollectionSnapshotResponse =
-                await DeleteCollectionSnapshot(
-                    collectionName,
-                    collectionSnapshot.Name,
-                    cancellationToken,
-                    isWaitForResult);
-
-            if (!deleteCollectionSnapshotResponse.Status.IsSuccess)
+            if (!listCollectionSnapshotsResponse.Status.IsSuccess)
             {
                 return new DefaultOperationResponse()
                 {
                     Result = false,
-                    Status = deleteCollectionSnapshotResponse.Status
+                    Status = listCollectionSnapshotsResponse.Status
                 };
+            }
+
+            foreach (var collectionSnapshot in listCollectionSnapshotsResponse.Result)
+            {
+                var deleteCollectionSnapshotResponse =
+                    await DeleteCollectionSnapshot(
+                        collectionName,
+                        collectionSnapshot.Name,
+                        cancellationToken,
+                        isWaitForResult);
+
+                if (!deleteCollectionSnapshotResponse.Status.IsSuccess)
+                {
+                    return new DefaultOperationResponse()
+                    {
+                        Result = false,
+                        Status = deleteCollectionSnapshotResponse.Status
+                    };
+                }
+            }
+        }
+
+        return new DefaultOperationResponse()
+        {
+            Result = true,
+            Status = new QdrantStatus(QdrantOperationStatusType.Ok)
+        };
+    }
+    
+    /// <summary>
+    /// A compound operation that deletes all existing collection shard snapshots.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
+    public async Task<DefaultOperationResponse> DeleteAllCollectionShardSnapshots(
+        CancellationToken cancellationToken,
+        bool isWaitForResult = true)
+    {
+        var listAllCollectionsResponse = await ListCollections(cancellationToken);
+        listAllCollectionsResponse.EnsureSuccess();
+
+        var allCollectionNames = listAllCollectionsResponse.Result.Collections.Select(cn => cn.Name).ToHashSet();
+
+        foreach (var collectionName in allCollectionNames)
+        {
+            var collectionClusteringInfo = await GetCollectionClusteringInfo(collectionName, cancellationToken);
+
+            if (!collectionClusteringInfo.Status.IsSuccess)
+            {
+                return new DefaultOperationResponse()
+                {
+                    Result = false,
+                    Status = collectionClusteringInfo.Status
+                };
+            }
+#if NETSTANDARD2_0
+            HashSet<uint> shardIds = new();
+#else
+            HashSet<uint> shardIds = new (
+                collectionClusteringInfo.Result.LocalShards.Length
+                + collectionClusteringInfo.Result.RemoteShards.Length);
+#endif
+            if (collectionClusteringInfo.Result.LocalShards is {Length: > 0} localShards)
+            {
+                foreach (var shardInfo in localShards)
+                {
+                    shardIds.Add(shardInfo.ShardId);
+                }
+            }
+
+            if (collectionClusteringInfo.Result.RemoteShards is {Length: > 0} remoteShards)
+            {
+                foreach (var shardInfo in remoteShards)
+                {
+                    shardIds.Add(shardInfo.ShardId);
+                }
+            }
+            
+            foreach(var shardId in shardIds)
+            {
+                var listCollectionSnapshotsResponse = await ListShardSnapshots(collectionName, shardId, cancellationToken);
+
+                if (!listCollectionSnapshotsResponse.Status.IsSuccess)
+                {
+                    return new DefaultOperationResponse()
+                    {
+                        Result = false,
+                        Status = listCollectionSnapshotsResponse.Status
+                    };
+                }
+                
+                foreach(var shardSnapshot in listCollectionSnapshotsResponse.Result)
+                {
+                    var deleteCollectionShardSnapshotResponse =
+                        await DeleteShardSnapshot(
+                            collectionName,
+                            shardId,
+                            shardSnapshot.Name,
+                            cancellationToken,
+                            isWaitForResult);
+
+                    if (!deleteCollectionShardSnapshotResponse.Status.IsSuccess)
+                    {
+                        return new DefaultOperationResponse()
+                        {
+                            Result = false,
+                            Status = deleteCollectionShardSnapshotResponse.Status
+                        };
+                    }
+                }
             }
         }
 

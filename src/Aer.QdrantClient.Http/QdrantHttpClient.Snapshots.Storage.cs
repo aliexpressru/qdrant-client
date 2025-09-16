@@ -12,7 +12,7 @@ namespace Aer.QdrantClient.Http;
 public partial class QdrantHttpClient
 {
     /// <summary>
-    /// Get list of snapshots of the whole storage
+    /// Returns a list of all snapshots for the entire storage.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     public async Task<ListSnapshotsResponse> ListStorageSnapshots(
@@ -30,10 +30,10 @@ public partial class QdrantHttpClient
     }
 
     /// <summary>
-    /// Create new snapshot of the whole storage.
+    /// Creates a new snapshot of the entire storage.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="isWaitForResult">If true, wait for changes to actually happen. If false - let changes happen in background.</param>
+    /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
     public async Task<CreateSnapshotResponse> CreateStorageSnapshot(
         CancellationToken cancellationToken,
         bool isWaitForResult = true)
@@ -44,29 +44,6 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<CreateSnapshotResponse>(
             url,
             HttpMethod.Post,
-            cancellationToken,
-            retryCount: 0);
-
-        return response;
-    }
-
-    /// <summary>
-    /// Delete snapshot of the whole storage.
-    /// </summary>
-    /// <param name="snapshotName">Name of the snapshot to delete.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="isWaitForResult">If true, wait for changes to actually happen. If false - let changes happen in background.</param>
-    public async Task<DefaultOperationResponse> DeleteStorageSnapshot(
-        string snapshotName,
-        CancellationToken cancellationToken,
-        bool isWaitForResult = true
-    )
-    {
-        var url = $"/snapshots/{snapshotName}?wait={ToUrlQueryString(isWaitForResult)}";
-
-        var response = await ExecuteRequest<DefaultOperationResponse>(
-            url,
-            HttpMethod.Delete,
             cancellationToken,
             retryCount: 0);
 
@@ -92,5 +69,28 @@ public partial class QdrantHttpClient
             cancellationToken);
 
         return result;
+    }
+
+    /// <summary>
+    /// Delete snapshot of the whole storage.
+    /// </summary>
+    /// <param name="snapshotName">Name of the snapshot to delete.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
+    public async Task<DefaultOperationResponse> DeleteStorageSnapshot(
+        string snapshotName,
+        CancellationToken cancellationToken,
+        bool isWaitForResult = true
+    )
+    {
+        var url = $"/snapshots/{snapshotName}?wait={ToUrlQueryString(isWaitForResult)}";
+
+        var response = await ExecuteRequest<DefaultOperationResponse>(
+            url,
+            HttpMethod.Delete,
+            cancellationToken,
+            retryCount: 0);
+
+        return response;
     }
 }
