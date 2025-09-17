@@ -123,17 +123,23 @@ public class CollectionSnapshotTests : QdrantTestsBase
         createSnapshotResult.Result.SizeMegabytes.Should().BeGreaterThan(0);
         createSnapshotResult.Result.Checksum.Should().NotBeNullOrEmpty();
     }
-
+    
     [Test]
     public async Task ListSnapshots()
     {
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
-        // create first snapshot
+        // create first two snapshots in parallel
 
-        var createFirstSnapshotResult = (await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None)).EnsureSuccess();
-        var immediatelyCreateSecondSnapshotResult = (await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None))
-            .EnsureSuccess();
+        var createFirstSnapshotTask =
+            _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None);
+        var immediatelyCreateSecondSnapshotTask =
+            _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None);
+        
+        await Task.WhenAll(createFirstSnapshotTask, immediatelyCreateSecondSnapshotTask);
+        
+        var createFirstSnapshotResult = createFirstSnapshotTask.Result.EnsureSuccess();
+        var immediatelyCreateSecondSnapshotResult = immediatelyCreateSecondSnapshotTask.Result.EnsureSuccess();
 
         var listSnapshotsResult = await _qdrantHttpClient.ListCollectionSnapshots(TestCollectionName, CancellationToken.None);
 
