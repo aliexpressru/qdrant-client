@@ -155,8 +155,9 @@ public class CollectionSnapshotTests : QdrantTestsBase
         snapshotInfo.CreationTime.Should().Be(createFirstSnapshotResult.CreationTime);
         
         // Check that if creating snapshot immediately again we will get the same snapshot info back
+        immediatelyCreateSecondSnapshotResult.CreationTime.Should().Be(createFirstSnapshotResult.CreationTime);
         immediatelyCreateSecondSnapshotResult.Checksum.Should().Be(createFirstSnapshotResult.Checksum);
-
+        
         // create second snapshot
         
         // If requesting to create snapshot in less than a second after the previous one
