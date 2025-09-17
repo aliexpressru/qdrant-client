@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 #if  NETSTANDARD2_0
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
@@ -12,6 +13,117 @@ namespace Aer.QdrantClient.Http;
 [SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public partial class QdrantHttpClient
 {
+    /// <summary>
+    /// A compound operation that lists all snapshots for all collections and shards in the storage.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    public async Task<ListSnapshotsResponse> ListCollectionSnapshots(CancellationToken cancellationToken)
+    {
+        List<SnapshotInfo> allSnapshots = new();
+
+        Stopwatch sw = Stopwatch.StartNew();
+
+        var listAllCollectionsResponse = await ListCollections(cancellationToken);
+        listAllCollectionsResponse.EnsureSuccess();
+
+        var allCollectionNames = listAllCollectionsResponse.Result.Collections.Select(cn => cn.Name).ToHashSet();
+
+        // Collect collection and shards snapshots
+        foreach (var collectionName in allCollectionNames)
+        {
+            // Collection snapshots
+
+            var listCollectionSnapshotsResponse = await ListCollectionSnapshots(collectionName, cancellationToken);
+
+            foreach (var collectionSnapshot in listCollectionSnapshotsResponse.Result)
+            {
+                collectionSnapshot.SnapshotType = SnapshotType.Collection;
+                allSnapshots.Add(collectionSnapshot);
+            }
+
+            var collectionClusteringInfo = await GetCollectionClusteringInfo(collectionName, cancellationToken);
+
+            if (!collectionClusteringInfo.Status.IsSuccess)
+            {
+                return new ListSnapshotsResponse(collectionClusteringInfo)
+                {
+                    Result = null
+                };
+            }
+
+            // Shard snapshots
+
+#if NETSTANDARD2_0
+            HashSet<uint> shardIds = new();
+#else
+            HashSet<uint> shardIds = new(
+                collectionClusteringInfo.Result.LocalShards.Length
+                + collectionClusteringInfo.Result.RemoteShards.Length);
+#endif
+            if (collectionClusteringInfo.Result.LocalShards is {Length: > 0} localShards)
+            {
+                foreach (var shardInfo in localShards)
+                {
+                    shardIds.Add(shardInfo.ShardId);
+                }
+            }
+
+            if (collectionClusteringInfo.Result.RemoteShards is {Length: > 0} remoteShards)
+            {
+                foreach (var shardInfo in remoteShards)
+                {
+                    shardIds.Add(shardInfo.ShardId);
+                }
+            }
+
+            foreach (var shardId in shardIds)
+            {
+                var listShardSnapshotsResponse = await ListShardSnapshots(collectionName, shardId, cancellationToken);
+
+                if (!listShardSnapshotsResponse.Status.IsSuccess)
+                {
+                    return new ListSnapshotsResponse(listShardSnapshotsResponse)
+                    {
+                        Result = null
+                    };
+                }
+
+                foreach (var shardSnapshot in listShardSnapshotsResponse.Result)
+                {
+                    shardSnapshot.SnapshotType = SnapshotType.Shard;
+                    allSnapshots.Add(shardSnapshot);
+                }
+            }
+        }
+
+        // Collect storage snapshots
+
+        var listStorageSnapshotsResponse = await ListStorageSnapshots(cancellationToken);
+
+        if (!listStorageSnapshotsResponse.Status.IsSuccess)
+        {
+            return new ListSnapshotsResponse(listStorageSnapshotsResponse)
+            {
+                Result = null
+            };
+        }
+
+        foreach (var storageSnapshot in listStorageSnapshotsResponse.Result)
+        {
+            storageSnapshot.SnapshotType = SnapshotType.Storage;
+            allSnapshots.Add(storageSnapshot);
+        }
+
+        sw.Stop();
+
+        return new ListSnapshotsResponse()
+        {
+            Result = allSnapshots.ToArray(),
+            Status = QdrantStatus.Success(),
+            Time = sw.Elapsed.TotalSeconds
+        };
+    }
+
     /// <summary>
     /// A compound operation that deletes all existing storage snapshots.
     /// </summary>
@@ -60,10 +172,9 @@ public partial class QdrantHttpClient
 
             if (!listCollectionSnapshotsResponse.Status.IsSuccess)
             {
-                return new DefaultOperationResponse()
+                return new DefaultOperationResponse(listCollectionSnapshotsResponse)
                 {
-                    Result = false,
-                    Status = listCollectionSnapshotsResponse.Status
+                    Result = false
                 };
             }
 
@@ -78,10 +189,9 @@ public partial class QdrantHttpClient
 
                 if (!deleteCollectionSnapshotResponse.Status.IsSuccess)
                 {
-                    return new DefaultOperationResponse()
+                    return new DefaultOperationResponse(deleteCollectionSnapshotResponse)
                     {
-                        Result = false,
-                        Status = deleteCollectionSnapshotResponse.Status
+                        Result = false
                     };
                 }
             }
@@ -114,12 +224,12 @@ public partial class QdrantHttpClient
 
             if (!collectionClusteringInfo.Status.IsSuccess)
             {
-                return new DefaultOperationResponse()
+                return new DefaultOperationResponse(collectionClusteringInfo)
                 {
-                    Result = false,
-                    Status = collectionClusteringInfo.Status
+                    Result = false
                 };
             }
+            
 #if NETSTANDARD2_0
             HashSet<uint> shardIds = new();
 #else
@@ -168,10 +278,9 @@ public partial class QdrantHttpClient
 
                     if (!deleteCollectionShardSnapshotResponse.Status.IsSuccess)
                     {
-                        return new DefaultOperationResponse()
+                        return new DefaultOperationResponse(deleteCollectionShardSnapshotResponse)
                         {
-                            Result = false,
-                            Status = deleteCollectionShardSnapshotResponse.Status
+                            Result = false
                         };
                     }
                 }

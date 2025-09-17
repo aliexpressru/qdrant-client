@@ -157,7 +157,6 @@ public class CollectionSnapshotTests : QdrantTestsBase
                 $"Expected single snapshot to be the first one created, but found checksum mismatch. First snapshot checksum: {createFirstSnapshotResult.Checksum}, next snapshot checksum: {immediatelyCreateSecondSnapshotResult.Checksum}, listed snapshot checksum: {snapshotInfo.Checksum}"
             );
             snapshotInfo.CreationTime.Should().Be(immediatelyCreateSecondSnapshotResult.CreationTime);
-            
         }
         else
         {
@@ -169,7 +168,7 @@ public class CollectionSnapshotTests : QdrantTestsBase
             );
             snapshotInfo.CreationTime.Should().Be(createFirstSnapshotResult.CreationTime);
 
-            // This bit does not work in CI tests for Qdrant 1.14 but for some reason it works on local machine for the same Qdrant version
+            // This bit does not work in CI tests for Qdrant < 1.15 but for some reason it works on local machine for the same Qdrant version
             // This is not the main purpose of this test so leaving it as is for now
             immediatelyCreateSecondSnapshotResult.CreationTime.Should().Be(createFirstSnapshotResult.CreationTime);
             immediatelyCreateSecondSnapshotResult.Checksum.Should().Be(createFirstSnapshotResult.Checksum);
@@ -276,11 +275,12 @@ public class CollectionSnapshotTests : QdrantTestsBase
     [Test]
     public async Task DownloadSnapshot_AfterCollectionIsDeleted()
     {
+        // This test proves that deleting collection does not delete snapshots (which is fair enough)!
+        // And if we create collection with the same name again we will be able to download previous snapshot
+        
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult = (await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None)).EnsureSuccess();
-
-        // This test proves that deleting collection does not delete snapshots!
         (await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None)).EnsureSuccess();
 
         // after explicit collection delete the snapshot download will not be accessible with message saying that the collection does not exist
@@ -313,6 +313,9 @@ public class CollectionSnapshotTests : QdrantTestsBase
         downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Size);
         downloadSnapshotResponse.Result.SnapshotName.Should().Be(createSnapshotResult.Name);
         downloadSnapshotResponse.Result.SnapshotDataStream.Should().NotBeNull();
+        
+        var storageSnapshots = (await _qdrantHttpClient.ListStorageSnapshots(CancellationToken.None)).EnsureSuccess();
+        storageSnapshots.Length.Should().BeGreaterThan(0);
     }
 
     //[Test]

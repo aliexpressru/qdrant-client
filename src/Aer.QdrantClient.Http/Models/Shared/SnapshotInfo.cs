@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Models.Responses;
 
 namespace Aer.QdrantClient.Http.Models.Shared;
 
@@ -32,4 +33,9 @@ public sealed class SnapshotInfo
     /// Snapshot size in megabytes.
     /// </summary>
     public double SizeMegabytes => Size / 1024.0 / 1024.0;
+    
+    /// <summary>
+    /// The type of the snapshot - collection / shard / storage.
+    /// </summary>
+    public SnapshotType SnapshotType { set; get; }
 }

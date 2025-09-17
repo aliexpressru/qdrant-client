@@ -78,9 +78,7 @@ public sealed class DownloadSnapshotResponse : QdrantResponseBase<DownloadSnapsh
         );
 
         Status = qdrantOperationStatus;
-        
         Time = qdrantOperationTime.TotalSeconds;
-
         Usage = UsageReport.Empty;
     }
 }
