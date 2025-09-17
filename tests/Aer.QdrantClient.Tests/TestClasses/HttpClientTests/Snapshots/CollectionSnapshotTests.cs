@@ -129,17 +129,13 @@ public class CollectionSnapshotTests : QdrantTestsBase
     {
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
-        // create first two snapshots in parallel
+        // create first two snapshots one by one
 
-        var createFirstSnapshotTask =
-            _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None);
-        var immediatelyCreateSecondSnapshotTask =
-            _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None);
+        var createFirstSnapshotResult = (await _qdrantHttpClient
+            .CreateCollectionSnapshot(TestCollectionName, CancellationToken.None)).EnsureSuccess();
         
-        await Task.WhenAll(createFirstSnapshotTask, immediatelyCreateSecondSnapshotTask);
-        
-        var createFirstSnapshotResult = createFirstSnapshotTask.Result.EnsureSuccess();
-        var immediatelyCreateSecondSnapshotResult = immediatelyCreateSecondSnapshotTask.Result.EnsureSuccess();
+        var immediatelyCreateSecondSnapshotResult = (await _qdrantHttpClient
+            .CreateCollectionSnapshot(TestCollectionName, CancellationToken.None)).EnsureSuccess();
 
         var listSnapshotsResult = await _qdrantHttpClient.ListCollectionSnapshots(TestCollectionName, CancellationToken.None);
 
@@ -155,9 +151,14 @@ public class CollectionSnapshotTests : QdrantTestsBase
         snapshotInfo.CreationTime.Should().Be(createFirstSnapshotResult.CreationTime);
         
         // Check that if creating snapshot immediately again we will get the same snapshot info back
-        immediatelyCreateSecondSnapshotResult.CreationTime.Should().Be(createFirstSnapshotResult.CreationTime);
-        immediatelyCreateSecondSnapshotResult.Checksum.Should().Be(createFirstSnapshotResult.Checksum);
-        
+        // if (QdrantVersion >= Version.Parse("1.15"))
+        // {
+            // This bit does not work in CI tests for Qdrant 1.14 but for some reason it works on local machine for the same Qdrant version
+            // This is not the main purpose of this test so leaving it as is for now
+            immediatelyCreateSecondSnapshotResult.CreationTime.Should().Be(createFirstSnapshotResult.CreationTime);
+            immediatelyCreateSecondSnapshotResult.Checksum.Should().Be(createFirstSnapshotResult.Checksum);
+        // }
+
         // create second snapshot
         
         // If requesting to create snapshot in less than a second after the previous one
