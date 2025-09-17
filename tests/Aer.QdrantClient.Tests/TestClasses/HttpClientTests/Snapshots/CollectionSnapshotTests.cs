@@ -6,7 +6,7 @@ using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots;
 
-// [Ignore("Since snapshot has a minimal size of roughly 100MB these tests are time consuming and somewhat flaky"
+// [Ignore("Since snapshot has a minimal size of roughly 100MB these tests are time-consuming and somewhat flaky"
 //  +" and we only run these tests on local machine and only manually when needed")]
 public class CollectionSnapshotTests : QdrantTestsBase
 {
@@ -147,7 +147,9 @@ public class CollectionSnapshotTests : QdrantTestsBase
 
         snapshotInfo.Name.Should().Be(createFirstSnapshotResult.Name);
         snapshotInfo.Size.Should().Be(createFirstSnapshotResult.Size);
-        snapshotInfo.Checksum.Should().Be(createFirstSnapshotResult.Checksum);
+        snapshotInfo.Checksum.Should().Be(createFirstSnapshotResult.Checksum, 
+            $"Expected single snapshot to be the first one created, but found checksum mismatch. First snapshot checksum: {createFirstSnapshotResult.Checksum}, next snapshot checksum: {immediatelyCreateSecondSnapshotResult.Checksum}, listed snapshot checksum: {snapshotInfo.Checksum}"
+        );
         snapshotInfo.CreationTime.Should().Be(createFirstSnapshotResult.CreationTime);
         
         // Check that if creating snapshot immediately again we will get the same snapshot info back
@@ -257,23 +259,20 @@ public class CollectionSnapshotTests : QdrantTestsBase
         downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Result.Size);
     }
 
-    //[Test]
+    [Test]
     public async Task DownloadSnapshot_AfterCollectionIsDeleted()
     {
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
-        var createSnapshotResult = await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None);
+        var createSnapshotResult = (await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None)).EnsureSuccess();
 
-        createSnapshotResult.EnsureSuccess();
-
-        var deleteCollectionResult = await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None);
-        deleteCollectionResult.EnsureSuccess();
+        (await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None)).EnsureSuccess();
 
         // after explicit collection delete the snapshot download will not be accessible with message saying that the collection does not exist
 
         var downloadSnapshotResponse = await _qdrantHttpClient.DownloadCollectionSnapshot(
             TestCollectionName,
-            createSnapshotResult.Result.Name,
+            createSnapshotResult.Name,
             CancellationToken.None);
 
         downloadSnapshotResponse.Status.IsSuccess.Should().BeFalse();
@@ -291,11 +290,11 @@ public class CollectionSnapshotTests : QdrantTestsBase
 
         downloadSnapshotResponse = await _qdrantHttpClient.DownloadCollectionSnapshot(
             TestCollectionName,
-            createSnapshotResult.Result.Name,
+            createSnapshotResult.Name,
             CancellationToken.None);
 
         downloadSnapshotResponse.Status.IsSuccess.Should().BeTrue();
-        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Result.Size);
+        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Size);
     }
 
     //[Test]
