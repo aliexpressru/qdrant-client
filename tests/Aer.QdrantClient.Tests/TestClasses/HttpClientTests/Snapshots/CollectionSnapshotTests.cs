@@ -259,17 +259,20 @@ public class CollectionSnapshotTests : QdrantTestsBase
     {
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
-        var createSnapshotResult = await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None);
-
-        createSnapshotResult.EnsureSuccess();
+        var createSnapshotResult = (await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None)).EnsureSuccess();
 
         var downloadSnapshotResponse = await _qdrantHttpClient.DownloadCollectionSnapshot(
             TestCollectionName,
-            createSnapshotResult.Result.Name,
+            createSnapshotResult.Name,
             CancellationToken.None);
 
         downloadSnapshotResponse.Status.IsSuccess.Should().BeTrue();
-        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Result.Size);
+        downloadSnapshotResponse.Result.SnapshotName.Should().Be(createSnapshotResult.Name);
+        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Size);
+        
+        downloadSnapshotResponse.Result.SnapshotDataStream.Should().NotBeNull();
+
+        await AssertSnapshotActualSize(downloadSnapshotResponse.Result.SnapshotDataStream, createSnapshotResult.Size);
     }
 
     [Test]
@@ -313,97 +316,103 @@ public class CollectionSnapshotTests : QdrantTestsBase
         downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Size);
         downloadSnapshotResponse.Result.SnapshotName.Should().Be(createSnapshotResult.Name);
         downloadSnapshotResponse.Result.SnapshotDataStream.Should().NotBeNull();
-        
-        var storageSnapshots = (await _qdrantHttpClient.ListStorageSnapshots(CancellationToken.None)).EnsureSuccess();
-        storageSnapshots.Length.Should().BeGreaterThan(0);
+
+        await AssertSnapshotActualSize(downloadSnapshotResponse.Result.SnapshotDataStream, createSnapshotResult.Size);
     }
 
-    //[Test]
+    [Test]
     public async Task RecoverFromSnapshot()
     {
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
-        var createSnapshotResult = await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None);
-
-        createSnapshotResult.EnsureSuccess();
-
+        var createSnapshotResult =
+            (await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None))
+            .EnsureSuccess();
+        
         // delete collection
 
-        var deleteCollectionResponse = await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None);
+        (await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None)).EnsureSuccess();
 
-        deleteCollectionResponse.EnsureSuccess();
-
-        var listCollectionsResult = await _qdrantHttpClient.ListCollections(CancellationToken.None);
-
-        listCollectionsResult.EnsureSuccess();
-
-        listCollectionsResult.Result.Collections.Length.Should().Be(0);
+        var listCollectionsResult = (await _qdrantHttpClient.ListCollections(CancellationToken.None)).EnsureSuccess();
+        listCollectionsResult.Collections.Length.Should().Be(0);
 
         // recover collection from local snapshot
 
         var recoverCollectionResult = await _qdrantHttpClient.RecoverCollectionFromSnapshot(
             TestCollectionName,
-            createSnapshotResult.Result.Name,
-            CancellationToken.None);
+            createSnapshotResult.Name,
+            CancellationToken.None,
+            isWaitForResult: true,
+            SnapshotPriority.Snapshot,
+            snapshotChecksum: createSnapshotResult.Checksum);
 
         recoverCollectionResult.Status.IsSuccess.Should().BeTrue();
         recoverCollectionResult.Result.Should().BeTrue();
+        recoverCollectionResult.Time.Should().BeGreaterThan(0);
 
         // check collection recovered
 
-        listCollectionsResult = await _qdrantHttpClient.ListCollections(CancellationToken.None);
+        listCollectionsResult = (await _qdrantHttpClient.ListCollections(CancellationToken.None)).EnsureSuccess();
 
-        listCollectionsResult.EnsureSuccess();
-
-        listCollectionsResult.Result.Collections.Length.Should().Be(1);
+        listCollectionsResult.Collections.Length.Should().Be(1);
+        listCollectionsResult.Collections[0].Name.Should().Be(TestCollectionName);
     }
 
-    //[Test]
+    [Test]
     public async Task RecoverFromUploadedSnapshot()
     {
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
-        var createSnapshotResult = await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None);
+        // Create and download snapshot
+        
+        var createSnapshotResult = (await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None)).EnsureSuccess();
 
-        createSnapshotResult.EnsureSuccess();
-
-        // this method call is here since when collection is deleted it's impossible to download its snapshot for some reason
-        var downloadedSnapshot = await _qdrantHttpClient.DownloadCollectionSnapshot(
+        // this method call is here since when collection is deleted it's impossible to download its snapshot
+        var downloadedSnapshotResult = (await _qdrantHttpClient.DownloadCollectionSnapshot(
             TestCollectionName,
-            createSnapshotResult.Result.Name,
-            CancellationToken.None);
+            createSnapshotResult.Name,
+            CancellationToken.None)).EnsureSuccess();
 
-        downloadedSnapshot.EnsureSuccess();
+        // Copy snapshot to memory
+        
+        MemoryStream downloadedSnapshotStream = new MemoryStream();
+        await downloadedSnapshotResult.SnapshotDataStream.CopyToAsync(downloadedSnapshotStream);
+        downloadedSnapshotStream.Position = 0;
 
         // delete collection
 
-        var deleteCollectionResponse = await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None);
+        (await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None)).EnsureSuccess();
 
-        deleteCollectionResponse.EnsureSuccess();
-
-        var listCollectionsResult = await _qdrantHttpClient.ListCollections(CancellationToken.None);
-
-        listCollectionsResult.EnsureSuccess();
-
-        listCollectionsResult.Result.Collections.Length.Should().Be(0);
+        var listCollectionsResult = (await _qdrantHttpClient.ListCollections(CancellationToken.None)).EnsureSuccess();
+        listCollectionsResult.Collections.Length.Should().Be(0);
 
         // recover collection from downloaded snapshot
 
-        // this recovery may take a lot of time!
         var recoverCollectionResult = await _qdrantHttpClient.RecoverCollectionFromUploadedSnapshot(
             TestCollectionName,
-            downloadedSnapshot.Result.SnapshotDataStream,
-            CancellationToken.None);
-
+            downloadedSnapshotStream,
+            CancellationToken.None,
+            isWaitForResult: true,
+            SnapshotPriority.Snapshot,
+            snapshotChecksum: createSnapshotResult.Checksum);
+        
         recoverCollectionResult.Status.IsSuccess.Should().Be(true);
         recoverCollectionResult.Result.Should().BeTrue();
 
         // check collection recovered
 
-        listCollectionsResult = await _qdrantHttpClient.ListCollections(CancellationToken.None);
+        listCollectionsResult = (await _qdrantHttpClient.ListCollections(CancellationToken.None)).EnsureSuccess();
+        
+        listCollectionsResult.Collections.Length.Should().Be(1);
+        listCollectionsResult.Collections[0].Name.Should().Be(TestCollectionName);
+    }
 
-        listCollectionsResult.EnsureSuccess();
+    private async Task AssertSnapshotActualSize(Stream snapshotStream, long expectedSize)
+    {
+        MemoryStream downloadedSnapshotStream = new MemoryStream();
+        await snapshotStream.CopyToAsync(downloadedSnapshotStream);
+        downloadedSnapshotStream.Position = 0;
 
-        listCollectionsResult.Result.Collections.Length.Should().Be(1);
+        downloadedSnapshotStream.Length.Should().Be(expectedSize);
     }
 }
