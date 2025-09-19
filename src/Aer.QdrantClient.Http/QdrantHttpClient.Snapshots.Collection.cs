@@ -31,6 +31,14 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        if (response.Result is {Length: > 0})
+        { 
+            foreach(var snapshot in response.Result)
+            {
+                snapshot.SnapshotType = SnapshotType.Collection;
+            }
+        }
+
         return response;
     }
     
@@ -53,6 +61,11 @@ public partial class QdrantHttpClient
             HttpMethod.Post,
             cancellationToken,
             retryCount: 0);
+        
+        if (response.Result is not null)
+        {
+            response.Result.SnapshotType = SnapshotType.Collection;
+        }
 
         return response;
     }
@@ -180,6 +193,11 @@ public partial class QdrantHttpClient
             snapshotName,
             message,
             cancellationToken);
+        
+        if (result.Result is not null)
+        {
+            result.Result.SnapshotType = SnapshotType.Collection;
+        }
 
         return result;
     }

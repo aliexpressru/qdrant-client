@@ -7,7 +7,6 @@ using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 #endif
 
 using Aer.QdrantClient.Http.Models.Responses;
-using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http;

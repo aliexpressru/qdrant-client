@@ -27,6 +27,14 @@ public partial class QdrantHttpClient
             HttpMethod.Get,
             cancellationToken,
             retryCount: 0);
+        
+        if (response.Result is { Length: > 0 })
+        {
+            foreach (var snapshot in response.Result)
+            {
+                snapshot.SnapshotType = SnapshotType.Storage;
+            }
+        }
 
         return response;
     }
@@ -49,6 +57,11 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        if (response.Result is not null)
+        {
+            response.Result.SnapshotType = SnapshotType.Storage;
+        }
+
         return response;
     }
 
@@ -57,6 +70,10 @@ public partial class QdrantHttpClient
     /// </summary>
     /// <param name="snapshotName">Name of the snapshot to download.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <remarks>
+    /// Full storage snapshot is a .tar file with each collection having its own snapshot inside.
+    /// Alongside it the config.json maps snapshots to collections.
+    /// </remarks>
     public async Task<DownloadSnapshotResponse> DownloadStorageSnapshot(
         string snapshotName,
         CancellationToken cancellationToken)
@@ -69,6 +86,11 @@ public partial class QdrantHttpClient
             snapshotName,
             message,
             cancellationToken);
+        
+        if (result.Result is not null)
+        {
+            result.Result.SnapshotType = SnapshotType.Storage;
+        }
 
         return result;
     }
@@ -95,6 +117,33 @@ public partial class QdrantHttpClient
 
         return response;
     }
+
+    /// <summary>
+    /// Recover the whole storage data from snapshot by its name. This will overwrite any data, stored on
+    /// this node, for the collection. If collection does not exist - it will be created.
+    /// The snapshot path should be <c>/qdrant/snapshots/{snapshotName}</c> on the Qdrant node.
+    /// </summary>
+    /// <param name="snapshotName">The name of the local snapshot file.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
+    /// <param name="snapshotPriority">Defines which data should be used as a source of truth if there are other replicas in the cluster.</param>
+    /// <param name="snapshotChecksum">Optional SHA256 checksum to verify snapshot integrity before recovery.</param>
+    public async Task<DefaultOperationResponse> RecoverStorageFromSnapshot(
+        string snapshotName,
+        CancellationToken cancellationToken,
+        bool isWaitForResult = true,
+        SnapshotPriority? snapshotPriority = null,
+        string snapshotChecksum = null)
+    {
+        var localSnapshotUri = new Uri($"file:///qdrant/snapshots/{snapshotName}");
+    
+        return await RecoverStorageFromSnapshot(
+            localSnapshotUri,
+            cancellationToken,
+            isWaitForResult,
+            snapshotPriority,
+            snapshotChecksum);
+    }
     
     /// <summary>
     /// Recover the whole storage data from a possibly remote snapshot.
@@ -111,9 +160,25 @@ public partial class QdrantHttpClient
         SnapshotPriority? snapshotPriority = null,
         string snapshotChecksum = null)
     {
+        // Full storage snapshot is a .tar file with each collection having its own snapshot inside.
+        // Alongside it the config.json maps snapshots to collections.
+
+        /*
+        {
+          "collections_mapping": {
+            "test_collection": "test_collection-7273830188020032-2025-09-19-15-30-41.snapshot"
+          },
+          "collections_aliases": {}
+        }
+        */
+        
+        // We need to unpack tar and apply snapshots to collections according to config.json
+
+        throw new NotImplementedException("This method is not a simple Qdrant API call and not implemented yet.");
+        
         var url =
             $"/snapshots/recover?wait={ToUrlQueryString(isWaitForResult)}";
-
+    
         var request = new RecoverEntityFromSnapshotRequest(snapshotLocationUri, snapshotPriority, snapshotChecksum);
         
         var response = await ExecuteRequest<RecoverEntityFromSnapshotRequest, DefaultOperationResponse>(
@@ -122,10 +187,10 @@ public partial class QdrantHttpClient
             request,
             cancellationToken,
             retryCount: 0);
-
+    
         return response;
     }
-
+    
     /// <summary>
     /// Recover the whole storage from an uploaded snapshot.
     /// </summary>
@@ -142,24 +207,40 @@ public partial class QdrantHttpClient
         string snapshotChecksum = null
     )
     {
+        // Full storage snapshot is a .tar file with each collection having its own snapshot inside.
+        // Alongside it the config.json maps snapshots to collections.
+
+        /*
+        {
+          "collections_mapping": {
+            "test_collection": "test_collection-7273830188020032-2025-09-19-15-30-41.snapshot"
+          },
+          "collections_aliases": {}
+        }
+        */
+
+        // We need to unpack tar and apply snapshots to collections according to config.json
+
+        throw new NotImplementedException("This method is not a simple Qdrant API call and not implemented yet.");
+        
         var url =
             $"//snapshots/upload?wait={ToUrlQueryString(isWaitForResult)}";
-
+    
         if (snapshotPriority.HasValue)
         {
             url += $"&priority={ToUrlQueryString(snapshotPriority.Value)}";
         }
-
+    
         if (!string.IsNullOrEmpty(snapshotChecksum))
         { 
             url+= $"&checksum={snapshotChecksum}";
         }
-
+    
         var result = await RecoverFromUploadedSnapshot(
             url,
             snapshotContent,
             cancellationToken);
-
+    
         return result;
     }
 }

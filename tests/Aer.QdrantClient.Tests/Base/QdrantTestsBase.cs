@@ -174,7 +174,9 @@ public class QdrantTestsBase
         var qdrantHttpClient = qdrantClient ?? ServiceProvider.GetRequiredService<QdrantHttpClient>();
 
         // We should delete all snapshots first, before deleting collections
+        await qdrantHttpClient.DeleteAllCollectionShardSnapshots(CancellationToken.None);
         await qdrantHttpClient.DeleteAllCollectionSnapshots(CancellationToken.None);
+        await qdrantHttpClient.DeleteAllStorageSnapshots(CancellationToken.None);
         
         try
         {

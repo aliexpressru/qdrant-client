@@ -455,6 +455,18 @@ public partial class QdrantHttpClient
             responseMessage,
             responseReader: async rm =>
             {
+                // Handle NotFound with empty content. This happens when making calls to non-existent Qdrant API endpoints
+                if (responseMessage.StatusCode == HttpStatusCode.NotFound
+                    && responseMessage.Content.Headers.ContentLength == 0)
+                {
+                    throw new QdrantCommunicationException(
+                        requestMessage.Method.ToString(),
+                        requestMessage.RequestUri?.ToString(),
+                        responseMessage.StatusCode,
+                        responseMessage.ReasonPhrase,
+                        string.Empty);
+                }
+
                 var resultString = await rm.Content.ReadAsStringAsync(cancellationToken);
 
                 var deserializedObject =
@@ -477,31 +489,18 @@ public partial class QdrantHttpClient
 
                     return badRequestResult;
                 }
-                catch (JsonException)
-                {
-                    // means that the response is a simple string
-                    var errorResponse = Activator.CreateInstance<TResponse>();
-
-                    errorResponse.Status = new QdrantStatus(QdrantOperationStatusType.Unknown)
-                    {
-                        Error = errorContent,
-                        RawStatusString = errorContent,
-                    };
-
-                    errorResponse.Time = -1;
-
-                    return errorResponse;
-                }
                 catch (Exception ex)
                 {
-                    // means that some unexpected error happened
+                    // means that the response is a simple string or some other unexpected error happened
                     var errorResponse = Activator.CreateInstance<TResponse>();
 
                     errorResponse.Status = new QdrantStatus(QdrantOperationStatusType.Unknown)
                     {
                         Error = errorContent,
                         RawStatusString = errorContent,
-                        Exception = ex
+                        Exception = ex is JsonException
+                            ? null
+                            : ex // do not set exception if it is a json exception
                     };
 
                     errorResponse.Time = -1;

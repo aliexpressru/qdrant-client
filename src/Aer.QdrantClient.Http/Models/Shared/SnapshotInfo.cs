@@ -12,22 +12,22 @@ public sealed class SnapshotInfo
     /// <summary>
     /// Snapshot name.
     /// </summary>
-    public string Name { set; get; }
+    public string Name { get; init; }
 
     /// <summary>
     /// Snapshot creation time. Usually <c>null</c> for now.
     /// </summary>
-    public string CreationTime { set; get; }
+    public string CreationTime { get; init; }
 
     /// <summary>
     /// Size in bytes.
     /// </summary>
-    public long Size { set; get; }
+    public long Size { get; init; }
     
     /// <summary>
     /// The snapshot checksum.
     /// </summary>
-    public string Checksum { set; get; }
+    public string Checksum { get; init; }
 
     /// <summary>
     /// Snapshot size in megabytes.
@@ -37,5 +37,5 @@ public sealed class SnapshotInfo
     /// <summary>
     /// The type of the snapshot - collection / shard / storage.
     /// </summary>
-    public SnapshotType SnapshotType { set; get; }
+    public SnapshotType SnapshotType { internal set; get; }
 }

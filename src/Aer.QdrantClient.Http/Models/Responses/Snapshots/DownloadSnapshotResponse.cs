@@ -38,12 +38,17 @@ public sealed class DownloadSnapshotResponse : QdrantResponseBase<DownloadSnapsh
         public double SnapshotSizeMegabytes => SnapshotSizeBytes / 1024.0 / 1024.0;
 
         /// <summary>
+        /// The type of the snapshot - collection / shard / storage.
+        /// </summary>
+        public SnapshotType SnapshotType { internal set; get; }
+
+        /// <summary>
         /// Initializes a new instance of <see cref="DownloadSnapshotUnit"/>
         /// </summary>
         /// <param name="snapshotName">The name of the snapshot file.</param>
         /// <param name="snapshotDataStream">The stream with binary snapshot data.</param>
         /// <param name="snapshotSizeBytes">The snapshot size in bytes.</param>
-        public DownloadSnapshotUnit(
+        internal DownloadSnapshotUnit(
             string snapshotName,
             Stream snapshotDataStream,
             long snapshotSizeBytes)
