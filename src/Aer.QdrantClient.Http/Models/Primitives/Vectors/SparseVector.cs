@@ -11,7 +11,7 @@ namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 /// Represents a sparse vector.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public sealed class SparseVector : VectorBase
+public sealed class SparseVector : VectorBase, IEquatable<VectorBase>, IEquatable<SparseVector>
 {
     /// <summary>
     /// Gets the positions of the non-zero values in the sparse vector.
@@ -137,14 +137,14 @@ public sealed class SparseVector : VectorBase
             }
 
             writer.Write(index);
-            
+
             indexNumber++;
         }
-        
+
         writer.Write("],");
 
         writer.Write("\"values\":[");
-        
+
         for (int i = 0; i < Values.Length; i++)
         {
             if (i > 0)
@@ -167,7 +167,7 @@ public sealed class SparseVector : VectorBase
         }
 
         writer.Write('{');
-        
+
         writer.Write(Indices.Count);
 
         writer.Write("\"indexes\":[");
@@ -186,7 +186,7 @@ public sealed class SparseVector : VectorBase
         }
 
         writer.Write("],");
-        
+
         writer.Write(Values.Length);
 
         writer.Write("\"values\":[");
@@ -220,7 +220,7 @@ public sealed class SparseVector : VectorBase
 
         int indicesCount = reader.ReadInt32();
         var indices = new uint[indicesCount];
-        
+
         // "indexes":[
         reader.ReadString();
 
@@ -259,5 +259,72 @@ public sealed class SparseVector : VectorBase
         reader.ReadString();
 
         return new SparseVector(indices, values);
+    }
+
+    /// <inheritdoc/>
+    public override bool Equals(VectorBase other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        return other is SparseVector otherSparse && Equals(otherSparse);
+    }
+
+    /// <inheritdoc/>
+    public override bool Equals(object obj)
+    {
+        if (obj is null)
+        {
+            return false;
+        }
+
+        return ReferenceEquals(this, obj)
+            || (obj is SparseVector other && Equals(other));
+    }
+
+    /// <inheritdoc/>
+    public bool Equals(SparseVector other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        return ReferenceEquals(this, other)
+            || (
+                Indices.SequenceEqual(other.Indices, EqualityComparer<uint>.Default)
+                && Values.SequenceEqual(other.Values, EqualityComparer<float>.Default)
+            );
+    }
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+    {
+        if((Indices == null && Values == null)
+           || (Indices!.Count == 0 && Values.Length == 0))
+        {
+            return 0;
+        }               
+        
+        HashCode hashCode = new HashCode();
+        
+        foreach (var index in Indices)
+        {
+            hashCode.Add(index);
+        }
+        
+        foreach (var value in Values)
+        {
+            hashCode.Add(value);
+        }
+        
+        return hashCode.ToHashCode();
     }
 }
