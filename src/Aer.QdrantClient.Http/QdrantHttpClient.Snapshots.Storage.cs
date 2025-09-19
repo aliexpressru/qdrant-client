@@ -1,10 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Models.Requests;
 
 #if  NETSTANDARD2_0
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 #endif
 
 using Aer.QdrantClient.Http.Models.Responses;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http;
 
@@ -92,5 +94,72 @@ public partial class QdrantHttpClient
             retryCount: 0);
 
         return response;
+    }
+    
+    /// <summary>
+    /// Recover the whole storage data from a possibly remote snapshot.
+    /// </summary>
+    /// <param name="snapshotLocationUri">The snapshot location in URI format. Can be either a URL or a <c>file:///</c> path.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
+    /// <param name="snapshotPriority">Defines which data should be used as a source of truth if there are other replicas in the cluster.</param>
+    /// <param name="snapshotChecksum">Optional SHA256 checksum to verify snapshot integrity before recovery.</param>
+    public async Task<DefaultOperationResponse> RecoverStorageFromSnapshot(
+        Uri snapshotLocationUri,
+        CancellationToken cancellationToken,
+        bool isWaitForResult = true,
+        SnapshotPriority? snapshotPriority = null,
+        string snapshotChecksum = null)
+    {
+        var url =
+            $"/snapshots/recover?wait={ToUrlQueryString(isWaitForResult)}";
+
+        var request = new RecoverEntityFromSnapshotRequest(snapshotLocationUri, snapshotPriority, snapshotChecksum);
+        
+        var response = await ExecuteRequest<RecoverEntityFromSnapshotRequest, DefaultOperationResponse>(
+            url,
+            HttpMethod.Put,
+            request,
+            cancellationToken,
+            retryCount: 0);
+
+        return response;
+    }
+
+    /// <summary>
+    /// Recover the whole storage from an uploaded snapshot.
+    /// </summary>
+    /// <param name="snapshotContent">The snapshot content stream.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
+    /// <param name="snapshotPriority">Defines which data should be used as a source of truth if there are other replicas in the cluster.</param>
+    /// <param name="snapshotChecksum">Optional SHA256 checksum to verify snapshot integrity before recovery.</param>
+    public async Task<DefaultOperationResponse> RecoverStorageFromUploadedSnapshot(
+        Stream snapshotContent,
+        CancellationToken cancellationToken,
+        bool isWaitForResult = true,
+        SnapshotPriority? snapshotPriority = null,
+        string snapshotChecksum = null
+    )
+    {
+        var url =
+            $"//snapshots/upload?wait={ToUrlQueryString(isWaitForResult)}";
+
+        if (snapshotPriority.HasValue)
+        {
+            url += $"&priority={ToUrlQueryString(snapshotPriority.Value)}";
+        }
+
+        if (!string.IsNullOrEmpty(snapshotChecksum))
+        { 
+            url+= $"&checksum={snapshotChecksum}";
+        }
+
+        var result = await RecoverFromUploadedSnapshot(
+            url,
+            snapshotContent,
+            cancellationToken);
+
+        return result;
     }
 }
