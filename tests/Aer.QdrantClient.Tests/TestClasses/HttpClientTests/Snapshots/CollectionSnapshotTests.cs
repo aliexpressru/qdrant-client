@@ -321,6 +321,36 @@ public class CollectionSnapshotTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task RecoverFromDeletedSnapshot()
+    {
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+
+        var createSnapshotResult =
+            (await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None))
+            .EnsureSuccess();
+        
+        // delete snapshot
+        
+        (await _qdrantHttpClient.DeleteCollectionSnapshot(
+            TestCollectionName,
+            createSnapshotResult.Name,
+            CancellationToken.None)).EnsureSuccess();
+        
+        // Recover collection from deleted snapshot
+
+        var recoverCollectionResult = await _qdrantHttpClient.RecoverCollectionFromSnapshot(
+            TestCollectionName,
+            createSnapshotResult.Name,
+            CancellationToken.None,
+            isWaitForResult: true,
+            SnapshotPriority.Snapshot,
+            snapshotChecksum: createSnapshotResult.Checksum);
+
+        recoverCollectionResult.Status.IsSuccess.Should().BeFalse();
+        recoverCollectionResult.Status.Error.Should().ContainAll("Snapshot file", createSnapshotResult.Name, "does not exist");
+    }
+
+    [Test]
     public async Task RecoverFromSnapshot()
     {
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
