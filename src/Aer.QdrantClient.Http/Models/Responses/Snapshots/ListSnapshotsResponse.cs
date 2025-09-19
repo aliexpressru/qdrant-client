@@ -9,4 +9,14 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public sealed class ListSnapshotsResponse : QdrantResponseBase<SnapshotInfo[]>
-{ }
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ListSnapshotsResponse"/> class.
+    /// </summary>
+    [SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "For deserialization purposes")]
+    public ListSnapshotsResponse()
+    { }
+
+    internal ListSnapshotsResponse(QdrantResponseBase childResponse) : base(childResponse)
+    { }
+}

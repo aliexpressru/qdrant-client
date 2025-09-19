@@ -105,7 +105,7 @@ public partial class QdrantHttpClient
         {
             Result = collectionInfos,
             Status = QdrantStatus.Success(),
-            Time = sw.Elapsed.TotalMinutes
+            Time = sw.Elapsed.TotalSeconds
         };
 
         return ret;
@@ -117,14 +117,9 @@ public partial class QdrantHttpClient
     /// </summary>
     /// <param name="collectionName">Collection name to create indexes for.</param>
     /// <param name="payloadIndexes">Collection payload index definitions that describe payload indexes to create after the HNSW index creation has been successfully issued.</param>
-    /// <param name="collectionIndexingThreshold">
-    /// Optional Maximum size (in KiloBytes) of vectors allowed for plain index.
-    /// If not set the default value of 10000 is used.
-    /// </param>
     public void StartCreatingCollectionPayloadIndexes(
         string collectionName,
-        ICollection<CollectionPayloadIndexDefinition> payloadIndexes,
-        uint? collectionIndexingThreshold = null)
+        ICollection<CollectionPayloadIndexDefinition> payloadIndexes)
     {
         Task.Run(async () => {
             try

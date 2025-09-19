@@ -7,7 +7,7 @@ namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 /// Represents a base class for all vector types.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public abstract class VectorBase
+public abstract class VectorBase : IEquatable<VectorBase>
 {
     /// <summary>
     /// The special default vector name.
@@ -251,5 +251,18 @@ public abstract class VectorBase
                 Vectors = multiVectorComponentVectors
             };
 
+    #endregion
+
+    #region Equality members
+
+    /// <inheritdoc/>
+    public abstract bool Equals(VectorBase other);
+
+    /// <inheritdoc/>
+    public abstract override bool Equals(object obj);
+
+    /// <inheritdoc/>
+    public abstract override int GetHashCode();   
+    
     #endregion
 }

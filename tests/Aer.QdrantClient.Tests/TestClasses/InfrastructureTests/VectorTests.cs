@@ -380,8 +380,116 @@ internal class VectorTests : QdrantTestsBase
             """);
     }
 
+    [Test]
+    public void VectorEqualityMembers()
+    {
+        DenseVector denseVector = new DenseVector()
+        {
+            VectorValues = [1, 2, 3]
+        };
+
+        DenseVector denseVectorEqual = new DenseVector()
+        {
+            VectorValues = [1, 2, 3]
+        };
+
+        DenseVector denseVectorNotEqual = new DenseVector()
+        {
+            VectorValues = [3, 4, 5]
+        };
+
+        SparseVector sparseVector = new SparseVector(new[] {1U, 2U, 3U}, [1, 2, 3]);
+        SparseVector sparseVectorEqual = new SparseVector(new[] {1U, 2U, 3U}, [1, 2, 3]);
+        SparseVector sparseVectorNotEqual = new SparseVector(new[] {1U, 2U, 3U}, [3, 4, 5]);
+
+        MultiVector multivector = new MultiVector()
+        {
+            Vectors = [[1, 2, 3], [4, 5, 6]]
+        };
+
+        MultiVector multivectorEqual = new MultiVector()
+        {
+            Vectors = [[1, 2, 3], [4, 5, 6]]
+        };
+
+        MultiVector multivectorNotEqual = new MultiVector()
+        {
+            Vectors = [[1, 2, 3], [7, 8, 9]]
+        };
+
+        NamedVectors namedVectors = new NamedVectors()
+        {
+            Vectors = new Dictionary<string, VectorBase>()
+            {
+                ["vec1"] = denseVector,
+                ["vec2"] = sparseVector,
+                ["vec3"] = multivector
+            }
+        };
+
+        NamedVectors namedVectorsEqual = new NamedVectors()
+        {
+            Vectors = new Dictionary<string, VectorBase>()
+            {
+                ["vec1"] = denseVectorEqual,
+                ["vec2"] = sparseVectorEqual,
+                ["vec3"] = multivectorEqual
+            }
+        };
+
+        NamedVectors namedVectorsNotEqual = new NamedVectors()
+        {
+            Vectors = new Dictionary<string, VectorBase>()
+            {
+                ["vec1"] = denseVectorNotEqual,
+                ["vec2"] = sparseVectorNotEqual,
+                ["vec3"] = multivectorNotEqual
+            }
+        };
+
+        denseVector.Equals(denseVector).Should().BeTrue();
+        denseVector.Equals(denseVectorEqual).Should().BeTrue();
+        denseVector.Equals(denseVectorNotEqual).Should().BeFalse();
+        denseVector.Equals((VectorBase) denseVectorEqual).Should().BeTrue();
+        denseVector.Equals((VectorBase) denseVectorNotEqual).Should().BeFalse();
+        denseVector.Equals((object) denseVectorEqual).Should().BeTrue();
+        denseVector.Equals((object) denseVectorNotEqual).Should().BeFalse();
+
+        denseVector.GetHashCode().Should().Be(denseVectorEqual.GetHashCode());
+
+        sparseVector.Equals(sparseVector).Should().BeTrue();
+        sparseVector.Equals(sparseVectorEqual).Should().BeTrue();
+        sparseVector.Equals(sparseVectorNotEqual).Should().BeFalse();
+        sparseVector.Equals((VectorBase) sparseVectorEqual).Should().BeTrue();
+        sparseVector.Equals((VectorBase) sparseVectorNotEqual).Should().BeFalse();
+        sparseVector.Equals((object) sparseVectorEqual).Should().BeTrue();
+        sparseVector.Equals((object) sparseVectorNotEqual).Should().BeFalse();
+
+        sparseVector.GetHashCode().Should().Be(sparseVectorEqual.GetHashCode());
+
+        multivector.Equals(multivector).Should().BeTrue();
+        multivector.Equals(multivectorEqual).Should().BeTrue();
+        multivector.Equals(multivectorNotEqual).Should().BeFalse();
+        multivector.Equals((VectorBase) multivectorEqual).Should().BeTrue();
+        multivector.Equals((VectorBase) multivectorNotEqual).Should().BeFalse();
+        multivector.Equals((object) multivectorEqual).Should().BeTrue();
+        multivector.Equals((object) multivectorNotEqual).Should().BeFalse();
+
+        multivector.GetHashCode().Should().Be(multivectorEqual.GetHashCode());
+
+        namedVectors.Equals(namedVectors).Should().BeTrue();
+        namedVectors.Equals(namedVectorsEqual).Should().BeTrue();
+        namedVectors.Equals(namedVectorsNotEqual).Should().BeFalse();
+        namedVectors.Equals((VectorBase) namedVectorsEqual).Should().BeTrue();
+        namedVectors.Equals((VectorBase) namedVectorsNotEqual).Should().BeFalse();
+        namedVectors.Equals((object) namedVectorsEqual).Should().BeTrue();
+        namedVectors.Equals((object) namedVectorsNotEqual).Should().BeFalse();
+
+        namedVectors.GetHashCode().Should().Be(namedVectorsEqual.GetHashCode());
+    }
+
     private void AssertVectorStreamsContainsString(VectorBase vector, string expectedString)
-    { 
+    {
         // String stream representation
         using MemoryStream ms = new();
         using StreamWriter sw = new(ms);
@@ -394,20 +502,20 @@ internal class VectorTests : QdrantTestsBase
         var vectorString = sr.ReadToEnd();
 
         vectorString.AssertSameString(expectedString);
-        
+
         // Since we don't have methods to read 
-        
+
         using MemoryStream msBinary = new();
         using BinaryWriter bw = new(msBinary);
-        
+
         vector.WriteToStream(bw);
         bw.Flush();
         msBinary.Position = 0;
-        
+
         using BinaryReader br = new(msBinary);
-        
+
         VectorBase vb = VectorBase.ReadFromStream(vector.VectorKind, br);
-        
+
         var vectorStringFromBinary = vb.ToString();
         vectorStringFromBinary.AssertSameString(expectedString);
     }

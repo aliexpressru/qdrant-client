@@ -38,12 +38,17 @@ public sealed class DownloadSnapshotResponse : QdrantResponseBase<DownloadSnapsh
         public double SnapshotSizeMegabytes => SnapshotSizeBytes / 1024.0 / 1024.0;
 
         /// <summary>
+        /// The type of the snapshot - collection / shard / storage.
+        /// </summary>
+        public SnapshotType SnapshotType { internal set; get; }
+
+        /// <summary>
         /// Initializes a new instance of <see cref="DownloadSnapshotUnit"/>
         /// </summary>
         /// <param name="snapshotName">The name of the snapshot file.</param>
         /// <param name="snapshotDataStream">The stream with binary snapshot data.</param>
         /// <param name="snapshotSizeBytes">The snapshot size in bytes.</param>
-        public DownloadSnapshotUnit(
+        internal DownloadSnapshotUnit(
             string snapshotName,
             Stream snapshotDataStream,
             long snapshotSizeBytes)
@@ -63,19 +68,22 @@ public sealed class DownloadSnapshotResponse : QdrantResponseBase<DownloadSnapsh
     /// <param name="snapshotDataStream">The snapshot data stream.</param>
     /// <param name="snapshotSizeBytes">The snapshot length in bytes.</param>
     /// <param name="qdrantOperationStatus">The download snapshot qdrant operation status.</param>
-    public DownloadSnapshotResponse(
+    /// <param name="qdrantOperationTime">The download snapshot time.</param>
+    internal DownloadSnapshotResponse(
         string snapshotName,
         Stream snapshotDataStream,
         long snapshotSizeBytes,
-        QdrantStatus qdrantOperationStatus)
+        QdrantStatus qdrantOperationStatus,
+        TimeSpan qdrantOperationTime)
     {
-        Result = snapshotDataStream is not null
-            ? new DownloadSnapshotUnit(
-                snapshotName,
-                snapshotDataStream,
-                snapshotSizeBytes)
-            : null;
+        Result = new DownloadSnapshotUnit(
+            snapshotName,
+            snapshotDataStream,
+            snapshotSizeBytes
+        );
 
         Status = qdrantOperationStatus;
+        Time = qdrantOperationTime.TotalSeconds;
+        Usage = UsageReport.Empty;
     }
 }

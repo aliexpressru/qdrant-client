@@ -8,7 +8,7 @@ namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 /// Represents a dense vector.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public sealed class DenseVector : VectorBase
+public sealed class DenseVector : VectorBase, IEquatable<VectorBase>, IEquatable<DenseVector>
 {
     /// <summary>
     /// The vector values array.
@@ -122,5 +122,63 @@ public sealed class DenseVector : VectorBase
         reader.ReadString();
 
         return new DenseVector() {VectorValues = values};
+    }
+
+    /// <inheritdoc/>
+    public override bool Equals(VectorBase other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+        
+        return other is DenseVector denseVector && Equals(denseVector);
+    }
+
+    /// <inheritdoc/>
+    public override bool Equals(object obj)
+    {
+        if (obj is null)
+        {
+            return false;
+        }
+        
+        return ReferenceEquals(this, obj) 
+            || (obj is DenseVector denseVector && Equals(denseVector));
+    }
+
+    /// <inheritdoc/>
+    public bool Equals(DenseVector other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        return ReferenceEquals(this, other)
+            || VectorValues.SequenceEqual(other.VectorValues, EqualityComparer<float>.Default);
+    }
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+    {
+        if (VectorValues is null or {Length: 0})
+        {
+            return 0;
+        }
+        
+        HashCode hashCode = new HashCode();
+        
+        foreach (var value in VectorValues)
+        {
+            hashCode.Add(value);
+        }
+        
+        return hashCode.ToHashCode();
     }
 }
