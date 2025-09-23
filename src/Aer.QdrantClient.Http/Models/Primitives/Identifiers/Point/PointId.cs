@@ -24,54 +24,56 @@ public abstract class PointId : IEquatable<PointId>
     /// </summary>
     public abstract Guid AsGuid();
 
-    /// <summary>
-    /// Gets the current PointId identifier value as string.
-    /// </summary>
-    public abstract string AsString();
-
     #region Opeartors
+
+    /// <summary>
+    /// Performs an implicit conversion from <see cref="long"/> to <see cref="PointId"/>.
+    /// </summary>
+    /// <param name="id">The identifier value.</param>
+    public static implicit operator PointId(long id) => Integer(id);
 
     /// <summary>
     /// Performs an implicit conversion from <see cref="ulong"/> to <see cref="PointId"/>.
     /// </summary>
     /// <param name="id">The identifier value.</param>
-    public static implicit operator PointId(ulong id)
-    {
-        return Integer(id);
-    }
+    public static implicit operator PointId(ulong id) => Integer(id);
 
     /// <summary>
     /// Performs an implicit conversion from <see cref="int"/> to <see cref="PointId"/>.
     /// </summary>
     /// <param name="id">The identifier value.</param>
-    public static implicit operator PointId(int id)
-    {
-        return Integer(id);
-    }
+    public static implicit operator PointId(int id) => Integer(id);
+
+    /// <summary>
+    /// Performs an implicit conversion from <see cref="uint"/> to <see cref="PointId"/>.
+    /// </summary>
+    /// <param name="id">The identifier value.</param>
+    public static implicit operator PointId(uint id) => Integer(id);
 
     /// <summary>
     /// Performs an implicit conversion from <see cref="System.Guid"/> to <see cref="PointId"/>.
     /// </summary>
     /// <param name="id">The identifier value.</param>
-    public static implicit operator PointId(Guid id)
-    {
-        return Guid(id);
-    }
-
+    public static implicit operator PointId(Guid id) => Guid(id);
     #endregion
 
     #region Factory methods
-
     /// <summary>
     /// Creates a point id from the provided <paramref name="pointId"/> value.
-    /// Id <paramref name="pointId"/> is null - creates a new point id with random guid.
+    /// By default, if <paramref name="pointId"/> is <c>null</c> - creates a new point id with random guid.
+    /// This can be overridden by setting <paramref name="defaultOnNull"/> to <c>false</c>, which will throw instead.
     /// </summary>
     /// <param name="pointId">The value to create point id from.</param>
-    /// <exception cref="QdrantPointIdConversionException">Occurs if provided value can't be used as point id.</exception>
-    public static PointId Create(object pointId) =>
+    /// <param name="defaultOnNull">
+    /// If set to <c>true</c> returns default point id - random Guid when <paramref name="pointId"/> is null.
+    /// If set to <c>false</c> - throws <see cref="QdrantInvalidPointIdException"/>.
+    /// </param>
+    /// <exception cref="QdrantInvalidPointIdException">Occurs if provided value can't be used as point id.</exception>
+    public static PointId Create(object pointId, bool defaultOnNull = true) =>
         pointId switch
         {
-            null => NewGuid(),
+            null when defaultOnNull => NewGuid(),
+            null => throw new QdrantInvalidPointIdException(null),
             ulong ulongId => Integer(ulongId),
             uint uintId => Integer(uintId),
             int intId => Integer(intId),
@@ -234,4 +236,19 @@ public abstract class PointId : IEquatable<PointId>
     public override int GetHashCode() => GetHashCodeCore();
 
     #endregion
+
+    /// <summary>
+    /// Gets the string representation of the current PointId identifier value optionally specifying point id type.
+    /// </summary>
+    /// <param name="includeTypeInfo">If set to <c>true</c>, includes the point id type info string prefix in the resulting value.</param>
+    /// <returns>String representing this point identifier.</returns>
+    /// <exception cref="InvalidOperationException">Occurs when point id is of an unknown type.</exception>
+    public abstract string ToString(bool includeTypeInfo);
+    
+    /// <summary>
+    /// Gets the string representation of the current PointId identifier value.
+    /// </summary>
+    /// <returns>String representing this point identifier.</returns>
+    /// <exception cref="InvalidOperationException">Occurs when point id is of an unknown type.</exception>
+    public abstract override string ToString();
 }
