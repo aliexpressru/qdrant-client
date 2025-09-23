@@ -1,17 +1,12 @@
 ﻿using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Models.Requests.Public;
+using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
-using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots;
 
-// Replace attribute when shard snapshot api will be functional
-// [Ignore("Since snapshot has a minimal size of roughly 100MB these tests are time-consuming"
-// +" and we only run these tests on local machine, not in CI")]
-// [Ignore("Shard snapshot API seems to be buggy, so we skip testing it altogether")]
-[Ignore("WiP on Snapshot API support")]
-public class ShardSnapshotTests : QdrantTestsBase
+public class ShardSnapshotTests : SnapshotTestsBase
 {
     // NOTE: since we don't have a cluster in test and thus have only one shard
     // these tests basically repeat the tests from CollectionSnapshotTests but using shard methods
@@ -120,6 +115,7 @@ public class ShardSnapshotTests : QdrantTestsBase
         createSnapshotResult.Result.Name.Should().Contain(TestCollectionName);
         createSnapshotResult.Result.Size.Should().BeGreaterThan(0);
         createSnapshotResult.Result.SizeMegabytes.Should().BeGreaterThan(0);
+        createSnapshotResult.Result.SnapshotType.Should().Be(SnapshotType.Shard);
     }
 
     [Test]
@@ -129,34 +125,36 @@ public class ShardSnapshotTests : QdrantTestsBase
 
         // create first snapshot
 
-        var createSnapshotResult = await _qdrantHttpClient.CreateShardSnapshot(
+        var createSnapshotResult = (await _qdrantHttpClient.CreateShardSnapshot(
             TestCollectionName,
             SINGLE_SHARD_ID,
-            CancellationToken.None);
+            CancellationToken.None)).EnsureSuccess();
 
         var listSnapshotsResult = await _qdrantHttpClient.ListShardSnapshots(
             TestCollectionName,
             SINGLE_SHARD_ID,
             CancellationToken.None);
 
-        createSnapshotResult.EnsureSuccess();
-
         listSnapshotsResult.Status.IsSuccess.Should().BeTrue();
 
         listSnapshotsResult.Result.Length.Should().Be(1); // one snapshot created
 
-        listSnapshotsResult.Result.Single().Name.Should().Be(createSnapshotResult.Result.Name);
-        listSnapshotsResult.Result.Single().Size.Should().Be(createSnapshotResult.Result.Size);
+        listSnapshotsResult.Result.Single().Name.Should().Be(createSnapshotResult.Name);
+        listSnapshotsResult.Result.Single().Size.Should().Be(createSnapshotResult.Size);
+        listSnapshotsResult.Result.Single().SnapshotType.Should().Be(SnapshotType.Shard);
 
+        // If requesting to create snapshot in less than a second after the previous one
+        // Qdrant will just return the first snapshot info again instead of creating a new one
+        // so we need to wait a bit to ensure that creation time will be different
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        
         // create second snapshot
 
         var createSecondSnapshotResult =
-            await _qdrantHttpClient.CreateShardSnapshot(
+            (await _qdrantHttpClient.CreateShardSnapshot(
                 TestCollectionName,
                 SINGLE_SHARD_ID,
-                CancellationToken.None);
-
-        createSecondSnapshotResult.EnsureSuccess();
+                CancellationToken.None)).EnsureSuccess();
 
         listSnapshotsResult = await _qdrantHttpClient.ListShardSnapshots(
             TestCollectionName,
@@ -166,10 +164,13 @@ public class ShardSnapshotTests : QdrantTestsBase
         listSnapshotsResult.Status.IsSuccess.Should().BeTrue();
         listSnapshotsResult.Result.Length.Should().Be(2); // two snapshots so far
 
-        var newSnapshot = listSnapshotsResult.Result.Single(n => n.Name != createSnapshotResult.Result.Name);
+        var newSnapshotInfo = listSnapshotsResult.Result.Single(n => n.Name != createSnapshotResult.Name);
 
-        newSnapshot.Name.Should().Be(createSecondSnapshotResult.Result.Name);
-        newSnapshot.Size.Should().Be(createSecondSnapshotResult.Result.Size);
+        newSnapshotInfo.Name.Should().Be(createSecondSnapshotResult.Name);
+        newSnapshotInfo.Size.Should().Be(createSecondSnapshotResult.Size);
+        newSnapshotInfo.Checksum.Should().Be(createSecondSnapshotResult.Checksum);
+        newSnapshotInfo.CreationTime.Should().Be(createSecondSnapshotResult.CreationTime);
+        newSnapshotInfo.SnapshotType.Should().Be(SnapshotType.Shard);
     }
 
     [Test]
@@ -179,86 +180,75 @@ public class ShardSnapshotTests : QdrantTestsBase
 
         // create first snapshot
 
-        var createSnapshotResult = await _qdrantHttpClient.CreateShardSnapshot(
+        var createSnapshotResult = (await _qdrantHttpClient.CreateShardSnapshot(
             TestCollectionName,
             SINGLE_SHARD_ID,
-            CancellationToken.None);
+            CancellationToken.None)).EnsureSuccess();
 
-        var listSnapshotsResult = await _qdrantHttpClient.ListShardSnapshots(
+        var listSnapshotsResult = (await _qdrantHttpClient.ListShardSnapshots(
             TestCollectionName,
             SINGLE_SHARD_ID,
-            CancellationToken.None);
+            CancellationToken.None)).EnsureSuccess();
 
-        createSnapshotResult.EnsureSuccess();
-        listSnapshotsResult.EnsureSuccess();
-
-        listSnapshotsResult.Result.Length.Should().Be(1);
+        listSnapshotsResult.Length.Should().Be(1);
 
         var deleteSnapshotResult =
             await _qdrantHttpClient.DeleteShardSnapshot(
                 TestCollectionName,
                 SINGLE_SHARD_ID,
-                createSnapshotResult.Result.Name,
+                createSnapshotResult.Name,
                 CancellationToken.None);
 
         deleteSnapshotResult.Status.IsSuccess.Should().BeTrue();
         deleteSnapshotResult.Result.Should().BeTrue();
 
-        listSnapshotsResult = await _qdrantHttpClient.ListShardSnapshots(
+        listSnapshotsResult = (await _qdrantHttpClient.ListShardSnapshots(
             TestCollectionName,
             SINGLE_SHARD_ID,
-            CancellationToken.None);
+            CancellationToken.None)).EnsureSuccess();
 
-        listSnapshotsResult.EnsureSuccess();
-
-        listSnapshotsResult.Result.Length.Should().Be(0);
+        listSnapshotsResult.Length.Should().Be(0);
 
         // create two snapshots and delete one
 
         var createFirstSnapshotResult =
-            await _qdrantHttpClient.CreateShardSnapshot(
+            (await _qdrantHttpClient.CreateShardSnapshot(
                 TestCollectionName,
                 SINGLE_SHARD_ID,
-                CancellationToken.None);
+                CancellationToken.None)).EnsureSuccess();
+        
+        await Task.Delay(TimeSpan.FromSeconds(1));
 
         var createSecondSnapshotResult =
-            await _qdrantHttpClient.CreateShardSnapshot(
+            (await _qdrantHttpClient.CreateShardSnapshot(
                 TestCollectionName,
                 SINGLE_SHARD_ID,
-                CancellationToken.None);
+                CancellationToken.None)).EnsureSuccess();
 
-        createFirstSnapshotResult.EnsureSuccess();
-        createSecondSnapshotResult.EnsureSuccess();
-
-        listSnapshotsResult = await _qdrantHttpClient.ListShardSnapshots(
+        listSnapshotsResult = (await _qdrantHttpClient.ListShardSnapshots(
             TestCollectionName,
             SINGLE_SHARD_ID,
-            CancellationToken.None);
+            CancellationToken.None)).EnsureSuccess();
 
-        listSnapshotsResult.EnsureSuccess();
-
-        listSnapshotsResult.Result.Length.Should().Be(2);
+        listSnapshotsResult.Length.Should().Be(2);
 
         deleteSnapshotResult =
             await _qdrantHttpClient.DeleteShardSnapshot(
                 TestCollectionName,
                 SINGLE_SHARD_ID,
-                createFirstSnapshotResult.Result.Name,
+                createFirstSnapshotResult.Name,
                 CancellationToken.None);
 
         deleteSnapshotResult.Status.IsSuccess.Should().BeTrue();
         deleteSnapshotResult.Result.Should().BeTrue();
 
-        listSnapshotsResult = await _qdrantHttpClient.ListShardSnapshots(
+        listSnapshotsResult = (await _qdrantHttpClient.ListShardSnapshots(
             TestCollectionName,
             SINGLE_SHARD_ID,
-            CancellationToken.None);
+            CancellationToken.None)).EnsureSuccess();
 
-        listSnapshotsResult.EnsureSuccess();
-
-        listSnapshotsResult.Result.Length.Should().Be(1);
-
-        listSnapshotsResult.Result.Single().Name.Should().Be(createSecondSnapshotResult.Result.Name);
+        listSnapshotsResult.Length.Should().Be(1);
+        listSnapshotsResult.Single().Name.Should().Be(createSecondSnapshotResult.Name);
     }
 
     [Test]
@@ -266,44 +256,49 @@ public class ShardSnapshotTests : QdrantTestsBase
     {
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
-        var createSnapshotResult = await _qdrantHttpClient.CreateShardSnapshot(
+        var createSnapshotResult = (await _qdrantHttpClient.CreateShardSnapshot(
             TestCollectionName,
             SINGLE_SHARD_ID,
-            CancellationToken.None);
-
-        createSnapshotResult.EnsureSuccess();
+            CancellationToken.None)).EnsureSuccess();
 
         var downloadSnapshotResponse = await _qdrantHttpClient.DownloadShardSnapshot(
             TestCollectionName,
             SINGLE_SHARD_ID,
-            createSnapshotResult.Result.Name,
+            createSnapshotResult.Name,
             CancellationToken.None);
 
         downloadSnapshotResponse.Status.IsSuccess.Should().BeTrue();
-        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Result.Size);
+        downloadSnapshotResponse.Result.SnapshotName.Should().Be(createSnapshotResult.Name);
+        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Size);
+
+        downloadSnapshotResponse.Result.SnapshotDataStream.Should().NotBeNull();
+
+        downloadSnapshotResponse.Result.SnapshotType.Should().Be(SnapshotType.Shard);
+
+        await AssertSnapshotActualSize(downloadSnapshotResponse.Result.SnapshotDataStream, createSnapshotResult.Size);
     }
 
     [Test]
     public async Task DownloadSnapshot_AfterCollectionIsDeleted()
     {
+        // This test proves that deleting collection does not delete snapshots (which is fair enough)!
+        // And if we create collection with the same name again we will be able to download previous snapshot
+        
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
-        var createSnapshotResult = await _qdrantHttpClient.CreateShardSnapshot(
+        var createSnapshotResult = (await _qdrantHttpClient.CreateShardSnapshot(
             TestCollectionName,
             SINGLE_SHARD_ID,
-            CancellationToken.None);
+            CancellationToken.None)).EnsureSuccess();
 
-        createSnapshotResult.EnsureSuccess();
-
-        var deleteCollectionResult = await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None);
-        deleteCollectionResult.EnsureSuccess();
+        (await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None)).EnsureSuccess();
 
         // after explicit collection delete the snapshot download will not be accessible with message saying that the collection does not exist
 
         var downloadSnapshotResponse = await _qdrantHttpClient.DownloadShardSnapshot(
             TestCollectionName,
             SINGLE_SHARD_ID,
-            createSnapshotResult.Result.Name,
+            createSnapshotResult.Name,
             CancellationToken.None);
 
         downloadSnapshotResponse.Status.IsSuccess.Should().BeFalse();
@@ -322,11 +317,54 @@ public class ShardSnapshotTests : QdrantTestsBase
         downloadSnapshotResponse = await _qdrantHttpClient.DownloadShardSnapshot(
             TestCollectionName,
             SINGLE_SHARD_ID,
-            createSnapshotResult.Result.Name,
+            createSnapshotResult.Name,
             CancellationToken.None);
 
         downloadSnapshotResponse.Status.IsSuccess.Should().BeTrue();
-        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Result.Size);
+
+        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Size);
+        downloadSnapshotResponse.Result.SnapshotName.Should().Be(createSnapshotResult.Name);
+        downloadSnapshotResponse.Result.SnapshotDataStream.Should().NotBeNull();
+
+        await AssertSnapshotActualSize(downloadSnapshotResponse.Result.SnapshotDataStream, createSnapshotResult.Size);
+    }
+
+    [Test]
+    public async Task RecoverFromDeletedSnapshot()
+    {
+        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+
+        var createSnapshotResult =
+            (await _qdrantHttpClient.CreateShardSnapshot(
+                TestCollectionName,
+                SINGLE_SHARD_ID,
+                CancellationToken.None))
+            .EnsureSuccess();
+
+        // delete snapshot
+
+        (await _qdrantHttpClient.DeleteShardSnapshot(
+            TestCollectionName,
+            SINGLE_SHARD_ID,
+            createSnapshotResult.Name,
+            CancellationToken.None)).EnsureSuccess();
+
+        // Recover shard from deleted snapshot
+
+        var recoverCollectionResult = await _qdrantHttpClient.RecoverShardFromSnapshot(
+            TestCollectionName,
+            SINGLE_SHARD_ID,
+            createSnapshotResult.Name,
+            CancellationToken.None,
+            isWaitForResult: true,
+            SnapshotPriority.Snapshot,
+            snapshotChecksum: createSnapshotResult.Checksum);
+
+        recoverCollectionResult.Status.IsSuccess.Should().BeFalse();
+        recoverCollectionResult.Status.Error.Should().ContainAll(
+            "Snapshot file",
+            createSnapshotResult.Name,
+            "does not exist");
     }
 
     [Test]
@@ -334,31 +372,24 @@ public class ShardSnapshotTests : QdrantTestsBase
     {
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
-        var createSnapshotResult = await _qdrantHttpClient.CreateShardSnapshot(
+        var createSnapshotResult = (await _qdrantHttpClient.CreateShardSnapshot(
             TestCollectionName,
             SINGLE_SHARD_ID,
-            CancellationToken.None);
-
-        createSnapshotResult.EnsureSuccess();
+            CancellationToken.None)).EnsureSuccess();
 
         // delete collection
 
-        var deleteCollectionResponse = await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None);
+        (await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None)).EnsureSuccess();
 
-        deleteCollectionResponse.EnsureSuccess();
-
-        var listCollectionsResult = await _qdrantHttpClient.ListCollections(CancellationToken.None);
-
-        listCollectionsResult.EnsureSuccess();
-
-        listCollectionsResult.Result.Collections.Length.Should().Be(0);
+        var listCollectionsResult = (await _qdrantHttpClient.ListCollections(CancellationToken.None)).EnsureSuccess();
+        listCollectionsResult.Collections.Length.Should().Be(0);
 
         // recover collection from local snapshot
 
         var recoverCollectionResult = await _qdrantHttpClient.RecoverShardFromSnapshot(
             TestCollectionName,
             SINGLE_SHARD_ID,
-            createSnapshotResult.Result.Name,
+            createSnapshotResult.Name,
             CancellationToken.None);
 
         recoverCollectionResult.Status.IsSuccess.Should().BeTrue();
@@ -366,11 +397,10 @@ public class ShardSnapshotTests : QdrantTestsBase
 
         // check collection recovered
 
-        listCollectionsResult = await _qdrantHttpClient.ListCollections(CancellationToken.None);
+        listCollectionsResult = (await _qdrantHttpClient.ListCollections(CancellationToken.None)).EnsureSuccess();
 
-        listCollectionsResult.EnsureSuccess();
-
-        listCollectionsResult.Result.Collections.Length.Should().Be(1);
+        listCollectionsResult.Collections.Length.Should().Be(1);
+        listCollectionsResult.Collections[0].Name.Should().Be(TestCollectionName);
     }
 
     [Test]
@@ -378,35 +408,32 @@ public class ShardSnapshotTests : QdrantTestsBase
     {
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
-        var createSnapshotResult = await _qdrantHttpClient.CreateShardSnapshot(
+        var createSnapshotResult = (await _qdrantHttpClient.CreateShardSnapshot(
             TestCollectionName,
             SINGLE_SHARD_ID,
-            CancellationToken.None);
-
-        createSnapshotResult.EnsureSuccess();
+            CancellationToken.None)).EnsureSuccess();
 
         // this method call is here since when collection is deleted it's impossible to download its snapshot for some reason
-        var downloadedSnapshot = await _qdrantHttpClient.DownloadShardSnapshot(
+        var downloadedSnapshotResult = (await _qdrantHttpClient.DownloadShardSnapshot(
             TestCollectionName,
             SINGLE_SHARD_ID,
-            createSnapshotResult.Result.Name,
-            CancellationToken.None);
+            createSnapshotResult.Name,
+            CancellationToken.None)).EnsureSuccess();
 
-        downloadedSnapshot.EnsureSuccess();
+        // Copy snapshot to memory
+
+        MemoryStream downloadedSnapshotStream = new MemoryStream();
+        await downloadedSnapshotResult.SnapshotDataStream.CopyToAsync(downloadedSnapshotStream);
+        downloadedSnapshotStream.Position = 0;
 
         // delete collection
 
-        var deleteCollectionResponse = await _qdrantHttpClient.DeleteCollection(
+        (await _qdrantHttpClient.DeleteCollection(
             TestCollectionName,
-            CancellationToken.None);
+            CancellationToken.None)).EnsureSuccess();
 
-        deleteCollectionResponse.EnsureSuccess();
-
-        var listCollectionsResult = await _qdrantHttpClient.ListCollections(CancellationToken.None);
-
-        listCollectionsResult.EnsureSuccess();
-
-        listCollectionsResult.Result.Collections.Length.Should().Be(0);
+        var listCollectionsResult = (await _qdrantHttpClient.ListCollections(CancellationToken.None)).EnsureSuccess();
+        listCollectionsResult.Collections.Length.Should().Be(0);
 
         // recover collection from downloaded snapshot
 
@@ -414,7 +441,7 @@ public class ShardSnapshotTests : QdrantTestsBase
         var recoverCollectionResult = await _qdrantHttpClient.RecoverShardFromUploadedSnapshot(
             TestCollectionName,
             SINGLE_SHARD_ID,
-            downloadedSnapshot.Result.SnapshotDataStream,
+            downloadedSnapshotStream,
             CancellationToken.None);
 
         recoverCollectionResult.Status.IsSuccess.Should().Be(true);
@@ -422,10 +449,9 @@ public class ShardSnapshotTests : QdrantTestsBase
 
         // check collection recovered
 
-        listCollectionsResult = await _qdrantHttpClient.ListCollections(CancellationToken.None);
+        listCollectionsResult = (await _qdrantHttpClient.ListCollections(CancellationToken.None)).EnsureSuccess();
 
-        listCollectionsResult.EnsureSuccess();
-
-        listCollectionsResult.Result.Collections.Length.Should().Be(1);
+        listCollectionsResult.Collections.Length.Should().Be(1);
+        listCollectionsResult.Collections[0].Name.Should().Be(TestCollectionName);
     }
 }
