@@ -128,7 +128,7 @@ internal class PointIdTests
         PointId guidPointId = _firstGuid;
         GuidPointId guidPointId2 = _firstGuid;
         
-        var expectedGuidPointIdString = $"Guid: \"{_firstGuid}\"";
+        var expectedGuidPointIdString = $"Guid: {_firstGuid}";
         
         intPointId.ToString(includeTypeInfo: true).Should().Be(expectedIntPointIdString);
         intPointId2.ToString(includeTypeInfo: true).Should().Be(expectedIntPointIdString);
