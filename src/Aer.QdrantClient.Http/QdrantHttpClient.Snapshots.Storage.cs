@@ -174,7 +174,8 @@ public partial class QdrantHttpClient
         
         // We need to unpack tar and apply snapshots to collections according to config.json
 
-        throw new NotImplementedException("This method is not a simple Qdrant API call and not implemented yet.");
+        throw new NotImplementedException(
+            "This method is not available as a direct Qdrant API call and not implemented yet.");
         
         var url =
             $"/snapshots/recover?wait={ToUrlQueryString(isWaitForResult)}";
@@ -221,10 +222,10 @@ public partial class QdrantHttpClient
 
         // We need to unpack tar and apply snapshots to collections according to config.json
 
-        throw new NotImplementedException("This method is not a simple Qdrant API call and not implemented yet.");
+        throw new NotImplementedException("This method is not available as a direct Qdrant API call and not implemented yet.");
         
         var url =
-            $"//snapshots/upload?wait={ToUrlQueryString(isWaitForResult)}";
+            $"/snapshots/upload?wait={ToUrlQueryString(isWaitForResult)}";
     
         if (snapshotPriority.HasValue)
         {
