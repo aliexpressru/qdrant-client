@@ -130,10 +130,10 @@ internal class PointIdTests
         
         var expectedGuidPointIdString = $"Guid: \"{_firstGuid}\"";
         
-        intPointId.ToString().Should().Be(expectedIntPointIdString);
-        intPointId2.ToString().Should().Be(expectedIntPointIdString);
+        intPointId.ToString(includeTypeInfo: true).Should().Be(expectedIntPointIdString);
+        intPointId2.ToString(includeTypeInfo: true).Should().Be(expectedIntPointIdString);
         
-        guidPointId.ToString().Should().Be(expectedGuidPointIdString);
-        guidPointId2.ToString().Should().Be(expectedGuidPointIdString);
+        guidPointId.ToString(includeTypeInfo: true).Should().Be(expectedGuidPointIdString);
+        guidPointId2.ToString(includeTypeInfo: true).Should().Be(expectedGuidPointIdString);
     }
 }

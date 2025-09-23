@@ -238,6 +238,14 @@ public abstract class PointId : IEquatable<PointId>
     #endregion
 
     /// <summary>
+    /// Gets the string representation of the current PointId identifier value optionally specifying point id type.
+    /// </summary>
+    /// <param name="includeTypeInfo">Set to <c>true</c> to include the type info string in the resulting value.</param>
+    /// <returns>String representing this point identifier.</returns>
+    /// <exception cref="InvalidOperationException">Occurs when point id is of an unknown type.</exception>
+    public abstract string ToString(bool includeTypeInfo);
+    
+    /// <summary>
     /// Gets the string representation of the current PointId identifier value.
     /// </summary>
     /// <returns>String representing this point identifier.</returns>

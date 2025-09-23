@@ -59,7 +59,14 @@ public sealed class GuidPointId : PointId
     protected override int GetHashCodeCore() => Id.GetHashCode();
 
     /// <inheritdoc />
-    public override string ToString() => $"Guid: \"{Id}\"";
+    public override string ToString() => Id.ToString();
+
+    /// <inheritdoc />
+    public override string ToString(bool includeTypeInfo)
+        =>
+            includeTypeInfo
+                ? $"Guid: {ToString()}"
+                : ToString();
 
     /// <summary>
     /// Performs an implicit conversion from <see cref="ulong"/> to <see cref="GuidPointId"/>.

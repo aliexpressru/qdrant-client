@@ -59,7 +59,14 @@ public sealed class IntegerPointId : PointId
     protected override int GetHashCodeCore() => Id.GetHashCode();
 
     /// <inheritdoc />
-    public override string ToString() => $"Int: {Id}";
+    public override string ToString() => Id.ToString();
+
+    /// <inheritdoc />
+    public override string ToString(bool includeTypeInfo)
+        =>
+            includeTypeInfo
+                ? $"Int: {ToString()}"
+                : ToString();
 
     /// <summary>
     /// Performs an implicit conversion from <see cref="ulong"/> to <see cref="IntegerPointId"/>.
