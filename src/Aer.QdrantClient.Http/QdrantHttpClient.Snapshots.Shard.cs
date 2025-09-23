@@ -73,39 +73,6 @@ public partial class QdrantHttpClient
         
         return response;
     }
-    
-    /// <summary>
-    /// Recover shard of a local collection data from a snapshot by its name.
-    /// This will overwrite any data, stored in this shard, for the collection.
-    /// The snapshot path should be <c>/qdrant/snapshots/{collectionName}/{snapshotName}</c> on the Qdrant node.
-    /// </summary>
-    /// <param name="collectionName">Name of the collection to restore from a snapshot.</param>
-    /// <param name="shardId">Id of the shard which to recover from a snapshot.</param>
-    /// <param name="snapshotName">The snapshot file name.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
-    /// <param name="snapshotPriority">Defines which data should be used as a source of truth if there are other replicas in the cluster.</param>
-    /// <param name="snapshotChecksum">Optional SHA256 checksum to verify snapshot integrity before recovery.</param>
-    public async Task<DefaultOperationResponse> RecoverShardFromSnapshot(
-        string collectionName,
-        uint shardId,
-        string snapshotName,
-        CancellationToken cancellationToken,
-        bool isWaitForResult = true,
-        SnapshotPriority? snapshotPriority = null,
-        string snapshotChecksum = null)
-    {
-        var localSnapshotUri = new Uri($"file:///qdrant/snapshots/{collectionName}/shards/{shardId}/{snapshotName}");
-
-        return await RecoverShardFromSnapshot(
-            collectionName,
-            shardId,
-            localSnapshotUri,
-            cancellationToken,
-            isWaitForResult,
-            snapshotPriority,
-            snapshotChecksum);
-    }
 
     /// <summary>
     /// Recover shard of a local collection data from a snapshot.
@@ -127,6 +94,11 @@ public partial class QdrantHttpClient
         SnapshotPriority? snapshotPriority = null,
         string snapshotChecksum = null)
     {
+        if (snapshotLocationUri.IsFile)
+        { 
+            throw new NotSupportedException("Recovering shard from file URI snapshot is not supported");
+        }
+
         var url =
             $"/collections/{collectionName}/shards/{shardId}/snapshots/recover?wait={ToUrlQueryString(isWaitForResult)}";
 

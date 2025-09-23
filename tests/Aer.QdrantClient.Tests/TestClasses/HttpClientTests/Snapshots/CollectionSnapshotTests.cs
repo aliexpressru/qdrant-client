@@ -306,13 +306,13 @@ public class CollectionSnapshotTests : SnapshotTestsBase
 
         // create collection and see if we will be able to download previous snapshot
 
-        await _qdrantHttpClient.CreateCollection(
+        (await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 10, isServeVectorsFromDisk: true)
             {
                 OnDiskPayload = true
             },
-            CancellationToken.None);
+            CancellationToken.None)).EnsureSuccess();
 
         downloadSnapshotResponse = await _qdrantHttpClient.DownloadCollectionSnapshot(
             TestCollectionName,
@@ -394,6 +394,15 @@ public class CollectionSnapshotTests : SnapshotTestsBase
 
         listCollectionsResult.Collections.Length.Should().Be(1);
         listCollectionsResult.Collections[0].Name.Should().Be(TestCollectionName);
+        
+        // Check collection data is recovered
+        
+        var countPointsResult = (await _qdrantHttpClient.CountPoints(
+            TestCollectionName,
+            new CountPointsRequest(),
+            CancellationToken.None)).EnsureSuccess();
+
+        countPointsResult.Count.Should().Be(10);
     }
 
     [Test]
@@ -434,7 +443,7 @@ public class CollectionSnapshotTests : SnapshotTestsBase
             SnapshotPriority.Snapshot,
             snapshotChecksum: createSnapshotResult.Checksum);
         
-        recoverCollectionResult.Status.IsSuccess.Should().Be(true);
+        recoverCollectionResult.Status.IsSuccess.Should().BeTrue();
         recoverCollectionResult.Result.Should().BeTrue();
 
         // check collection recovered
@@ -443,5 +452,14 @@ public class CollectionSnapshotTests : SnapshotTestsBase
         
         listCollectionsResult.Collections.Length.Should().Be(1);
         listCollectionsResult.Collections[0].Name.Should().Be(TestCollectionName);
+
+        // Check collection data is recovered
+
+        var countPointsResult = (await _qdrantHttpClient.CountPoints(
+            TestCollectionName,
+            new CountPointsRequest(),
+            CancellationToken.None)).EnsureSuccess();
+
+        countPointsResult.Count.Should().Be(10);
     }
 }
