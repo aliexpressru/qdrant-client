@@ -28,13 +28,11 @@ public sealed class GuidPointId : PointId
 
     /// <inheritdoc/>
     public override ulong AsInteger()
-        => throw new QdrantPointIdConversionException(GetType().FullName, typeof(int).FullName);
+        => 
+            throw new QdrantPointIdConversionException(GetType().FullName, typeof(int).FullName);
 
     /// <inheritdoc/>
     public override Guid AsGuid() => Id;
-
-    /// <inheritdoc/>
-    public override string AsString() => Id.ToString();
 
     /// <inheritdoc/>
     protected override bool EqualsCore(PointId other)
@@ -58,10 +56,14 @@ public sealed class GuidPointId : PointId
     }
 
     /// <inheritdoc/>
-    protected override int GetHashCodeCore()
-        => Id.GetHashCode();
+    protected override int GetHashCodeCore() => Id.GetHashCode();
 
     /// <inheritdoc />
-    public override string ToString()
-        => Id.ToString();
+    public override string ToString() => $"Guid: \"{Id}\"";
+
+    /// <summary>
+    /// Performs an implicit conversion from <see cref="ulong"/> to <see cref="GuidPointId"/>.
+    /// </summary>
+    /// <param name="id">The identifier value.</param>
+    public static implicit operator GuidPointId(Guid id) => new(id);
 }

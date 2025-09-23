@@ -8,4 +8,4 @@ namespace Aer.QdrantClient.Http.Exceptions;
 /// <param name="invalidPointId">The invalid point identifier.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public sealed class QdrantInvalidPointIdException(object invalidPointId)
-	: Exception($"Invalid point id value {invalidPointId} of type {invalidPointId?.GetType().FullName ?? "UNKNOWN"}. Numeric point id should be greater than zero. String point id should be a valid guid");
+	: Exception($"Invalid point id value {invalidPointId ?? "null"} of type {invalidPointId?.GetType().FullName ?? "UNKNOWN"}. Numeric point id should be greater than zero. String point id should be a valid guid");
