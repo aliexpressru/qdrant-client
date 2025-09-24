@@ -35,7 +35,9 @@ public sealed class DownloadSnapshotResponse : QdrantResponseBase<DownloadSnapsh
         /// <summary>
         /// The snapshot size in megabytes.
         /// </summary>
-        public double SnapshotSizeMegabytes => SnapshotSizeBytes / 1024.0 / 1024.0;
+        public double SnapshotSizeMegabytes => SnapshotSizeBytes > 0
+            ? SnapshotSizeBytes / 1024.0 / 1024.0
+            : -1;
 
         /// <summary>
         /// The type of the snapshot - collection / shard / storage.

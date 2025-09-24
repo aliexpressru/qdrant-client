@@ -1,4 +1,5 @@
 ﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -70,14 +71,15 @@ public class CollectionSnapshotTests : SnapshotTestsBase
         recoverFromSnapshotNonExistentSnapshotLocalUriResult.Status.IsSuccess.Should().BeFalse();
         recoverFromSnapshotNonExistentSnapshotLocalUriResult.Status.Error.Should().ContainAll("does not exist", "file");
 
-        var recoverFromSnapshotNonExistentSnapshotUriResult =
+        var recoverFromSnapshotNonExistentSnapshotUriResultAct = async () =>
             await _qdrantHttpClient.RecoverCollectionFromSnapshot(
                 TestCollectionName,
                 new Uri("https://non-exitent-address-12345.com/test_collection-2022-08-04-10-49-10.snapshot"),
                 CancellationToken.None);
 
-        recoverFromSnapshotNonExistentSnapshotUriResult.Status.IsSuccess.Should().BeFalse();
-        recoverFromSnapshotNonExistentSnapshotUriResult.Status.Error.Should().ContainAll("Not Found", "Failed to download");
+        await recoverFromSnapshotNonExistentSnapshotUriResultAct.Should().ThrowAsync<QdrantCommunicationException>()
+            .Where(e => e.Message.Contains(
+                "error sending request for url (https://non-exitent-address-12345.com/test_collection-2022-08-04-10-49-10.snapshot)"));
 
         // download
 
@@ -87,12 +89,14 @@ public class CollectionSnapshotTests : SnapshotTestsBase
             CancellationToken.None);
 
         downloadSnapshotResult.Status.IsSuccess.Should().BeFalse();
-        downloadSnapshotResult.Status.Error.Should().Contain("Not found: Collection `test_collection` doesn't exist!");
+        downloadSnapshotResult.Status.Error.Should().ContainAll("Not found", TestCollectionName);
 
         downloadSnapshotResult.Result.Should().NotBeNull();
         downloadSnapshotResult.Result.SnapshotDataStream.Should().BeNull();
         downloadSnapshotResult.Result.SnapshotName.Should().Be("non_existent_snapshot_name");
         downloadSnapshotResult.Result.SnapshotSizeBytes.Should().Be(-1);
+        downloadSnapshotResult.Result.SnapshotSizeMegabytes.Should().Be(-1);
+        downloadSnapshotResult.Result.SnapshotType.Should().Be(SnapshotType.Collection);
     }
 
     [Test]

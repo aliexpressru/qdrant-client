@@ -80,7 +80,7 @@ public partial class QdrantHttpClient
     /// </summary>
     /// <param name="collectionName">Name of the collection to restore from a snapshot.</param>
     /// <param name="shardId">Id of the shard which to recover from a snapshot.</param>
-    /// <param name="snapshotLocationUri">The snapshot location in URI format.</param>
+    /// <param name="snapshotLocationUri">The snapshot location in URI format. File scheme uris are not supported by qdrant.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
     /// <param name="snapshotPriority">Defines which data should be used as a source of truth if there are other replicas in the cluster.</param>
@@ -94,11 +94,6 @@ public partial class QdrantHttpClient
         SnapshotPriority? snapshotPriority = null,
         string snapshotChecksum = null)
     {
-        if (snapshotLocationUri.IsFile)
-        { 
-            throw new NotSupportedException("Recovering shard from file URI snapshot is not supported");
-        }
-
         var url =
             $"/collections/{collectionName}/shards/{shardId}/snapshots/recover?wait={ToUrlQueryString(isWaitForResult)}";
 

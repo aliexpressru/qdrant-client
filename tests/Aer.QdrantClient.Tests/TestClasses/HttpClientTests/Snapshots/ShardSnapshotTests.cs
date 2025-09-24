@@ -1,4 +1,5 @@
 ﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -39,6 +40,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
             CancellationToken.None);
 
         listSnapshotsResult.Status.IsSuccess.Should().BeFalse();
+        listSnapshotsResult.Status.Error.Should().ContainAll(TestCollectionName, "doesn't exist");
 
         // create
         var createSnapshotResult = await _qdrantHttpClient.CreateShardSnapshot(
@@ -47,6 +49,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
             CancellationToken.None);
 
         createSnapshotResult.Status.IsSuccess.Should().BeFalse();
+        createSnapshotResult.Status.Error.Should().ContainAll(TestCollectionName, "doesn't exist");
 
         // delete
 
@@ -57,18 +60,9 @@ public class ShardSnapshotTests : SnapshotTestsBase
             CancellationToken.None);
 
         deleteSnapshotResult.Status.IsSuccess.Should().BeFalse();
+        deleteSnapshotResult.Status.Error.Should().ContainAll(TestCollectionName, "doesn't exist");
 
         // recover
-        
-        // shard recovery from file urls is not supported
-        var recoverFromSnapshotNonExistentSnapshotLocalUriResultAct =
-            async () => await _qdrantHttpClient.RecoverShardFromSnapshot(
-                TestCollectionName,
-                SINGLE_SHARD_ID,
-                new Uri("file:///qdrant/snapshots/test_collection-2022-08-04-10-49-10.snapshot"),
-                CancellationToken.None);
-
-        await recoverFromSnapshotNonExistentSnapshotLocalUriResultAct.Should().ThrowAsync<NotSupportedException>();
 
         // Collection shard can't be recovered from snapshot if collection does not exist
 
@@ -80,17 +74,29 @@ public class ShardSnapshotTests : SnapshotTestsBase
             },
             CancellationToken.None)).EnsureSuccess();
         
-        var recoverFromSnapshotNonExistentSnapshotUriResult =
+        // shard recovery from file urls is not supported
+        var recoverFromSnapshotNonExistentSnapshotLocalUriResult = await _qdrantHttpClient.RecoverShardFromSnapshot(
+                TestCollectionName,
+                SINGLE_SHARD_ID,
+                new Uri("file:///qdrant/snapshots/test_collection-2022-08-04-10-49-10.snapshot"),
+                CancellationToken.None);
+
+        recoverFromSnapshotNonExistentSnapshotLocalUriResult.Status.IsSuccess.Should().BeFalse();
+        recoverFromSnapshotNonExistentSnapshotLocalUriResult.Status.Error.Should().ContainAll(
+            "Invalid snapshot URL file:///qdrant/snapshots/test_collection-2022-08-04-10-49-10.snapshot",
+            "URLs with file scheme are not supported");
+
+        var recoverFromSnapshotNonExistentSnapshotUriResultAct = async () =>
             await _qdrantHttpClient.RecoverShardFromSnapshot(
                 TestCollectionName,
                 SINGLE_SHARD_ID,
                 new Uri("https://non-exitent-address-12345.com/test_collection-2022-08-04-10-49-10.snapshot"),
                 CancellationToken.None);
 
-        recoverFromSnapshotNonExistentSnapshotUriResult.Status.IsSuccess.Should().BeFalse();
-        recoverFromSnapshotNonExistentSnapshotUriResult.Status.Error.Should()
-            .ContainAll("Not Found", "Failed to download");
-
+        await recoverFromSnapshotNonExistentSnapshotUriResultAct.Should().ThrowAsync<QdrantCommunicationException>()
+            .Where(e => e.Message.Contains(
+                "error sending request for url (https://non-exitent-address-12345.com/test_collection-2022-08-04-10-49-10.snapshot)"));
+        
         // download
 
         var downloadSnapshotResult = await _qdrantHttpClient.DownloadShardSnapshot(
@@ -100,6 +106,14 @@ public class ShardSnapshotTests : SnapshotTestsBase
             CancellationToken.None);
 
         downloadSnapshotResult.Status.IsSuccess.Should().BeFalse();
+        downloadSnapshotResult.Status.Error.Should().ContainAll("not found", "No such file or directory");
+
+        downloadSnapshotResult.Result.Should().NotBeNull();
+        downloadSnapshotResult.Result.SnapshotDataStream.Should().BeNull();
+        downloadSnapshotResult.Result.SnapshotName.Should().Be("non_existent_snapshot_name");
+        downloadSnapshotResult.Result.SnapshotSizeBytes.Should().Be(-1);
+        downloadSnapshotResult.Result.SnapshotSizeMegabytes.Should().Be(-1);
+        downloadSnapshotResult.Result.SnapshotType.Should().Be(SnapshotType.Shard);
     }
 
     [Test]
@@ -344,51 +358,6 @@ public class ShardSnapshotTests : SnapshotTestsBase
         await AssertSnapshotActualSize(downloadSnapshotResponse.Result.SnapshotDataStream, createSnapshotResult.Size);
     }
 
-    // [Test]
-    // public async Task RecoverFromSnapshot()
-    // {
-    //     await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
-    //
-    //     var createSnapshotResult = (await _qdrantHttpClient.CreateShardSnapshot(
-    //         TestCollectionName,
-    //         SINGLE_SHARD_ID,
-    //         CancellationToken.None)).EnsureSuccess();
-    //
-    //     // delete collection
-    //
-    //     (await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None)).EnsureSuccess();
-    //
-    //     var listCollectionsResult = (await _qdrantHttpClient.ListCollections(CancellationToken.None)).EnsureSuccess();
-    //     listCollectionsResult.Collections.Length.Should().Be(0);
-    //
-    //     // recover collection from local snapshot
-    //
-    //     var recoverCollectionResult = await _qdrantHttpClient.RecoverShardFromSnapshot(
-    //         TestCollectionName,
-    //         SINGLE_SHARD_ID,
-    //         createSnapshotResult.Name,
-    //         CancellationToken.None);
-    //
-    //     recoverCollectionResult.Status.IsSuccess.Should().BeTrue();
-    //     recoverCollectionResult.Result.Should().BeTrue();
-    //
-    //     // check collection recovered
-    //
-    //     listCollectionsResult = (await _qdrantHttpClient.ListCollections(CancellationToken.None)).EnsureSuccess();
-    //
-    //     listCollectionsResult.Collections.Length.Should().Be(1);
-    //     listCollectionsResult.Collections[0].Name.Should().Be(TestCollectionName);
-    //
-    //     // Check collection data is recovered
-    //
-    //     var countPointsResult = (await _qdrantHttpClient.CountPoints(
-    //         TestCollectionName,
-    //         new CountPointsRequest(),
-    //         CancellationToken.None)).EnsureSuccess();
-    //
-    //     countPointsResult.Count.Should().Be(10);
-    // }
-
     [Test]
     public async Task RecoverFromUploadedSnapshot()
     {
@@ -399,20 +368,19 @@ public class ShardSnapshotTests : SnapshotTestsBase
             SINGLE_SHARD_ID,
             CancellationToken.None)).EnsureSuccess();
 
-        // this method call is here since when collection is deleted it's impossible to download its snapshot for some reason
+        // Download snapshot to memory
+        
         var downloadedSnapshotResult = (await _qdrantHttpClient.DownloadShardSnapshot(
             TestCollectionName,
             SINGLE_SHARD_ID,
             createSnapshotResult.Name,
             CancellationToken.None)).EnsureSuccess();
 
-        // Copy snapshot to memory
-
         MemoryStream downloadedSnapshotStream = new MemoryStream();
         await downloadedSnapshotResult.SnapshotDataStream.CopyToAsync(downloadedSnapshotStream);
         downloadedSnapshotStream.Position = 0;
 
-        // delete collection
+        // Delete collection
 
         (await _qdrantHttpClient.DeleteCollection(
             TestCollectionName,

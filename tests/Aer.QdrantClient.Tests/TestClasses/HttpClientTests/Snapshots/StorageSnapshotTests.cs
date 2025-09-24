@@ -52,7 +52,13 @@ public class StorageSnapshotTests : SnapshotTestsBase
 
         downloadSnapshotResult.Status.IsSuccess.Should().BeFalse();
         downloadSnapshotResult.Status.Error.Should().ContainAll("Not found", "non_existent_snapshot_name");
-        downloadSnapshotResult.Result.Should().BeNull();
+
+        downloadSnapshotResult.Result.Should().NotBeNull();
+        downloadSnapshotResult.Result.SnapshotDataStream.Should().BeNull();
+        downloadSnapshotResult.Result.SnapshotName.Should().Be("non_existent_snapshot_name");
+        downloadSnapshotResult.Result.SnapshotSizeBytes.Should().Be(-1);
+        downloadSnapshotResult.Result.SnapshotSizeMegabytes.Should().Be(-1);
+        downloadSnapshotResult.Result.SnapshotType.Should().Be(SnapshotType.Storage);
     }
     
     [Test]

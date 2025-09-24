@@ -17,7 +17,7 @@ public partial class QdrantHttpClient
     /// A compound operation that lists all snapshots for all collections and shards in the storage.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    public async Task<ListSnapshotsResponse> ListCollectionSnapshots(CancellationToken cancellationToken)
+    public async Task<ListSnapshotsResponse> ListAllSnapshots(CancellationToken cancellationToken)
     {
         List<SnapshotInfo> allSnapshots = new();
 
