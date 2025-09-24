@@ -138,10 +138,7 @@ public class CollectionSnapshotTests : SnapshotTestsBase
 
         var createFirstSnapshotResult = (await _qdrantHttpClient
             .CreateCollectionSnapshot(TestCollectionName, CancellationToken.None)).EnsureSuccess();
-
-        var immediatelyCreateSecondSnapshotResult = (await _qdrantHttpClient
-            .CreateCollectionSnapshot(TestCollectionName, CancellationToken.None)).EnsureSuccess();
-
+        
         var listSnapshotsResult =
             await _qdrantHttpClient.ListCollectionSnapshots(TestCollectionName, CancellationToken.None);
 
@@ -151,42 +148,17 @@ public class CollectionSnapshotTests : SnapshotTestsBase
 
         var snapshotInfo = listSnapshotsResult.Result.Single();
 
-        if (QdrantVersion < Version.Parse("1.15"))
-        {
-            // Qdrant 1.14 seems to return last created snapshot while 1.15 returns first.
-            // At least this is what happens in CI tests, on local machine both versions return first snapshot
-
-            snapshotInfo.Name.Should().Be(immediatelyCreateSecondSnapshotResult.Name);
-            snapshotInfo.Size.Should().Be(immediatelyCreateSecondSnapshotResult.Size);
-
-            // snapshotInfo.Checksum.Should().Be(
-            //     immediatelyCreateSecondSnapshotResult.Checksum,
-            //     $"Expected single snapshot to be the first one created, but found checksum mismatch. First snapshot checksum: {createFirstSnapshotResult.Checksum}, next snapshot checksum: {immediatelyCreateSecondSnapshotResult.Checksum}, listed snapshot checksum: {snapshotInfo.Checksum}"
-            // );
-
-            snapshotInfo.CreationTime.Should().Be(immediatelyCreateSecondSnapshotResult.CreationTime);
-        }
-        else
-        {
-            snapshotInfo.Name.Should().Be(createFirstSnapshotResult.Name);
-            snapshotInfo.Size.Should().Be(createFirstSnapshotResult.Size);
-
-            // snapshotInfo.Checksum.Should().Be(
-            //     createFirstSnapshotResult.Checksum,
-            //     $"Expected single snapshot to be the first one created, but found checksum mismatch. First snapshot checksum: {createFirstSnapshotResult.Checksum}, next snapshot checksum: {immediatelyCreateSecondSnapshotResult.Checksum}, listed snapshot checksum: {snapshotInfo.Checksum}"
-            // );
-
-            snapshotInfo.CreationTime.Should().Be(createFirstSnapshotResult.CreationTime);
-
-            // This bit does not work in CI tests for Qdrant < 1.15 but for some reason it works on local machine for the same Qdrant version
-            // This is not the main purpose of this test so leaving it as is for now
-            immediatelyCreateSecondSnapshotResult.CreationTime.Should().Be(createFirstSnapshotResult.CreationTime);
-            immediatelyCreateSecondSnapshotResult.Checksum.Should().Be(createFirstSnapshotResult.Checksum);
-        }
-
+        snapshotInfo.Name.Should().Be(createFirstSnapshotResult.Name);
+        snapshotInfo.Size.Should().Be(createFirstSnapshotResult.Size);
+        snapshotInfo.SizeMegabytes.Should().Be(createFirstSnapshotResult.SizeMegabytes);
+        snapshotInfo.CreationTime.Should().Be(createFirstSnapshotResult.CreationTime);
+        snapshotInfo.Checksum.Should().Be(createFirstSnapshotResult.Checksum);
         snapshotInfo.SnapshotType.Should().Be(SnapshotType.Collection);
 
         // create second snapshot
+
+        // When creating two snapshots one by one in quick succession, Qdrant 1.14 seems to return last created snapshot while 1.15 returns first.
+        // At least this is what happens in CI tests, on local machine both versions return first snapshot.
 
         // If requesting to create snapshot in less than a second after the previous one
         // Qdrant will just return the first snapshot info again instead of creating a new one
