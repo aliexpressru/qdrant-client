@@ -31,7 +31,7 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
-        if (response.Result is {Length: > 0})
+        if (response.Result is {Count: > 0})
         { 
             foreach(var snapshot in response.Result)
             {

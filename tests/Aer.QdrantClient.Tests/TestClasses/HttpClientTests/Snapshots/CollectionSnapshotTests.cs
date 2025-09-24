@@ -109,7 +109,7 @@ public class CollectionSnapshotTests : SnapshotTestsBase
             CancellationToken.None);
 
         listSnapshotsResult.Status.IsSuccess.Should().BeTrue();
-        listSnapshotsResult.Result.Length.Should().Be(0);
+        listSnapshotsResult.Result.Count.Should().Be(0);
     }
 
     [Test]
@@ -144,7 +144,7 @@ public class CollectionSnapshotTests : SnapshotTestsBase
 
         listSnapshotsResult.Status.IsSuccess.Should().BeTrue();
 
-        listSnapshotsResult.Result.Length.Should().Be(1); // one snapshot created
+        listSnapshotsResult.Result.Count.Should().Be(1); // one snapshot created
         
         var snapshotInfo = listSnapshotsResult.Result.Single(); 
 
@@ -196,7 +196,7 @@ public class CollectionSnapshotTests : SnapshotTestsBase
         listSnapshotsResult = await _qdrantHttpClient.ListCollectionSnapshots(TestCollectionName, CancellationToken.None);
 
         listSnapshotsResult.Status.IsSuccess.Should().BeTrue();
-        listSnapshotsResult.Result.Length.Should().Be(2); // two snapshots so far
+        listSnapshotsResult.Result.Count.Should().Be(2); // two snapshots so far
 
         var newSnapshotInfo = listSnapshotsResult.Result.Single(n => n.Name != createFirstSnapshotResult.Name);
 
@@ -217,7 +217,7 @@ public class CollectionSnapshotTests : SnapshotTestsBase
         var createSnapshotResult = (await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None)).EnsureSuccess();
         var listSnapshotsResult = (await _qdrantHttpClient.ListCollectionSnapshots(TestCollectionName, CancellationToken.None)).EnsureSuccess();
 
-        listSnapshotsResult.Length.Should().Be(1);
+        listSnapshotsResult.Count.Should().Be(1);
 
         var deleteSnapshotResult =
             await _qdrantHttpClient.DeleteCollectionSnapshot(
@@ -230,7 +230,7 @@ public class CollectionSnapshotTests : SnapshotTestsBase
 
         var listSnapshotsAfterDeletionResult = (await _qdrantHttpClient.ListCollectionSnapshots(TestCollectionName, CancellationToken.None)).EnsureSuccess();
         
-        listSnapshotsAfterDeletionResult.Length.Should().Be(0);
+        listSnapshotsAfterDeletionResult.Count.Should().Be(0);
 
         // create two snapshots and delete one
 
@@ -247,7 +247,7 @@ public class CollectionSnapshotTests : SnapshotTestsBase
 
         var listTwoSnapshotsResults = (await _qdrantHttpClient.ListCollectionSnapshots(TestCollectionName, CancellationToken.None)).EnsureSuccess();
 
-        listTwoSnapshotsResults.Length.Should().Be(2);
+        listTwoSnapshotsResults.Count.Should().Be(2);
 
         deleteSnapshotResult =
             await _qdrantHttpClient.DeleteCollectionSnapshot(
@@ -259,7 +259,7 @@ public class CollectionSnapshotTests : SnapshotTestsBase
         deleteSnapshotResult.Result.Should().BeTrue();
 
         var listLastRemainingSnapshotResult = (await _qdrantHttpClient.ListCollectionSnapshots(TestCollectionName, CancellationToken.None)).EnsureSuccess();
-        listLastRemainingSnapshotResult.Length.Should().Be(1);
+        listLastRemainingSnapshotResult.Count.Should().Be(1);
 
         listLastRemainingSnapshotResult.Single().Name.Should().Be(createSecondSnapshotResult.Name);
     }

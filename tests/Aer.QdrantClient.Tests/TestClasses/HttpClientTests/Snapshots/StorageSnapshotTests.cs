@@ -1,5 +1,4 @@
 ﻿using Aer.QdrantClient.Http;
-using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Model;
@@ -33,7 +32,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
             CancellationToken.None);
 
         listSnapshotsResult.Status.IsSuccess.Should().BeTrue();
-        listSnapshotsResult.Result.Length.Should().Be(0);
+        listSnapshotsResult.Result.Count.Should().Be(0);
         
         // delete
 
@@ -100,7 +99,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
         var listSnapshotsResult = await _qdrantHttpClient.ListStorageSnapshots(CancellationToken.None);
 
         listSnapshotsResult.Status.IsSuccess.Should().BeTrue();
-        listSnapshotsResult.Result.Length.Should().Be(1); // one snapshot created
+        listSnapshotsResult.Result.Count.Should().Be(1); // one snapshot created
 
         var createdSnapshot = listSnapshotsResult.Result.Single();
         
@@ -123,7 +122,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
         listSnapshotsResult = await _qdrantHttpClient.ListStorageSnapshots(CancellationToken.None);
 
         listSnapshotsResult.Status.IsSuccess.Should().BeTrue();
-        listSnapshotsResult.Result.Length.Should().Be(2); // two snapshots so far
+        listSnapshotsResult.Result.Count.Should().Be(2); // two snapshots so far
 
         var newSnapshot = listSnapshotsResult.Result.Single(n => n.Name != createFirstSnapshotResult.Name);
 
@@ -144,7 +143,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
         var createSnapshotResult = (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
         var listSnapshotsResult = (await _qdrantHttpClient.ListStorageSnapshots(CancellationToken.None)).EnsureSuccess();
 
-        listSnapshotsResult.Length.Should().Be(1);
+        listSnapshotsResult.Count.Should().Be(1);
 
         var deleteSnapshotResult =
             await _qdrantHttpClient.DeleteStorageSnapshot(
@@ -156,7 +155,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
 
         listSnapshotsResult = (await _qdrantHttpClient.ListStorageSnapshots(CancellationToken.None)).EnsureSuccess();
 
-        listSnapshotsResult.Length.Should().Be(0);
+        listSnapshotsResult.Count.Should().Be(0);
 
         // create two snapshots and delete one
 
@@ -173,7 +172,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
             (await _qdrantHttpClient.ListStorageSnapshots(CancellationToken.None))
             .EnsureSuccess();
 
-        listSnapshotsResult.Length.Should().Be(2);
+        listSnapshotsResult.Count.Should().Be(2);
 
         deleteSnapshotResult = await _qdrantHttpClient.DeleteStorageSnapshot(
                 createFirstSnapshotResult.Name,
@@ -184,7 +183,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
 
         listSnapshotsResult = (await _qdrantHttpClient.ListStorageSnapshots(CancellationToken.None)).EnsureSuccess();
 
-        listSnapshotsResult.Length.Should().Be(1);
+        listSnapshotsResult.Count.Should().Be(1);
 
         listSnapshotsResult.Single().Name.Should().Be(createSecondSnapshotResult.Name);
     }

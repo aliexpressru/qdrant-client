@@ -118,7 +118,7 @@ public partial class QdrantHttpClient
 
         return new ListSnapshotsResponse()
         {
-            Result = allSnapshots.ToArray(),
+            Result = allSnapshots,
             Status = QdrantStatus.Success(),
             Time = sw.Elapsed.TotalSeconds
         };

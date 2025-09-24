@@ -127,7 +127,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
             CancellationToken.None);
 
         listSnapshotsResult.Status.IsSuccess.Should().BeTrue();
-        listSnapshotsResult.Result.Length.Should().Be(0);
+        listSnapshotsResult.Result.Count.Should().Be(0);
     }
 
     [Test]
@@ -166,7 +166,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
 
         listSnapshotsResult.Status.IsSuccess.Should().BeTrue();
 
-        listSnapshotsResult.Result.Length.Should().Be(1); // one snapshot created
+        listSnapshotsResult.Result.Count.Should().Be(1); // one snapshot created
 
         listSnapshotsResult.Result.Single().Name.Should().Be(createSnapshotResult.Name);
         listSnapshotsResult.Result.Single().Size.Should().Be(createSnapshotResult.Size);
@@ -191,7 +191,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
             CancellationToken.None);
 
         listSnapshotsResult.Status.IsSuccess.Should().BeTrue();
-        listSnapshotsResult.Result.Length.Should().Be(2); // two snapshots so far
+        listSnapshotsResult.Result.Count.Should().Be(2); // two snapshots so far
 
         var newSnapshotInfo = listSnapshotsResult.Result.Single(n => n.Name != createSnapshotResult.Name);
 
@@ -219,7 +219,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
             SINGLE_SHARD_ID,
             CancellationToken.None)).EnsureSuccess();
 
-        listSnapshotsResult.Length.Should().Be(1);
+        listSnapshotsResult.Count.Should().Be(1);
 
         var deleteSnapshotResult =
             await _qdrantHttpClient.DeleteShardSnapshot(
@@ -236,7 +236,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
             SINGLE_SHARD_ID,
             CancellationToken.None)).EnsureSuccess();
 
-        listSnapshotsResult.Length.Should().Be(0);
+        listSnapshotsResult.Count.Should().Be(0);
 
         // create two snapshots and delete one
 
@@ -259,7 +259,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
             SINGLE_SHARD_ID,
             CancellationToken.None)).EnsureSuccess();
 
-        listSnapshotsResult.Length.Should().Be(2);
+        listSnapshotsResult.Count.Should().Be(2);
 
         deleteSnapshotResult =
             await _qdrantHttpClient.DeleteShardSnapshot(
@@ -276,7 +276,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
             SINGLE_SHARD_ID,
             CancellationToken.None)).EnsureSuccess();
 
-        listSnapshotsResult.Length.Should().Be(1);
+        listSnapshotsResult.Count.Should().Be(1);
         listSnapshotsResult.Single().Name.Should().Be(createSecondSnapshotResult.Name);
     }
 
