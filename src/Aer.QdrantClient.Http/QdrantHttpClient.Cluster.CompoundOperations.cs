@@ -141,7 +141,7 @@ public partial class QdrantHttpClient
                             Result = false,
                             Status = QdrantStatus.Fail(
                                 $"Collection '{collectionNameFromParameter}' does not exist, check parameters"),
-                            Time = sw.Elapsed.TotalMinutes
+                            Time = sw.Elapsed.TotalSeconds
                         };
                     }
                 }
@@ -290,7 +290,7 @@ public partial class QdrantHttpClient
                             {
                                 Result = false,
                                 Status = isSuccessfullyStartOperationResponse.Status,
-                                Time = sw.Elapsed.TotalMinutes
+                                Time = sw.Elapsed.TotalSeconds
                             };
                         }
                     }
@@ -307,7 +307,7 @@ public partial class QdrantHttpClient
             {
                 Result = true,
                 Status = QdrantStatus.Success(),
-                Time = sw.Elapsed.TotalMinutes
+                Time = sw.Elapsed.TotalSeconds
             };
         }
         catch (QdrantUnsuccessfulResponseStatusException qex)
@@ -318,7 +318,7 @@ public partial class QdrantHttpClient
             {
                 Result = false,
                 Status = QdrantStatus.Fail(qex.Message, qex),
-                Time = sw.Elapsed.TotalMinutes
+                Time = sw.Elapsed.TotalSeconds
             };
         }
     }
@@ -441,7 +441,7 @@ public partial class QdrantHttpClient
                             Result = false,
                             Status = QdrantStatus.Fail(
                                 $"Collection '{collectionNameFromParameter}' does not exist, check parameters"),
-                            Time = sw.Elapsed.TotalMinutes
+                            Time = sw.Elapsed.TotalSeconds
                         };
                     }
                 }
@@ -539,7 +539,7 @@ public partial class QdrantHttpClient
                                 {
                                     Result = false,
                                     Status = isSuccessfullyStartOperationResponse.Status,
-                                    Time = sw.Elapsed.TotalMinutes
+                                    Time = sw.Elapsed.TotalSeconds
                                 };
                             }
                         }
@@ -559,7 +559,7 @@ public partial class QdrantHttpClient
             {
                 Result = true,
                 Status = QdrantStatus.Success(),
-                Time = sw.Elapsed.TotalMinutes
+                Time = sw.Elapsed.TotalSeconds
             };
         }
         catch (QdrantUnsuccessfulResponseStatusException qex)
@@ -570,7 +570,7 @@ public partial class QdrantHttpClient
             {
                 Result = false,
                 Status = QdrantStatus.Fail(qex.Message, qex),
-                Time = sw.Elapsed.TotalMinutes
+                Time = sw.Elapsed.TotalSeconds
             };
         }
     }

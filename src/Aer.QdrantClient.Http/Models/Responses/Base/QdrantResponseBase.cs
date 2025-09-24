@@ -108,6 +108,11 @@ public abstract class QdrantResponseBase
 
             set => _vectorIoWrite = value;
         }
+        
+        /// <summary>
+        /// Represents an empty usage report.
+        /// </summary>
+        public static UsageReport Empty { get; } = new();
 
         /// <summary>
         /// Represents a hardware usage report.

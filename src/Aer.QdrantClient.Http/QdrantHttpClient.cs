@@ -45,8 +45,8 @@ public partial class QdrantHttpClient
         HttpStatusCode.Forbidden,
         HttpStatusCode.Unauthorized
     ];
-
-    // contains codes which should be handled specially
+    
+    // Codes which should be handled specially
     private static readonly HashSet<HttpStatusCode> _specialStatusCodes =
     [
         // BadRequest, NotFound, Conflict contain error message in their "status" json field,
@@ -54,16 +54,15 @@ public partial class QdrantHttpClient
         HttpStatusCode.BadRequest,
         HttpStatusCode.NotFound,
         HttpStatusCode.Conflict,
-
-        // Forbidden and Unauthorized are handled specially to throw unauthorized exception
-        .. _unauthorizedStatusCodes
+        
+        .._unauthorizedStatusCodes,
     ];
 
-    // contains codes messages with which should not be retried
+    // Codes messages with which should not be retried
     private static readonly HashSet<HttpStatusCode> _noRetryStatusCodes =
     [
         HttpStatusCode.NotFound,
-        .. _unauthorizedStatusCodes
+        .._unauthorizedStatusCodes
     ];
 
     private static readonly List<string> _invalidQdrantNameSymbols =
@@ -346,7 +345,7 @@ public partial class QdrantHttpClient
         }
     }
 
-    private async Task<(long ContentLength, Stream ResponseStream)> ExecuteRequestReadAsStream(
+    private async Task<(long ContentLength, Stream ResponseStream, bool IsSuccess, string ErrorMessage)> ExecuteRequestReadAsStream(
         HttpRequestMessage message,
         CancellationToken cancellationToken)
     {
@@ -365,11 +364,24 @@ public partial class QdrantHttpClient
             response,
             responseReader: async responseMessage =>
             {
+                // Handle NotFound for read as stream specially since it contains error message in content and no Status field
+                if(responseMessage.StatusCode == HttpStatusCode.NotFound)
+                { 
+                    var errorMessage = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
+
+                    return (
+                        ContentLength: 0L,
+                        ResponseStream: Stream.Null,
+                        IsSuccess: false,
+                        ErrorMessage: errorMessage
+                    );
+                }
+                
                 var resultStream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
 
                 var contentLength = response.Content.Headers.ContentLength ?? 0;
 
-                return (contentLength, resultStream);
+                return (contentLength, resultStream, true, null);
             },
             badRequestResponseMessageReader: null,
             cancellationToken);
@@ -382,7 +394,7 @@ public partial class QdrantHttpClient
         Func<HttpRequestMessage> createMessage,
         CancellationToken cancellationToken,
         uint retryCount,
-        TimeSpan? retryDelay,
+        TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
         where TResponse : QdrantResponseBase
     {
@@ -406,6 +418,7 @@ public partial class QdrantHttpClient
 #endif
 
                 )
+                // Also retry when response status code is not successful and not a special no-retry one
                 .OrResult<HttpResponseMessage>(r =>
                     !r.IsSuccessStatusCode && !_noRetryStatusCodes.Contains(r.StatusCode))
                 .WaitAndRetryAsync(
@@ -442,6 +455,18 @@ public partial class QdrantHttpClient
             responseMessage,
             responseReader: async rm =>
             {
+                // Handle NotFound with empty content. This happens when making calls to non-existent Qdrant API endpoints
+                if (responseMessage.StatusCode == HttpStatusCode.NotFound
+                    && responseMessage.Content.Headers.ContentLength == 0)
+                {
+                    throw new QdrantCommunicationException(
+                        requestMessage.Method.ToString(),
+                        requestMessage.RequestUri?.ToString(),
+                        responseMessage.StatusCode,
+                        responseMessage.ReasonPhrase,
+                        string.Empty);
+                }
+
                 var resultString = await rm.Content.ReadAsStringAsync(cancellationToken);
 
                 var deserializedObject =
@@ -464,31 +489,18 @@ public partial class QdrantHttpClient
 
                     return badRequestResult;
                 }
-                catch (JsonException)
-                {
-                    // means that the response is a simple string
-                    var errorResponse = Activator.CreateInstance<TResponse>();
-
-                    errorResponse.Status = new QdrantStatus(QdrantOperationStatusType.Unknown)
-                    {
-                        Error = errorContent,
-                        RawStatusString = errorContent,
-                    };
-
-                    errorResponse.Time = -1;
-
-                    return errorResponse;
-                }
                 catch (Exception ex)
                 {
-                    // means that some unexpected error happened
+                    // means that the response is a simple string or some other unexpected error happened
                     var errorResponse = Activator.CreateInstance<TResponse>();
 
                     errorResponse.Status = new QdrantStatus(QdrantOperationStatusType.Unknown)
                     {
                         Error = errorContent,
                         RawStatusString = errorContent,
-                        Exception = ex
+                        Exception = ex is JsonException
+                            ? null
+                            : ex // do not set exception if it is a json exception
                     };
 
                     errorResponse.Time = -1;
@@ -510,7 +522,8 @@ public partial class QdrantHttpClient
     {
         // We have already checked that the request uri is not null
         var url = requestMessage.RequestUri!.ToString();
-
+        
+        // Throw if the response status code is not successful and not a special one
         if (!responseMessage.IsSuccessStatusCode
             && !_specialStatusCodes.Contains(responseMessage.StatusCode))
         {
@@ -524,8 +537,8 @@ public partial class QdrantHttpClient
                 responseMessage.ReasonPhrase,
                 errorResultString);
         }
-
-        // handle unauthorized codes
+        
+        // Handle unauthorized codes
         if (_unauthorizedStatusCodes.Contains(responseMessage.StatusCode))
         {
             var forbiddenReason = responseMessage.ReasonPhrase;
@@ -548,9 +561,7 @@ public partial class QdrantHttpClient
             throw new QdrantUnauthorizedAccessException(forbiddenReason);
         }
 
-        // in case of bad request the result may be in the form of a single string
-        // thus the following parsing may fail
-
+        // Handle bad request
         if (responseMessage.StatusCode == HttpStatusCode.BadRequest)
         {
             var errorResult = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
@@ -567,7 +578,7 @@ public partial class QdrantHttpClient
 
             return badRequestResponseMessageReader(errorResult);
         }
-
+        
         var readResult = await responseReader(responseMessage);
 
         return readResult;

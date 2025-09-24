@@ -10,7 +10,7 @@ namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 /// Represents a named vectors collection.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public sealed class NamedVectors : VectorBase
+public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatable<NamedVectors>
 {
     /// <summary>
     /// The name to vector mapping.
@@ -226,5 +226,86 @@ public sealed class NamedVectors : VectorBase
         {
             throw new InvalidOperationException("Named vectors collection for point is empty");
         }
+    }
+
+    /// <inheritdoc/>
+    public override bool Equals(VectorBase other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+        
+        return other is NamedVectors otherNamedVectors && Equals(otherNamedVectors);
+    }
+
+    /// <inheritdoc/>
+    public override bool Equals(object obj)
+    {
+        if (obj is null)
+        {
+            return false;
+        }
+
+        return ReferenceEquals(this, obj)
+            || obj is NamedVectors other && Equals(other);
+    }
+
+    /// <inheritdoc/>
+    public bool Equals(NamedVectors other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+        
+        if (Vectors.Count != other.Vectors.Count)
+        {
+            return false;
+        }
+
+        foreach (var (vectorName, vector) in Vectors)
+        {
+            if (!other.Vectors.TryGetValue(vectorName, out VectorBase otherVector))
+            { 
+                return false;
+            }
+            
+            if (!vector.Equals(otherVector))
+            {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+    {
+        if(Vectors is null or {Count:0})
+        {
+            return 0;
+        }
+        
+        HashCode hashCode = new HashCode();
+
+        foreach (var (vectorName, vector) in Vectors)
+        { 
+            hashCode.Add(vectorName);
+            hashCode.Add(vector);
+        }
+        
+        return hashCode.ToHashCode();
     }
 }

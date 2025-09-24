@@ -173,11 +173,19 @@ public class QdrantTestsBase
     {
         var qdrantHttpClient = qdrantClient ?? ServiceProvider.GetRequiredService<QdrantHttpClient>();
 
+        // We should delete all snapshots first, before deleting collections
+        await qdrantHttpClient.DeleteAllCollectionShardSnapshots(CancellationToken.None);
+        await qdrantHttpClient.DeleteAllCollectionSnapshots(CancellationToken.None);
+        await qdrantHttpClient.DeleteAllStorageSnapshots(CancellationToken.None);
+        
         try
         {
+            if (QdrantVersion <= Version.Parse("1.15"))
+            {
 #pragma warning disable CS0618 // Type or member is obsolete
-            await qdrantHttpClient.SetLockOptions(areWritesDisabled: false, "", CancellationToken.None);
+                await qdrantHttpClient.SetLockOptions(areWritesDisabled: false, "", CancellationToken.None);
 #pragma warning restore CS0618 // Type or member is obsolete
+            }
         }
         catch
         { 
@@ -186,8 +194,6 @@ public class QdrantTestsBase
 
         await qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None);
         await qdrantHttpClient.DeleteCollection(TestCollectionName2, CancellationToken.None);
-
-        await qdrantHttpClient.DeleteAllCollectionSnapshots(CancellationToken.None);
     }
 
     protected float[] CreateTestVector(

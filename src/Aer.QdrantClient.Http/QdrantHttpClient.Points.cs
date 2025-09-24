@@ -1,9 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters;
-using Aer.QdrantClient.Http.Infrastructure.Json;
-using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Requests.Public;
