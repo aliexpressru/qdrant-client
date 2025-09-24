@@ -73,13 +73,13 @@ public class ShardSnapshotTests : SnapshotTestsBase
                 OnDiskPayload = true
             },
             CancellationToken.None)).EnsureSuccess();
-        
+
         // shard recovery from file urls is not supported
         var recoverFromSnapshotNonExistentSnapshotLocalUriResult = await _qdrantHttpClient.RecoverShardFromSnapshot(
-                TestCollectionName,
-                SINGLE_SHARD_ID,
-                new Uri("file:///qdrant/snapshots/test_collection-2022-08-04-10-49-10.snapshot"),
-                CancellationToken.None);
+            TestCollectionName,
+            SINGLE_SHARD_ID,
+            new Uri("file:///qdrant/snapshots/test_collection-2022-08-04-10-49-10.snapshot"),
+            CancellationToken.None);
 
         recoverFromSnapshotNonExistentSnapshotLocalUriResult.Status.IsSuccess.Should().BeFalse();
         recoverFromSnapshotNonExistentSnapshotLocalUriResult.Status.Error.Should().ContainAll(
@@ -96,7 +96,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
         await recoverFromSnapshotNonExistentSnapshotUriResultAct.Should().ThrowAsync<QdrantCommunicationException>()
             .Where(e => e.Message.Contains(
                 "error sending request for url (https://non-exitent-address-12345.com/test_collection-2022-08-04-10-49-10.snapshot)"));
-        
+
         // download
 
         var downloadSnapshotResult = await _qdrantHttpClient.DownloadShardSnapshot(
@@ -176,7 +176,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
         // Qdrant will just return the first snapshot info again instead of creating a new one
         // so we need to wait a bit to ensure that creation time will be different
         await Task.Delay(TimeSpan.FromSeconds(1));
-        
+
         // create second snapshot
 
         var createSecondSnapshotResult =
@@ -245,7 +245,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
                 TestCollectionName,
                 SINGLE_SHARD_ID,
                 CancellationToken.None)).EnsureSuccess();
-        
+
         await Task.Delay(TimeSpan.FromSeconds(1));
 
         var createSecondSnapshotResult =
@@ -312,7 +312,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
     {
         // This test proves that deleting collection does not delete snapshots (which is fair enough)!
         // And if we create collection with the same name again we will be able to download previous snapshot
-        
+
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult = (await _qdrantHttpClient.CreateShardSnapshot(
@@ -369,7 +369,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
             CancellationToken.None)).EnsureSuccess();
 
         // Download snapshot to memory
-        
+
         var downloadedSnapshotResult = (await _qdrantHttpClient.DownloadShardSnapshot(
             TestCollectionName,
             SINGLE_SHARD_ID,
@@ -398,7 +398,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
                 OnDiskPayload = true
             },
             CancellationToken.None)).EnsureSuccess();
-        
+
         // recover collection from downloaded snapshot
 
         var recoverCollectionResult = await _qdrantHttpClient.RecoverShardFromUploadedSnapshot(
@@ -408,7 +408,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
             CancellationToken.None);
 
         recoverCollectionResult.Status.IsSuccess.Should().BeTrue();
-        
+
         // Shard snapshot recovery successful operation returns null Result
         recoverCollectionResult.Result.Should().BeNull();
 

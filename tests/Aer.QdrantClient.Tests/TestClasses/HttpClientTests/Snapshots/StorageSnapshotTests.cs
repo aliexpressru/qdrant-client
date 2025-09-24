@@ -5,7 +5,6 @@ using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots;
 
-//[Ignore("WiP on Snapshot API support")]
 public class StorageSnapshotTests : SnapshotTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
@@ -33,7 +32,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
 
         listSnapshotsResult.Status.IsSuccess.Should().BeTrue();
         listSnapshotsResult.Result.Count.Should().Be(0);
-        
+
         // delete
 
         var deleteSnapshotResult = await _qdrantHttpClient.DeleteStorageSnapshot(
@@ -59,7 +58,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
         downloadSnapshotResult.Result.SnapshotSizeMegabytes.Should().Be(-1);
         downloadSnapshotResult.Result.SnapshotType.Should().Be(SnapshotType.Storage);
     }
-    
+
     [Test]
     public async Task CreateSnapshot_NoCollections()
     {
@@ -94,7 +93,8 @@ public class StorageSnapshotTests : SnapshotTestsBase
 
         // create first snapshot
 
-        var createFirstSnapshotResult = (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
+        var createFirstSnapshotResult =
+            (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
 
         var listSnapshotsResult = await _qdrantHttpClient.ListStorageSnapshots(CancellationToken.None);
 
@@ -102,7 +102,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
         listSnapshotsResult.Result.Count.Should().Be(1); // one snapshot created
 
         var createdSnapshot = listSnapshotsResult.Result.Single();
-        
+
         createdSnapshot.Name.Should().Be(createFirstSnapshotResult.Name);
         createdSnapshot.Size.Should().Be(createFirstSnapshotResult.Size);
         createdSnapshot.SnapshotType.Should().Be(SnapshotType.Storage);
@@ -111,11 +111,11 @@ public class StorageSnapshotTests : SnapshotTestsBase
 
         // If we ask qdrant to create two snapshots one by one with delay less than a second
         // API will just return previously created snapshot as a result for the second call
-        
+
         await Task.Delay(TimeSpan.FromSeconds(1));
-        
+
         // create second snapshot
-        
+
         var createSecondSnapshotResult =
             (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
 
@@ -140,8 +140,10 @@ public class StorageSnapshotTests : SnapshotTestsBase
 
         // create first snapshot
 
-        var createSnapshotResult = (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
-        var listSnapshotsResult = (await _qdrantHttpClient.ListStorageSnapshots(CancellationToken.None)).EnsureSuccess();
+        var createSnapshotResult =
+            (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
+        var listSnapshotsResult =
+            (await _qdrantHttpClient.ListStorageSnapshots(CancellationToken.None)).EnsureSuccess();
 
         listSnapshotsResult.Count.Should().Be(1);
 
@@ -161,10 +163,10 @@ public class StorageSnapshotTests : SnapshotTestsBase
 
         var createFirstSnapshotResult =
             (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
-        
+
         // Delay to ensure that qdrant won't just return previous snapshot
-        await Task.Delay(TimeSpan.FromSeconds(1)); 
-        
+        await Task.Delay(TimeSpan.FromSeconds(1));
+
         var createSecondSnapshotResult =
             (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
 
@@ -175,8 +177,8 @@ public class StorageSnapshotTests : SnapshotTestsBase
         listSnapshotsResult.Count.Should().Be(2);
 
         deleteSnapshotResult = await _qdrantHttpClient.DeleteStorageSnapshot(
-                createFirstSnapshotResult.Name,
-                CancellationToken.None);
+            createFirstSnapshotResult.Name,
+            CancellationToken.None);
 
         deleteSnapshotResult.Status.IsSuccess.Should().BeTrue();
         deleteSnapshotResult.Result.Should().BeTrue();
@@ -193,7 +195,8 @@ public class StorageSnapshotTests : SnapshotTestsBase
     {
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
-        var createSnapshotResult = (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
+        var createSnapshotResult =
+            (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
 
         var downloadSnapshotResponse = await _qdrantHttpClient.DownloadStorageSnapshot(
             createSnapshotResult.Name,
@@ -215,10 +218,11 @@ public class StorageSnapshotTests : SnapshotTestsBase
     {
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
-        var createSnapshotResult = (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
+        var createSnapshotResult =
+            (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
 
         // Delete collection
-        
+
         (await _qdrantHttpClient.DeleteCollection(TestCollectionName, CancellationToken.None)).EnsureSuccess();
 
         // After all collections are deleted the storage snapshot download should still work
@@ -244,7 +248,8 @@ public class StorageSnapshotTests : SnapshotTestsBase
     {
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
 
-        var createSnapshotResult = (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
+        var createSnapshotResult =
+            (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
 
         // delete collection
 
@@ -278,8 +283,9 @@ public class StorageSnapshotTests : SnapshotTestsBase
         await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName2);
 
         // Create and download snapshot
-        
-        var createSnapshotResult = (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
+
+        var createSnapshotResult =
+            (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
 
         // this method call is here since when collection is deleted it's impossible to download its snapshot
         var downloadedSnapshotResult = (await _qdrantHttpClient.DownloadStorageSnapshot(
@@ -287,7 +293,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
             CancellationToken.None)).EnsureSuccess();
 
         // Copy snapshot to memory
-        
+
         MemoryStream downloadedSnapshotStream = new MemoryStream();
         await downloadedSnapshotResult.SnapshotDataStream.CopyToAsync(downloadedSnapshotStream);
         downloadedSnapshotStream.Position = 0;
@@ -315,11 +321,11 @@ public class StorageSnapshotTests : SnapshotTestsBase
         // check collection recovered
 
         listCollectionsResult = (await _qdrantHttpClient.ListCollections(CancellationToken.None)).EnsureSuccess();
-        
+
         listCollectionsResult.Collections.Length.Should().Be(2);
 
         var collectionNames = listCollectionsResult.Collections.Select(c => c.Name).ToArray();
-        
+
         collectionNames.Should().Contain([TestCollectionName, TestCollectionName2]);
     }
 }
