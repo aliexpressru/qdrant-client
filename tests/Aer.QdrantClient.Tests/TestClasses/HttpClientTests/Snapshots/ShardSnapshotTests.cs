@@ -20,14 +20,13 @@ public class ShardSnapshotTests : SnapshotTestsBase
     public void Setup()
     {
         Initialize();
-
         _qdrantHttpClient = ServiceProvider.GetRequiredService<QdrantHttpClient>();
     }
 
     [SetUp]
     public async Task BeforeEachTest()
     {
-        await ResetStorage();
+        await ResetStorage(_qdrantHttpClient);
     }
 
     [Test]

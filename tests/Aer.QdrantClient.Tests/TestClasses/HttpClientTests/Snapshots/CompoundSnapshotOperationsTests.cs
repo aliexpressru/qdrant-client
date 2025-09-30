@@ -25,7 +25,7 @@ public class CompoundSnapshotOperationsTests : QdrantTestsBase
     [SetUp]
     public async Task BeforeEachTest()
     {
-        await ResetStorage();
+        await ResetStorage(_qdrantHttpClient);
     }
 
     [Test]

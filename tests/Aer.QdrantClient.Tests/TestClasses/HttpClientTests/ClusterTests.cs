@@ -21,7 +21,7 @@ public class ClusterTests : QdrantTestsBase
     public void Setup()
     {
         Initialize();
-        _qdrantHttpClient = GetClusterClient();
+        _qdrantHttpClient = GetClusterClient(ClusterNode.First);
     }
 
     [SetUp]

@@ -20,7 +20,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
     [SetUp]
     public async Task BeforeEachTest()
     {
-        await ResetStorage();
+        await ResetStorage(_qdrantHttpClient);
     }
 
     [Test]

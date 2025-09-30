@@ -16,12 +16,28 @@ jobs:
   build_test:
     runs-on: ubuntu-latest
     services:
+      # single node qdrant
       qdrant:
         image: ${{ inputs.qdrant_image }}
         ports:
           - "6333:6333"
           - "6334:6334"
           - "6335:6335"
+
+      # 2-node qdrant cluster
+      qdrant-1:
+        image: ${{ inputs.qdrant_image }}
+        ports:
+          - "6343:6333"
+          - "6344:6334"
+          - "6345:6335"
+
+      qdrant-2:
+        image: ${{ inputs.qdrant_image }}
+        ports:
+          - "6353:6333"
+          - "6354:6334"
+          - "6355:6335"
 
     env:
         CI: true
