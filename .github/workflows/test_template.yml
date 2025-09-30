@@ -33,10 +33,10 @@ jobs:
           - "6345:6335"
         env:
           QDRANT__CLUSTER__ENABLED: true
-          QDRANT__CLUSTER__NODE_ID: node1
-          QDRANT__CLUSTER__PEERS: node2:6353
+        #   QDRANT__CLUSTER__NODE_ID: node1
+        #   QDRANT__CLUSTER__PEERS: node2:6353
         options: >-
-            --uri 'http://localhost:6343'
+            --uri 'http://qdrant-1:6343'
 
       qdrant-2:
         image: ${{ inputs.qdrant_image }}
@@ -46,10 +46,11 @@ jobs:
           - "6355:6335"
         env:
           QDRANT__CLUSTER__ENABLED: true
-          QDRANT__CLUSTER__NODE_ID: node2
-          QDRANT__CLUSTER__PEERS: node1:6343
+        #   QDRANT__CLUSTER__NODE_ID: node2
+        #   QDRANT__CLUSTER__PEERS: node1:6343
         options: >-
-            --bootstrap 'http://localhost:6343'
+            --bootstrap 'http://qdrant-1:6343' 
+            --uri 'http://qdrant-2:6353'
 
     env:
         CI: true
