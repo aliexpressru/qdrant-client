@@ -195,8 +195,7 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
                 },
                 StrictModeConfig = new StrictModeConfiguration(){
                     Enabled = true,
-                    MaxPointsCount = 1000,
-                    MaxPayloadIndexCount = 10
+                    MaxPointsCount = 1000
                 }
             },
             CancellationToken.None);
@@ -221,7 +220,6 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
 
         updatedCollectionInfo.Result.Config.StrictModeConfig.Enabled.Should().BeTrue();
         updatedCollectionInfo.Result.Config.StrictModeConfig.MaxPointsCount.Should().Be(1000);
-        updatedCollectionInfo.Result.Config.StrictModeConfig.MaxPayloadIndexCount.Should().Be(10);
     }
 
     [Test]

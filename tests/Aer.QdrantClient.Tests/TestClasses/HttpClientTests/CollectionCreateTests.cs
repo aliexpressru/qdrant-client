@@ -669,7 +669,7 @@ public class CollectionCreateTests : QdrantTestsBase
     [Test]
     public async Task StrictMode()
     {
-        OnlyIfVersionAfterOrEqual("1.13.0", "Strict mode is not supported before 1.13.0");
+        OnlyIfVersionAfterOrEqual("1.15.5", "MaxPayloadIndexCount is not supported before 1.15.5");
 
         var strictModeConfig = new StrictModeConfiguration
         {
