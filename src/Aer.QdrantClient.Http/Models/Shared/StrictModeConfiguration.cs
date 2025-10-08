@@ -111,6 +111,11 @@ public sealed class StrictModeConfiguration
     public uint? ConditionMaxSize { get; set; }
 
     /// <summary>
+    /// Max number of payload indexes in a collection.
+    /// </summary>
+    public uint? MaxPayloadIndexCount { get; set; }
+
+    /// <summary>
     /// Multivector configuration.
     /// </summary>
     public Dictionary<string, StrictModeMultivectorConfiguration> MultivectorConfig { get; set; }

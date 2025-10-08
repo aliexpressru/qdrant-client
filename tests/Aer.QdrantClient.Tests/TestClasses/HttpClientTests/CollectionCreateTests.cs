@@ -61,7 +61,7 @@ public class CollectionCreateTests : QdrantTestsBase
         await collectionCreationAct.Should().ThrowAsync<QdrantInvalidEntityNameException>()
             .Where(e => e.Message.Contains("1024"));
     }
-    
+
     [Test]
     [TestCase(VectorDataType.Float32)]
     [TestCase(VectorDataType.Uint8)]
@@ -121,7 +121,7 @@ public class CollectionCreateTests : QdrantTestsBase
         singleVectorConfig.Datatype.Should().Be(vectorDataType);
         singleVectorConfig.DistanceMetric.Should().Be(VectorDistanceMetric.Dot);
     }
-    
+
     [Test]
     public async Task NamedVectors()
     {
@@ -178,7 +178,7 @@ public class CollectionCreateTests : QdrantTestsBase
             namedVectors[namedVectorConfig.Key].Should().BeEquivalentTo(namedVectorConfig.Value);
         }
     }
-    
+
     [Test]
     public async Task SameNamedVectors()
     {
@@ -213,7 +213,7 @@ public class CollectionCreateTests : QdrantTestsBase
                 fullScanThreshold: 5000,
                 vectorDataType: VectorDataType.Float32)
         };
-        
+
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(sparseVectorsConfiguration: sparseVectorsConfiguration){
@@ -231,7 +231,7 @@ public class CollectionCreateTests : QdrantTestsBase
             (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
 
         createdCollectionInfo.Config.Params.Vectors.Should().BeNull();
-        
+
         createdCollectionInfo.Config.Params.SparseVectors.Should().ContainKey(sparseVectorName);
 
         var sparseVectorConfig = createdCollectionInfo.Config.Params.SparseVectors[sparseVectorName];
@@ -239,7 +239,7 @@ public class CollectionCreateTests : QdrantTestsBase
         sparseVectorConfig.OnDisk.Should().BeTrue();
         sparseVectorConfig.FullScanThreshold.Should().Be(5000);
         sparseVectorConfig.VectorDataType.Should().Be(VectorDataType.Float32);
-        
+
         sparseVectorConfig.Modifier.Should().Be(SparseVectorModifier.None);
 
         sparseVectorConfig.Index.Should().NotBeNull();
@@ -334,7 +334,7 @@ public class CollectionCreateTests : QdrantTestsBase
         multipleVectorsConfiguration.NamedVectors["Vector_1"].MultivectorConfig.Comparator.Should()
             .Be(MultivectorComparator.MaxSim);
     }
-    
+
     [Test]
     // this ugly string as second test case argument is a workaround for NUnit analyzer that
     // can't for some reason parse several enum values like this
@@ -503,7 +503,7 @@ public class CollectionCreateTests : QdrantTestsBase
 
     [Test]
     public async Task BinaryQuantization_Before_1_15()
-    { 
+    {
         OnlyIfVersionBefore("1.15.0", "Binary encoding and query encoding is not supported before 1.15.0");
 
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
@@ -540,7 +540,7 @@ public class CollectionCreateTests : QdrantTestsBase
     public async Task BinaryQuantization()
     {
         OnlyIfVersionAfterOrEqual("1.15.0", "Binary encoding and query encoding is not supported before 1.15.0");
-        
+
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
@@ -568,12 +568,12 @@ public class CollectionCreateTests : QdrantTestsBase
 
         quantizationConfig.Method.Should()
             .Be(QuantizationConfiguration.BinaryQuantizationConfiguration.QuantizationMethodName);
-        
+
         quantizationConfig.AlwaysRam.Should().BeTrue();
-        
+
         quantizationConfig.Encoding.Should().NotBeNull();
         quantizationConfig.Encoding.Should().Be(BinaryQuantizationEncoding.TwoBits);
-        
+
         quantizationConfig.QueryEncoding.Should().NotBeNull();
         quantizationConfig.QueryEncoding.Should().Be(BinaryQuantizationQueryEncoding.Scalar4bits);
     }
@@ -669,8 +669,8 @@ public class CollectionCreateTests : QdrantTestsBase
     [Test]
     public async Task StrictMode()
     {
-        OnlyIfVersionAfterOrEqual("1.13.0", "Strict mode is not supported before 1.13.0");
-        
+        OnlyIfVersionAfterOrEqual("1.15.5", "MaxPayloadIndexCount is not supported before 1.15.5");
+
         var strictModeConfig = new StrictModeConfiguration
         {
             Enabled = true,
@@ -689,6 +689,7 @@ public class CollectionCreateTests : QdrantTestsBase
             MaxPointsCount = 10,
             FilterMaxConditions = 3,
             ConditionMaxSize = 2, // This setting will cause an error upon query
+            MaxPayloadIndexCount = 10,
             MultivectorConfig = new(){
                 ["Vector1"] = new(){
                     MaxVectors = 10
@@ -700,7 +701,7 @@ public class CollectionCreateTests : QdrantTestsBase
                 }
             }
         };
-        
+
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 10, isServeVectorsFromDisk: true)
@@ -720,7 +721,7 @@ public class CollectionCreateTests : QdrantTestsBase
             (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
 
         createdCollectionInfo.Config.StrictModeConfig.Should().BeEquivalentTo(strictModeConfig);
-        
+
         // Try to insert more points than allowed by MaxPointsCount
 
         var upsertPointsToNonExistentCollectionResult

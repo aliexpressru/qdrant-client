@@ -50,12 +50,14 @@ public partial class QdrantHttpClient
     /// <param name="peerId">The identifier of the peer to drop.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isForceDropOperation">If <c>true</c> - removes peer even if it has shards/replicas on it.</param>
+    /// <param name="timeout">The operation timeout. If not set the default value of 30 seconds used.</param>
     public async Task<DefaultOperationResponse> RemovePeer(
         ulong peerId,
         CancellationToken cancellationToken,
-        bool isForceDropOperation = false)
+        bool isForceDropOperation = false,
+        TimeSpan? timeout = null)
     {
-        var url = $"/cluster/peer/{peerId}?force={ToUrlQueryString(isForceDropOperation)}";
+        var url = $"/cluster/peer/{peerId}?force={ToUrlQueryString(isForceDropOperation)}&timeout={GetTimeoutValueOrDefault(timeout)}";
 
         var response = await ExecuteRequest<DefaultOperationResponse>(
             url,
