@@ -1,4 +1,4 @@
-name: Build & Publish NuGet Package
+name: Build & Test & Publish NuGet Package
 
 on:
   push:
@@ -11,9 +11,21 @@ env:
 
 jobs:
 
-  build_publish_nuget:
+  build_test_publish_nuget:
 
     runs-on: ubuntu-latest
+
+    services:
+      qdrant:
+        image: qdrant/qdrant:v1.15.5
+        ports:
+          - "6333:6333"
+          - "6334:6334"
+          - "6335:6335"
+
+    env:
+        CI: true
+        QDRANT_VERSION: 1.15.5
 
     steps:
     - uses: actions/checkout@v3
@@ -21,15 +33,21 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 9.0.x
+
     - name: Restore dependencies
       run: dotnet restore
+
     - name: Build
       run: dotnet build --no-restore --configuration Release
+
+    - name: Test
+      run: dotnet test --configuration Release --no-build --verbosity normal
 
     - name: Set version to the environment variable
       run: echo "RELEASE_VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
     - name: Pack project Aer.QdrantClient.Http
       run: dotnet pack src/Aer.QdrantClient.Http/Aer.QdrantClient.Http.csproj --no-restore --no-build --configuration Release --include-symbols -p:PackageVersion=${{ env.RELEASE_VERSION }} --output ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
+    
     - name: Push package
       run: dotnet nuget push ${{ env.PACKAGE_OUTPUT_DIRECTORY }}/*.nupkg -s ${{ env.NUGET_SOURCE_URL }} -k ${{ secrets.AER_NUGET_ACCOUNT_API_KEY }} --skip-duplicate
