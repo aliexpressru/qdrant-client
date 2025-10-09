@@ -349,6 +349,48 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task RestoreReplication_CollectionDoesNotExist()
+    {
+        var restoreShardReplicationResponse =
+            await _qdrantHttpClient.RestoreShardReplication(
+                [TestCollectionName],
+                "http://qdrant-1",
+                CancellationToken.None,
+                logger: _logger);
+
+        restoreShardReplicationResponse.Status.IsSuccess.Should().BeFalse();
+        restoreShardReplicationResponse.Status.GetErrorMessage().Contains("does not exist").Should().BeTrue();
+    }
+
+    [Test]
+    public async Task RestoreReplication_NoReplicationFactor()
+    {
+        await CreateSmallTestShardedCollection(
+            _qdrantHttpClient,
+            TestCollectionName,
+            10U,
+            replicationFactor: (uint) 1);
+
+        var peerInfo =
+            (await _qdrantHttpClient.GetPeerInfo("http://qdrant-1", CancellationToken.None))
+            .EnsureSuccess();
+    }
+
+    [Test]
+    public async Task RestoreReplication_ToReplicationFactor()
+    {
+        await CreateSmallTestShardedCollection(
+            _qdrantHttpClient,
+            TestCollectionName,
+            10U,
+            replicationFactor: (uint) 2);
+
+        var peerInfo =
+            (await _qdrantHttpClient.GetPeerInfo("http://qdrant-1", CancellationToken.None))
+            .EnsureSuccess();
+    }
+
+    [Test]
     [TestCase(1)]
     [TestCase(2)]
     public async Task ReplicateShardsToClusterNode_SelectedCollection(int replicationFactor)
