@@ -97,7 +97,7 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
     public async Task UpdateCollectionParameters_Before_1_16_0()
     {
         OnlyIfVersionBefore("1.16.0", "mmap_threshold parameter of the collection optimizer is deprecated and going to be removed in v1.16");
-        
+
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
@@ -136,7 +136,7 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
                 }
             },
             CancellationToken.None);
-        
+
         await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
 
         var updatedCollectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
@@ -159,7 +159,7 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
 
     [Test]
     public async Task UpdateCollectionParameters()
-    { 
+    {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
@@ -199,7 +199,7 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
                 }
             },
             CancellationToken.None);
-        
+
         await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
 
         var updatedCollectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
@@ -217,7 +217,7 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
         updatedCollectionInfo.Result.Config.OptimizerConfig.MaxOptimizationThreads.Should().Be(newMaxOptimizationThreads);
         updatedCollectionInfo.Result.Config.HnswConfig.MaxIndexingThreads.Should().Be(newMaxIndexingThreads);
         updatedCollectionInfo.Result.Config.Params.OnDiskPayload.Should().BeTrue();
-        
+
         updatedCollectionInfo.Result.Config.StrictModeConfig.Enabled.Should().BeTrue();
         updatedCollectionInfo.Result.Config.StrictModeConfig.MaxPointsCount.Should().Be(1000);
     }
@@ -245,7 +245,7 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
         const int newOptimizationThreads = 10;
 
         var throwingQdrantHttpClient = new ThrowingQdrantHttpClient(_qdrantHttpClient.ApiClient);
-        
+
         throwingQdrantHttpClient.ThrowOnce();
         throwingQdrantHttpClient.BadRequestOnce();
 
@@ -264,7 +264,7 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
             CancellationToken.None,
             retryCount: 3,
             retryDelay: TimeSpan.FromMilliseconds(10),
-            onRetry: (ex, _, _, _) => { 
+            onRetry: (ex, _, _, _) => {
                 Interlocked.Increment(ref retryCount);
                 exceptions.Add(ex);
             }
@@ -276,7 +276,7 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
         // 1 retry exception because when retrying bad request we don't actually have any real exception but a special one.
         exceptions.Count(e => e is QdrantRequestRetryException).Should().Be(1);
         exceptions.Count(e => e is HttpRequestException).Should().Be(1); // 1 exception for requested request failure
-        
+
         updateCollectionParametersResult.Status.IsSuccess.Should().BeTrue();
         updateCollectionParametersResult.Result.Should().NotBeNull();
 
@@ -339,7 +339,7 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
         updatedCollectionInfo.Result.OptimizerStatus.IsOk.Should().BeTrue();
 
         // Collection parameters should not change
-        
+
         updatedCollectionInfo.Result.Config.OptimizerConfig.IndexingThreshold.Should().Be(1);
         updatedCollectionInfo.Result.Config.OptimizerConfig.MaxOptimizationThreads.Should().Be(1);
         updatedCollectionInfo.Result.Config.HnswConfig.MaxIndexingThreads.Should().Be(1);

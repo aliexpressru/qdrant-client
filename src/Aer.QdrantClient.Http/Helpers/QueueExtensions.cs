@@ -2,14 +2,6 @@
 
 internal static class QueueExtensions
 {
-    public static void EnqueueMany<T>(this Queue<T> target, IEnumerable<T> source)
-    {
-        foreach (var item in source)
-        {
-            target.Enqueue(item);
-        }
-    }
-
     /// <summary>
     /// Dequeues at most <paramref name="count"/> items from the queue.
     /// If queue does not have specified number of items dequeues one item.

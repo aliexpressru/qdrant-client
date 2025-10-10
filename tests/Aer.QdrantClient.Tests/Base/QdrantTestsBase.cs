@@ -397,11 +397,12 @@ public class QdrantTestsBase
         return (upsertPoints, upsertPointsByPointIds, upsertPointIds);
     }
 
-    protected async Task CreateSmallTestShardedCollection(
+    protected async Task CreateTestShardedCollection(
         QdrantHttpClient qdrantHttpClient,
         string collectionName,
         uint vectorSize,
-        uint replicationFactor = 1)
+        uint replicationFactor = 1,
+        uint shardNumber = 2)
     {
         (await qdrantHttpClient.CreateCollection(
             collectionName,
@@ -410,7 +411,7 @@ public class QdrantTestsBase
                 OnDiskPayload = true,
                 WriteConsistencyFactor = 2,
                 ReplicationFactor = replicationFactor,
-                ShardNumber = 2,
+                ShardNumber = shardNumber,
                 ShardingMethod = ShardingMethod.Custom
             },
             CancellationToken.None)).EnsureSuccess();
@@ -420,52 +421,82 @@ public class QdrantTestsBase
         var allPeers = (await qdrantHttpClient.GetClusterInfo(CancellationToken.None))
             .EnsureSuccess().AllPeerIds;
 
-        (await qdrantHttpClient.CreateShardKey(
-            collectionName,
-            TestShardKey1,
-            CancellationToken.None,
-            shardsNumber: 1,
-            replicationFactor: replicationFactor,
-            // with manual shard placement we need to manually specify all replica peers,
-            // since qdrant allows having collection replication factor of 2 while having only one peer
-            // for a specific shard. Thus, we need to manually tell it both primary peer and a replica peer
-            placement: replicationFactor == 1
-                ? [allPeers.First()]
-                : [..allPeers])).EnsureSuccess();
+        if (shardNumber > 1)
+        {
+            (await qdrantHttpClient.CreateShardKey(
+                collectionName,
+                TestShardKey1,
+                CancellationToken.None,
+                shardsNumber: shardNumber / 2, // place half of the shards on this key
+                replicationFactor: replicationFactor,
+                // with manual shard placement we need to manually specify all replica peers,
+                // since qdrant allows having collection replication factor of 2 while having only one peer
+                // for a specific shard. Thus, we need to manually tell it both primary peer and a replica peer
+                placement: replicationFactor == 1
+                    ? [allPeers.First()]
+                    : [..allPeers])).EnsureSuccess();
 
-        (await qdrantHttpClient.CreateShardKey(
-            collectionName,
-            TestShardKey2,
-            CancellationToken.None,
-            shardsNumber: 1,
-            replicationFactor: replicationFactor,
-            placement: replicationFactor == 1
-                ? [allPeers.Skip(1).First()]
-                : [..allPeers])).EnsureSuccess();
+            (await qdrantHttpClient.CreateShardKey(
+                collectionName,
+                TestShardKey2,
+                CancellationToken.None,
+                shardsNumber: shardNumber / 2, // place the other half of the shards on this key
+                replicationFactor: replicationFactor,
+                placement: replicationFactor == 1
+                    ? [allPeers.Skip(1).First()]
+                    : [..allPeers])).EnsureSuccess();
 
-        (await qdrantHttpClient.UpsertPoints(
-            collectionName,
-            new UpsertPointsRequest<TestPayload>()
-            {
-                Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+            (await qdrantHttpClient.UpsertPoints(
+                collectionName,
+                new UpsertPointsRequest<TestPayload>()
                 {
-                    new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), "test"),
+                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    {
+                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), "test"),
+                    },
+                    ShardKey = TestShardKey1
                 },
-                ShardKey = TestShardKey1
-            },
-            CancellationToken.None)).EnsureSuccess();
+                CancellationToken.None)).EnsureSuccess();
 
-        (await qdrantHttpClient.UpsertPoints(
-            collectionName,
-            new UpsertPointsRequest<TestPayload>()
-            {
-                Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+            (await qdrantHttpClient.UpsertPoints(
+                collectionName,
+                new UpsertPointsRequest<TestPayload>()
                 {
-                    new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), "test2"),
+                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    {
+                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), "test2"),
+                    },
+                    ShardKey = TestShardKey2
                 },
-                ShardKey = TestShardKey2
-            },
-            CancellationToken.None)).EnsureSuccess();
+                CancellationToken.None)).EnsureSuccess();
+        }
+        else
+        { 
+            (await qdrantHttpClient.CreateShardKey(
+                collectionName,
+                TestShardKey1,
+                CancellationToken.None,
+                shardsNumber: shardNumber, // place all the shards on this key
+                replicationFactor: replicationFactor,
+                // with manual shard placement we need to manually specify all replica peers,
+                // since qdrant allows having collection replication factor of 2 while having only one peer
+                // for a specific shard. Thus, we need to manually tell it both primary peer and a replica peer
+                placement: replicationFactor == 1
+                    ? [allPeers.First()]
+                    : [..allPeers])).EnsureSuccess();
+
+            (await qdrantHttpClient.UpsertPoints(
+                collectionName,
+                new UpsertPointsRequest<TestPayload>()
+                {
+                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    {
+                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), "test"),
+                    },
+                    ShardKey = TestShardKey1
+                },
+                CancellationToken.None)).EnsureSuccess();
+        }
 
         await qdrantHttpClient.EnsureCollectionReady(collectionName, cancellationToken: CancellationToken.None);
 

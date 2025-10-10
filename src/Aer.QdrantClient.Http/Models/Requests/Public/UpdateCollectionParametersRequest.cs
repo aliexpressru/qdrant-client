@@ -46,13 +46,13 @@ public sealed class UpdateCollectionParametersRequest
     }
 
     #endregion
-    
+
     internal bool IsEmpty { private init; get; }
 
     /// <summary>
     /// Used to issue an empty update collection parameters request.
     /// As per documentation https://qdrant.tech/documentation/concepts/collections/#grey-collection-status
-    /// this should be done to trigger <see cref="QdrantCollectionStatus.Grey"/> status collection optimizers. 
+    /// this should be done to trigger <see cref="QdrantCollectionStatus.Grey"/> status collection optimizers.
     /// </summary>
     internal static string EmptyRequestBody { get; } = """
         {
@@ -91,6 +91,7 @@ public sealed class UpdateCollectionParametersRequest
     /// <summary>
     /// The quantization configuration to update.
     /// </summary>
+    [JsonConverter(typeof(QuantizationConfigurationJsonConverter))]
     public QuantizationConfiguration QuantizationConfig { get; set; }
 
     /// <summary>
