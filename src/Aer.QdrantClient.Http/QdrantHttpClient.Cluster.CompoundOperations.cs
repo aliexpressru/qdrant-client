@@ -8,6 +8,7 @@ using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Microsoft.Extensions.Logging;
+using MoreLinq;
 
 namespace Aer.QdrantClient.Http;
 
@@ -15,13 +16,11 @@ namespace Aer.QdrantClient.Http;
 public partial class QdrantHttpClient
 {
     /// <summary>
-    /// Replicates shards for specified or all collections to specified peer.
+    /// Replicates shards for specified or all collections from one peer to the other.
     /// </summary>
+    /// <param name="sourcePeerId">The peer id for the peer to replicate shards from.</param>
     /// <param name="targetPeerId">The peer id for the peer to replicate shards to.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="isIgnoreReplicationFactor">
-    /// If set to <c>false</c> - does not replicate collection more than its configured replication factor.
-    /// </param>
     /// <param name="logger">The optional logger for state logging.</param>
     /// <param name="isDryRun">
     /// If set to <c>true</c>, this operation calculates and logs
@@ -31,408 +30,128 @@ public partial class QdrantHttpClient
     /// Method for transferring the shard from one node to another.
     /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
     /// </param>
+    /// <param name="isMoveShards">If set to <c>true</c> moves shards to the target peer instead of copying them.</param>
     /// <param name="collectionNamesToReplicate">
     /// Collection names to replicate shards for.
     /// If <c>null</c> or empty - replicates all collection shards.
     /// </param>
-    public async Task<ReplicateShardsToPeerResponse> ReplicateShardsToPeer(
+    /// <param name="shardIdsToReplicate">
+    /// The ids of the shards to replicate to the target peer.
+    /// If null or empty - replicates all shards that are missing on the target peer.
+    /// </param>
+    public async Task<ReplicateShardsToPeerResponse> ReplicateShards(
+        ulong sourcePeerId,
         ulong targetPeerId,
         CancellationToken cancellationToken,
-        bool isIgnoreReplicationFactor = true,
         ILogger logger = null,
         bool isDryRun = false,
-        ShardTransferMethod? shardTransferMethod = null,
-        params string[] collectionNamesToReplicate)
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        bool isMoveShards = false,
+        string[] collectionNamesToReplicate = null,
+        uint[] shardIdsToReplicate = null)
     {
+        var sourcePeerInfo = await GetPeerInfo(
+            sourcePeerId,
+            cancellationToken);
+        
         var targetPeerInfo = await GetPeerInfo(
             targetPeerId,
             cancellationToken);
-
-        return await ReplicateShardsToPeerInternal(
+        
+        return await ReplicateShardsInternal(
+            sourcePeerInfo,
             targetPeerInfo,
+            shardTransferMethod,
             cancellationToken,
-            isIgnoreReplicationFactor,
             logger,
             isDryRun,
+            collectionNamesToReplicate,
+            shardIdsToReplicate ?? [],
+            isMoveShards);
+    }
+
+    /// <summary>
+    /// Replicates shards for specified or all collections from one peer to the other.
+    /// </summary>
+    /// <param name="sourcePeerUriSelectorString">The peer uri selector string for the peer to replicate shards from.</param>
+    /// <param name="targetPeerUriSelectorString">The peer uri selector string for the peer to replicate shards to.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="logger">The optional logger for state logging.</param>
+    /// <param name="isDryRun">
+    /// If set to <c>true</c>, this operation calculates and logs
+    /// all shard movements without actually executing them.
+    /// </param>
+    /// <param name="shardTransferMethod">
+    /// Method for transferring the shard from one node to another.
+    /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
+    /// </param>
+    /// <param name="isMoveShards">If set to <c>true</c> moves shards to the target peer instead of copying them.</param>
+    /// <param name="collectionNamesToReplicate">
+    /// Collection names to replicate shards for.
+    /// If <c>null</c> or empty - replicates all collection shards.
+    /// </param>
+    /// <param name="shardIdsToReplicate">
+    /// The ids of the shards to replicate to the target peer.
+    /// If null or empty - replicates all shards that are missing on the target peer.
+    /// </param>
+    public async Task<ReplicateShardsToPeerResponse> ReplicateShards(
+        string sourcePeerUriSelectorString,
+        string targetPeerUriSelectorString,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        bool isMoveShards = false,
+        string[] collectionNamesToReplicate= null,
+        uint[] shardIdsToReplicate = null)
+    {
+        var sourcePeerInfo = await GetPeerInfo(
+            sourcePeerUriSelectorString,
+            cancellationToken);
+        
+        var targetPeerInfo = await GetPeerInfo(
+            targetPeerUriSelectorString,
+            cancellationToken);
+
+        return await ReplicateShardsInternal(
+            sourcePeerInfo,
+            targetPeerInfo,
             shardTransferMethod,
-            collectionNamesToReplicate);
+            cancellationToken,
+            logger,
+            isDryRun,
+            collectionNamesToReplicate,
+            shardIdsToReplicate ?? [],
+            isMoveShards);
     }
     
-    /// <summary>
-    /// Replicates shards for specified or all collections to specified peer.
-    /// </summary>
-    /// <param name="targetPeerUriSelectorString">The peer uri selector string for the peer to replicate shards to.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="isIgnoreReplicationFactor">
-    /// If set to <c>false</c> - does not replicate collection more than its configured replication factor.
-    /// </param>
-    /// <param name="logger">The optional logger for state logging.</param>
-    /// <param name="isDryRun">
-    /// If set to <c>true</c>, this operation calculates and logs
-    /// all shard movements without actually executing them.
-    /// </param>
-    /// <param name="shardTransferMethod">
-    /// Method for transferring the shard from one node to another.
-    /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
-    /// </param>
-    /// <param name="collectionNamesToReplicate">
-    /// Collection names to replicate shards for.
-    /// If <c>null</c> or empty - replicates all collection shards.
-    /// </param>
-    public async Task<ReplicateShardsToPeerResponse> ReplicateShardsToPeer(
-        string targetPeerUriSelectorString,
-        CancellationToken cancellationToken,
-        bool isIgnoreReplicationFactor = true,
-        ILogger logger = null,
-        bool isDryRun = false,
-        ShardTransferMethod? shardTransferMethod = null,
-        params string[] collectionNamesToReplicate)
-    {
-        var targetPeerInfo = await GetPeerInfo(
-            targetPeerUriSelectorString,
-            cancellationToken);
-
-        return await ReplicateShardsToPeerInternal(
-            targetPeerInfo,
-            cancellationToken,
-            isIgnoreReplicationFactor,
-            logger,
-            isDryRun,
-            shardTransferMethod,
-            collectionNamesToReplicate);
-    }
-
-    private async Task<ReplicateShardsToPeerResponse> ReplicateShardsToPeerInternal(
+    private async Task<ReplicateShardsToPeerResponse> ReplicateShardsInternal(
+        GetPeerResponse sourcePeerInfoResponse,
         GetPeerResponse targetPeerInfoResponse,
+        ShardTransferMethod shardTransferMethod,
         CancellationToken cancellationToken,
-        bool isIgnoreReplicationFactor = true,
-        ILogger logger = null,
-        bool isDryRun = false,
-        ShardTransferMethod? shardTransferMethod = null,
-        params string[] collectionNamesToReplicate)
-    {
-        Stopwatch sw = Stopwatch.StartNew();
-
-        try
-        {
-            var (targetPeerId, _, sourcePeerIds, peerUriPerPeerId) = targetPeerInfoResponse.EnsureSuccess();
-
-            var collectionInfos = (await ListCollectionInfo(
-                isCountExactPointsNumber: false,
-                cancellationToken)).EnsureSuccess();
-
-            var sourcePeers = new CircularEnumerable<ulong>(sourcePeerIds);
-
-            var collectionNames = collectionInfos.Keys.ToArray();
-
-            if (collectionNamesToReplicate is {Length: > 0})
-            {
-                // check tant all collection names are stated correctly
-                foreach (var collectionNameFromParameter in collectionNamesToReplicate)
-                {
-                    if (!collectionInfos.ContainsKey(collectionNameFromParameter))
-                    {
-                        sw.Stop();
-
-                        return new ReplicateShardsToPeerResponse()
-                        {
-                            Result = false,
-                            Status = QdrantStatus.Fail(
-                                $"Collection '{collectionNameFromParameter}' does not exist, check parameters"),
-                            Time = sw.Elapsed.TotalSeconds
-                        };
-                    }
-                }
-
-                collectionNames = collectionNamesToReplicate;
-            }
-
-            logger?.LogInformation(
-                "Going to replicate shards for collections {CollectionNames} from peers {PeersToMoveShardsFrom} to peer {PeerToMoveShardsTo} ({PeerUri})",
-                collectionInfos.Keys,
-                sourcePeerIds,
-                targetPeerId,
-                peerUriPerPeerId[targetPeerId]
-            );
-
-            foreach (var collectionName in collectionNames)
-            {
-                var collectionShardingInfo =
-                    (await GetCollectionClusteringInfo(collectionName, cancellationToken))
-                    .EnsureSuccess();
-
-                var collectionInfo = collectionInfos[collectionName];
-
-                var collectionTargetReplicationFactor = collectionInfo.Config.Params.ReplicationFactor ?? 0U;
-
-                if (collectionTargetReplicationFactor == 0U)
-                {
-                    logger?.LogError(
-                        "Collection '{CollectionName}' replication factor is unknown. Skipping collection shards replication",
-                        collectionName);
-
-                    continue;
-                }
-
-                var (collectionShardsPerPeers, shardsWithReplicationFactors) =
-                    GetShardIdsPerPeerIdsAndReplicationFactors(
-                        collectionName,
-                        collectionShardingInfo,
-                        collectOnlyActiveShards: true,
-                        logger);
-
-                // collect source shards to replicate and peers to replicate shards from
-
-                List<(uint sourceShardId, ulong sourcePeerId)> shardReplicationSources = new();
-
-                foreach (var (sourceShardId, effectiveSourceShardReplicationFactor) in shardsWithReplicationFactors)
-                {
-                    var isSourceShardReplicationFactorReached = !isIgnoreReplicationFactor
-                        &&
-                        effectiveSourceShardReplicationFactor >= collectionTargetReplicationFactor;
-
-                    // target peer either does not have any shards on it or does not have the source shard
-                    var targetPeerDoesNotHaveSourceShard =
-                        !collectionShardsPerPeers.ContainsKey(targetPeerId)
-                        // TODO: maybe we should not test that shard already exists on target peer ???
-                        || !collectionShardsPerPeers[targetPeerId].Contains(sourceShardId);
-
-                    if (!isSourceShardReplicationFactorReached
-                        && targetPeerDoesNotHaveSourceShard)
-                    {
-                        var candidateSourcePeer = sourcePeers.GetNext();
-
-                        using var _ = sourcePeers.StartCircleDetection();
-
-                        if (collectionShardsPerPeers.ContainsKey(candidateSourcePeer))
-                        {
-                            while (!collectionShardsPerPeers[candidateSourcePeer].Contains(sourceShardId))
-                            {
-                                // here we should not get an infinite cycle since
-                                // at least one peer will contain a source shard replica
-                                // but if we do - circe detection in CircularEnumerable should throw
-                                candidateSourcePeer = sourcePeers.GetNext();
-                            }
-                        }
-
-                        shardReplicationSources.Add((sourceShardId, candidateSourcePeer));
-                    }
-                    else
-                    {
-                        if (isSourceShardReplicationFactorReached)
-                        {
-                            // means collection replication factor reached
-                            logger?.LogInformation(
-                                "Collection '{CollectionName}' shard {ShardId} already replicated {EffectiveReplicationFactor} times, which is target collection replication factor. Shard won't be replicated",
-                                collectionName,
-                                sourceShardId,
-                                effectiveSourceShardReplicationFactor
-                            );
-                        }
-
-                        if (!targetPeerDoesNotHaveSourceShard)
-                        {
-                            // shard already exists on target peer
-                            logger?.LogInformation(
-                                "Collection '{CollectionName}' shard {ShardId} already exists on a target peer {TargetPeerId} ({PeerUri}). Shard won't be replicated",
-                                collectionName,
-                                sourceShardId,
-                                targetPeerId,
-                                peerUriPerPeerId[targetPeerId]
-                            );
-                        }
-                    }
-                }
-
-                foreach (var (sourceShardId, shardReplicaSourcePeerId) in shardReplicationSources)
-                {
-                    logger?.LogInformation(
-                        "Going to replicate collection '{CollectionName}' shard {ShardId} from peer {SourcePeer} ({SourcePeerUri}) to peer {TargetPeer} ({TargetPeerUri})",
-                        collectionName,
-                        sourceShardId,
-                        shardReplicaSourcePeerId,
-                        peerUriPerPeerId[shardReplicaSourcePeerId],
-                        targetPeerId,
-                        peerUriPerPeerId[targetPeerId]
-                    );
-
-                    if (!isDryRun)
-                    {
-                        var isSuccessfullyStartOperationResponse = await UpdateCollectionClusteringSetup(
-                            collectionName,
-                            UpdateCollectionClusteringSetupRequest.CreateReplicateShardRequest(
-                                shardId: sourceShardId,
-                                fromPeerId: shardReplicaSourcePeerId,
-                                toPeerId: targetPeerId,
-                                shardTransferMethod: shardTransferMethod ?? ShardTransferMethod.Snapshot),
-                            cancellationToken);
-
-                        if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
-                            || isSuccessfullyStartOperationResponse.Result is false)
-                        {
-                            logger?.LogError(
-                                "Error replicating collection '{CollectionName}' shard {ShardId} from peer {SourcePeer} ({SourcePeerUri}) to peer {TargetPeer} ({TargetPeerUri}): {ErrorMessage}",
-                                collectionName,
-                                sourceShardId,
-                                shardReplicaSourcePeerId,
-                                peerUriPerPeerId[shardReplicaSourcePeerId],
-                                targetPeerId,
-                                peerUriPerPeerId[targetPeerId],
-                                isSuccessfullyStartOperationResponse.Status.GetErrorMessage());
-
-                            // means issuing replicate operation failed - abandon move
-
-                            sw.Stop();
-
-                            return new ReplicateShardsToPeerResponse()
-                            {
-                                Result = false,
-                                Status = isSuccessfullyStartOperationResponse.Status,
-                                Time = sw.Elapsed.TotalSeconds
-                            };
-                        }
-                    }
-                    else
-                    {
-                        logger?.LogInformation("Shard move simulation mode ON. No shards replicated");
-                    }
-                }
-            }
-
-            sw.Stop();
-
-            return new ReplicateShardsToPeerResponse()
-            {
-                Result = true,
-                Status = QdrantStatus.Success(),
-                Time = sw.Elapsed.TotalSeconds
-            };
-        }
-        catch (QdrantUnsuccessfulResponseStatusException qex)
-        {
-            sw.Stop();
-
-            return new ReplicateShardsToPeerResponse()
-            {
-                Result = false,
-                Status = QdrantStatus.Fail(qex.Message, qex),
-                Time = sw.Elapsed.TotalSeconds
-            };
-        }
-    }
-
-    /// <summary>
-    /// Restores shard replication on specified peer for specified collections.
-    /// The final result will be restoring replication_factor copies of each shard on different peers.
-    /// </summary>
-    /// <param name="collectionNamesToReplicate">Collection names to restore shard replication for.</param>
-    /// <param name="targetPeerUriSelectorString">The peer uri selector string for the peer to replicate shards to.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="isIgnoreReplicationFactor">
-    /// If set to <c>false</c> - does not replicate collection more than its configured replication factor.
-    /// </param>
-    /// <param name="logger">The optional logger for state logging.</param>
-    /// <param name="isDryRun">
-    /// If set to <c>true</c>, this operation calculates and logs
-    /// all shard movements without actually executing them.
-    /// </param>
-    /// <param name="shardTransferMethod">
-    /// Method for transferring the shard from one node to another.
-    /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
-    /// </param>
-    public async Task<ReplicateShardsToPeerResponse> RestoreShardReplication(
+        ILogger logger,
+        bool isDryRun,
         string[] collectionNamesToReplicate,
-        string targetPeerUriSelectorString,
-        CancellationToken cancellationToken,
-        bool isIgnoreReplicationFactor = true,
-        ILogger logger = null,
-        bool isDryRun = false,
-        ShardTransferMethod? shardTransferMethod = null)
-    {
-        GetPeerResponse targetPeerInfo = await GetPeerInfo(
-            targetPeerUriSelectorString,
-            cancellationToken);
-
-        return await RestoreShardReplicationInternal(
-            targetPeerInfo,
-            collectionNamesToReplicate,
-            cancellationToken,
-            isIgnoreReplicationFactor,
-            logger,
-            isDryRun,
-            shardTransferMethod);
-    }
-
-    /// <summary>
-    /// Restores shard replication on specified peer for specified collections.
-    /// The final result will be restoring replication_factor copies of each shard on different peers.
-    /// </summary>
-    /// <param name="collectionNamesToReplicate">Collection names to restore shard replication for.</param>
-    /// <param name="targetPeerId">The peer id for the peer to replicate shards to.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="isIgnoreReplicationFactor">
-    /// If set to <c>false</c> - does not replicate collection more than its configured replication factor.
-    /// </param>
-    /// <param name="logger">The optional logger for state logging.</param>
-    /// <param name="isDryRun">
-    /// If set to <c>true</c>, this operation calculates and logs
-    /// all shard movements without actually executing them.
-    /// </param>
-    /// <param name="shardTransferMethod">
-    /// Method for transferring the shard from one node to another.
-    /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
-    /// </param>
-    public async Task<ReplicateShardsToPeerResponse> RestoreShardReplication(
-        string[] collectionNamesToReplicate,
-        ulong targetPeerId,
-        CancellationToken cancellationToken,
-        bool isIgnoreReplicationFactor = true,
-        ILogger logger = null,
-        bool isDryRun = false,
-        ShardTransferMethod? shardTransferMethod = null)
-    {
-        GetPeerResponse targetPeerInfo = await GetPeerInfo(
-            targetPeerId,
-            cancellationToken);
-
-        return await RestoreShardReplicationInternal(
-            targetPeerInfo,
-            collectionNamesToReplicate,
-            cancellationToken,
-            isIgnoreReplicationFactor,
-            logger,
-            isDryRun,
-            shardTransferMethod);
-    }
-
-    private async Task<ReplicateShardsToPeerResponse> RestoreShardReplicationInternal(
-        GetPeerResponse targetPeerInfoResponse,
-        string[] collectionNamesToReplicate,
-        CancellationToken cancellationToken,
-        bool isIgnoreReplicationFactor = true,
-        ILogger logger = null,
-        bool isDryRun = false,
-        ShardTransferMethod? shardTransferMethod = null)
+        uint[] shardIdsToReplicate,
+        bool isMoveShards)
     { 
         Stopwatch sw = Stopwatch.StartNew();
 
         try
         {
-            var (targetPeerId, _, sourcePeerIds, peerUriPerPeerId) = targetPeerInfoResponse.EnsureSuccess();
+            var (sourcePeerId, _, _, peerUriPerPeerId) = sourcePeerInfoResponse.EnsureSuccess();
+            var (targetPeerId, _, _, _) = targetPeerInfoResponse.EnsureSuccess();
 
-            throw new NotImplementedException();
-            
             var collectionInfos = (await ListCollectionInfo(
                 isCountExactPointsNumber: false,
                 cancellationToken)).EnsureSuccess();
 
-            var sourcePeers = new CircularEnumerable<ulong>(sourcePeerIds);
-
-            var collectionNames = collectionInfos.Keys.ToArray();
+            string[] collectionNames;
 
             if (collectionNamesToReplicate is {Length: > 0})
             {
-                // check tant all collection names are stated correctly
+                // check that all collection names are stated correctly
                 foreach (var collectionNameFromParameter in collectionNamesToReplicate)
                 {
                     if (!collectionInfos.ContainsKey(collectionNameFromParameter))
@@ -451,9 +170,291 @@ public partial class QdrantHttpClient
 
                 collectionNames = collectionNamesToReplicate;
             }
+            else
+            {
+                collectionNames = collectionInfos.Keys.ToArray();
+            }
 
             logger?.LogInformation(
-                "Going to replicate shards for collections {CollectionNames} from peers {PeersToMoveShardsFrom} to peer {PeerToMoveShardsTo} ({PeerUri})",
+                "Going to replicate shards for collections {CollectionNames} from peer {PeerToMoveShardsFrom}({PeerToMoveShardsFromUri}) to peer {PeerToMoveShardsTo}({PeerToMoveShardsToUri})",
+                collectionInfos.Keys,
+                sourcePeerId,
+                peerUriPerPeerId[sourcePeerId],
+                targetPeerId,
+                peerUriPerPeerId[targetPeerId]
+            );
+
+            foreach (var collectionName in collectionNames)
+            {
+                var collectionShardingInfo =
+                    (await GetCollectionClusteringInfo(collectionName, cancellationToken))
+                    .EnsureSuccess();
+
+                var (collectionShardsPerPeers, _) =
+                    GetShardIdsPerPeerIdsAndReplicationFactors(
+                        collectionName,
+                        collectionShardingInfo,
+                        collectOnlyActiveShards: true,
+                        logger);
+                
+                IEnumerable<uint> sourceShardIds;
+
+                if (shardIdsToReplicate is {Length: >0})
+                { 
+                    // Check that all provided shard ids exist on the source peer
+                    foreach (var shardIdToReplicate in shardIdsToReplicate)
+                    {
+                        if (!collectionShardsPerPeers[sourcePeerId].Contains(shardIdToReplicate))
+                        {
+                            sw.Stop();
+
+                            return new ReplicateShardsToPeerResponse()
+                            {
+                                Result = false,
+                                Status = QdrantStatus.Fail(
+                                    $"Collection '{collectionName}' does not have shard {shardIdToReplicate} on source peer {sourcePeerId}({peerUriPerPeerId[sourcePeerId]})"),
+                                Time = sw.Elapsed.TotalSeconds
+                            };
+                        }
+                    }
+
+                    sourceShardIds = shardIdsToReplicate;
+                }
+                else
+                { 
+                    sourceShardIds = collectionShardsPerPeers[sourcePeerId];
+                }
+
+                foreach (var sourceShardId in sourceShardIds)
+                {
+                    // target peer either does not have any shards on it or does not have the source shard
+                    var targetPeerDoesNotHaveSourceShard =
+                        !collectionShardsPerPeers.ContainsKey(targetPeerId)
+                        || !collectionShardsPerPeers[targetPeerId].Contains(sourceShardId);
+
+                    if (targetPeerDoesNotHaveSourceShard)
+                    {
+                        logger?.LogInformation(
+                            "Going to replicate collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri})",
+                            collectionName,
+                            sourceShardId,
+                            sourcePeerId,
+                            peerUriPerPeerId[sourcePeerId],
+                            targetPeerId,
+                            peerUriPerPeerId[targetPeerId]
+                        );
+
+                        if (!isDryRun)
+                        {
+                            var isSuccessfullyStartOperationResponse = await UpdateCollectionClusteringSetup(
+                                collectionName,
+                                isMoveShards
+                                    ? UpdateCollectionClusteringSetupRequest.CreateMoveShardRequest(
+                                        shardId: sourceShardId,
+                                        fromPeerId: sourcePeerId,
+                                        toPeerId: targetPeerId,
+                                        shardTransferMethod: shardTransferMethod)
+                                    : UpdateCollectionClusteringSetupRequest.CreateReplicateShardRequest(
+                                        shardId: sourceShardId,
+                                        fromPeerId: sourcePeerId,
+                                        toPeerId: targetPeerId,
+                                        shardTransferMethod: shardTransferMethod),
+                                cancellationToken);
+
+                            if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
+                                || isSuccessfullyStartOperationResponse.Result is false)
+                            {
+                                logger?.LogError(
+                                    "Error replicating collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri}): {ErrorMessage}",
+                                    collectionName,
+                                    sourceShardId,
+                                    sourcePeerId,
+                                    peerUriPerPeerId[sourcePeerId],
+                                    targetPeerId,
+                                    peerUriPerPeerId[targetPeerId],
+                                    isSuccessfullyStartOperationResponse.Status.GetErrorMessage());
+
+                                // means issuing replicate operation failed - abandon move
+
+                                sw.Stop();
+
+                                return new ReplicateShardsToPeerResponse()
+                                {
+                                    Result = false,
+                                    Status = isSuccessfullyStartOperationResponse.Status,
+                                    Time = sw.Elapsed.TotalSeconds
+                                };
+                            }
+                        }
+                        else
+                        {
+                            logger?.LogInformation("Shard move simulation mode ON. No shards replicated");
+                        }
+                    }
+                    else
+                    {
+                        // shard already exists on target peer
+                        logger?.LogInformation(
+                            "Collection '{CollectionName}' shard {ShardId} already exists on a target peer {TargetPeerId}({PeerUri}). Shard won't be replicated",
+                            collectionName,
+                            sourceShardId,
+                            targetPeerId,
+                            peerUriPerPeerId[targetPeerId]
+                        );
+                    }
+                }
+            }
+
+            sw.Stop();
+
+            return new ReplicateShardsToPeerResponse()
+            {
+                Result = true,
+                Status = QdrantStatus.Success(),
+                Time = sw.Elapsed.TotalSeconds
+            };
+        }
+        catch (QdrantUnsuccessfulResponseStatusException qex)
+        {
+            sw.Stop();
+
+            return new ReplicateShardsToPeerResponse()
+            {
+                Result = false,
+                Status = QdrantStatus.Fail(qex.Message, qex),
+                Time = sw.Elapsed.TotalSeconds
+            };
+        }
+    }
+    
+    /// <summary>
+    /// Replicates shards for specified or all collections to specified peer.
+    /// </summary>
+    /// <param name="targetPeerId">The peer id for the peer to replicate shards to.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="logger">The optional logger for state logging.</param>
+    /// <param name="isDryRun">
+    /// If set to <c>true</c>, this operation calculates and logs
+    /// all shard movements without actually executing them.
+    /// </param>
+    /// <param name="shardTransferMethod">
+    /// Method for transferring the shard from one node to another.
+    /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
+    /// </param>
+    /// <param name="collectionNamesToReplicate">
+    /// Collection names to replicate shards for.
+    /// If <c>null</c> or empty - replicates all collection shards.
+    /// </param>
+    public async Task<ReplicateShardsToPeerResponse> ReplicateShardsToPeer(
+        ulong targetPeerId,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        params string[] collectionNamesToReplicate)
+    {
+        var targetPeerInfo = await GetPeerInfo(
+            targetPeerId,
+            cancellationToken);
+
+        return await ReplicateShardsToPeerInternal(
+            targetPeerInfo,
+            shardTransferMethod,
+            cancellationToken,
+            logger,
+            isDryRun,
+            collectionNamesToReplicate);
+    }
+
+    /// <summary>
+    /// Replicates shards for specified or all collections to specified peer.
+    /// </summary>
+    /// <param name="targetPeerUriSelectorString">The peer uri selector string for the peer to replicate shards to.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="logger">The optional logger for state logging.</param>
+    /// <param name="isDryRun">
+    /// If set to <c>true</c>, this operation calculates and logs
+    /// all shard movements without actually executing them.
+    /// </param>
+    /// <param name="shardTransferMethod">
+    /// Method for transferring the shard from one node to another.
+    /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
+    /// </param>
+    /// <param name="collectionNamesToReplicate">
+    /// Collection names to replicate shards for.
+    /// If <c>null</c> or empty - replicates all collection shards.
+    /// </param>
+    public async Task<ReplicateShardsToPeerResponse> ReplicateShardsToPeer(
+        string targetPeerUriSelectorString,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        params string[] collectionNamesToReplicate)
+    {
+        var targetPeerInfo = await GetPeerInfo(
+            targetPeerUriSelectorString,
+            cancellationToken);
+
+        return await ReplicateShardsToPeerInternal(
+            targetPeerInfo,
+            shardTransferMethod,
+            cancellationToken,
+            logger,
+            isDryRun,
+            collectionNamesToReplicate);
+    }
+
+    private async Task<ReplicateShardsToPeerResponse> ReplicateShardsToPeerInternal(
+        GetPeerResponse targetPeerInfoResponse,
+        ShardTransferMethod shardTransferMethod,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        params string[] collectionNamesToReplicate)
+    {
+        Stopwatch sw = Stopwatch.StartNew();
+
+        try
+        {
+            var (targetPeerId, _, sourcePeerIds, peerUriPerPeerId) = targetPeerInfoResponse.EnsureSuccess();
+
+            var collectionInfos = (await ListCollectionInfo(
+                isCountExactPointsNumber: false,
+                cancellationToken)).EnsureSuccess();
+
+            var sourcePeers = new CircularEnumerable<ulong>(sourcePeerIds);
+
+            string[] collectionNames;
+
+            if (collectionNamesToReplicate is {Length: > 0})
+            {
+                // check that all collection names are stated correctly
+                foreach (var collectionNameFromParameter in collectionNamesToReplicate)
+                {
+                    if (!collectionInfos.ContainsKey(collectionNameFromParameter))
+                    {
+                        sw.Stop();
+
+                        return new ReplicateShardsToPeerResponse()
+                        {
+                            Result = false,
+                            Status = QdrantStatus.Fail(
+                                $"Collection '{collectionNameFromParameter}' does not exist, check parameters"),
+                            Time = sw.Elapsed.TotalSeconds
+                        };
+                    }
+                }
+
+                collectionNames = collectionNamesToReplicate;
+            }
+            else
+            { 
+                collectionNames = collectionInfos.Keys.ToArray();
+            }
+
+            logger?.LogInformation(
+                "Going to replicate shards for collections {CollectionNames} from peers {PeersToMoveShardsFrom} to peer {PeerToMoveShardsTo}({PeerUri})",
                 collectionInfos.Keys,
                 sourcePeerIds,
                 targetPeerId,
@@ -490,20 +491,14 @@ public partial class QdrantHttpClient
 
                 List<(uint sourceShardId, ulong sourcePeerId)> shardReplicationSources = new();
 
-                foreach (var (sourceShardId, effectiveSourceShardReplicationFactor) in shardsWithReplicationFactors)
+                foreach (var (sourceShardId, _) in shardsWithReplicationFactors)
                 {
-                    var isSourceShardReplicationFactorReached = !isIgnoreReplicationFactor
-                        &&
-                        effectiveSourceShardReplicationFactor >= collectionTargetReplicationFactor;
-
                     // target peer either does not have any shards on it or does not have the source shard
                     var targetPeerDoesNotHaveSourceShard =
                         !collectionShardsPerPeers.ContainsKey(targetPeerId)
-                        // TODO: maybe we should not test that shard already exists on target peer ???
                         || !collectionShardsPerPeers[targetPeerId].Contains(sourceShardId);
 
-                    if (!isSourceShardReplicationFactorReached
-                        && targetPeerDoesNotHaveSourceShard)
+                    if (targetPeerDoesNotHaveSourceShard)
                     {
                         var candidateSourcePeer = sourcePeers.GetNext();
 
@@ -524,35 +519,21 @@ public partial class QdrantHttpClient
                     }
                     else
                     {
-                        if (isSourceShardReplicationFactorReached)
-                        {
-                            // means collection replication factor reached
-                            logger?.LogInformation(
-                                "Collection '{CollectionName}' shard {ShardId} already replicated {EffectiveReplicationFactor} times, which is target collection replication factor. Shard won't be replicated",
-                                collectionName,
-                                sourceShardId,
-                                effectiveSourceShardReplicationFactor
-                            );
-                        }
-
-                        if (!targetPeerDoesNotHaveSourceShard)
-                        {
-                            // shard already exists on target peer
-                            logger?.LogInformation(
-                                "Collection '{CollectionName}' shard {ShardId} already exists on a target peer {TargetPeerId} ({PeerUri}). Shard won't be replicated",
-                                collectionName,
-                                sourceShardId,
-                                targetPeerId,
-                                peerUriPerPeerId[targetPeerId]
-                            );
-                        }
+                        // shard already exists on target peer
+                        logger?.LogInformation(
+                            "Collection '{CollectionName}' shard {ShardId} already exists on a target peer {TargetPeerId}({PeerUri}). Shard won't be replicated",
+                            collectionName,
+                            sourceShardId,
+                            targetPeerId,
+                            peerUriPerPeerId[targetPeerId]
+                        );
                     }
                 }
 
                 foreach (var (sourceShardId, shardReplicaSourcePeerId) in shardReplicationSources)
                 {
                     logger?.LogInformation(
-                        "Going to replicate collection '{CollectionName}' shard {ShardId} from peer {SourcePeer} ({SourcePeerUri}) to peer {TargetPeer} ({TargetPeerUri})",
+                        "Going to replicate collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri})",
                         collectionName,
                         sourceShardId,
                         shardReplicaSourcePeerId,
@@ -569,14 +550,14 @@ public partial class QdrantHttpClient
                                 shardId: sourceShardId,
                                 fromPeerId: shardReplicaSourcePeerId,
                                 toPeerId: targetPeerId,
-                                shardTransferMethod: shardTransferMethod ?? ShardTransferMethod.Snapshot),
+                                shardTransferMethod: shardTransferMethod),
                             cancellationToken);
 
                         if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
                             || isSuccessfullyStartOperationResponse.Result is false)
                         {
                             logger?.LogError(
-                                "Error replicating collection '{CollectionName}' shard {ShardId} from peer {SourcePeer} ({SourcePeerUri}) to peer {TargetPeer} ({TargetPeerUri}): {ErrorMessage}",
+                                "Error replicating collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri}): {ErrorMessage}",
                                 collectionName,
                                 sourceShardId,
                                 shardReplicaSourcePeerId,
@@ -627,9 +608,283 @@ public partial class QdrantHttpClient
     }
 
     /// <summary>
+    /// Equalizes shard replication between source and empty target peers for specified collections.
+    /// The final result will be moving shards form source to empty target until equal number of shard replicas on both peers.
+    /// </summary>
+    /// <param name="collectionNamesToEqualize">Collection names to equalize shard replication for.</param>
+    /// <param name="sourcePeerUriSelectorString">The peer uri selector string for the peer to replicate shards from.</param>
+    /// <param name="emptyTargetPeerUriSelectorString">The peer uri selector string for the empty peer to replicate shards to.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="logger">The optional logger for state logging.</param>
+    /// <param name="isDryRun">
+    /// If set to <c>true</c>, this operation calculates and logs
+    /// all shard movements without actually executing them.
+    /// </param>
+    /// <param name="shardTransferMethod">
+    /// Method for transferring the shard from one node to another.
+    /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
+    /// </param>
+    public async Task<ReplicateShardsToPeerResponse> EqualizeShardReplication(
+        string[] collectionNamesToEqualize,
+        string sourcePeerUriSelectorString,
+        string emptyTargetPeerUriSelectorString,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot)
+    {
+        GetPeerResponse sourcePeerInfo = await GetPeerInfo(
+            sourcePeerUriSelectorString,
+            cancellationToken);
+        
+        GetPeerResponse targetPeerInfo = await GetPeerInfo(
+            emptyTargetPeerUriSelectorString,
+            cancellationToken);
+
+        return await EqualizeShardReplicationInternal(
+            sourcePeerInfo,
+            targetPeerInfo,
+            collectionNamesToEqualize,
+            shardTransferMethod,
+            cancellationToken,
+            logger,
+            isDryRun);
+    }
+
+    /// <summary>
+    /// Equalizes shard replication between source and empty target peers for specified collections.
+    /// The final result will be moving shards form source to empty target until equal number of shard replicas on both peers.
+    /// </summary>
+    /// <param name="collectionNamesToEqualize">Collection names to restore shard replication for.</param>
+    /// <param name="sourcePeerId">The peer id for the peer to replicate shards from.</param>
+    /// <param name="emptyTargetPeerId">The peer id for the peer to replicate shards to.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="logger">The optional logger for state logging.</param>
+    /// <param name="isDryRun">
+    /// If set to <c>true</c>, this operation calculates and logs
+    /// all shard movements without actually executing them.
+    /// </param>
+    /// <param name="shardTransferMethod">
+    /// Method for transferring the shard from one node to another.
+    /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
+    /// </param>
+    public async Task<ReplicateShardsToPeerResponse> EqualizeShardReplication(
+        string[] collectionNamesToEqualize,
+        ulong sourcePeerId,
+        ulong emptyTargetPeerId,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot)
+    {
+        GetPeerResponse sourcePeerInfo = await GetPeerInfo(
+            sourcePeerId,
+            cancellationToken);
+        
+        GetPeerResponse targetPeerInfo = await GetPeerInfo(
+            emptyTargetPeerId,
+            cancellationToken);
+
+        return await EqualizeShardReplicationInternal(
+            sourcePeerInfo,
+            targetPeerInfo,
+            collectionNamesToEqualize,
+            shardTransferMethod,
+            cancellationToken,
+            logger,
+            isDryRun
+        );
+    }
+
+    private async Task<ReplicateShardsToPeerResponse> EqualizeShardReplicationInternal(
+        GetPeerResponse sourcePeerInfoResponse,
+        GetPeerResponse emptyTargetPeerInfoResponse,
+        string[] collectionNamesToEqualize,
+        ShardTransferMethod shardTransferMethod,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false)
+    {
+        Stopwatch sw = Stopwatch.StartNew();
+
+        try
+        {
+            var (sourcePeerId, _, _, _) = sourcePeerInfoResponse.EnsureSuccess();
+            var (targetPeerId, _, _, peerUriPerPeerId) = emptyTargetPeerInfoResponse.EnsureSuccess();
+
+            var collectionInfos = (await ListCollectionInfo(
+                isCountExactPointsNumber: false,
+                cancellationToken)).EnsureSuccess();
+
+            string[] collectionNames;
+
+            if (collectionNamesToEqualize is {Length: > 0})
+            {
+                // check that all collection names are stated correctly
+                foreach (var collectionNameFromParameter in collectionNamesToEqualize)
+                {
+                    if (!collectionInfos.ContainsKey(collectionNameFromParameter))
+                    {
+                        sw.Stop();
+
+                        return new ReplicateShardsToPeerResponse()
+                        {
+                            Result = false,
+                            Status = QdrantStatus.Fail(
+                                $"Collection '{collectionNameFromParameter}' does not exist, check parameters"),
+                            Time = sw.Elapsed.TotalSeconds
+                        };
+                    }
+                }
+
+                collectionNames = collectionNamesToEqualize;
+            }
+            else
+            {
+                collectionNames = collectionInfos.Keys.ToArray();
+            }
+
+            logger?.LogInformation(
+                "Going to equalize shards for collections {CollectionNames} between source peer {PeerToMoveShardsFrom}({PeerToMoveShardsFromUri}) and target peer {PeerToMoveShardsTo}({PeerToMoveShardsToUri})",
+                collectionInfos.Keys,
+                sourcePeerId,
+                peerUriPerPeerId[sourcePeerId],
+                targetPeerId,
+                peerUriPerPeerId[targetPeerId]
+            );
+
+            foreach (var collectionName in collectionNames)
+            {
+                var collectionShardingInfo =
+                    (await GetCollectionClusteringInfo(collectionName, cancellationToken))
+                    .EnsureSuccess();
+
+                // we don't care about replication factor here - we just want to equalize shards between two peers
+                var (collectionShardsPerPeers, _) =
+                    GetShardIdsPerPeerIdsAndReplicationFactors(
+                        collectionName,
+                        collectionShardingInfo,
+                        collectOnlyActiveShards: true,
+                        logger);
+
+                var sourceShardIds = collectionShardsPerPeers[sourcePeerId];
+
+                if (sourceShardIds.Count <= 1)
+                {
+                    return new ReplicateShardsToPeerResponse()
+                    {
+                        Result = false,
+                        Status = QdrantStatus.Fail(
+                            $"Collection '{collectionName}' has {sourceShardIds.Count} shards on source peer {sourcePeerId}({peerUriPerPeerId[sourcePeerId]}). The source peer should have more than 1 shards for equalization"),
+                        Time = sw.Elapsed.TotalSeconds
+                    };
+                }
+
+                var targetShardIds = collectionShardsPerPeers.TryGetValue(
+                    targetPeerId,
+                    out HashSet<uint> shardsOnTargetPeer)
+                    ? shardsOnTargetPeer
+                    : [];
+
+                if (targetShardIds.Count != 0)
+                {
+                    // target peer is not empty - log and skip
+
+                    sw.Stop();
+
+                    return new ReplicateShardsToPeerResponse()
+                    {
+                        Result = false,
+                        Status = QdrantStatus.Fail(
+                            $"Collection '{collectionName}' has {targetShardIds.Count} shards on target peer {targetPeerId}({collectionShardsPerPeers[targetPeerId]}). The target peer should be empty for equalization"),
+                        Time = sw.Elapsed.TotalSeconds
+                    };
+                }
+
+                var shardsToMoveCount = sourceShardIds.Count / 2;
+
+                var shardIdsToMove = sourceShardIds.RandomSubset(shardsToMoveCount);
+
+                foreach (var shardIdToMove in shardIdsToMove)
+                {
+                    logger?.LogInformation(
+                        "Going to move collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri})",
+                        collectionName,
+                        shardIdToMove,
+                        sourcePeerId,
+                        peerUriPerPeerId[sourcePeerId],
+                        targetPeerId,
+                        peerUriPerPeerId[targetPeerId]);
+
+                    if (!isDryRun)
+                    {
+                        var isSuccessfullyStartOperationResponse = await UpdateCollectionClusteringSetup(
+                            collectionName,
+                            UpdateCollectionClusteringSetupRequest.CreateMoveShardRequest(
+                                shardId: shardIdToMove,
+                                fromPeerId: sourcePeerId,
+                                toPeerId: targetPeerId,
+                                shardTransferMethod: shardTransferMethod),
+                            cancellationToken);
+
+                        if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
+                            || isSuccessfullyStartOperationResponse.Result is false)
+                        {
+                            logger?.LogError(
+                                "Error moving collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri}): {ErrorMessage}",
+                                collectionName,
+                                shardIdToMove,
+                                sourcePeerId,
+                                peerUriPerPeerId[sourcePeerId],
+                                targetPeerId,
+                                peerUriPerPeerId[targetPeerId],
+                                isSuccessfullyStartOperationResponse.Status.GetErrorMessage());
+
+                            // means issuing move shard operation failed - abandon move
+
+                            sw.Stop();
+
+                            return new ReplicateShardsToPeerResponse()
+                            {
+                                Result = false,
+                                Status = isSuccessfullyStartOperationResponse.Status,
+                                Time = sw.Elapsed.TotalSeconds
+                            };
+                        }
+                    }
+                    else
+                    {
+                        logger?.LogInformation("Shard move simulation mode ON. No shards replicated");
+                    }
+                }
+            }
+
+            sw.Stop();
+
+            return new ReplicateShardsToPeerResponse()
+            {
+                Result = true,
+                Status = QdrantStatus.Success(),
+                Time = sw.Elapsed.TotalSeconds
+            };
+        }
+        catch (QdrantUnsuccessfulResponseStatusException qex)
+        {
+            sw.Stop();
+
+            return new ReplicateShardsToPeerResponse()
+            {
+                Result = false,
+                Status = QdrantStatus.Fail(qex.Message, qex),
+                Time = sw.Elapsed.TotalSeconds
+            };
+        }
+    }
+
+    /// <summary>
     /// Removes all shards for all collections or specified collections from a peer by distributing them between another peers.
     /// </summary>
-    /// <param name="peerIdToEmpty">The peer id for the peer to move shards away from.</param>
+    /// <param name="peerId">The peer id for the peer to move shards away from.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="logger">The optional logger for state logging.</param>
     /// <param name="isDryRun">
@@ -645,31 +900,31 @@ public partial class QdrantHttpClient
     /// If <c>null</c> or empty - moves all collection shards.
     /// </param>
     public async Task<DrainPeerResponse> DrainPeer(
-        ulong peerIdToEmpty,
+        ulong peerId,
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
-        ShardTransferMethod? shardTransferMethod = null,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
         params string[] collectionNamesToMove
     )
     {
-        var peerToEmptyInfo = await GetPeerInfo(
-            peerIdToEmpty,
+        var peerToDrainInfo = await GetPeerInfo(
+            peerId,
             cancellationToken);
 
         return await DrainPeerInternal(
-            peerToEmptyInfo,
+            peerToDrainInfo,
+            shardTransferMethod,
             cancellationToken,
             logger,
             isDryRun,
-            shardTransferMethod,
             collectionNamesToMove);
     }
 
     /// <summary>
     /// Removes all shards for all collections or specified collections from a peer by distributing them between another peers.
     /// </summary>
-    /// <param name="peerToEmptyUriSelectorString">The peer uri selector string for the peer to move shards away from.</param>
+    /// <param name="peerUriSelectorString">The peer uri selector string for the peer to move shards away from.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="logger">The optional logger for state logging.</param>
     /// <param name="isDryRun">
@@ -685,33 +940,33 @@ public partial class QdrantHttpClient
     /// If <c>null</c> or empty - moves all collection shards.
     /// </param>
     public async Task<DrainPeerResponse> DrainPeer(
-        string peerToEmptyUriSelectorString,
+        string peerUriSelectorString,
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
-        ShardTransferMethod? shardTransferMethod = null,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
         params string[] collectionNamesToMove
     )
     {
-        var peerToEmptyInfo = await GetPeerInfo(
-            peerToEmptyUriSelectorString,
+        var peerToDrainInfo = await GetPeerInfo(
+            peerUriSelectorString,
             cancellationToken);
 
         return await DrainPeerInternal(
-            peerToEmptyInfo,
+            peerToDrainInfo,
+            shardTransferMethod,
             cancellationToken,
             logger,
             isDryRun,
-            shardTransferMethod,
             collectionNamesToMove);
     }
 
     private async Task<DrainPeerResponse> DrainPeerInternal(
-        GetPeerResponse peerToEmptyInfoResponse,
+        GetPeerResponse peerToDrainInfoResponse,
+        ShardTransferMethod shardTransferMethod,
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
-        ShardTransferMethod? shardTransferMethod = null,
         params string[] collectionNamesToMove
     )
     {
@@ -720,7 +975,7 @@ public partial class QdrantHttpClient
         try
         {
             var (sourcePeerId, _, targetPeerIds, peerUriPerPeerId) =
-                peerToEmptyInfoResponse.EnsureSuccess();
+                peerToDrainInfoResponse.EnsureSuccess();
 
             var collectionNames = (await ListCollections(cancellationToken))
                 .EnsureSuccess()
@@ -730,7 +985,7 @@ public partial class QdrantHttpClient
 
             if (collectionNamesToMove is {Length: > 0})
             {
-                // check tant all collection names are stated correctly
+                // check that all collection names are stated correctly
                 // this method gets called very rarely, so we don't bother with HashSet
 
                 foreach (var collectionNameFromParameter in collectionNamesToMove)
@@ -755,7 +1010,7 @@ public partial class QdrantHttpClient
             var targetPeers = new CircularEnumerable<ulong>(targetPeerIds);
 
             logger?.LogInformation(
-                "Going to move all active shards for collections '{CollectionNames}' from peer {PeerToEmpty} ({PeerUri}) to peers {PeersToMoveShardsTo}",
+                "Going to move all active shards for collections '{CollectionNames}' from peer {PeerToEmpty}({PeerUri}) to peers {PeersToMoveShardsTo}",
                 collectionNames,
                 sourcePeerId,
                 peerUriPerPeerId[sourcePeerId],
@@ -777,7 +1032,7 @@ public partial class QdrantHttpClient
                 if (!collectionShardsPerPeers.TryGetValue(sourcePeerId, out HashSet<uint> shardsIdsToMoveAwayFromPeer))
                 {
                     logger?.LogInformation(
-                        "Collection '{CollectionName}' has no shards on peer {SourcePeerId} ({SourceUri})",
+                        "Collection '{CollectionName}' has no shards on peer {SourcePeerId}({SourceUri})",
                         collectionName,
                         sourcePeerId,
                         peerUriPerPeerId[sourcePeerId]);
@@ -801,7 +1056,7 @@ public partial class QdrantHttpClient
                     foreach (var shardToMoveToPeer in shardsToMoveToPeer)
                     {
                         logger?.LogInformation(
-                            "Going to move collection '{CollectionName}' shard {ShardId} from peer {SourcePeer} ({SourcePeerUri}) to peer {TargetPeer} ({TargetPeerUri})",
+                            "Going to move collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri})",
                             collectionName,
                             shardToMoveToPeer,
                             sourcePeerId,
@@ -818,14 +1073,14 @@ public partial class QdrantHttpClient
                                     shardId: shardToMoveToPeer,
                                     fromPeerId: sourcePeerId,
                                     toPeerId: targetPeerId,
-                                    shardTransferMethod: shardTransferMethod ?? ShardTransferMethod.StreamRecords),
+                                    shardTransferMethod: shardTransferMethod),
                                 cancellationToken);
 
                             if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
                                 || isSuccessfullyStartOperationResponse.Result is false)
                             {
                                 logger?.LogError(
-                                    "Error moving collection '{CollectionName}' shard {ShardId} from peer {SourcePeer} ({SourcePeerUri}) to peer {TargetPeer} ({TargetPeerUri}): {ErrorMessage}",
+                                    "Error moving collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri}): {ErrorMessage}",
                                     collectionName,
                                     shardToMoveToPeer,
                                     sourcePeerId,
@@ -879,6 +1134,212 @@ public partial class QdrantHttpClient
     }
 
     /// <summary>
+    /// Drops all shards for all collections or specified collections from a peer.
+    /// </summary>
+    /// <param name="peerId">The peer id for the peer to drop shards from.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="logger">The optional logger for state logging.</param>
+    /// <param name="isDryRun">
+    /// If set to <c>true</c>, this operation calculates and logs
+    /// all shard movements without actually executing them.
+    /// </param>
+    /// <param name="collectionNamesToClear">
+    /// Collection names to drop shards for.
+    /// If <c>null</c> or empty - drops all collection shards.
+    /// </param>
+    public async Task<ClearPeerResponse> ClearPeer(
+        ulong peerId,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        params string[] collectionNamesToClear
+    )
+    {
+        var peerToDrainInfo = await GetPeerInfo(
+            peerId,
+            cancellationToken);
+        
+        return await ClearPeerInternal(
+            peerToDrainInfo,
+            cancellationToken,
+            logger,
+            isDryRun,
+            collectionNamesToClear);
+    }
+
+    /// <summary>
+    /// Drops all shards for all collections or specified collections from a peer.
+    /// </summary>
+    /// <param name="peerUriSelectorString">The peer uri selector string for the peer to drop shards from.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="logger">The optional logger for state logging.</param>
+    /// <param name="isDryRun">
+    /// If set to <c>true</c>, this operation calculates and logs
+    /// all shard movements without actually executing them.
+    /// </param>
+    /// <param name="collectionNamesToClear">
+    /// Collection names to drop shards for.
+    /// If <c>null</c> or empty - drops all collection shards.
+    /// </param>
+    public async Task<ClearPeerResponse> ClearPeer(
+        string peerUriSelectorString,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        params string[] collectionNamesToClear
+    )
+    {
+        var peerToDrainInfo = await GetPeerInfo(
+            peerUriSelectorString,
+            cancellationToken);
+        
+        return await ClearPeerInternal(
+            peerToDrainInfo,
+            cancellationToken,
+            logger,
+            isDryRun,
+            collectionNamesToClear);
+    }
+
+    private async Task<ClearPeerResponse> ClearPeerInternal(
+        GetPeerResponse peerToClearInfoResponse,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        params string[] collectionNamesToMove
+    )
+    {
+        Stopwatch sw = Stopwatch.StartNew();
+
+        try
+        {
+            var (sourcePeerId, _, _, peerUriPerPeerId) =
+                peerToClearInfoResponse.EnsureSuccess();
+
+            var collectionNames = (await ListCollections(cancellationToken))
+                .EnsureSuccess()
+                .Collections
+                .Select(c => c.Name)
+                .ToArray();
+
+            if (collectionNamesToMove is {Length: > 0})
+            {
+                // check that all collection names are stated correctly
+                // this method gets called very rarely, so we don't bother with HashSet
+
+                foreach (var collectionNameFromParameter in collectionNamesToMove)
+                {
+                    if (!collectionNames.Contains(collectionNameFromParameter, StringComparer.InvariantCulture))
+                    {
+                        sw.Stop();
+
+                        return new ClearPeerResponse()
+                        {
+                            Result = false,
+                            Status = QdrantStatus.Fail(
+                                $"Collection '{collectionNameFromParameter}' does not exist, check parameters"),
+                            Time = sw.Elapsed.TotalSeconds
+                        };
+                    }
+                }
+
+                collectionNames = collectionNamesToMove;
+            }
+
+            logger?.LogInformation(
+                "Going to drop all shards for collections '{CollectionNames}' from peer {PeerToEmpty}({PeerUri})",
+                collectionNames,
+                sourcePeerId,
+                peerUriPerPeerId[sourcePeerId]);
+
+            foreach (var collectionName in collectionNames)
+            {
+                var collectionShardingInfo =
+                    (await GetCollectionClusteringInfo(collectionName, cancellationToken))
+                    .EnsureSuccess();
+
+                var (collectionShardsPerPeers, _) =
+                    GetShardIdsPerPeerIdsAndReplicationFactors(
+                        collectionName,
+                        collectionShardingInfo,
+                        collectOnlyActiveShards: true,
+                        logger);
+
+                if (!collectionShardsPerPeers.TryGetValue(sourcePeerId, out HashSet<uint> shardsIdsToDropFromPeer))
+                {
+                    logger?.LogInformation(
+                        "Collection '{CollectionName}' has no shards on peer {SourcePeerId} ({SourceUri})",
+                        collectionName,
+                        sourcePeerId,
+                        peerUriPerPeerId[sourcePeerId]);
+
+                    continue;
+                }
+
+                foreach (var shardIdToDrop in shardsIdsToDropFromPeer)
+                { 
+                    if (!isDryRun)
+                    {
+                        var isSuccessfullyStartOperationResponse = await UpdateCollectionClusteringSetup(
+                            collectionName,
+                            UpdateCollectionClusteringSetupRequest.CreateDropShardReplicaRequest(
+                                shardId: shardIdToDrop,
+                                peerId: sourcePeerId),
+                            cancellationToken);
+
+                        if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
+                            || isSuccessfullyStartOperationResponse.Result is false)
+                        {
+                            logger?.LogError(
+                                "Error dropping collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) : {ErrorMessage}",
+                                collectionName,
+                                shardIdToDrop,
+                                sourcePeerId,
+                                peerUriPerPeerId[sourcePeerId],
+                                isSuccessfullyStartOperationResponse.Status.GetErrorMessage());
+
+                            // means issuing move operation failed - abandon move
+
+                            sw.Stop();
+
+                            return new ClearPeerResponse()
+                            {
+                                Result = false,
+                                Status = isSuccessfullyStartOperationResponse.Status,
+                                Time = sw.Elapsed.TotalSeconds
+                            };
+                        }
+                    }
+                    else
+                    {
+                        logger?.LogInformation("Shard move simulation mode ON. No shards moved");
+                    }
+                }
+            }
+
+            sw.Stop();
+
+            return new ClearPeerResponse()
+            {
+                Result = true,
+                Status = QdrantStatus.Success(),
+                Time = sw.Elapsed.TotalSeconds
+            };
+        }
+        catch (QdrantUnsuccessfulResponseStatusException qex)
+        {
+            sw.Stop();
+
+            return new ClearPeerResponse()
+            {
+                Result = false,
+                Status = QdrantStatus.Fail(qex.Message, qex),
+                Time = sw.Elapsed.TotalSeconds
+            };
+        }
+    }
+
+    /// <summary>
     /// Checks whether the specified cluster node does not have any collection shards on it.
     /// </summary>
     /// <param name="peerId">The cluster node peer id for the peer to check.</param>
@@ -899,14 +1360,14 @@ public partial class QdrantHttpClient
     /// <summary>
     /// Checks whether the specified cluster node does not have any collection shards on it.
     /// </summary>
-    /// <param name="peerToCheckUriSelectorString">The cluster node uri selector for the peer to check.</param>
+    /// <param name="peerUriSelectorString">The cluster node uri selector for the peer to check.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     public async Task<CheckIsPeerEmptyResponse> CheckIsPeerEmpty(
-        string peerToCheckUriSelectorString,
+        string peerUriSelectorString,
         CancellationToken cancellationToken)
     {
         var peerToCheckInfo = await GetPeerInfo(
-            peerToCheckUriSelectorString,
+            peerUriSelectorString,
             cancellationToken);
 
         return await CheckIsPeerEmptyInternal(
@@ -980,26 +1441,26 @@ public partial class QdrantHttpClient
     /// <summary>
     /// Gets the peer information by the peer node uri substring or by peer id. Returns the found peer and other peers.
     /// </summary>
-    /// <param name="clusterNodeUriSubstring">Cluster node uri substring to get peer info for or <c>null</c> if using <paramref name="peerId"/>.</param>
-    /// <param name="peerId">Cluster node peer id to get peer info for or <c>null</c> if using <paramref name="clusterNodeUriSubstring"/>.</param>
+    /// <param name="peerUriSelectorString">Peer uri substring to get peer info for or <c>null</c> if using <paramref name="peerId"/>.</param>
+    /// <param name="peerId">Cluster node peer id to get peer info for or <c>null</c> if using <paramref name="peerUriSelectorString"/>.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <exception cref="QdrantNoPeersFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
     /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
     public Task<GetPeerResponse> GetPeerInfo(
-        string clusterNodeUriSubstring,
+        string peerUriSelectorString,
         ulong? peerId,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(clusterNodeUriSubstring)
+        if (string.IsNullOrWhiteSpace(peerUriSelectorString)
             && !peerId.HasValue)
         {
             throw new ArgumentException(
-                $"Either {nameof(clusterNodeUriSubstring)} or {nameof(peerId)} must be provided.");
+                $"Either {nameof(peerUriSelectorString)} or {nameof(peerId)} must be provided.");
         }
 
-        if (!string.IsNullOrWhiteSpace(clusterNodeUriSubstring))
+        if (!string.IsNullOrWhiteSpace(peerUriSelectorString))
         {
-            return GetPeerInfo(clusterNodeUriSubstring, cancellationToken);
+            return GetPeerInfo(peerUriSelectorString, cancellationToken);
         }
 
         return GetPeerInfo(peerId!.Value, cancellationToken);
@@ -1008,11 +1469,11 @@ public partial class QdrantHttpClient
     /// <summary>
     /// Gets the peer information by the peer node uri substring. Returns the found peer and other peers.
     /// </summary>
-    /// <param name="clusterNodeUriSubstring">Cluster node uri substring to get peer info for.</param>
+    /// <param name="peerUriSelectorString">Peer uri substring to get peer info for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <exception cref="QdrantNoPeersFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
     /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
-    public async Task<GetPeerResponse> GetPeerInfo(string clusterNodeUriSubstring, CancellationToken cancellationToken)
+    public async Task<GetPeerResponse> GetPeerInfo(string peerUriSelectorString, CancellationToken cancellationToken)
     {
         Stopwatch sw = Stopwatch.StartNew();
 
@@ -1047,13 +1508,13 @@ public partial class QdrantHttpClient
         }
 
         var candidatePeerIds = peerIdsByNodeUrls
-            .Where(kv => kv.Key.Contains(clusterNodeUriSubstring, StringComparison.InvariantCulture))
+            .Where(kv => kv.Key.Contains(peerUriSelectorString, StringComparison.InvariantCulture))
             .ToList();
 
         if (candidatePeerIds.Count == 0)
         {
             throw new QdrantNoPeersFoundForUriSubstringException(
-                clusterNodeUriSubstring,
+                peerUriSelectorString,
                 peerIdsByNodeUrls
             );
         }
@@ -1061,7 +1522,7 @@ public partial class QdrantHttpClient
         if (candidatePeerIds.Count > 1)
         {
             throw new QdrantMoreThanOnePeerFoundForUriSubstringException(
-                clusterNodeUriSubstring,
+                peerUriSelectorString,
                 candidatePeerIds);
         }
 

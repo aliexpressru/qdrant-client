@@ -54,7 +54,7 @@ public class ClusterTests : QdrantTestsBase
     [Test]
     public async Task GetCollectionClusteringInfo()
     {
-        await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
+        await CreateTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
         var collectionClusteringInfo =
             await _qdrantHttpClient.GetCollectionClusteringInfo(
@@ -87,7 +87,7 @@ public class ClusterTests : QdrantTestsBase
     [Test]
     public async Task CollectionShardMove()
     {
-        await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
+        await CreateTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
         var collectionClusteringInfo =
             (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
@@ -150,7 +150,7 @@ public class ClusterTests : QdrantTestsBase
     [Test]
     public async Task CollectionShardReplicate()
     {
-        await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
+        await CreateTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
         var collectionClusteringInfo =
             await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None);
@@ -369,7 +369,7 @@ public class ClusterTests : QdrantTestsBase
         // NOTE: after performing this test - stop all containers, remove volumes
         // and rerun docker compose up to restore cluster to its 2-node state
 
-        await CreateSmallTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
+        await CreateTestShardedCollection(_qdrantHttpClient, TestCollectionName, 10U);
 
         var collectionClusteringInfo =
             await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None);
