@@ -41,6 +41,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="System.Text.Json" Version="9.0.8"/>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
@@ -48,7 +49,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Text.Json" Version="9.0.9" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
   
   <ItemGroup>
@@ -56,13 +57,5 @@
       <_Parameter1>Aer.QdrantClient.Tests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
-  
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="System.Text.Json" Version="9.0.9" />
-  </ItemGroup>
-  
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-    <PackageReference Include="System.Text.Json" Version="9.0.9" />
-  </ItemGroup>
-
+    
 </Project>
