@@ -25,7 +25,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
     public void Setup()
     {
         Initialize();
-        _qdrantHttpClient = GetClusterClient();
+        _qdrantHttpClient = GetClusterClient(ClusterNode.First);
 
         _logger = ServiceProvider.GetRequiredService<ILogger<ClusterCompoundOperationsTests>>();
     }
