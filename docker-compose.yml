@@ -52,7 +52,7 @@ services:
     container_name: qdrant-2
     image: qdrant/qdrant:${QDRANT_VERSION}
     entrypoint: ./entrypoint.sh
-    command: --bootstrap 'http://qdrant-1:6335'
+    command: --bootstrap 'http://qdrant-1:6335' --uri 'http://qdrant-2:6335'
     volumes:
       - qdrant-storage-2:/qdrant/storage
       - snapshot-data-2:/qdrant/snapshots
