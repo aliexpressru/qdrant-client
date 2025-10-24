@@ -177,6 +177,44 @@ internal class PointsScrollTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task WithoutFilter_PayloadPropertiesSelector_NonExistentPropertiesSelected()
+    {
+        var vectorCount = 10;
+
+        var (_, upsertPointsByPointIds, _) =
+            await PrepareCollection<TestPayload>(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorCount: vectorCount);
+
+        string[] includeProperties = ["non-existent-property-1", "non-existent-property-2"];
+
+        var readPointsResult = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            QdrantFilter.Empty,
+            includeProperties,
+            CancellationToken.None,
+            withVector: true);
+
+        readPointsResult.Status.IsSuccess.Should().BeTrue();
+        readPointsResult.Result.Points.Length.Should().Be(vectorCount);
+
+        foreach (var readPoint in readPointsResult.Result.Points)
+        {
+            var readPointId = readPoint.Id.AsInteger();
+
+            var expectedPointId = upsertPointsByPointIds[readPointId].Id.As<IntegerPointId>().Id;
+
+            readPointId.Should().Be(expectedPointId);
+            
+            var readPayload = readPoint.Payload;
+            
+            readPayload.Should().BeEquivalentTo(Payload.Empty);
+            readPayload.IsEmpty.Should().BeTrue();
+        }
+    }
+
+    [Test]
     public async Task WithFilter()
     {
         // NOTE: there is no point of testing this with every possible filter

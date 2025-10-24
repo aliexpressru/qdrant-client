@@ -26,12 +26,26 @@ public class Payload
     };
 
     /// <summary>
+    /// If to <c>true</c> indicates that the payload is empty.
+    /// </summary>
+    public bool IsEmpty => RawPayload == null || RawPayload.Count == 0;
+
+    /// <summary>
     /// Parses the payload as object of specified type.
     /// </summary>
     /// <typeparam name="T">The type of the deserialized payload object.</typeparam>
     public T As<T>()
         where T : class
-        => RawPayload?.Deserialize<T>(JsonSerializerConstants.DefaultSerializerOptions);
+    {
+        if (IsEmpty)
+        { 
+            throw new InvalidOperationException($"Payload is empty and can't be deserialized as {typeof(T)}");
+        }
+
+        var ret = RawPayload?.Deserialize<T>(JsonSerializerConstants.DefaultSerializerOptions);
+
+        return ret;
+    }
 
     /// <summary>
     /// Returns raw json string representation.

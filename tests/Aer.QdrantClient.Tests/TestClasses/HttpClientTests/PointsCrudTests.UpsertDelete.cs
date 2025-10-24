@@ -357,7 +357,8 @@ internal partial class PointsCrudTests
         readPointsResult.Result.Id.ToString().Should().Be(testPointId.ToString());
         readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
             .Should().BeEquivalentTo(testVector);
-        readPointsResult.Result.Payload.Should().BeNull();
+
+        readPointsResult.Result.Payload.IsEmpty.Should().BeTrue();
     }
 
     [Test]
