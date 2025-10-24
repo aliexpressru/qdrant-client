@@ -52,11 +52,12 @@ public class Payload
     /// </summary>
     /// <param name="isFormatPayloadJson">Determines whether the resulting json string should be formatted.</param>
     public string ToString(bool isFormatPayloadJson)
-        =>
-            RawPayload?.ToJsonString(
+        => IsEmpty
+            ? "{}"
+            : RawPayload?.ToJsonString(
                 isFormatPayloadJson
                     ? JsonSerializerConstants.DefaultIndentedSerializerOptions
-                    : JsonSerializerConstants.DefaultSerializerOptions);
+                    : JsonSerializerConstants.DefaultSerializerOptions) ?? "{}";
 
     /// <inheritdoc/>
     public override string ToString() => ToString(false);
