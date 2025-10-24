@@ -12,6 +12,11 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 public class Payload
 {
     /// <summary>
+    /// Represents the raw JSON string for an empty payload.
+    /// </summary>
+    public const string EmptyPayloadString = "{}";
+    
+    /// <summary>
     /// Gets the raw JSON string for this payload.
     /// </summary>
     /// <remarks>For get responses only.</remarks>
@@ -53,7 +58,7 @@ public class Payload
     /// <param name="isFormatPayloadJson">Determines whether the resulting json string should be formatted.</param>
     public string ToString(bool isFormatPayloadJson)
         => IsEmpty
-            ? "{}"
+            ? EmptyPayloadString
             : RawPayload?.ToJsonString(
                 isFormatPayloadJson
                     ? JsonSerializerConstants.DefaultIndentedSerializerOptions
