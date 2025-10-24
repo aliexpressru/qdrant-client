@@ -57,7 +57,7 @@ public class Payload
             : RawPayload?.ToJsonString(
                 isFormatPayloadJson
                     ? JsonSerializerConstants.DefaultIndentedSerializerOptions
-                    : JsonSerializerConstants.DefaultSerializerOptions) ?? "{}";
+                    : JsonSerializerConstants.DefaultSerializerOptions);
 
     /// <inheritdoc/>
     public override string ToString() => ToString(false);
