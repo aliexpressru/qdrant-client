@@ -14,7 +14,7 @@ public class Payload
     /// <summary>
     /// Represents the raw JSON string for an empty payload.
     /// </summary>
-    public const string EmptyPayloadString = "{}";
+    public const string EmptyString = "{}";
     
     /// <summary>
     /// Gets the raw JSON string for this payload.
@@ -58,7 +58,7 @@ public class Payload
     /// <param name="isFormatPayloadJson">Determines whether the resulting json string should be formatted.</param>
     public string ToString(bool isFormatPayloadJson)
         => IsEmpty
-            ? EmptyPayloadString
+            ? EmptyString
             : RawPayload?.ToJsonString(
                 isFormatPayloadJson
                     ? JsonSerializerConstants.DefaultIndentedSerializerOptions
