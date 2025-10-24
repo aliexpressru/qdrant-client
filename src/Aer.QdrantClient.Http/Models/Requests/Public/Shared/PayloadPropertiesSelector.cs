@@ -53,7 +53,7 @@ public abstract class PayloadPropertiesSelector
     /// </summary>
     public static PayloadPropertiesSelector Include(params string[] includedPayloadProperties) =>
         new IncludePayloadPropertiesSelector(includedPayloadProperties);
-
+    
     /// <summary>
     /// Creates an instance of the payload properties selector that selects all payload properties except specified to be returned.
     /// </summary>
@@ -68,5 +68,20 @@ public abstract class PayloadPropertiesSelector
     public static implicit operator PayloadPropertiesSelector(bool value)
     {
         return new AllPayloadPropertiesSelector(value);
+    }
+
+    /// <summary>
+    /// Implicitly converts string array values to <see cref="AllPayloadPropertiesSelector"/> instances.
+    /// </summary>
+    /// <param name="includedPayloadProperties">If not null or empty - includes all specified payload properties to the result.
+    /// If null or empty - includes all payload properties.</param>
+    public static implicit operator PayloadPropertiesSelector(string[] includedPayloadProperties)
+    {
+        if (includedPayloadProperties is null or {Length: 0})
+        { 
+            return new AllPayloadPropertiesSelector(true);
+        }
+
+        return new IncludePayloadPropertiesSelector(includedPayloadProperties);
     }
 }
