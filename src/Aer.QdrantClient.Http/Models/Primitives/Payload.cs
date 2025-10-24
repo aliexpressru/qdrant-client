@@ -18,6 +18,14 @@ public class Payload
     public JsonObject RawPayload { get; init; }
 
     /// <summary>
+    /// Gets the empty payload instance.
+    /// </summary>
+    public static Payload Empty { get; } = new()
+    {
+        RawPayload = new JsonObject()
+    };
+
+    /// <summary>
     /// Parses the payload as object of specified type.
     /// </summary>
     /// <typeparam name="T">The type of the deserialized payload object.</typeparam>
