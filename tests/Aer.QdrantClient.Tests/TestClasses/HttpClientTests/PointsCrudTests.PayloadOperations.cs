@@ -636,6 +636,6 @@ internal partial class PointsCrudTests
 
         readAllPoints.Status.IsSuccess.Should().BeTrue();
 
-        readAllPoints.Result.Should().AllSatisfy(p => p.Payload.Should().BeNull());
+        readAllPoints.Result.Should().AllSatisfy(p => p.Payload.IsEmpty.Should().BeTrue());
     }
 }
