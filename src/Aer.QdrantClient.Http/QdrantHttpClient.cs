@@ -26,7 +26,7 @@ namespace Aer.QdrantClient.Http;
 /// Client for Qdrant HTTP API.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
-public partial class QdrantHttpClient
+public partial class QdrantHttpClient : IQdrantHttpClient
 {
     private readonly ILogger _logger;
 
