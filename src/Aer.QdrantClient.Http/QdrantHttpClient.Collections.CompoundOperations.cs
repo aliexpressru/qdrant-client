@@ -12,18 +12,7 @@ namespace Aer.QdrantClient.Http;
 [SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public partial class QdrantHttpClient
 {
-    /// <summary>
-    /// Get the detailed information about specified existing collection.
-    /// </summary>
-    /// <param name="collectionName">Collection name to get info for.</param>
-    /// <param name="isCountExactPointsNumber">If set to <c>true</c> counts the exact number of points in collection.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
-    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
-    /// <param name="onRetry">
-    /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
-    /// </param>
+    /// <inheritdoc/>
     public async Task<GetCollectionInfoResponse> GetCollectionInfo(
         string collectionName,
         bool isCountExactPointsNumber,
@@ -59,17 +48,7 @@ public partial class QdrantHttpClient
         return getCollectionInfoResponse;
     }
 
-    /// <summary>
-    /// Get the detailed information about all existing collections.
-    /// </summary>
-    /// <param name="isCountExactPointsNumber">If set to <c>true</c> counts collection points for all collections.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
-    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
-    /// <param name="onRetry">
-    /// The action to be called on operation retry.
-    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
-    /// </param>
+    /// <inheritdoc/>
     public async Task<ListCollectionInfoResponse> ListCollectionInfo(
         bool isCountExactPointsNumber,
         CancellationToken cancellationToken,
