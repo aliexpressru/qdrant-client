@@ -12,10 +12,28 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 public class Payload
 {
     /// <summary>
+    /// Represents the raw JSON string for an empty payload.
+    /// </summary>
+    public const string EmptyString = "{}";
+    
+    /// <summary>
     /// Gets the raw JSON string for this payload.
     /// </summary>
     /// <remarks>For get responses only.</remarks>
     public JsonObject RawPayload { get; init; }
+
+    /// <summary>
+    /// Gets the empty payload instance.
+    /// </summary>
+    public static Payload Empty { get; } = new()
+    {
+        RawPayload = new JsonObject()
+    };
+
+    /// <summary>
+    /// If to <c>true</c> indicates that the payload is empty.
+    /// </summary>
+    public bool IsEmpty => RawPayload == null || RawPayload.Count == 0;
 
     /// <summary>
     /// Parses the payload as object of specified type.
@@ -23,15 +41,25 @@ public class Payload
     /// <typeparam name="T">The type of the deserialized payload object.</typeparam>
     public T As<T>()
         where T : class
-        => RawPayload?.Deserialize<T>(JsonSerializerConstants.DefaultSerializerOptions);
+    {
+        if (IsEmpty)
+        { 
+            throw new InvalidOperationException($"Payload is empty and can't be deserialized as {typeof(T)}");
+        }
+
+        var ret = RawPayload?.Deserialize<T>(JsonSerializerConstants.DefaultSerializerOptions);
+
+        return ret;
+    }
 
     /// <summary>
     /// Returns raw json string representation.
     /// </summary>
     /// <param name="isFormatPayloadJson">Determines whether the resulting json string should be formatted.</param>
     public string ToString(bool isFormatPayloadJson)
-        =>
-            RawPayload?.ToJsonString(
+        => IsEmpty
+            ? EmptyString
+            : RawPayload?.ToJsonString(
                 isFormatPayloadJson
                     ? JsonSerializerConstants.DefaultIndentedSerializerOptions
                     : JsonSerializerConstants.DefaultSerializerOptions);

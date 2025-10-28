@@ -1,45 +1,23 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
-using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
 /// Represents sparse vectors configuration.
 /// </summary>
-[JsonConverter(typeof(SparseVectorConfigurationJsonConverter))]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "AutoPropertyCanBeMadeGetOnly.Global")]
 public sealed class SparseVectorConfiguration
 {
     /// <summary>
-    /// Indicates whether to store sparse vector index on disk.
-    /// If set to <c>false</c>, the index will be stored in RAM. Default: false.
-    /// </summary>
-    public bool OnDisk { set; get; }
-
-    /// <summary>
-    /// Indicates that index full scan should be employed for queries inspecting
-    /// less than specified number of vectors. This upper bound is exclusive.
-    /// </summary>
-    /// <remarks>This is number of vectors, not KiloBytes.</remarks>
-    public ulong? FullScanThreshold { set; get; }
-
-    /// <summary>
-    /// Defines which datatype should be used for the index.
-    /// Choosing different datatypes allows to optimize memory usage and performance vs accuracy.
-    /// </summary>
-    public VectorDataType VectorDataType { set; get; }
-
-    /// <summary>
     /// Configures additional value modifications for sparse vectors.
     /// </summary>
-    public SparseVectorModifier Modifier { set; get; }
+    public SparseVectorModifier Modifier { set; get; } = SparseVectorModifier.None;
     
     /// <summary>
     /// Custom params for index. If none - values from collection configuration are used.
     /// </summary>
-    public SparseVectorIndexConfiguration Index { set; get; }
+    public SparseVectorIndexConfiguration Index { set; get; } = new();
     
     /// <summary>
     /// Custom sparse vector index parameters.
@@ -61,10 +39,15 @@ public sealed class SparseVectorConfiguration
 
         /// <summary>
         /// Defines which datatype should be used for the index.
-        /// Choosing different datatypes allows to optimize memory usage and performance vs accuracy.
         /// </summary>
-        public VectorDataType VectorDataType { set; get; }
+        public VectorDataType Datatype { set; get; } = VectorDataType.Float32;
     }
+
+    /// <summary>
+    /// Creates an instance of the sparse vector configuration with default parameters.
+    /// </summary>
+    public SparseVectorConfiguration()
+    { }
 
     /// <summary>
     /// Creates an instance of the sparse vector configuration with specified parameters.
@@ -79,16 +62,13 @@ public sealed class SparseVectorConfiguration
         VectorDataType vectorDataType = VectorDataType.Float32,
         SparseVectorModifier sparseVectorValueModifier = SparseVectorModifier.None)
     {
-        OnDisk = onDisk;
-        FullScanThreshold = fullScanThreshold;
-        VectorDataType = vectorDataType;
         Modifier = sparseVectorValueModifier;
 
         Index = new()
         {
             OnDisk = onDisk,
             FullScanThreshold = fullScanThreshold,
-            VectorDataType = vectorDataType
+            Datatype = vectorDataType
         };
     }
 }

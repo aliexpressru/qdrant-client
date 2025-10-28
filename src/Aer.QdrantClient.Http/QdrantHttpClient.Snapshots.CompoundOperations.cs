@@ -13,10 +13,7 @@ namespace Aer.QdrantClient.Http;
 [SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public partial class QdrantHttpClient
 {
-    /// <summary>
-    /// A compound operation that lists all snapshots for all collections and shards in the storage.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <inheritdoc/>
     public async Task<ListSnapshotsResponse> ListAllSnapshots(CancellationToken cancellationToken)
     {
         List<SnapshotInfo> allSnapshots = new();
@@ -124,11 +121,7 @@ public partial class QdrantHttpClient
         };
     }
 
-    /// <summary>
-    /// A compound operation that deletes all existing storage snapshots.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
+    /// <inheritdoc/>
     public async Task<DefaultOperationResponse> DeleteAllStorageSnapshots(
         CancellationToken cancellationToken,
         bool isWaitForResult = true)
@@ -152,11 +145,7 @@ public partial class QdrantHttpClient
         };
     }
 
-    /// <summary>
-    /// A compound operation that deletes all existing collection snapshots.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
+    /// <inheritdoc/>
     public async Task<DefaultOperationResponse> DeleteAllCollectionSnapshots(
         CancellationToken cancellationToken,
         bool isWaitForResult = true)
@@ -204,11 +193,7 @@ public partial class QdrantHttpClient
         };
     }
     
-    /// <summary>
-    /// A compound operation that deletes all existing collection shard snapshots.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
+    /// <inheritdoc/>
     public async Task<DefaultOperationResponse> DeleteAllCollectionShardSnapshots(
         CancellationToken cancellationToken,
         bool isWaitForResult = true)

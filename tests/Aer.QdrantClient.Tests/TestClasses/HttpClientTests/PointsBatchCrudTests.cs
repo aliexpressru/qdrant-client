@@ -289,8 +289,10 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             .Payload.As<TestPayload>().Text.Should().NotBeNull();
 
         readAllPoints.Result.Single(p => p.Id.Equals(pointToClearPayloadFor))
-            .Payload.Should().BeNull();
-
+            .Payload.Should().Be(Payload.Empty);
+        readAllPoints.Result.Single(p => p.Id.Equals(pointToClearPayloadFor))
+            .Payload.IsEmpty.Should().BeTrue();
+        
         readAllPoints.Result.Single(p => p.Id.Equals(pointToUpdateVectorFor))
             .Vector.Default.AsDenseVector().VectorValues
             .Should().BeEquivalentTo(vectorToUpdateTo);

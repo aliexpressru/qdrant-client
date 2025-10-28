@@ -9,15 +9,15 @@ public enum QdrantOperationStatusType
     /// Represents the unknown qdrant operation status with raw status string.
     /// Might indicate an exception or a bug.
     /// </summary>
-    Unknown,
+    Unknown = 0,
 
     /// <summary>
     /// Represents the successful qdrant operation status.
     /// </summary>
-    Ok,
+    Ok = 1,
 
     /// <summary>
     /// Represents the error qdrant operation status with specified error.
     /// </summary>
-    Error
+    Error = 2
 }

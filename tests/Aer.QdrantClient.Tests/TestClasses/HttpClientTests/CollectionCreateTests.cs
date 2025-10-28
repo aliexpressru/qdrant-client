@@ -208,10 +208,14 @@ public class CollectionCreateTests : QdrantTestsBase
 
         var sparseVectorsConfiguration = new Dictionary<string, SparseVectorConfiguration>()
         {
-            [sparseVectorName] = new(
-                onDisk: true,
-                fullScanThreshold: 5000,
-                vectorDataType: VectorDataType.Float32)
+            [sparseVectorName] = new(){
+                Modifier = SparseVectorModifier.Idf,
+                Index = new(){
+                    OnDisk = true,
+                    FullScanThreshold = 5000,
+                    Datatype = VectorDataType.Float16
+                }
+            }
         };
 
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
@@ -236,17 +240,53 @@ public class CollectionCreateTests : QdrantTestsBase
 
         var sparseVectorConfig = createdCollectionInfo.Config.Params.SparseVectors[sparseVectorName];
 
-        sparseVectorConfig.OnDisk.Should().BeTrue();
-        sparseVectorConfig.FullScanThreshold.Should().Be(5000);
-        sparseVectorConfig.VectorDataType.Should().Be(VectorDataType.Float32);
-
-        sparseVectorConfig.Modifier.Should().Be(SparseVectorModifier.None);
-
+        sparseVectorConfig.Modifier.Should().Be(SparseVectorModifier.Idf);
         sparseVectorConfig.Index.Should().NotBeNull();
-
+        
         sparseVectorConfig.Index.OnDisk.Should().BeTrue();
         sparseVectorConfig.Index.FullScanThreshold.Should().Be(5000);
-        sparseVectorConfig.Index.VectorDataType.Should().Be(VectorDataType.Float32);
+        sparseVectorConfig.Index.Datatype.Should().Be(VectorDataType.Float16);
+    }
+
+    [Test]
+    public async Task SparseVector_DefaultSettings()
+    {
+        var sparseVectorName = "test";
+
+        var sparseVectorsConfiguration = new Dictionary<string, SparseVectorConfiguration>()
+        {
+            [sparseVectorName] = new()
+        };
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(sparseVectorsConfiguration: sparseVectorsConfiguration)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
+
+        collectionCreationResult.Should().NotBeNull();
+        collectionCreationResult.Result.Should().BeTrue();
+
+        var createdCollectionInfo =
+            (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
+
+        createdCollectionInfo.Config.Params.Vectors.Should().BeNull();
+
+        createdCollectionInfo.Config.Params.SparseVectors.Should().ContainKey(sparseVectorName);
+
+        var sparseVectorConfig = createdCollectionInfo.Config.Params.SparseVectors[sparseVectorName];
+
+        sparseVectorConfig.Modifier.Should().Be(SparseVectorModifier.None);
+        sparseVectorConfig.Index.Should().NotBeNull();
+
+        sparseVectorConfig.Index.OnDisk.Should().BeFalse();
+        sparseVectorConfig.Index.FullScanThreshold.Should().BeNull();
+        sparseVectorConfig.Index.Datatype.Should().Be(VectorDataType.Float32);
     }
 
     [Test]
@@ -321,9 +361,9 @@ public class CollectionCreateTests : QdrantTestsBase
         var collectionInfo = createdCollectionInfoResponse.Result;
 
         collectionInfo.Config.Params.SparseVectors.Should().ContainKey(VectorBase.DefaultVectorName);
-        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].VectorDataType.Should().Be(vectorDataType);
-        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].OnDisk.Should().Be(true);
-        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].FullScanThreshold.Should().Be(100);
+        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].Index.Datatype.Should().Be(vectorDataType);
+        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].Index.OnDisk.Should().Be(true);
+        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].Index.FullScanThreshold.Should().Be(100);
         collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].Modifier.Should().Be(SparseVectorModifier.Idf);
 
         var multipleVectorsConfiguration =
@@ -343,7 +383,7 @@ public class CollectionCreateTests : QdrantTestsBase
     [TestCase(VectorDataType.Float32, nameof(SparseVectorModifier.Idf))]
     [TestCase(VectorDataType.Uint8, null)]
     [TestCase(VectorDataType.Float16, nameof(SparseVectorModifier.None))]
-    public async Task NamedVectors_SparseVectors(
+    public async Task NamedVector_And_SparseVector(
         VectorDataType vectorDataType,
         string sparseVectorModifierString)
     {
@@ -400,10 +440,10 @@ public class CollectionCreateTests : QdrantTestsBase
         sparseVectorsConfiguration.Count.Should().Be(1);
         sparseVectorsConfiguration.Should().ContainKey(sparseVectorName);
 
-        sparseVectorsConfiguration[sparseVectorName].OnDisk.Should().BeTrue();
-        sparseVectorsConfiguration[sparseVectorName].FullScanThreshold.Should().NotBeNull();
-        sparseVectorsConfiguration[sparseVectorName].FullScanThreshold.Should().Be(5000);
-        sparseVectorsConfiguration[sparseVectorName].VectorDataType.Should().Be(vectorDataType);
+        sparseVectorsConfiguration[sparseVectorName].Index.OnDisk.Should().BeTrue();
+        sparseVectorsConfiguration[sparseVectorName].Index.FullScanThreshold.Should().NotBeNull();
+        sparseVectorsConfiguration[sparseVectorName].Index.FullScanThreshold.Should().Be(5000);
+        sparseVectorsConfiguration[sparseVectorName].Index.Datatype.Should().Be(vectorDataType);
 
         if (sparseVectorModifierString is null)
         {

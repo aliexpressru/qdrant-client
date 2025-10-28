@@ -223,6 +223,62 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task UpdateCollectionParameters_Sparse()
+    {
+        var sparseVectorName = "test";
+
+        var sparseVectorsConfiguration = new Dictionary<string, SparseVectorConfiguration>()
+        {
+            [sparseVectorName] = new(){
+                Index = new(){
+                    OnDisk = false,
+                    FullScanThreshold = 5000,
+                    Datatype = VectorDataType.Float32
+                }
+            }
+        };
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(sparseVectorsConfiguration: sparseVectorsConfiguration)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        // Change parameters of the sparse vector index
+        
+        sparseVectorsConfiguration[sparseVectorName].Index.OnDisk = true;
+        sparseVectorsConfiguration[sparseVectorName].Index.FullScanThreshold = 10;
+        sparseVectorsConfiguration[sparseVectorName].Index.Datatype = VectorDataType.Float16;
+        sparseVectorsConfiguration[sparseVectorName].Modifier = SparseVectorModifier.Idf;
+
+        var updateCollectionParametersResult = await _qdrantHttpClient.UpdateCollectionParameters(
+            TestCollectionName,
+            new UpdateCollectionParametersRequest()
+            {
+                SparseVectors = sparseVectorsConfiguration
+            },
+            CancellationToken.None);
+        
+        updateCollectionParametersResult.Status.IsSuccess.Should().BeTrue();
+        
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+        
+        var updatedCollectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+        
+        var indexParameters = updatedCollectionInfo.Result.Config.Params.SparseVectors[sparseVectorName].Index; 
+        
+        indexParameters.OnDisk.Should().BeTrue();
+        indexParameters.FullScanThreshold.Should().Be(10);
+        indexParameters.Datatype.Should().Be(VectorDataType.Float16);
+        
+        updatedCollectionInfo.Result.Config.Params.SparseVectors[sparseVectorName].Modifier.Should().Be(SparseVectorModifier.Idf);
+    }
+
+    [Test]
     public async Task WithRetry()
     {
         await _qdrantHttpClient.CreateCollection(

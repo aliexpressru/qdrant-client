@@ -58,7 +58,6 @@ public abstract class VectorConfigurationBase
 
         /// <summary>
         /// Defines which datatype should be used to represent vectors in the storage.
-        /// Choosing different datatypes allows to optimize memory usage and performance vs accuracy.
         /// </summary>
         public VectorDataType Datatype { get; init; }
 

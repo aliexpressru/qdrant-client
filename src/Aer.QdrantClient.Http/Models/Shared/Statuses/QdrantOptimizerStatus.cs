@@ -8,15 +8,15 @@ public enum QdrantOptimizerStatus
     /// <summary>
     /// Represents the unknown qdrant collection optimizer status. Might indicate an exception or a bug.
     /// </summary>
-    Unknown,
+    Unknown = 0,
 
     /// <summary>
     /// Represents the OK qdrant collection optimizer status.
     /// </summary>
-    Ok,
+    Ok = 1,
 
     /// <summary>
     /// Represents the error qdrant collection optimizer status.
     /// </summary>
-    Error
+    Error = 2
 }

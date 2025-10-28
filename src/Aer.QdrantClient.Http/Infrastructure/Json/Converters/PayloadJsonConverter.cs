@@ -13,7 +13,7 @@ internal sealed class PayloadJsonConverter : JsonConverter<Payload>
 
         if (payloadObject.Count == 0)
         {
-            return null;
+            return Payload.Empty;
         }
 
         return new Payload()
@@ -24,8 +24,12 @@ internal sealed class PayloadJsonConverter : JsonConverter<Payload>
 
     public override void Write(Utf8JsonWriter writer, Payload value, JsonSerializerOptions options)
     {
-        if (value is null)
+        if (value is null || value.IsEmpty)
         {
+            // Write empty object if payload is null or empty
+            writer.WriteStartObject();
+            writer.WriteEndObject();
+            
             return;
         }
 
