@@ -1,19 +1,8 @@
-using Aer.QdrantClient.Http.Filters;
-using Aer.QdrantClient.Http.Models.Primitives;
-using Aer.QdrantClient.Http.Models.Requests;
-using Aer.QdrantClient.Http.Models.Requests.Public;
-using Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
-using Microsoft.Extensions.Logging;
 
-namespace Aer.QdrantClient.Http;
+namespace Aer.QdrantClient.Http.Abstractions;
 
-/// <summary>
-/// Interface for Qdrant HTTP API client.
-/// </summary>
 public partial interface IQdrantHttpClient
 {
     /// <summary>
@@ -34,7 +23,7 @@ public partial interface IQdrantHttpClient
     Task<CreateSnapshotResponse> CreateCollectionSnapshot(
         string collectionName,
         CancellationToken cancellationToken,
-        bool isWaitForResult);
+        bool isWaitForResult = true);
 
     /// <summary>
     /// Recover local collection data from a local snapshot by its name. This will overwrite any data, stored on
@@ -51,9 +40,9 @@ public partial interface IQdrantHttpClient
         string collectionName,
         string snapshotName,
         CancellationToken cancellationToken,
-        bool isWaitForResult,
-        SnapshotPriority? snapshotPriority,
-        string snapshotChecksum);
+        bool isWaitForResult = true,
+        SnapshotPriority? snapshotPriority = null,
+        string snapshotChecksum = null);
 
     /// <summary>
     /// Recover local collection data from a possibly remote snapshot. This will overwrite any data, stored on
@@ -69,9 +58,9 @@ public partial interface IQdrantHttpClient
         string collectionName,
         Uri snapshotLocationUri,
         CancellationToken cancellationToken,
-        bool isWaitForResult,
-        SnapshotPriority? snapshotPriority,
-        string snapshotChecksum);
+        bool isWaitForResult = true,
+        SnapshotPriority? snapshotPriority = null,
+        string snapshotChecksum = null);
 
     /// <summary>
     /// Recover local collection data from an uploaded snapshot. This will overwrite any data,
@@ -87,9 +76,9 @@ public partial interface IQdrantHttpClient
         string collectionName,
         Stream snapshotContent,
         CancellationToken cancellationToken,
-        bool isWaitForResult,
-        SnapshotPriority? snapshotPriority,
-        string snapshotChecksum);
+        bool isWaitForResult = true,
+        SnapshotPriority? snapshotPriority = null,
+        string snapshotChecksum = null);
 
     /// <summary>
     /// Download specified snapshot from a collection as a file stream.
@@ -114,5 +103,4 @@ public partial interface IQdrantHttpClient
         string snapshotName,
         CancellationToken cancellationToken,
         bool isWaitForResult);
-
 }

@@ -1,19 +1,7 @@
-using Aer.QdrantClient.Http.Filters;
-using Aer.QdrantClient.Http.Models.Primitives;
-using Aer.QdrantClient.Http.Models.Requests;
-using Aer.QdrantClient.Http.Models.Requests.Public;
-using Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Responses;
-using Aer.QdrantClient.Http.Models.Shared;
-using Microsoft.Extensions.Logging;
 
-namespace Aer.QdrantClient.Http;
+namespace Aer.QdrantClient.Http.Abstractions;
 
-/// <summary>
-/// Interface for Qdrant HTTP API client.
-/// </summary>
 public partial interface IQdrantHttpClient
 {
     /// <summary>
@@ -29,7 +17,7 @@ public partial interface IQdrantHttpClient
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
     Task<DefaultOperationResponse> DeleteAllStorageSnapshots(
         CancellationToken cancellationToken,
-        bool isWaitForResult);
+        bool isWaitForResult = true);
 
     /// <summary>
     /// A compound operation that deletes all existing collection snapshots.
@@ -38,7 +26,7 @@ public partial interface IQdrantHttpClient
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
     Task<DefaultOperationResponse> DeleteAllCollectionSnapshots(
         CancellationToken cancellationToken,
-        bool isWaitForResult);
+        bool isWaitForResult = true);
 
     /// <summary>
     /// A compound operation that deletes all existing collection shard snapshots.
@@ -47,6 +35,5 @@ public partial interface IQdrantHttpClient
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
     Task<DefaultOperationResponse> DeleteAllCollectionShardSnapshots(
         CancellationToken cancellationToken,
-        bool isWaitForResult);
-
+        bool isWaitForResult = true);
 }

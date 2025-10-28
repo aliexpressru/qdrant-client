@@ -1,19 +1,9 @@
-using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests;
-using Aer.QdrantClient.Http.Models.Requests.Public;
-using Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Responses;
-using Aer.QdrantClient.Http.Models.Shared;
-using Microsoft.Extensions.Logging;
 
-namespace Aer.QdrantClient.Http;
+namespace Aer.QdrantClient.Http.Abstractions;
 
-/// <summary>
-/// Interface for Qdrant HTTP API client.
-/// </summary>
 public partial interface IQdrantHttpClient
 {
     /// <summary>
@@ -40,8 +30,8 @@ public partial interface IQdrantHttpClient
     Task<DefaultOperationResponse> RemovePeer(
         ulong peerId,
         CancellationToken cancellationToken,
-        bool isForceDropOperation,
-        TimeSpan? timeout);
+        bool isForceDropOperation = false,
+        TimeSpan? timeout = null);
 
     /// <summary>
     /// Get clustering (sharding) information for a collection.
@@ -52,7 +42,7 @@ public partial interface IQdrantHttpClient
     Task<GetCollectionClusteringInfoResponse> GetCollectionClusteringInfo(
         string collectionName,
         CancellationToken cancellationToken,
-        bool isTranslatePeerIdsToUris);
+        bool isTranslatePeerIdsToUris = false);
 
     /// <summary>
     /// Update collection clustering (sharding) setup.
@@ -65,7 +55,7 @@ public partial interface IQdrantHttpClient
         string collectionName,
         UpdateCollectionClusteringSetupRequest updateOperation,
         CancellationToken cancellationToken,
-        TimeSpan? timeout);
+        TimeSpan? timeout = null);
 
     /// <summary>
     /// Creates collection shards with specified shard key.
@@ -84,10 +74,10 @@ public partial interface IQdrantHttpClient
         string collectionName,
         ShardKey shardKey,
         CancellationToken cancellationToken,
-        uint? shardsNumber,
-        uint? replicationFactor,
-        ulong[] placement,
-        TimeSpan? timeout);
+        uint? shardsNumber = null,
+        uint? replicationFactor = null,
+        ulong[] placement = null,
+        TimeSpan? timeout = null);
 
     /// <summary>
     /// Deletes collection shards with specified shard key.
@@ -100,6 +90,5 @@ public partial interface IQdrantHttpClient
         string collectionName,
         ShardKey shardKey,
         CancellationToken cancellationToken,
-        TimeSpan? timeout);
-
+        TimeSpan? timeout = null);
 }

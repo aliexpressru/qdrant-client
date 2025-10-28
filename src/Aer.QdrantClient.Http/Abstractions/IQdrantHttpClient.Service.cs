@@ -1,21 +1,53 @@
-using Aer.QdrantClient.Http.Filters;
-using Aer.QdrantClient.Http.Models.Primitives;
-using Aer.QdrantClient.Http.Models.Requests;
-using Aer.QdrantClient.Http.Models.Requests.Public;
-using Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Models.Responses;
-using Aer.QdrantClient.Http.Models.Shared;
-using Microsoft.Extensions.Logging;
 
-namespace Aer.QdrantClient.Http;
+namespace Aer.QdrantClient.Http.Abstractions;
 
-/// <summary>
-/// Interface for Qdrant HTTP API client.
-/// </summary>
 public partial interface IQdrantHttpClient
 {
+    /// <summary>
+    /// Set write lock options to disable any writes.
+    /// If write is locked, all write operations and collection creation are forbidden.
+    /// However, deletion operations or updates are not forbidden under the write lock.
+    /// Returns previous lock options.
+    /// </summary>
+    /// <param name="areWritesDisabled">If set to <c>true</c>, qdrant doesn’t allow
+    /// creating new collections or adding new data to the existing storage.
+    /// </param>
+    /// <param name="reasonMessage">The reason why the current lock options are set.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <remarks>
+    /// This feature enables administrators to prevent a qdrant process from using more disk space
+    /// while permitting users to search and delete unnecessary data.
+    /// </remarks>
+    [Obsolete("Lock API is deprecated and going to be removed in v1.16")]
+    Task<SetLockOptionsResponse> SetLockOptions(
+        bool areWritesDisabled,
+        string reasonMessage,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Get lock options. If write is locked, all write operations and collection creation are forbidden.
+    /// However, deletion operations or updates are not forbidden under the write lock.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    [Obsolete("Lock API is deprecated and going to be removed in v1.16")]
+    Task<SetLockOptionsResponse> GetLockOptions(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Retrieves a report of performance issues and configuration suggestions.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    [Experimental("QD0001")]
+    Task<ReportIssuesResponse> ReportIssues(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Removes all issues reported so far.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    [Experimental("QD0002")]
+    Task<ClearReportedIssuesResponse> ClearIssues(CancellationToken cancellationToken);
+    
     /// <summary>
     /// Gets the Qdrant instance details.
     /// </summary>
@@ -30,8 +62,8 @@ public partial interface IQdrantHttpClient
     /// <param name="isAnonymizeTelemetryData">If set tot <c>true</c>, anonymize the collected telemetry result.</param>
     Task<GetTelemetryResponse> GetTelemetry(
         CancellationToken cancellationToken,
-        uint detailsLevel,
-        bool isAnonymizeTelemetryData);
+        uint detailsLevel = 3,
+        bool isAnonymizeTelemetryData = true);
 
     /// <summary>
     /// Collect metrics data including app info, collections info, cluster info and statistics in Prometheus format.
@@ -40,6 +72,5 @@ public partial interface IQdrantHttpClient
     /// <param name="isAnonymizeMetricsData">If set tot <c>true</c>, anonymize the collected metrics result.</param>
     Task<string> GetPrometheusMetrics(
         CancellationToken cancellationToken,
-        bool isAnonymizeMetricsData);
-
+        bool isAnonymizeMetricsData = true);
 }

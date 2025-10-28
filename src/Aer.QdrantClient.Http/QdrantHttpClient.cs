@@ -4,6 +4,7 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using Aer.QdrantClient.Http.Abstractions;
 using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Exceptions;
     

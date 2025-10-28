@@ -52,21 +52,7 @@ public partial class QdrantHttpClient
         return result;
     }
 
-    /// <summary>
-    /// Set write lock options to disable any writes.
-    /// If write is locked, all write operations and collection creation are forbidden.
-    /// However, deletion operations or updates are not forbidden under the write lock.
-    /// Returns previous lock options.
-    /// </summary>
-    /// <param name="areWritesDisabled">If set to <c>true</c>, qdrant doesn’t allow
-    /// creating new collections or adding new data to the existing storage.
-    /// </param>
-    /// <param name="reasonMessage">The reason why the current lock options are set.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <remarks>
-    /// This feature enables administrators to prevent a qdrant process from using more disk space
-    /// while permitting users to search and delete unnecessary data.
-    /// </remarks>
+    /// <inheritdoc/>
     [Obsolete("Lock API is deprecated and going to be removed in v1.16")]
     public async Task<SetLockOptionsResponse> SetLockOptions(
         bool areWritesDisabled,
@@ -96,11 +82,7 @@ public partial class QdrantHttpClient
         return response;
     }
 
-    /// <summary>
-    /// Get lock options. If write is locked, all write operations and collection creation are forbidden.
-    /// However, deletion operations or updates are not forbidden under the write lock.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <inheritdoc/>
     [Obsolete("Lock API is deprecated and going to be removed in v1.16")]
     public async Task<SetLockOptionsResponse> GetLockOptions(CancellationToken cancellationToken)
     {
@@ -115,10 +97,7 @@ public partial class QdrantHttpClient
         return response;
     }
 
-    /// <summary>
-    /// Retrieves a report of performance issues and configuration suggestions.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <inheritdoc/>
     [Experimental("QD0001")]
     public async Task<ReportIssuesResponse> ReportIssues(CancellationToken cancellationToken)
     {
@@ -133,10 +112,7 @@ public partial class QdrantHttpClient
         return response;
     }
 
-    /// <summary>
-    /// Removes all issues reported so far.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <inheritdoc/>
     [Experimental("QD0002")]
     public async Task<ClearReportedIssuesResponse> ClearIssues(CancellationToken cancellationToken)
     {
