@@ -1286,7 +1286,14 @@ internal partial class PointsCrudTests
 
         Dictionary<string, SparseVectorConfiguration> sparseVectors = new()
         {
-            ["Vector_2"] = new(true, fullScanThreshold: 1000)
+            ["Vector_2"] = new()
+            {
+                Index = new()
+                {
+                    OnDisk = true,
+                    FullScanThreshold = 1000
+                }
+            }
         };
 
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
