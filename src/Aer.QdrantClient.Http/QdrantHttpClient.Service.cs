@@ -7,10 +7,7 @@ namespace Aer.QdrantClient.Http;
 [SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public partial class QdrantHttpClient
 {
-    /// <summary>
-    /// Gets the Qdrant instance details.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <inheritdoc/>
     public async Task<GetInstanceDetailsResponse> GetInstanceDetails(CancellationToken cancellationToken)
     {
         var url = "/";
@@ -24,12 +21,7 @@ public partial class QdrantHttpClient
         return response;
     }
 
-    /// <summary>
-    /// Get the Qdrant telemetry information.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="detailsLevel">Defines how detailed the telemetry data is.</param>
-    /// <param name="isAnonymizeTelemetryData">If set tot <c>true</c>, anonymize the collected telemetry result.</param>
+    /// <inheritdoc/>
     public async Task<GetTelemetryResponse> GetTelemetry(
         CancellationToken cancellationToken,
         uint detailsLevel = 3,
@@ -46,11 +38,7 @@ public partial class QdrantHttpClient
         return response;
     }
 
-    /// <summary>
-    /// Collect metrics data including app info, collections info, cluster info and statistics in Prometheus format.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <param name="isAnonymizeMetricsData">If set tot <c>true</c>, anonymize the collected metrics result.</param>
+    /// <inheritdoc/>
     public async Task<string> GetPrometheusMetrics(
         CancellationToken cancellationToken,
         bool isAnonymizeMetricsData = true)
