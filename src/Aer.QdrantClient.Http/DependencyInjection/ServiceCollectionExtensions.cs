@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Abstractions;
 using Aer.QdrantClient.Http.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,11 +32,18 @@ public static class ServiceCollectionExtensions
     /// The resilience pipeline telemetry configuration.
     /// Configures telemetry for circuit breaker.
     /// </param>
+    /// <param name="clientName">The name of the client to be registered.</param>
+    /// <param name="registerAsInterface">
+    /// If set to <c>true</c> registers <see cref="IQdrantHttpClient"/> interface instead of concrete <see cref="QdrantHttpClient"/>.
+    /// This setting exists for backwards compatibility, since concrete registration was default behaviour in versions before 1.15.13.
+    /// </param>
     public static IServiceCollection AddQdrantHttpClient(
         this IServiceCollection services,
         Action<QdrantClientSettings> configureQdrantClientSettings,
         CircuitBreakerStrategyOptions<HttpResponseMessage> circuitBreakerStrategyOptions = null,
-        TelemetryOptions resiliencePipelineTelemetryOptions = null)
+        TelemetryOptions resiliencePipelineTelemetryOptions = null,
+        string clientName = null,
+        bool registerAsInterface = false)
     {
         services.Configure(configureQdrantClientSettings);
         services.AddSingleton(serviceProvider =>
@@ -45,7 +53,9 @@ public static class ServiceCollectionExtensions
             services,
             circuitBreakerStrategyOptions,
             resiliencePipelineTelemetryOptions,
-            shouldSelectResiliencePipelineByAuthority: true);
+            shouldSelectResiliencePipelineByAuthority: true,
+            clientName ?? DEFAULT_HTTP_CLIENT_NAME,
+            registerAsInterface);
 
         return services;
     }
@@ -67,13 +77,20 @@ public static class ServiceCollectionExtensions
     /// The resilience pipeline telemetry configuration.
     /// Configures telemetry for circuit breaker.
     /// </param>
+    /// <param name="clientName">The name of the client to be registered.</param>
+    /// <param name="registerAsInterface">
+    /// If set to <c>true</c> registers <see cref="IQdrantHttpClient"/> interface instead of concrete <see cref="QdrantHttpClient"/>.
+    /// This setting exists for backwards compatibility, since concrete registration was default behaviour in versions before 1.15.13.
+    /// </param>
     public static IServiceCollection AddQdrantHttpClient(
         this IServiceCollection services,
         IConfiguration configuration,
         string clientConfigurationSectionName = nameof(QdrantClientSettings),
         Action<QdrantClientSettings> configureQdrantClientSettings = null,
         CircuitBreakerStrategyOptions<HttpResponseMessage> circuitBreakerStrategyOptions = null,
-        TelemetryOptions resiliencePipelineTelemetryOptions = null)
+        TelemetryOptions resiliencePipelineTelemetryOptions = null,
+        string clientName = null,
+        bool registerAsInterface = false)
     {
         services.Configure<QdrantClientSettings>(configuration.GetSection(clientConfigurationSectionName));
         services.AddSingleton(serviceProvider =>
@@ -88,7 +105,9 @@ public static class ServiceCollectionExtensions
             services,
             circuitBreakerStrategyOptions,
             resiliencePipelineTelemetryOptions,
-            shouldSelectResiliencePipelineByAuthority: true);
+            shouldSelectResiliencePipelineByAuthority: true,
+            clientName ?? DEFAULT_HTTP_CLIENT_NAME,
+            registerInterface: registerAsInterface);
 
         return services;
     }
@@ -97,28 +116,34 @@ public static class ServiceCollectionExtensions
         IServiceCollection services,
         CircuitBreakerStrategyOptions<HttpResponseMessage> circuitBreakerStrategyOptions,
         TelemetryOptions resiliencePipelineTelemetryOptions,
-        bool shouldSelectResiliencePipelineByAuthority)
+        bool shouldSelectResiliencePipelineByAuthority,
+        string clientName,
+        bool registerInterface)
     {
-        IHttpClientBuilder httpClientBuilder = services
-            .AddHttpClient<QdrantHttpClient, QdrantHttpClient>(
-                DEFAULT_HTTP_CLIENT_NAME,
-                static (serviceProvider, client) =>
-                {
-                    var qdrantSettings =
-                        serviceProvider.GetRequiredService<QdrantClientSettings>();
+        Action<IServiceProvider, HttpClient> configureClient = static (serviceProvider, client) =>
+        {
+            var qdrantSettings =
+                serviceProvider.GetRequiredService<QdrantClientSettings>();
 
-                    client.BaseAddress = new Uri(qdrantSettings.HttpAddress);
-                    client.Timeout = qdrantSettings.HttpClientTimeout;
+            client.BaseAddress = new Uri(qdrantSettings.HttpAddress);
+            client.Timeout = qdrantSettings.HttpClientTimeout;
 
-                    if (qdrantSettings.ApiKey is {Length: > 0})
-                    {
-                        client.DefaultRequestHeaders.Add(
-                            QdrantHttpClient.ApiKeyHeaderName,
-                            qdrantSettings.ApiKey
-                        );
-                    }
-                }
-            );
+            if (qdrantSettings.ApiKey is {Length: > 0})
+            {
+                client.DefaultRequestHeaders.Add(
+                    QdrantHttpClient.ApiKeyHeaderName,
+                    qdrantSettings.ApiKey
+                );
+            }
+        };
+
+        IHttpClientBuilder httpClientBuilder = registerInterface
+            ? services.AddHttpClient<IQdrantHttpClient, QdrantHttpClient>(
+                clientName,
+                configureClient)
+            : services.AddHttpClient<QdrantHttpClient, QdrantHttpClient>(
+                clientName,
+                configureClient);
 
         if (circuitBreakerStrategyOptions is null)
         {
@@ -127,7 +152,7 @@ public static class ServiceCollectionExtensions
 
         IHttpResiliencePipelineBuilder resiliencePipelineBuilder = httpClientBuilder
             .AddResilienceHandler(
-                "QdrantHttpClientResiliencePipeline",
+                $"QdrantHttpClientResiliencePipeline_{clientName}",
                 builder =>
                 {
                     builder.AddCircuitBreaker(circuitBreakerStrategyOptions);

@@ -90,12 +90,7 @@ public partial class QdrantHttpClient
         return ret;
     }
 
-    /// <summary>
-    /// Create HNSW index and many payload indexes if they are defined in a fire-and-forget manner.
-    /// Pass logger when constructing <see cref="QdrantHttpClient"/> to see any errors that may happen during this operation.
-    /// </summary>
-    /// <param name="collectionName">Collection name to create indexes for.</param>
-    /// <param name="payloadIndexes">Collection payload index definitions that describe payload indexes to create after the HNSW index creation has been successfully issued.</param>
+    /// <inheritdoc/>
     public void StartCreatingCollectionPayloadIndexes(
         string collectionName,
         ICollection<CollectionPayloadIndexDefinition> payloadIndexes)

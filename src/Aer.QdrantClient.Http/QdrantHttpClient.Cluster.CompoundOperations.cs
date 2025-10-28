@@ -1415,13 +1415,7 @@ public partial class QdrantHttpClient
         };
     }
 
-    /// <summary>
-    /// Gets the peer information by the peer node uri substring. Returns the found peer and other peers.
-    /// </summary>
-    /// <param name="clusterNodeUriSubstring">Cluster node uri substring to get peer info for.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <exception cref="QdrantNoPeersFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
-    /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
+    /// <inheritdoc/>
     [Obsolete($"Use one of the {nameof(GetPeerInfo)} methods.")]
     [SuppressMessage(
         "ReSharper",

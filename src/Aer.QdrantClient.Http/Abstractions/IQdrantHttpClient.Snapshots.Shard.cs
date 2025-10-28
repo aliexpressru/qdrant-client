@@ -1,19 +1,8 @@
-using Aer.QdrantClient.Http.Filters;
-using Aer.QdrantClient.Http.Models.Primitives;
-using Aer.QdrantClient.Http.Models.Requests;
-using Aer.QdrantClient.Http.Models.Requests.Public;
-using Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
-using Microsoft.Extensions.Logging;
 
-namespace Aer.QdrantClient.Http;
+namespace Aer.QdrantClient.Http.Abstractions;
 
-/// <summary>
-/// Interface for Qdrant HTTP API client.
-/// </summary>
 public partial interface IQdrantHttpClient
 {
     /// <summary>
@@ -38,7 +27,7 @@ public partial interface IQdrantHttpClient
         string collectionName,
         uint shardId,
         CancellationToken cancellationToken,
-        bool isWaitForResult);
+        bool isWaitForResult = true);
 
     /// <summary>
     /// Recover shard of a local collection data from a snapshot.
@@ -56,9 +45,9 @@ public partial interface IQdrantHttpClient
         uint shardId,
         Uri snapshotLocationUri,
         CancellationToken cancellationToken,
-        bool isWaitForResult,
-        SnapshotPriority? snapshotPriority,
-        string snapshotChecksum);
+        bool isWaitForResult = true,
+        SnapshotPriority? snapshotPriority = null,
+        string snapshotChecksum = null);
 
     /// <summary>
     /// Recover shard of a local collection from an uploaded snapshot.
@@ -76,9 +65,9 @@ public partial interface IQdrantHttpClient
         uint shardId,
         Stream snapshotContent,
         CancellationToken cancellationToken,
-        bool isWaitForResult,
-        SnapshotPriority? snapshotPriority,
-        string snapshotChecksum);
+        bool isWaitForResult = true,
+        SnapshotPriority? snapshotPriority = null,
+        string snapshotChecksum = null);
 
     /// <summary>
     /// Downloads the specified snapshot of a shard from a collection as a file stream.
@@ -106,6 +95,5 @@ public partial interface IQdrantHttpClient
         uint shardId,
         string snapshotName,
         CancellationToken cancellationToken,
-        bool isWaitForResult);
-
+        bool isWaitForResult = true);
 }

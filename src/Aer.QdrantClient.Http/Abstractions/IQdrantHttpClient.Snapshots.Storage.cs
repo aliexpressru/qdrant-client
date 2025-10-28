@@ -1,19 +1,8 @@
-using Aer.QdrantClient.Http.Filters;
-using Aer.QdrantClient.Http.Models.Primitives;
-using Aer.QdrantClient.Http.Models.Requests;
-using Aer.QdrantClient.Http.Models.Requests.Public;
-using Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
-using Microsoft.Extensions.Logging;
 
-namespace Aer.QdrantClient.Http;
+namespace Aer.QdrantClient.Http.Abstractions;
 
-/// <summary>
-/// Interface for Qdrant HTTP API client.
-/// </summary>
 public partial interface IQdrantHttpClient
 {
     /// <summary>
@@ -30,7 +19,7 @@ public partial interface IQdrantHttpClient
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen. If <c>false</c> - let changes happen in background.</param>
     Task<CreateSnapshotResponse> CreateStorageSnapshot(
         CancellationToken cancellationToken,
-        bool isWaitForResult);
+        bool isWaitForResult = true);
 
     /// <summary>
     /// Download specified snapshot of the whole storage as a file stream.
@@ -54,7 +43,7 @@ public partial interface IQdrantHttpClient
     Task<DefaultOperationResponse> DeleteStorageSnapshot(
         string snapshotName,
         CancellationToken cancellationToken,
-        bool isWaitForResult);
+        bool isWaitForResult = true);
 
     /// <summary>
     /// Recover the whole storage data from snapshot by its name. This will overwrite any data, stored on
@@ -69,9 +58,9 @@ public partial interface IQdrantHttpClient
     Task<DefaultOperationResponse> RecoverStorageFromSnapshot(
         string snapshotName,
         CancellationToken cancellationToken,
-        bool isWaitForResult,
-        SnapshotPriority? snapshotPriority,
-        string snapshotChecksum);
+        bool isWaitForResult = true,
+        SnapshotPriority? snapshotPriority = null,
+        string snapshotChecksum = null);
 
     /// <summary>
     /// Recover the whole storage data from a possibly remote snapshot.
@@ -84,9 +73,9 @@ public partial interface IQdrantHttpClient
     Task<DefaultOperationResponse> RecoverStorageFromSnapshot(
         Uri snapshotLocationUri,
         CancellationToken cancellationToken,
-        bool isWaitForResult,
-        SnapshotPriority? snapshotPriority,
-        string snapshotChecksum);
+        bool isWaitForResult = true,
+        SnapshotPriority? snapshotPriority = null,
+        string snapshotChecksum = null);
 
     /// <summary>
     /// Recover the whole storage from an uploaded snapshot.
@@ -99,8 +88,7 @@ public partial interface IQdrantHttpClient
     Task<DefaultOperationResponse> RecoverStorageFromUploadedSnapshot(
         Stream snapshotContent,
         CancellationToken cancellationToken,
-        bool isWaitForResult,
-        SnapshotPriority? snapshotPriority,
-        string snapshotChecksum);
-
+        bool isWaitForResult = true,
+        SnapshotPriority? snapshotPriority = null,
+        string snapshotChecksum = null);
 }

@@ -6,7 +6,6 @@ using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
-using Aer.QdrantClient.Tests.Infrastructure;
 using Aer.QdrantClient.Tests.Model;
 using Microsoft.Extensions.Logging;
 

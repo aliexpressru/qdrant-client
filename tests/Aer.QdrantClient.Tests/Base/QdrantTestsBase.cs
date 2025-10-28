@@ -87,7 +87,8 @@ public class QdrantTestsBase
                         config.HttpClientTimeout = clientTimeout.Value;
                     }
                 },
-                circuitBreakerStrategyOptions: circuitBreakerOptions
+                circuitBreakerStrategyOptions: circuitBreakerOptions,
+                registerAsInterface: false
             );
         }
         else
@@ -101,7 +102,9 @@ public class QdrantTestsBase
                         config.HttpClientTimeout = clientTimeout.Value;
                     }
                 },
-                circuitBreakerStrategyOptions: circuitBreakerOptions);
+                circuitBreakerStrategyOptions: circuitBreakerOptions,
+                registerAsInterface: false
+            );
         }
         ServiceProvider = services.BuildServiceProvider();
     }

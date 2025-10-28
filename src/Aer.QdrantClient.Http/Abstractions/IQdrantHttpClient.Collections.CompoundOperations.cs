@@ -1,19 +1,9 @@
-using Aer.QdrantClient.Http.Filters;
-using Aer.QdrantClient.Http.Models.Primitives;
-using Aer.QdrantClient.Http.Models.Requests;
-using Aer.QdrantClient.Http.Models.Requests.Public;
-using Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
+using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Responses;
-using Aer.QdrantClient.Http.Models.Shared;
-using Microsoft.Extensions.Logging;
 
-namespace Aer.QdrantClient.Http;
+namespace Aer.QdrantClient.Http.Abstractions;
 
-/// <summary>
-/// Interface for Qdrant HTTP API client.
-/// </summary>
 public partial interface IQdrantHttpClient
 {
     /// <summary>
@@ -32,9 +22,9 @@ public partial interface IQdrantHttpClient
         string collectionName,
         bool isCountExactPointsNumber,
         CancellationToken cancellationToken,
-        uint retryCount,
-        TimeSpan? retryDelay,
-        Action<Exception, TimeSpan, int, uint> onRetry);
+        uint retryCount = 3,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null);
 
     /// <summary>
     /// Get the detailed information about all existing collections.
@@ -50,8 +40,17 @@ public partial interface IQdrantHttpClient
     Task<ListCollectionInfoResponse> ListCollectionInfo(
         bool isCountExactPointsNumber,
         CancellationToken cancellationToken,
-        uint retryCount,
-        TimeSpan? retryDelay,
-        Action<Exception, TimeSpan, int, uint> onRetry);
+        uint retryCount = 3,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null);
 
+    /// <summary>
+    /// Create HNSW index and many payload indexes if they are defined in a fire-and-forget manner.
+    /// Pass logger when constructing <see cref="QdrantHttpClient"/> to see any errors that may happen during this operation.
+    /// </summary>
+    /// <param name="collectionName">Collection name to create indexes for.</param>
+    /// <param name="payloadIndexes">Collection payload index definitions that describe payload indexes to create after the HNSW index creation has been successfully issued.</param>
+    public void StartCreatingCollectionPayloadIndexes(
+        string collectionName,
+        ICollection<CollectionPayloadIndexDefinition> payloadIndexes);
 }

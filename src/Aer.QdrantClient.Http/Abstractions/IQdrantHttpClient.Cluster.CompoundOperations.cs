@@ -1,19 +1,10 @@
-using Aer.QdrantClient.Http.Filters;
-using Aer.QdrantClient.Http.Models.Primitives;
-using Aer.QdrantClient.Http.Models.Requests;
-using Aer.QdrantClient.Http.Models.Requests.Public;
-using Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
+using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Microsoft.Extensions.Logging;
 
-namespace Aer.QdrantClient.Http;
+namespace Aer.QdrantClient.Http.Abstractions;
 
-/// <summary>
-/// Interface for Qdrant HTTP API client.
-/// </summary>
 public partial interface IQdrantHttpClient
 {
     /// <summary>
@@ -44,12 +35,12 @@ public partial interface IQdrantHttpClient
         ulong sourcePeerId,
         ulong targetPeerId,
         CancellationToken cancellationToken,
-        ILogger logger,
-        bool isDryRun,
-        ShardTransferMethod shardTransferMethod,
-        bool isMoveShards,
-        string[] collectionNamesToReplicate,
-        uint[] shardIdsToReplicate);
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        bool isMoveShards = false,
+        string[] collectionNamesToReplicate = null,
+        uint[] shardIdsToReplicate = null);
 
     /// <summary>
     /// Replicates shards for specified or all collections from one peer to the other.
@@ -79,12 +70,12 @@ public partial interface IQdrantHttpClient
         string sourcePeerUriSelectorString,
         string targetPeerUriSelectorString,
         CancellationToken cancellationToken,
-        ILogger logger,
-        bool isDryRun,
-        ShardTransferMethod shardTransferMethod,
-        bool isMoveShards,
-        string[] collectionNamesToReplicate,
-        uint[] shardIdsToReplicate);
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        bool isMoveShards = false,
+        string[] collectionNamesToReplicate = null,
+        uint[] shardIdsToReplicate = null);
 
     /// <summary>
     /// Replicates shards for specified or all collections to specified peer.
@@ -107,9 +98,9 @@ public partial interface IQdrantHttpClient
     Task<ReplicateShardsToPeerResponse> ReplicateShardsToPeer(
         ulong targetPeerId,
         CancellationToken cancellationToken,
-        ILogger logger,
-        bool isDryRun,
-        ShardTransferMethod shardTransferMethod,
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
         params string[] collectionNamesToReplicate);
 
     /// <summary>
@@ -133,9 +124,9 @@ public partial interface IQdrantHttpClient
     Task<ReplicateShardsToPeerResponse> ReplicateShardsToPeer(
         string targetPeerUriSelectorString,
         CancellationToken cancellationToken,
-        ILogger logger,
-        bool isDryRun,
-        ShardTransferMethod shardTransferMethod,
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
         params string[] collectionNamesToReplicate);
 
     /// <summary>
@@ -160,9 +151,9 @@ public partial interface IQdrantHttpClient
         string sourcePeerUriSelectorString,
         string emptyTargetPeerUriSelectorString,
         CancellationToken cancellationToken,
-        ILogger logger,
-        bool isDryRun,
-        ShardTransferMethod shardTransferMethod);
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot);
 
     /// <summary>
     /// Equalizes shard replication between source and empty target peers for specified collections.
@@ -186,9 +177,9 @@ public partial interface IQdrantHttpClient
         ulong sourcePeerId,
         ulong emptyTargetPeerId,
         CancellationToken cancellationToken,
-        ILogger logger,
-        bool isDryRun,
-        ShardTransferMethod shardTransferMethod);
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot);
 
     /// <summary>
     /// Removes all shards for all collections or specified collections from a peer by distributing them between another peers.
@@ -211,9 +202,9 @@ public partial interface IQdrantHttpClient
     Task<DrainPeerResponse> DrainPeer(
         ulong peerId,
         CancellationToken cancellationToken,
-        ILogger logger,
-        bool isDryRun,
-        ShardTransferMethod shardTransferMethod,
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
         params string[] collectionNamesToMove
     );
 
@@ -238,9 +229,9 @@ public partial interface IQdrantHttpClient
     Task<DrainPeerResponse> DrainPeer(
         string peerUriSelectorString,
         CancellationToken cancellationToken,
-        ILogger logger,
-        bool isDryRun,
-        ShardTransferMethod shardTransferMethod,
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
         params string[] collectionNamesToMove
     );
 
@@ -261,8 +252,8 @@ public partial interface IQdrantHttpClient
     Task<ClearPeerResponse> ClearPeer(
         ulong peerId,
         CancellationToken cancellationToken,
-        ILogger logger,
-        bool isDryRun,
+        ILogger logger = null,
+        bool isDryRun = false,
         params string[] collectionNamesToClear
     );
 
@@ -283,8 +274,8 @@ public partial interface IQdrantHttpClient
     Task<ClearPeerResponse> ClearPeer(
         string peerUriSelectorString,
         CancellationToken cancellationToken,
-        ILogger logger,
-        bool isDryRun,
+        ILogger logger = null,
+        bool isDryRun = false,
         params string[] collectionNamesToClear
     );
 
@@ -337,4 +328,14 @@ public partial interface IQdrantHttpClient
     /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
     Task<GetPeerResponse> GetPeerInfo(ulong peerId, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Gets the peer information by the peer node uri substring. Returns the found peer and other peers.
+    /// </summary>
+    /// <param name="clusterNodeUriSubstring">Cluster node uri substring to get peer info for.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <exception cref="QdrantNoPeersFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
+    /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
+    [Obsolete($"Use one of the {nameof(GetPeerInfo)} methods.")]
+    Task<GetPeerResponse>
+        GetPeerInfoByUriSubstring(string clusterNodeUriSubstring, CancellationToken cancellationToken);
 }

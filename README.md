@@ -26,6 +26,34 @@ var client = new QdrantHttpClient(
 );
 ```
 
+### Dependency Injection
+
+To register Qdrant HTTP client in the dependency injection container use the following code:
+
+```csharp
+services.AddQdrantHttpClient(options =>
+{
+    options.HttpAddress = "localhost";
+    options.Port = 6334;
+    options.ApiKey = "my-secret-api-key";
+});
+```
+
+This will register `QdrantHttpClient` as a singleton service. 
+
+If you wish to register `IQdrantHttpClient` instead (supported from version 1.15.13 of this library), pass the `registerAsInterface` argument to the `AddQdrantHttpClient` method:
+
+```csharp
+services.AddQdrantHttpClient(options =>
+    {
+        options.HttpAddress = "localhost";
+        options.Port = 6334;
+        options.ApiKey = "my-secret-api-key";
+    },
+    registerAsInterface: true
+);
+```
+
 ### Working with collections
 
 Once a client has been created, create a new collection

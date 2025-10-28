@@ -1,19 +1,8 @@
-using Aer.QdrantClient.Http.Filters;
-using Aer.QdrantClient.Http.Models.Primitives;
-using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Requests.Public;
-using Aer.QdrantClient.Http.Models.Requests.Public.DiscoverPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
-using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Responses;
-using Aer.QdrantClient.Http.Models.Shared;
-using Microsoft.Extensions.Logging;
 
-namespace Aer.QdrantClient.Http;
+namespace Aer.QdrantClient.Http.Abstractions;
 
-/// <summary>
-/// Interface for Qdrant HTTP API client.
-/// </summary>
 public partial interface IQdrantHttpClient
 {
     /// <summary>
@@ -33,10 +22,10 @@ public partial interface IQdrantHttpClient
         string collectionName,
         CreateCollectionRequest request,
         CancellationToken cancellationToken,
-        TimeSpan? timeout,
-        uint retryCount,
-        TimeSpan? retryDelay,
-        Action<Exception, TimeSpan, int, uint> onRetry);
+        TimeSpan? timeout = null,
+        uint retryCount = 3,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null);
 
     /// <summary>
     /// Update parameters of the existing collection.
@@ -55,10 +44,10 @@ public partial interface IQdrantHttpClient
         string collectionName,
         UpdateCollectionParametersRequest request,
         CancellationToken cancellationToken,
-        TimeSpan? timeout,
-        uint retryCount,
-        TimeSpan? retryDelay,
-        Action<Exception, TimeSpan, int, uint> onRetry);
+        TimeSpan? timeout = null,
+        uint retryCount = 3,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null);
 
     /// <summary>
     /// Trigger optimizers on existing collection.
@@ -76,10 +65,10 @@ public partial interface IQdrantHttpClient
     Task<DefaultOperationResponse> TriggerOptimizers(
         string collectionName,
         CancellationToken cancellationToken,
-        TimeSpan? timeout,
-        uint retryCount,
-        TimeSpan? retryDelay,
-        Action<Exception, TimeSpan, int, uint> onRetry);
+        TimeSpan? timeout = null,
+        uint retryCount = 3,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null);
 
     /// <summary>
     /// Get the detailed information about specified existing collection.
@@ -95,9 +84,9 @@ public partial interface IQdrantHttpClient
     Task<GetCollectionInfoResponse> GetCollectionInfo(
         string collectionName,
         CancellationToken cancellationToken,
-        uint retryCount,
-        TimeSpan? retryDelay,
-        Action<Exception, TimeSpan, int, uint> onRetry);
+        uint retryCount = 3,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null);
 
     /// <summary>
     /// Get the names of all the existing collections.
@@ -120,10 +109,10 @@ public partial interface IQdrantHttpClient
     Task<DefaultOperationResponse> DeleteCollection(
         string collectionName,
         CancellationToken cancellationToken,
-        TimeSpan? timeout,
-        uint retryCount,
-        TimeSpan? retryDelay,
-        Action<Exception, TimeSpan, int, uint> onRetry);
+        TimeSpan? timeout = null,
+        uint retryCount = 3,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null);
 
     /// <summary>
     /// Get list of all existing collections aliases.
@@ -137,9 +126,9 @@ public partial interface IQdrantHttpClient
     /// </param>
     Task<ListCollectionAliasesResponse> ListAllAliases(
         CancellationToken cancellationToken,
-        uint retryCount,
-        TimeSpan? retryDelay,
-        Action<Exception, TimeSpan, int, uint> onRetry);
+        uint retryCount = 3,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null);
 
     /// <summary>
     /// Get list of all aliases for a specified collection.
@@ -155,9 +144,9 @@ public partial interface IQdrantHttpClient
     Task<ListCollectionAliasesResponse> ListCollectionAliases(
         string collectionName,
         CancellationToken cancellationToken,
-        uint retryCount,
-        TimeSpan? retryDelay,
-        Action<Exception, TimeSpan, int, uint> onRetry);
+        uint retryCount = 3,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null);
 
     /// <summary>
     /// Execute multiple collection aliases update operations in one batch.
@@ -174,10 +163,10 @@ public partial interface IQdrantHttpClient
     Task<DefaultOperationResponse> UpdateCollectionsAliases(
         UpdateCollectionAliasesRequest updateCollectionAliasesRequest,
         CancellationToken cancellationToken,
-        TimeSpan? timeout,
-        uint retryCount,
-        TimeSpan? retryDelay,
-        Action<Exception, TimeSpan, int, uint> onRetry);
+        TimeSpan? timeout = null,
+        uint retryCount = 3,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null);
 
     /// <summary>
     /// Checks whether collection with specified name exists.
@@ -187,5 +176,4 @@ public partial interface IQdrantHttpClient
     Task<CheckCollectionExistsResponse> CheckCollectionExists(
         string collectionName,
         CancellationToken cancellationToken);
-
 }
