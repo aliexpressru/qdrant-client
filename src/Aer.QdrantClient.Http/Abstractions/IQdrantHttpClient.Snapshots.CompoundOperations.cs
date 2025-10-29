@@ -8,7 +8,13 @@ public partial interface IQdrantHttpClient
     /// A compound operation that lists all snapshots for all collections and shards in the storage.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    Task<ListSnapshotsResponse> ListAllSnapshots(CancellationToken cancellationToken);
+    /// <param name="includeStorageSnapshots">
+    /// If set to <c>true</c> includes storage snapshots to listing.
+    /// Default value is <c>false</c> because multi-node snapshot tests are discouraged.
+    /// </param>
+    Task<ListSnapshotsResponse> ListAllSnapshots(
+        CancellationToken cancellationToken,
+        bool includeStorageSnapshots = false);
 
     /// <summary>
     /// A compound operation that deletes all existing storage snapshots.

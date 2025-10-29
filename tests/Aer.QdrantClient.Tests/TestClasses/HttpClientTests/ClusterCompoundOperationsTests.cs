@@ -869,10 +869,6 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
         var initialSubjectCollectionClusteringInfo =
             (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
             .EnsureSuccess();
-
-        var initialUntouchedCollectionClusteringInfo =
-            (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
-            .EnsureSuccess();
         
         // First we replicate one shard for one collection
         

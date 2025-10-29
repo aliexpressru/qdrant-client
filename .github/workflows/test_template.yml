@@ -24,33 +24,35 @@ jobs:
           - "6334:6334"
           - "6335:6335"
 
-      # 2-node qdrant cluster
-      qdrant-1:
-        image: ${{ inputs.qdrant_image }}
-        ports:
-          - "6343:6333"
-          - "6344:6334"
-          - "6345:6335"
-        env:
-          QDRANT__CLUSTER__ENABLED: true
-        #   QDRANT__CLUSTER__NODE_ID: node1
-        #   QDRANT__CLUSTER__PEERS: node2:6353
-        options: >-
-            --uri 'http://qdrant-1:6343'
+    # For this to work we need to publish images with burnt in options for --uri and --bootstrap since we can't pass command arguments to images through github actions
+    # see https://github.com/actions/runner/pull/1152 for more details
+    #   # 2-node qdrant cluster
+    #   qdrant-1:
+    #     image: ${{ inputs.qdrant_image }}
+    #     ports:
+    #       - "6343:6333"
+    #       - "6344:6334"
+    #       - "6345:6335"
+    #     env:
+    #       QDRANT__CLUSTER__ENABLED: true
+    #     #   QDRANT__CLUSTER__NODE_ID: node1
+    #     #   QDRANT__CLUSTER__PEERS: node2:6353
+    #     options: >-
+    #         --uri 'http://qdrant-1:6343'
 
-      qdrant-2:
-        image: ${{ inputs.qdrant_image }}
-        ports:
-          - "6353:6333"
-          - "6354:6334"
-          - "6355:6335"
-        env:
-          QDRANT__CLUSTER__ENABLED: true
-        #   QDRANT__CLUSTER__NODE_ID: node2
-        #   QDRANT__CLUSTER__PEERS: node1:6343
-        options: >-
-            --bootstrap 'http://qdrant-1:6343' 
-            --uri 'http://qdrant-2:6353'
+    #   qdrant-2:
+    #     image: ${{ inputs.qdrant_image }}
+    #     ports:
+    #       - "6353:6333"
+    #       - "6354:6334"
+    #       - "6355:6335"
+    #     env:
+    #       QDRANT__CLUSTER__ENABLED: true
+    #     #   QDRANT__CLUSTER__NODE_ID: node2
+    #     #   QDRANT__CLUSTER__PEERS: node1:6343
+    #     options: >-
+    #         --bootstrap 'http://qdrant-1:6343' 
+    #         --uri 'http://qdrant-2:6353'
 
     env:
         CI: true
