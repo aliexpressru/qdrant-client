@@ -1,4 +1,3 @@
-using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Responses;
 

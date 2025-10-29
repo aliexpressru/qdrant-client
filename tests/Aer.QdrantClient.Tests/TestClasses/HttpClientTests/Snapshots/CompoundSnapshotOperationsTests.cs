@@ -7,8 +7,6 @@ namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots;
 
 public class CompoundSnapshotOperationsTests : QdrantTestsBase
 {
-    // NOTE: since we don't have a cluster in test and thus have only one shard
-    // these tests basically repeat the tests from CollectionSnapshotTests but using shard methods
     private QdrantHttpClient _qdrantHttpClient;
 
     // since we don't have a cluster in test and thus have only one shard which is always 0
@@ -25,7 +23,7 @@ public class CompoundSnapshotOperationsTests : QdrantTestsBase
     [SetUp]
     public async Task BeforeEachTest()
     {
-        await ResetStorage();
+        await ResetStorage(_qdrantHttpClient);
     }
 
     [Test]
@@ -55,7 +53,9 @@ public class CompoundSnapshotOperationsTests : QdrantTestsBase
             (await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName2, CancellationToken.None))
             .EnsureSuccess();
 
-        var listAllSnapshotsResult = await _qdrantHttpClient.ListAllSnapshots(CancellationToken.None);
+        var listAllSnapshotsResult = await _qdrantHttpClient.ListAllSnapshots(
+            CancellationToken.None, 
+            includeStorageSnapshots: true); // We can include storage snapshots since we are in a single-node cluster
 
         listAllSnapshotsResult.Status.IsSuccess.Should().BeTrue();
         listAllSnapshotsResult.Result.Should().NotBeNull();
@@ -118,7 +118,10 @@ public class CompoundSnapshotOperationsTests : QdrantTestsBase
         (await _qdrantHttpClient.CreateCollectionSnapshot(TestCollectionName2, CancellationToken.None))
             .EnsureSuccess();
 
-        var listAllSnapshotsResult = (await _qdrantHttpClient.ListAllSnapshots(CancellationToken.None)).EnsureSuccess();
+        // We include storage snapshots since we are in a single-node cluster
+        var listAllSnapshotsResult =
+            (await _qdrantHttpClient.ListAllSnapshots(CancellationToken.None, includeStorageSnapshots: true))
+            .EnsureSuccess();
 
         listAllSnapshotsResult.Should().HaveCount(5); // 2 collection + 2 shard + 1 storage
 

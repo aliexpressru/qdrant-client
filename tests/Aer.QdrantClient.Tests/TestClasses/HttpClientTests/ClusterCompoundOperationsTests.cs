@@ -24,7 +24,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
     public void Setup()
     {
         Initialize();
-        _qdrantHttpClient = GetClusterClient();
+        _qdrantHttpClient = GetClusterClient(ClusterNode.First);
 
         _logger = ServiceProvider.GetRequiredService<ILogger<ClusterCompoundOperationsTests>>();
     }
@@ -867,10 +867,6 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
             .EnsureSuccess();
         
         var initialSubjectCollectionClusteringInfo =
-            (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
-            .EnsureSuccess();
-
-        var initialUntouchedCollectionClusteringInfo =
             (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
             .EnsureSuccess();
         

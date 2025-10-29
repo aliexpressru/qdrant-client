@@ -314,18 +314,28 @@ public class QdrantTestsBase
                 .ToArray();
 
     /// <summary>
-    /// Returns <see cref="QdrantHttpClient"/> for 2-node cluster.
-    /// The exact node this client connects to first is <c>qdrant-1</c>.
+    /// Returns <see cref="QdrantHttpClient"/> for first node of the 2-node cluster.
     /// </summary>
-    protected QdrantHttpClient GetClusterClient() =>
-        new("localhost", apiKey: "test", port: 6343, useHttps: false);
+    protected QdrantHttpClient GetClusterClient(ClusterNode requiredClusterNode) =>
 
-    internal async Task<
-            (IReadOnlyList<UpsertPointsRequest<TPayload>.UpsertPoint> UpsertPoints,
-            Dictionary<ulong, UpsertPointsRequest<TPayload>.UpsertPoint> UpsertPointsByPointIds,
-            IReadOnlyList<PointId> UpsertPointIds)
-        >
-        PrepareCollection<TPayload>(
+        new(
+            "localhost",
+            apiKey: "test",
+            port: requiredClusterNode switch
+            {
+                ClusterNode.First => 6343,
+                ClusterNode.Second => 6353,
+                _ => throw new ArgumentOutOfRangeException(
+                    nameof(requiredClusterNode),
+                    requiredClusterNode,
+                    "Unknown cluster node")
+            },
+            useHttps: false);
+
+    internal async
+        Task<(IReadOnlyList<UpsertPointsRequest<TPayload>.UpsertPoint> Points,
+            Dictionary<ulong, UpsertPointsRequest<TPayload>.UpsertPoint> PointsByPointIds, 
+            IReadOnlyList<PointId> PointIds)> PrepareCollection<TPayload>(
             QdrantHttpClient qdrantHttpClient,
             string collectionName,
             VectorDistanceMetric distanceMetric = VectorDistanceMetric.Dot,
@@ -342,7 +352,8 @@ public class QdrantTestsBase
             {
                 OnDiskPayload = true,
                 QuantizationConfig = quantizationConfig,
-                StrictModeConfig = strictModeConfig
+                StrictModeConfig = strictModeConfig,
+                OptimizersConfig = new OptimizersConfiguration() {IndexingThreshold = 10}
             },
             CancellationToken.None);
 
