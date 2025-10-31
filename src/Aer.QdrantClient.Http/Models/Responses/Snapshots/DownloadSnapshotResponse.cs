@@ -22,18 +22,19 @@ public sealed class DownloadSnapshotResponse : QdrantResponseBase<DownloadSnapsh
         /// The name of the snapshot. Used to name the temporary file on qdrant side.
         /// </summary>
         public string SnapshotName { get; }
+        
         /// <summary>
         /// The stream with binary snapshot data.
         /// </summary>
         public Stream SnapshotDataStream { get; }
 
         /// <summary>
-        /// The snapshot size in bytes.
+        /// The snapshot size in bytes. If using compression - has <c>0</c> value.
         /// </summary>
         public long SnapshotSizeBytes { get; }
 
         /// <summary>
-        /// The snapshot size in megabytes.
+        /// The snapshot size in megabytes. If using compression - has <c>0</c> value.
         /// </summary>
         public double SnapshotSizeMegabytes => SnapshotSizeBytes > 0
             ? SnapshotSizeBytes / 1024.0 / 1024.0

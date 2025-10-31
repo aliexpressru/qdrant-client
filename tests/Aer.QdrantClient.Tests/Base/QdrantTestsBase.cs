@@ -1,4 +1,5 @@
 using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.DependencyInjection;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
@@ -7,6 +8,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Model;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MoreLinq;
 using Polly.CircuitBreaker;
 using Serilog;
@@ -312,6 +314,14 @@ public class QdrantTestsBase
             Enumerable.Range(0, (int) vectorLength)
                 .Select(_ => vectorElement)
                 .ToArray();
+
+    protected QdrantClientSettings GetQdrantClientSettings(string clientName = null)
+    {
+        var qdrantSettings = ServiceProvider.GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>()
+            .Get(clientName ?? ServiceCollectionExtensions.DefaultHttpClientName);
+
+        return qdrantSettings;
+    }
 
     /// <summary>
     /// Returns <see cref="QdrantHttpClient"/> for first node of the 2-node cluster.

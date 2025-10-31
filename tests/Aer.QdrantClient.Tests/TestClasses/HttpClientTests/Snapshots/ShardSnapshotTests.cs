@@ -1,4 +1,5 @@
 ﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
@@ -12,6 +13,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
     // NOTE: since we don't have a cluster in test and thus have only one shard
     // these tests basically repeat the tests from CollectionSnapshotTests but using shard methods
     private QdrantHttpClient _qdrantHttpClient;
+    private QdrantClientSettings _clientSettings;
 
     // since we don't have a cluster in test and thus have only one shard which is always 0
     private const int SINGLE_SHARD_ID = 0;
@@ -20,6 +22,8 @@ public class ShardSnapshotTests : SnapshotTestsBase
     public void Setup()
     {
         Initialize();
+        
+        _clientSettings = GetQdrantClientSettings();
         _qdrantHttpClient = ServiceProvider.GetRequiredService<QdrantHttpClient>();
     }
 
@@ -297,7 +301,12 @@ public class ShardSnapshotTests : SnapshotTestsBase
 
         downloadSnapshotResponse.Status.IsSuccess.Should().BeTrue();
         downloadSnapshotResponse.Result.SnapshotName.Should().Be(createSnapshotResult.Name);
-        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Size);
+
+        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(
+            !_clientSettings.EnableCompression
+                ? createSnapshotResult.Size
+                : 0
+        );
 
         downloadSnapshotResponse.Result.SnapshotDataStream.Should().NotBeNull();
 
@@ -350,7 +359,12 @@ public class ShardSnapshotTests : SnapshotTestsBase
 
         downloadSnapshotResponse.Status.IsSuccess.Should().BeTrue();
 
-        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Size);
+        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(
+            !_clientSettings.EnableCompression
+                ? createSnapshotResult.Size
+                : 0
+        );
+
         downloadSnapshotResponse.Result.SnapshotName.Should().Be(createSnapshotResult.Name);
         downloadSnapshotResponse.Result.SnapshotDataStream.Should().NotBeNull();
 

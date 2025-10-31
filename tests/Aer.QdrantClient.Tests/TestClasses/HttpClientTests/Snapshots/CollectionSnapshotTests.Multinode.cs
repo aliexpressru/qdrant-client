@@ -1,4 +1,5 @@
 ﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -13,12 +14,14 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
 {
     private QdrantHttpClient _qdrantHttpClientClusterNode1;
     private QdrantHttpClient _qdrantHttpClientClusterNode2;
+    private QdrantClientSettings _clientSettings;
 
     [OneTimeSetUp]
     public void Setup()
     {
         Initialize();
 
+        _clientSettings = GetQdrantClientSettings();
         _qdrantHttpClientClusterNode1 = GetClusterClient(ClusterNode.First);
         _qdrantHttpClientClusterNode2 = GetClusterClient(ClusterNode.Second);
     }
@@ -266,7 +269,12 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
         {
             downloadedSnapshot.Status.IsSuccess.Should().BeTrue();
             downloadedSnapshot.Result.SnapshotName.Should().Be(createdSnapshot.Name);
-            downloadedSnapshot.Result.SnapshotSizeBytes.Should().Be(createdSnapshot.Size);
+
+            downloadedSnapshot.Result.SnapshotSizeBytes.Should().Be(
+                !_clientSettings.EnableCompression
+                    ? createdSnapshot.Size
+                    : 0
+            );
 
             downloadedSnapshot.Result.SnapshotDataStream.Should().NotBeNull();
             downloadedSnapshot.Result.SnapshotType.Should().Be(SnapshotType.Collection);
