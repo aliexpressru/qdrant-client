@@ -1,13 +1,13 @@
 ﻿using System.Diagnostics;
 
-namespace Aer.QdrantClient.Http.Infrastructure.Tracing;
+namespace Aer.QdrantClient.Http.HttpClientHanders;
 
 /// <summary>
 /// The http client handler that disables activity propagation.
 /// </summary>
-internal sealed class DisableActivityHandler : DelegatingHandler
+internal sealed class DisableActivityHttpClientHandler : DelegatingHandler
 {
-	public DisableActivityHandler(HttpMessageHandler innerHandler) : base(innerHandler)
+	public DisableActivityHttpClientHandler(HttpMessageHandler innerHandler) : base(innerHandler)
 	{ }
 
 	protected override async Task<HttpResponseMessage> SendAsync(

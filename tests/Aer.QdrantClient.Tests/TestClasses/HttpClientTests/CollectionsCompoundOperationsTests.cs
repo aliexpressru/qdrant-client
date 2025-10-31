@@ -1,5 +1,6 @@
 ﻿using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Configuration;
+using Aer.QdrantClient.Http.DependencyInjection;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
@@ -23,7 +24,10 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
         Initialize();
 
         _qdrantHttpClient = ServiceProvider.GetRequiredService<QdrantHttpClient>();
-        _qdrantClientSettings = ServiceProvider.GetRequiredService<IOptions<QdrantClientSettings>>().Value;
+        
+        _qdrantClientSettings = ServiceProvider.GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>().Get(
+            ServiceCollectionExtensions.DefaultHttpClientName);
+        
         _logger = ServiceProvider.GetRequiredService<ILogger<CollectionsCompoundOperationsTests>>();
     }
 

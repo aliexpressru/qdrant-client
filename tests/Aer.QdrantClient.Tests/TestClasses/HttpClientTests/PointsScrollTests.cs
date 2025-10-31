@@ -278,6 +278,12 @@ internal class PointsScrollTests : QdrantTestsBase
         readPointsResult.Status.IsSuccess.Should().BeTrue();
         readPointsResult.Result.Points.Length.Should().Be(valuesToMatchAgainst.Count);
 
+        foreach (var readPoint in readPointsResult.Result.Points)
+        { 
+            readPoint.Payload.IsEmpty.Should().BeFalse();
+            readPoint.Payload.RawPayload.Should().NotBeNull();
+        }
+
         var readPointsRangeResult = await _qdrantHttpClient.ScrollPoints(
             TestCollectionName,
             Q.Must(
@@ -301,6 +307,8 @@ internal class PointsScrollTests : QdrantTestsBase
             var expectedPoint = upsertPointsByPointIds[readPointId];
 
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
+
+            readPoint.Payload.RawPayload.Should().NotBeNull();
 
             readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
             readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);

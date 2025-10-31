@@ -1,4 +1,5 @@
 ﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Model;
@@ -8,12 +9,14 @@ namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots;
 public class StorageSnapshotTests : SnapshotTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
+    private QdrantClientSettings _clientSettings;
 
     [OneTimeSetUp]
     public void Setup()
     {
         Initialize();
-
+        
+        _clientSettings = GetQdrantClientSettings();
         _qdrantHttpClient = ServiceProvider.GetRequiredService<QdrantHttpClient>();
     }
 
@@ -204,7 +207,12 @@ public class StorageSnapshotTests : SnapshotTestsBase
 
         downloadSnapshotResponse.Status.IsSuccess.Should().BeTrue();
         downloadSnapshotResponse.Result.SnapshotName.Should().Be(createSnapshotResult.Name);
-        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Size);
+
+        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(
+            !_clientSettings.EnableCompression
+                ? createSnapshotResult.Size
+                : 0
+        );
 
         downloadSnapshotResponse.Result.SnapshotDataStream.Should().NotBeNull();
 
@@ -233,7 +241,12 @@ public class StorageSnapshotTests : SnapshotTestsBase
 
         downloadSnapshotResponse.Status.IsSuccess.Should().BeTrue();
         downloadSnapshotResponse.Result.SnapshotName.Should().Be(createSnapshotResult.Name);
-        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Size);
+
+        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(
+            !_clientSettings.EnableCompression
+                ? createSnapshotResult.Size
+                : 0
+        );
 
         downloadSnapshotResponse.Result.SnapshotDataStream.Should().NotBeNull();
 

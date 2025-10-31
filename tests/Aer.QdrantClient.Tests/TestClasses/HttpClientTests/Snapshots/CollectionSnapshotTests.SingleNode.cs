@@ -1,4 +1,5 @@
 ﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
@@ -10,12 +11,14 @@ namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots;
 public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
 {
     private QdrantHttpClient _qdrantHttpClientSingleNode;
+    private QdrantClientSettings _clientSettings;
 
     [OneTimeSetUp]
     public void Setup()
     {
         Initialize();
 
+        _clientSettings = GetQdrantClientSettings();
         _qdrantHttpClientSingleNode = ServiceProvider.GetRequiredService<QdrantHttpClient>();
     }
 
@@ -158,6 +161,7 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
         snapshotInfo.Name.Should().Be(createFirstSnapshotResult.Name);
         snapshotInfo.Size.Should().Be(createFirstSnapshotResult.Size);
         snapshotInfo.SizeMegabytes.Should().Be(createFirstSnapshotResult.SizeMegabytes);
+        
         snapshotInfo.CreationTime.Should().Be(createFirstSnapshotResult.CreationTime);
         snapshotInfo.Checksum.Should().Be(createFirstSnapshotResult.Checksum);
         snapshotInfo.SnapshotType.Should().Be(SnapshotType.Collection);
@@ -295,7 +299,12 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
 
         downloadSnapshotResponse.Status.IsSuccess.Should().BeTrue();
         downloadSnapshotResponse.Result.SnapshotName.Should().Be(createSnapshotResult.Name);
-        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Size);
+
+        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(
+            !_clientSettings.EnableCompression
+                ? createSnapshotResult.Size
+                : 0
+        );
 
         downloadSnapshotResponse.Result.SnapshotDataStream.Should().NotBeNull();
 
@@ -351,7 +360,12 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
 
         downloadSnapshotResponse.Status.IsSuccess.Should().BeTrue();
 
-        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(createSnapshotResult.Size);
+        downloadSnapshotResponse.Result.SnapshotSizeBytes.Should().Be(
+            !_clientSettings.EnableCompression
+                ? createSnapshotResult.Size
+                : 0
+        );
+        
         downloadSnapshotResponse.Result.SnapshotName.Should().Be(createSnapshotResult.Name);
         downloadSnapshotResponse.Result.SnapshotDataStream.Should().NotBeNull();
 

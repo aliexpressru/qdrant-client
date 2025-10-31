@@ -33,4 +33,14 @@ public sealed class QdrantClientSettings
     /// The default timeout for http client which ios used to call Qdrant HTTP API.
     /// </summary>
     public TimeSpan HttpClientTimeout { set; get; } = DefaultHttpClientTimeout;
+
+    /// <summary>
+    /// If set to <c>true</c>, http client activity tracing is disabled. Default is <c>false</c>.
+    /// </summary>
+    public bool DisableTracing { set; get; }
+    
+    /// <summary>
+    /// If set to <c>true</c> enables request \ response compression. Default is <c>false</c>.
+    /// </summary>
+    public bool EnableCompression { set; get; }
 }
