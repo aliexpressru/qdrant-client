@@ -131,10 +131,13 @@ internal class PointsScrollTests : QdrantTestsBase
             var expectedPoint = upsertPointsByPointIds[readPointId];
 
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
+            
+            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
 
-            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+            readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPointPayload.Text);
         }
     }
 

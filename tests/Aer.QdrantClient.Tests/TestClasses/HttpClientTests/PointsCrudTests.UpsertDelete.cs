@@ -666,11 +666,13 @@ internal partial class PointsCrudTests
 
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
 
-            var readPointPayload = readPoint.Payload.As<TestPayload>();
+            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
 
-            readPointPayload.Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPointPayload.FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPointPayload.Text.Should().Be(expectedPoint.Payload.Text);
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+            
+            readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPointPayload.Text);
         }
     }
 
@@ -740,11 +742,13 @@ internal partial class PointsCrudTests
 
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
 
-            var readPointPayload = readPoint.Payload.As<TestPayload>();
+            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+            
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
 
-            readPointPayload.Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPointPayload.FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPointPayload.Text.Should().Be(expectedPoint.Payload.Text);
+            readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPointPayload.Text);
         }
     }
 
