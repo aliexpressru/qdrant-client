@@ -15,7 +15,7 @@ namespace Aer.QdrantClient.Http.DependencyInjection;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
-    private const string DEFAULT_HTTP_CLIENT_NAME = "DefaultQdrantHttpClient";
+    internal const string DefaultHttpClientName = "DefaultQdrantHttpClient";
 
     /// <summary>
     /// Adds Qdrant HTTP client to the <see cref="IServiceCollection"/> with explicitly defined settings.
@@ -45,16 +45,16 @@ public static class ServiceCollectionExtensions
         string clientName = null,
         bool registerAsInterface = false)
     {
-        services.Configure(configureQdrantClientSettings);
-        services.AddSingleton(serviceProvider =>
-            serviceProvider.GetRequiredService<IOptions<QdrantClientSettings>>().Value);
-
+        var actualClientName = clientName ?? DefaultHttpClientName;
+        
+        services.Configure(actualClientName, configureQdrantClientSettings);
+        
         AddQdrantHttpClientInternal(
             services,
             circuitBreakerStrategyOptions,
             resiliencePipelineTelemetryOptions,
             shouldSelectResiliencePipelineByAuthority: true,
-            clientName ?? DEFAULT_HTTP_CLIENT_NAME,
+            clientName ?? DefaultHttpClientName,
             registerAsInterface);
 
         return services;
@@ -92,13 +92,13 @@ public static class ServiceCollectionExtensions
         string clientName = null,
         bool registerAsInterface = false)
     {
-        services.Configure<QdrantClientSettings>(configuration.GetSection(clientConfigurationSectionName));
-        services.AddSingleton(serviceProvider =>
-            serviceProvider.GetRequiredService<IOptions<QdrantClientSettings>>().Value);
+        var actualClientName = clientName ?? DefaultHttpClientName;
+        
+        services.Configure<QdrantClientSettings>(actualClientName, configuration.GetSection(clientConfigurationSectionName));
 
         if (configureQdrantClientSettings is not null)
         {
-            services.PostConfigure(configureQdrantClientSettings);
+            services.PostConfigure(actualClientName, configureQdrantClientSettings);
         }
 
         AddQdrantHttpClientInternal(
@@ -106,7 +106,7 @@ public static class ServiceCollectionExtensions
             circuitBreakerStrategyOptions,
             resiliencePipelineTelemetryOptions,
             shouldSelectResiliencePipelineByAuthority: true,
-            clientName ?? DEFAULT_HTTP_CLIENT_NAME,
+            actualClientName,
             registerInterface: registerAsInterface);
 
         return services;
@@ -120,30 +120,35 @@ public static class ServiceCollectionExtensions
         string clientName,
         bool registerInterface)
     {
-        Action<IServiceProvider, HttpClient> configureClient = static (serviceProvider, client) =>
+        Action<IServiceProvider, HttpClient> configureClient = (serviceProvider, client) =>
         {
             var qdrantSettings =
-                serviceProvider.GetRequiredService<QdrantClientSettings>();
+                serviceProvider.GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>().Get(clientName);
 
             client.BaseAddress = new Uri(qdrantSettings.HttpAddress);
             client.Timeout = qdrantSettings.HttpClientTimeout;
-
-            if (qdrantSettings.ApiKey is {Length: > 0})
-            {
-                client.DefaultRequestHeaders.Add(
-                    QdrantHttpClient.ApiKeyHeaderName,
-                    qdrantSettings.ApiKey
-                );
-            }
         };
 
         IHttpClientBuilder httpClientBuilder = registerInterface
             ? services.AddHttpClient<IQdrantHttpClient, QdrantHttpClient>(
-                clientName,
-                configureClient)
+                    clientName,
+                    configureClient)
             : services.AddHttpClient<QdrantHttpClient, QdrantHttpClient>(
                 clientName,
                 configureClient);
+
+        httpClientBuilder.ConfigurePrimaryHttpMessageHandler(serviceProvider =>
+        {
+            var qdrantSettings =
+                serviceProvider.GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>().Get(clientName);
+            
+            var handler = QdrantHttpClient.CreateHttpClientHandler(
+                isCompressionEnabled: qdrantSettings.EnableCompression,
+                isDisableTracing: qdrantSettings.DisableTracing,
+                apiKey: qdrantSettings.ApiKey);
+            
+            return handler;
+        });
 
         if (circuitBreakerStrategyOptions is null)
         {

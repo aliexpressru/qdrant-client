@@ -11,43 +11,66 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public class Payload
 {
+    // To reduce memory footprint caused by storing JsonObject when not needed we use lazy parsing
+    private JsonObject _parsedPayloadJson;
+    
     /// <summary>
     /// Represents the raw JSON string for an empty payload.
     /// </summary>
     public const string EmptyString = "{}";
-    
-    /// <summary>
-    /// Gets the raw JSON string for this payload.
-    /// </summary>
-    /// <remarks>For get responses only.</remarks>
-    public JsonObject RawPayload { get; init; }
 
     /// <summary>
     /// Gets the empty payload instance.
     /// </summary>
     public static Payload Empty { get; } = new()
     {
-        RawPayload = new JsonObject()
+        _parsedPayloadJson = new JsonObject(),
+        RawPayloadString = EmptyString,
     };
 
     /// <summary>
-    /// If to <c>true</c> indicates that the payload is empty.
+    /// Gets the raw JSON string for this payload.
     /// </summary>
-    public bool IsEmpty => RawPayload == null || RawPayload.Count == 0;
+    public string RawPayloadString { get; init; }
 
     /// <summary>
-    /// Parses the payload as object of specified type.
+    /// Gets the raw JSON object for this payload.
     /// </summary>
+    /// <remarks>
+    /// Not populated until accessed for the first time.
+    /// </remarks>
+    public JsonObject RawPayload => GetParsedPayloadJson().AsObject();
+    
+    /// <summary>
+    /// If <c>true</c> indicates that the payload is empty.
+    /// </summary>
+    public bool IsEmpty =>
+        RawPayloadString == null
+        || RawPayloadString.Equals(EmptyString, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Parses the payload and returns it as an object of specified type.
+    /// </summary>
+    /// <param name="throwIfEmpty">
+    /// Is set to <c>true</c> - throws an exception if this payload is empty.
+    /// If set to <c>false</c> - returns <c>null</c>.
+    ///
+    /// Default is <c>true</c>.
+    /// </param>
     /// <typeparam name="T">The type of the deserialized payload object.</typeparam>
-    public T As<T>()
+    public T As<T>(bool throwIfEmpty = true)
         where T : class
     {
         if (IsEmpty)
-        { 
-            throw new InvalidOperationException($"Payload is empty and can't be deserialized as {typeof(T)}");
+        {
+            return throwIfEmpty
+                ? throw new InvalidOperationException($"Payload is empty and can't be deserialized as {typeof(T)}")
+                : null;
         }
 
-        var ret = RawPayload?.Deserialize<T>(JsonSerializerConstants.DefaultSerializerOptions);
+        var ret = JsonSerializer.Deserialize<T>(
+            RawPayloadString,
+            JsonSerializerConstants.DefaultSerializerOptions);
 
         return ret;
     }
@@ -59,11 +82,22 @@ public class Payload
     public string ToString(bool isFormatPayloadJson)
         => IsEmpty
             ? EmptyString
-            : RawPayload?.ToJsonString(
-                isFormatPayloadJson
-                    ? JsonSerializerConstants.DefaultIndentedSerializerOptions
-                    : JsonSerializerConstants.DefaultSerializerOptions);
-
+            : isFormatPayloadJson
+                ? GetParsedPayloadJson().ToJsonString(JsonSerializerConstants.DefaultIndentedSerializerOptions)
+                : RawPayloadString;
+            
     /// <inheritdoc/>
     public override string ToString() => ToString(false);
+    
+    private JsonNode GetParsedPayloadJson()
+    {
+        if (IsEmpty)
+        {
+            return new JsonObject();
+        }
+
+        _parsedPayloadJson ??= JsonNode.Parse(RawPayloadString)!.AsObject();
+
+        return _parsedPayloadJson;
+    }
 }

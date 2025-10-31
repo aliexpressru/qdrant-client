@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Models.Primitives;
 
@@ -9,16 +8,17 @@ internal sealed class PayloadJsonConverter : JsonConverter<Payload>
 {
     public override Payload Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var payloadObject = JsonNode.Parse(ref reader)!.AsObject();
-
-        if (payloadObject.Count == 0)
+        using var jsonDoc = JsonDocument.ParseValue(ref reader);
+        
+        var readString = jsonDoc.RootElement.GetRawText();
+        if (readString.Equals(Payload.EmptyString, StringComparison.OrdinalIgnoreCase))
         {
             return Payload.Empty;
         }
 
         return new Payload()
         {
-            RawPayload = payloadObject
+            RawPayloadString = readString
         };
     }
 

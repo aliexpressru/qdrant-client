@@ -7,13 +7,13 @@ using System.Text.Json;
 using Aer.QdrantClient.Http.Abstractions;
 using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Exceptions;
-    
+using Aer.QdrantClient.Http.HttpClientHanders;
+
 #if NETSTANDARD2_0 || NETSTANDARD2_1 
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 #endif
 
 using Aer.QdrantClient.Http.Infrastructure.Json;
-using Aer.QdrantClient.Http.Infrastructure.Tracing;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -38,6 +38,8 @@ public partial class QdrantHttpClient : IQdrantHttpClient
 
     private readonly TimeSpan _defaultOperationTimeout = TimeSpan.FromSeconds(DEFAULT_OPERATION_TIMEOUT_SECONDS);
     private readonly TimeSpan _defaultPollingInterval = TimeSpan.FromSeconds(1);
+
+    private const DecompressionMethods SUPPORTED_DECOMPRESSION_METHODS = DecompressionMethods.Deflate | DecompressionMethods.GZip;
 
     // Forbidden status code was issued until qdrant 1.9
     // from 1.9 Unauthorized is issued
@@ -101,6 +103,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     /// <param name="httpClientTimeout">Http client timeout. Default value is <c>100 seconds</c>.</param>
     /// <param name="logger">The optional logger to log internal messages.</param>
     /// <param name="disableTracing">If set to <c>true</c>, http client activity tracing is disabled.</param>
+    /// <param name="enableCompression">If set to <c>true</c> enables request \ response compression.</param>
     public QdrantHttpClient(
         string host,
         int port = 6334,
@@ -108,7 +111,8 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         string apiKey = null,
         TimeSpan? httpClientTimeout = null,
         ILogger logger = null,
-        bool disableTracing = false) : this(
+        bool disableTracing = false,
+        bool enableCompression = false) : this(
         new UriBuilder(
             useHttps
                 ? "https"
@@ -118,7 +122,8 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         apiKey,
         httpClientTimeout,
         logger,
-        disableTracing)
+        disableTracing,
+        enableCompression)
     { }
 
     /// <summary>
@@ -129,46 +134,60 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     /// <param name="httpClientTimeout">Http client timeout. Default value is <c>100 seconds</c>.</param>
     /// <param name="logger">The optional logger to log internal messages.</param>
     /// <param name="disableTracing">If set to <c>true</c>, http client activity tracing is disabled.</param>
+    /// <param name="enableCompression">If set to <c>true</c> enables request \ response compression.</param>
     public QdrantHttpClient(
         Uri httpAddress,
         string apiKey = null,
         TimeSpan? httpClientTimeout = null,
         ILogger logger = null,
-        bool disableTracing = false)
+        bool disableTracing = false,
+        bool enableCompression = false)
     {
-        HttpClient apiClient;
+        _logger = logger ?? NullLogger.Instance;
 
-        if (disableTracing)
+        var handler =
+            CreateHttpClientHandler(
+                isCompressionEnabled: enableCompression, 
+                isDisableTracing: disableTracing,
+                apiKey);
+
+        var apiClient = new HttpClient(handler)
         {
-            // Use custom http client handler that disables activity tracing
-
-            DistributedContextPropagator.Current = new ConditionalPropagator();
-
-            apiClient = new HttpClient(new DisableActivityHandler(new HttpClientHandler()))
-            {
-                BaseAddress = httpAddress,
-                Timeout = httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout,
-            };
-        }
-        else
+            BaseAddress = httpAddress,
+            Timeout = httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout,
+        };
+        
+        ApiClient = apiClient;
+    }
+    
+    internal static HttpMessageHandler CreateHttpClientHandler(
+        bool isCompressionEnabled, 
+        bool isDisableTracing,
+        string apiKey = null)
+    {
+        // Core handler with decompression support
+        HttpMessageHandler handler = new HttpClientHandler()
         {
-            apiClient = new HttpClient()
-            {
-                BaseAddress = httpAddress,
-                Timeout = httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout
-            };
-        }
+            AutomaticDecompression = isCompressionEnabled
+                ? SUPPORTED_DECOMPRESSION_METHODS
+                : DecompressionMethods.None
+        };
 
+        // Wrap with API key handler if api key is provided
         if (apiKey is {Length: > 0})
         {
-            apiClient.DefaultRequestHeaders.Add(
-                ApiKeyHeaderName,
-                apiKey
-            );
+            handler = new ApiKeyHttpClientHandler(apiKey, handler);
         }
 
-        ApiClient = apiClient;
-        _logger = logger ?? NullLogger.Instance;
+        // Wrap in activity tracing disabling handler if requested
+        if (isDisableTracing)
+        {
+            DistributedContextPropagator.Current = new ConditionalPropagator();
+            
+            handler = new DisableActivityHttpClientHandler(handler);
+        }
+
+        return handler;
     }
 
     /// <inheritdoc/>
