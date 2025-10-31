@@ -93,8 +93,8 @@ internal class PointsSearchTests : QdrantTestsBase
 
         var readPointId = searchResult.Result[0].Id.AsInteger();
 
-        var expectedPayload = upsertPointsByPointIds[readPointId].Payload;
-        var readPayload = searchResult.Result[0].Payload.As<TestPayload>();
+        var expectedPayload = upsertPointsByPointIds[readPointId].Payload.As<TestPayload>();
+        var readPayload = searchResult.Result[0].GetTypedPayload().As<TestPayload>();
 
         readPayload.Text.Should().Be(expectedPayload.Text);
         readPayload.Integer.Should().Be(expectedPayload.Integer);
@@ -135,9 +135,12 @@ internal class PointsSearchTests : QdrantTestsBase
 
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPointPayload.Text);
         }
     }
 
@@ -216,9 +219,12 @@ internal class PointsSearchTests : QdrantTestsBase
 
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPointPayload.Text);
         }
     }
 
@@ -305,9 +311,12 @@ internal class PointsSearchTests : QdrantTestsBase
 
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPointPayload.Text);
         }
     }
 
@@ -354,9 +363,12 @@ internal class PointsSearchTests : QdrantTestsBase
 
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPointPayload.Text);
         }
     }
 
@@ -399,9 +411,12 @@ internal class PointsSearchTests : QdrantTestsBase
 
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPointPayload.Text);
         }
     }
 
@@ -453,9 +468,12 @@ internal class PointsSearchTests : QdrantTestsBase
 
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPointPayload.Text);
         }
     }
 
@@ -499,9 +517,12 @@ internal class PointsSearchTests : QdrantTestsBase
 
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+
+            readPointPayload.As<TestPayload>().Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.As<TestPayload>().Text.Should().Be(expectedPointPayload.Text);
         }
     }
 
@@ -750,10 +771,13 @@ internal class PointsSearchTests : QdrantTestsBase
 
                 expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-                readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-                readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should()
-                    .Be(expectedPoint.Payload.FloatingPointNumber);
-                readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+                var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+                var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+
+                readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+                readPointPayload.FloatingPointNumber.Should()
+                    .Be(expectedPointPayload.FloatingPointNumber);
+                readPointPayload.Text.Should().Be(expectedPointPayload.Text);
             }
         }
     }

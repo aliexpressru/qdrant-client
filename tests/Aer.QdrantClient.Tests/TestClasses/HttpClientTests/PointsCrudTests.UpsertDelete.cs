@@ -9,7 +9,6 @@ using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Helpers;
 using Aer.QdrantClient.Tests.Model;
 using Newtonsoft.Json.Linq;
-using NUnit.Framework.Internal;
 using QdrantOperationStatus = Aer.QdrantClient.Http.Models.Shared.QdrantOperationStatus;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;

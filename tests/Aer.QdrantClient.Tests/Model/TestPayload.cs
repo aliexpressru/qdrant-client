@@ -1,5 +1,3 @@
-using Aer.QdrantClient.Http.Models.Primitives;
-
 namespace Aer.QdrantClient.Tests.Model;
 
 internal class TestPayload
