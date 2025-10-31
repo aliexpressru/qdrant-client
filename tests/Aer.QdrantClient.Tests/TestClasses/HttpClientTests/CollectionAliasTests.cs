@@ -48,7 +48,7 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task RenameAlias_AliasDoesNotExist()
     {
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName);
 
@@ -76,11 +76,11 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_TwoAliasesForTwoDifferentCollections()
     {
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName);
 
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName2);
 
@@ -104,11 +104,11 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_SameAliasForDifferentCollections_LastOneWins()
     {
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName);
 
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName2);
 
@@ -135,11 +135,11 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_SameAliasForDifferentCollections_TwoDifferentOperations_LastOneWins()
     {
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName);
 
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName2);
 
@@ -174,7 +174,7 @@ public class CollectionAliasTests : QdrantTestsBase
     public async Task CreateAlias()
     {
         var (_, _, upsertPointIds) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -248,11 +248,11 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_RestrictedSymbols_Success()
     {
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName);
 
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName2);
 
@@ -281,7 +281,7 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_DeleteCollection_AliasShouldBeDeleted()
     {
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -316,7 +316,7 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_DeleteAlias()
     {
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName);
 
@@ -361,7 +361,7 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_RenameAlias()
     {
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName);
 
@@ -403,11 +403,11 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_RenameAlias_DuplicateAlias()
     {
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName);
 
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName2);
 
@@ -438,7 +438,7 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_RenameAlias_DeleteAlias_NoAliasesLeft()
     {
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName);
 
@@ -462,11 +462,11 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task CreateAlias_RenameAlias_DeleteAlias()
     {
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName);
 
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName2);
 
@@ -495,11 +495,11 @@ public class CollectionAliasTests : QdrantTestsBase
     [Test]
     public async Task ListAliases()
     {
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName);
 
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName2);
 

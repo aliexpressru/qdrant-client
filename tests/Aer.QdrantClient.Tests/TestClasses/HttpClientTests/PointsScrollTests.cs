@@ -76,7 +76,7 @@ internal class PointsScrollTests : QdrantTestsBase
         var vectorCount = 10;
         
         var (_, upsertPointsByPointIds, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName,
                 vectorCount: vectorCount,
@@ -107,7 +107,7 @@ internal class PointsScrollTests : QdrantTestsBase
         var vectorCount = 10;
 
         var (_, upsertPointsByPointIds, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName,
                 vectorCount: vectorCount);
@@ -144,7 +144,7 @@ internal class PointsScrollTests : QdrantTestsBase
         var vectorCount = 10;
 
         var (_, upsertPointsByPointIds, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName,
                 vectorCount: vectorCount);
@@ -182,7 +182,7 @@ internal class PointsScrollTests : QdrantTestsBase
         var vectorCount = 10;
 
         var (_, upsertPointsByPointIds, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName,
                 vectorCount: vectorCount);
@@ -207,10 +207,10 @@ internal class PointsScrollTests : QdrantTestsBase
 
             readPointId.Should().Be(expectedPointId);
             
-            var readPayload = readPoint.Payload;
+            var readPayloadString = readPoint.Payload;
             
-            readPayload.Should().BeEquivalentTo(Payload.Empty);
-            readPayload.IsEmpty.Should().BeTrue();
+            readPayloadString.Should().Be(Payload.EmptyString);
+            readPoint.GetTypedPayload().IsEmpty.Should().BeTrue();
         }
     }
 
@@ -231,7 +231,7 @@ internal class PointsScrollTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
         List<int> valuesToMatchAgainst = new(vectorCount);
 
         var startDateTime = DateTime.Parse("2020-01-01T00:00:00");
@@ -255,12 +255,12 @@ internal class PointsScrollTests : QdrantTestsBase
             }
         }
 
-        Dictionary<ulong, UpsertPointsRequest<TestPayload>.UpsertPoint> upsertPointsByPointIds =
+        Dictionary<ulong, UpsertPointsRequest.UpsertPoint> upsertPointsByPointIds =
             upsertPoints.ToDictionary(p => p.Id.AsInteger());
 
         await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },
@@ -279,9 +279,9 @@ internal class PointsScrollTests : QdrantTestsBase
         readPointsResult.Result.Points.Length.Should().Be(valuesToMatchAgainst.Count);
 
         foreach (var readPoint in readPointsResult.Result.Points)
-        { 
-            readPoint.Payload.IsEmpty.Should().BeFalse();
-            readPoint.Payload.RawPayload.Should().NotBeNull();
+        {
+            readPoint.Payload.Should().NotBe(Payload.EmptyString);
+            readPoint.GetTypedPayload().IsEmpty.Should().BeFalse();
         }
 
         var readPointsRangeResult = await _qdrantHttpClient.ScrollPoints(
@@ -308,11 +308,13 @@ internal class PointsScrollTests : QdrantTestsBase
 
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
 
-            readPoint.Payload.RawPayload.Should().NotBeNull();
+            var typedPayload = readPoint.GetTypedPayload();
+            
+            readPoint.Payload.Should().NotBe(Payload.EmptyString);
 
-            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPoint.Payload.As<TestPayload>().Text.Should().BeNull(); // Excluded by request
+            typedPayload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
+            typedPayload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
+            typedPayload.As<TestPayload>().Text.Should().BeNull(); // Excluded by request
         }
     }
 
@@ -410,7 +412,7 @@ internal class PointsScrollTests : QdrantTestsBase
         uint pageSize = 5;
 
         var (_, upsertPointsByPointIds, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName,
                 vectorCount: vectorCount);
@@ -831,7 +833,7 @@ internal class PointsScrollTests : QdrantTestsBase
 
         collectionCreationResult.EnsureSuccess();
 
-        UpsertPointsRequest<TestPayload>.UpsertPoint firstPoint =
+        UpsertPointsRequest.UpsertPoint firstPoint =
             new(
                 id: 1,
                 vector: new NamedVectors()
@@ -846,7 +848,7 @@ internal class PointsScrollTests : QdrantTestsBase
                 },
                 payload: 1);
 
-        UpsertPointsRequest<TestPayload>.UpsertPoint secondPoint = new(
+        UpsertPointsRequest.UpsertPoint secondPoint = new(
             id: 2,
             vector: new NamedVectors()
             {
@@ -858,7 +860,7 @@ internal class PointsScrollTests : QdrantTestsBase
             },
             payload: 2);
 
-        UpsertPointsRequest<TestPayload>.UpsertPoint thirdPoint = new(
+        UpsertPointsRequest.UpsertPoint thirdPoint = new(
             id: 3,
             vector: new NamedVectors()
             {
@@ -869,7 +871,7 @@ internal class PointsScrollTests : QdrantTestsBase
             },
             payload: 3);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>()
         {
             firstPoint,
             secondPoint,
@@ -878,7 +880,7 @@ internal class PointsScrollTests : QdrantTestsBase
         
         var upsertPointsResult = await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },
@@ -930,7 +932,7 @@ internal class PointsScrollTests : QdrantTestsBase
                 retryCount: 0)).EnsureSuccess();
         }
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
 
         for (int i = 0; i < vectorCount; i++)
         {
@@ -948,7 +950,7 @@ internal class PointsScrollTests : QdrantTestsBase
         
         (await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },
@@ -1001,7 +1003,7 @@ internal class PointsScrollTests : QdrantTestsBase
             onDisk: true,
             enablePhraseMatching: true)).EnsureSuccess();
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
 
         for (int i = 0; i < vectorCount; i++)
         {
@@ -1019,7 +1021,7 @@ internal class PointsScrollTests : QdrantTestsBase
 
         (await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },

@@ -122,7 +122,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
     [Test]
     public async Task ListSnapshots_ExistingCollectionNoSnapshotsYet()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
 
         var listSnapshotsResult = await _qdrantHttpClient.ListShardSnapshots(
             TestCollectionName,
@@ -136,7 +136,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
     [Test]
     public async Task CreateSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult = await _qdrantHttpClient.CreateShardSnapshot(
             TestCollectionName,
@@ -153,7 +153,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
     [Test]
     public async Task ListSnapshots()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
 
         // create first snapshot
 
@@ -208,7 +208,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
     [Test]
     public async Task DeleteSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
 
         // create first snapshot
 
@@ -286,7 +286,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
     [Test]
     public async Task DownloadSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult = (await _qdrantHttpClient.CreateShardSnapshot(
             TestCollectionName,
@@ -321,7 +321,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
         // This test proves that deleting collection does not delete snapshots (which is fair enough)!
         // And if we create collection with the same name again we will be able to download previous snapshot
 
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult = (await _qdrantHttpClient.CreateShardSnapshot(
             TestCollectionName,
@@ -374,7 +374,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
     [Test]
     public async Task RecoverFromUploadedSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult = (await _qdrantHttpClient.CreateShardSnapshot(
             TestCollectionName,

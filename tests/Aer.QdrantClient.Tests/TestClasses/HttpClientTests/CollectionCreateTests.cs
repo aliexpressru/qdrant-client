@@ -91,9 +91,9 @@ public class CollectionCreateTests : QdrantTestsBase
         var upsertPointsResult
             = await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
-                new UpsertPointsRequest<TestPayload>()
+                new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
                         new(
                             PointId.NewGuid(),
@@ -330,9 +330,9 @@ public class CollectionCreateTests : QdrantTestsBase
         var upsertPointsResult
             = await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
-                new UpsertPointsRequest<TestPayload>()
+                new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
                         new(
                             PointId.NewGuid(),
@@ -767,9 +767,9 @@ public class CollectionCreateTests : QdrantTestsBase
         var upsertPointsToNonExistentCollectionResult
             = await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
-                new UpsertPointsRequest<TestPayload>()
+                new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
                         new(
                             PointId.Integer(1),

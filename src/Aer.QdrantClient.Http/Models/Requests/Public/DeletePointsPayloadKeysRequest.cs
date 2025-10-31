@@ -39,7 +39,7 @@ public sealed class DeletePointsPayloadKeysRequest
     public ShardSelector ShardKey { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="OverwritePointsPayloadRequest{TPayload}"/> with payload
+    /// Initializes a new instance of <see cref="OverwritePointsPayloadRequest"/> with payload
     /// and point ids to overwrite payload for.
     /// </summary>
     /// <param name="payloadKeysToDelete">Payload keys to delete.</param>
@@ -53,7 +53,7 @@ public sealed class DeletePointsPayloadKeysRequest
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="OverwritePointsPayloadRequest{TPayload}"/> with payload
+    /// Initializes a new instance of <see cref="OverwritePointsPayloadRequest"/> with payload
     /// and point filter to overwrite payload for.
     /// </summary>
     /// <param name="payloadKeysToDelete">Payload keys to delete.</param>

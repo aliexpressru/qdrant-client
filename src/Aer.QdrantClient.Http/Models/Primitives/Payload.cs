@@ -22,11 +22,7 @@ public class Payload
     /// <summary>
     /// Gets the empty payload instance.
     /// </summary>
-    public static Payload Empty { get; } = new()
-    {
-        _parsedPayloadJson = new JsonObject(),
-        RawPayloadString = EmptyString,
-    };
+    public static Payload Empty { get; } = new(EmptyString);
 
     /// <summary>
     /// Gets the raw JSON string for this payload.
@@ -48,6 +44,15 @@ public class Payload
         RawPayloadString == null
         || RawPayloadString.Equals(EmptyString, StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Payload"/> class.
+    /// </summary>
+    /// <param name="rawPayloadString">The raw payload to initialize this instance with.</param>
+    public Payload(string rawPayloadString)
+    {
+        RawPayloadString = rawPayloadString;
+    }
+    
     /// <summary>
     /// Parses the payload and returns it as an object of specified type.
     /// </summary>

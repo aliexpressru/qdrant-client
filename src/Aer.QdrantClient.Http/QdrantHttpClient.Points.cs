@@ -77,17 +77,26 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<PointsOperationResponse> UpsertPoints<TPayload>(
+    public async Task<PointsOperationResponse> UpsertPoints(
         string collectionName,
-        UpsertPointsRequest<TPayload> upsertPoints,
+        UpsertPointsRequest upsertPoints,
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
         OrderingType? ordering = null)
-        where TPayload : class
     {
-        if (typeof(TPayload) == typeof(string))
+        foreach(var point in upsertPoints.Points)
         {
-            throw new QdrantInvalidPayloadTypeException(typeof(TPayload).FullName);
+            if (point.Payload is null)
+            {
+                continue;
+            }
+
+            var payloadType = point.Payload.GetType();
+            
+            if (payloadType == typeof(string))
+            {
+                throw new QdrantInvalidPayloadTypeException(payloadType.FullName);
+            }
         }
 
         var orderingValue = (ordering ?? OrderingType.Weak).ToString().ToLowerInvariant();
@@ -95,7 +104,7 @@ public partial class QdrantHttpClient
         var url =
             $"/collections/{collectionName}/points?wait={ToUrlQueryString(isWaitForResult)}&ordering={orderingValue}";
 
-        var response = await ExecuteRequest<UpsertPointsRequest<TPayload>, PointsOperationResponse>(
+        var response = await ExecuteRequest<UpsertPointsRequest, PointsOperationResponse>(
             url,
             HttpMethod.Put,
             upsertPoints,
@@ -106,20 +115,19 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<PointsOperationResponse> SetPointsPayload<TPayload>(
+    public async Task<PointsOperationResponse> SetPointsPayload(
         string collectionName,
-        SetPointsPayloadRequest<TPayload> setPointsPayload,
+        SetPointsPayloadRequest setPointsPayload,
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
         OrderingType? ordering = null)
-        where TPayload : class
     {
         var orderingValue = (ordering ?? OrderingType.Weak).ToString().ToLowerInvariant();
 
         var url =
             $"/collections/{collectionName}/points/payload?wait={ToUrlQueryString(isWaitForResult)}&ordering={orderingValue}";
 
-        var response = await ExecuteRequest<SetPointsPayloadRequest<TPayload>, PointsOperationResponse>(
+        var response = await ExecuteRequest<SetPointsPayloadRequest, PointsOperationResponse>(
             url,
             HttpMethod.Post,
             setPointsPayload,
@@ -130,20 +138,19 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<PointsOperationResponse> OverwritePointsPayload<TPayload>(
+    public async Task<PointsOperationResponse> OverwritePointsPayload(
         string collectionName,
-        OverwritePointsPayloadRequest<TPayload> overwritePointsPayload,
+        OverwritePointsPayloadRequest overwritePointsPayload,
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
         OrderingType? ordering = null)
-        where TPayload : class
     {
         var orderingValue = (ordering ?? OrderingType.Weak).ToString().ToLowerInvariant();
 
         var url =
             $"/collections/{collectionName}/points/payload?wait={ToUrlQueryString(isWaitForResult)}&ordering={orderingValue}";
 
-        var response = await ExecuteRequest<OverwritePointsPayloadRequest<TPayload>, PointsOperationResponse>(
+        var response = await ExecuteRequest<OverwritePointsPayloadRequest, PointsOperationResponse>(
             url,
             // this is a hack due to update payload part not working when issuing using PUT request
             overwritePointsPayload.Key is not null

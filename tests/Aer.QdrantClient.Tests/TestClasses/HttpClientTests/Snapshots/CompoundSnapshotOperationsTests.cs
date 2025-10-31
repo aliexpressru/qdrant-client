@@ -29,8 +29,8 @@ public class CompoundSnapshotOperationsTests : QdrantTestsBase
     [Test]
     public async Task ListSnapshots()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName2);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName2);
 
         var createStorageSnapshotResult =
             (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
@@ -97,8 +97,8 @@ public class CompoundSnapshotOperationsTests : QdrantTestsBase
     [Test]
     public async Task DeleteSnapshots()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName2);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName2);
 
         (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
 

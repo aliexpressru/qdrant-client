@@ -9,6 +9,8 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 /// </summary>
 public class Point
 {
+    private Payload _typedPayload;
+    
     /// <summary>
     /// Gets or sets the point identifier.
     /// </summary>
@@ -24,8 +26,12 @@ public class Point
     /// <summary>
     /// Gets or sets the point payload.
     /// </summary>
-    [JsonConverter(typeof(PayloadJsonConverter))]
-    public Payload Payload { get; init; }
+    public string Payload { get; init; }
+
+    /// <summary>
+    /// Gets the typed payload object.
+    /// </summary>
+    public Payload GetTypedPayload() => _typedPayload ??= new Payload(Payload);
 
     /// <summary>
     /// Gets or sets the point shard key.

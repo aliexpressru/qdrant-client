@@ -154,9 +154,9 @@ internal partial class PointsCrudTests
         var upsertPointsToNonExistentCollectionResult
             = await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
-                new UpsertPointsRequest<TestPayload>()
+                new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
                         new(
                             PointId.Integer(1),
@@ -179,9 +179,9 @@ internal partial class PointsCrudTests
         var upsertPointsToNonExistentCollectionAct
             = async () => await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
-                new UpsertPointsRequest<string>()
+                new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest<string>.UpsertPoint>()
+                    Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
                         new(
                             PointId.Integer(1),

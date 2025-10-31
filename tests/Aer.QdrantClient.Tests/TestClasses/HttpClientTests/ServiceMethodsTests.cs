@@ -169,7 +169,7 @@ public class ServiceMethodsTests : QdrantTestsBase
     {
         OnlyIfVersionBefore("1.16.0", "lock API is removed in 1.16.0");
         
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
 
         var lockReason = "Writes disabled";
 
@@ -183,11 +183,11 @@ public class ServiceMethodsTests : QdrantTestsBase
 
         var upsertPointsAct = async ()=> await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points =
                 [
-                    new UpsertPointsRequest<TestPayload>.UpsertPoint(67, CreateTestVector(10), 67)
+                    new UpsertPointsRequest.UpsertPoint(67, CreateTestVector(10), 67)
                 ]
             },
             CancellationToken.None);

@@ -164,7 +164,7 @@ internal class PointsSearchTests : QdrantTestsBase
 
         collectionCreationResult.EnsureSuccess();
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
         for (int i = 0; i < vectorCount; i++)
         {
             upsertPoints.Add(
@@ -176,13 +176,13 @@ internal class PointsSearchTests : QdrantTestsBase
             );
         }
 
-        Dictionary<ulong, UpsertPointsRequest<TestPayload>.UpsertPoint> upsertPointsByPointIds =
+        Dictionary<ulong, UpsertPointsRequest.UpsertPoint> upsertPointsByPointIds =
             upsertPoints.ToDictionary(p => ((IntegerPointId) p.Id).Id);
 
         var upsertPointsResult
             = await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
-                new UpsertPointsRequest<TestPayload>()
+                new UpsertPointsRequest()
                 {
                     Points = upsertPoints
                 },
@@ -243,7 +243,7 @@ internal class PointsSearchTests : QdrantTestsBase
 
         collectionCreationResult.EnsureSuccess();
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
 
         for (int i = 0; i < vectorCount; i++)
         {
@@ -265,13 +265,13 @@ internal class PointsSearchTests : QdrantTestsBase
             );
         }
 
-        Dictionary<ulong, UpsertPointsRequest<TestPayload>.UpsertPoint> upsertPointsByPointIds =
+        Dictionary<ulong, UpsertPointsRequest.UpsertPoint> upsertPointsByPointIds =
             upsertPoints.ToDictionary(p => p.Id.AsInteger());
 
         var upsertPointsResult
             = await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
-                new UpsertPointsRequest<TestPayload>()
+                new UpsertPointsRequest()
                 {
                     Points = upsertPoints
                 },
@@ -519,7 +519,7 @@ internal class PointsSearchTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
 
         // using the same vector since we are comparing filter return values
 
@@ -540,7 +540,7 @@ internal class PointsSearchTests : QdrantTestsBase
 
         await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },
@@ -618,7 +618,7 @@ internal class PointsSearchTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
 
         // using the same vector since we are comparing filter return values
 
@@ -639,7 +639,7 @@ internal class PointsSearchTests : QdrantTestsBase
 
         await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },

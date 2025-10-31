@@ -16,10 +16,7 @@ internal sealed class PayloadJsonConverter : JsonConverter<Payload>
             return Payload.Empty;
         }
 
-        return new Payload()
-        {
-            RawPayloadString = readString
-        };
+        return new Payload(readString);
     }
 
     public override void Write(Utf8JsonWriter writer, Payload value, JsonSerializerOptions options)
