@@ -33,8 +33,8 @@ public class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
     [Test]
     public async Task ListSnapshots()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClientClusterNode1, TestCollectionName);
-        await PrepareCollection<TestPayload>(_qdrantHttpClientClusterNode1, TestCollectionName2);
+        await PrepareCollection(_qdrantHttpClientClusterNode1, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClientClusterNode1, TestCollectionName2);
 
         var collection1Node1Clustering = (await _qdrantHttpClientClusterNode1.GetCollectionClusteringInfo(
             TestCollectionName,
@@ -176,8 +176,8 @@ public class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
     [Test]
     public async Task DeleteSnapshots()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClientClusterNode1, TestCollectionName);
-        await PrepareCollection<TestPayload>(_qdrantHttpClientClusterNode1, TestCollectionName2);
+        await PrepareCollection(_qdrantHttpClientClusterNode1, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClientClusterNode1, TestCollectionName2);
         
         var collection1Node1Clustering = (await _qdrantHttpClientClusterNode1.GetCollectionClusteringInfo(
             TestCollectionName,

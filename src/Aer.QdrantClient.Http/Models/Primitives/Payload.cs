@@ -9,9 +9,9 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 /// Represents the point payload.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class Payload
+public sealed class Payload
 {
-    // To reduce memory footprint caused by storing JsonObject when not needed we use lazy parsing
+    // To reduce memory footprint caused by storing JsonObject when it is not needed we don't populate this right away
     private JsonObject _parsedPayloadJson;
     
     /// <summary>
@@ -22,16 +22,12 @@ public class Payload
     /// <summary>
     /// Gets the empty payload instance.
     /// </summary>
-    public static Payload Empty { get; } = new()
-    {
-        _parsedPayloadJson = new JsonObject(),
-        RawPayloadString = EmptyString,
-    };
+    public static Payload Empty { get; } = new(EmptyString);
 
     /// <summary>
     /// Gets the raw JSON string for this payload.
     /// </summary>
-    public string RawPayloadString { get; init; }
+    public string RawPayloadString { get; }
 
     /// <summary>
     /// Gets the raw JSON object for this payload.
@@ -47,6 +43,58 @@ public class Payload
     public bool IsEmpty =>
         RawPayloadString == null
         || RawPayloadString.Equals(EmptyString, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Payload"/> class.
+    /// </summary>
+    /// <param name="rawPayloadString">The raw payload to initialize this instance with.</param>
+    public Payload(string rawPayloadString)
+    {
+        RawPayloadString = string.IsNullOrEmpty(rawPayloadString)
+            ? EmptyString
+            : rawPayloadString;
+    }
+
+    /// <summary>
+    /// Gets the specified field as a <see cref="JsonNode"/> from parsed payload json object.
+    /// </summary>
+    /// <param name="fieldName">The name of the field to get.</param>
+    /// <exception cref="NotSupportedException">
+    /// Occurs when trying to get a nested field e.g. <c>some.field</c>. Which is not supported yet
+    /// </exception>
+    /// <exception cref="KeyNotFoundException">
+    /// Occurs when specified field is not found in payload json.
+    /// </exception>
+    public JsonNode this[string fieldName] 
+    {
+        get
+        {
+            var payloadObject = RawPayload;
+
+            if (fieldName.Contains('.'))
+            { 
+                // Means we are trying to access a nested property. This is not supported yet
+                
+                throw new NotSupportedException($"Getting nested payload property is not supported. Requested property '{fieldName}'");
+            }
+
+            if (!payloadObject.ContainsKey(fieldName))
+            { 
+                throw new KeyNotFoundException($"Payload property not found: {fieldName}");
+            }
+
+            var payloadProperty = GetParsedPayloadJson()[fieldName];
+            
+            return payloadProperty;
+        }
+    }
+
+    /// <summary>
+    /// Gets the value of the specified payload field.
+    /// </summary>
+    /// <param name="fieldName">The name of the field to get value for.</param>
+    /// <typeparam name="T">The type of the value to get.</typeparam>
+    public T GetValue<T>(string fieldName) => this[fieldName].GetValue<T>();
 
     /// <summary>
     /// Parses the payload and returns it as an object of specified type.

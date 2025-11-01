@@ -91,14 +91,14 @@ public class CollectionCreateTests : QdrantTestsBase
         var upsertPointsResult
             = await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
-                new UpsertPointsRequest<TestPayload>()
+                new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
                         new(
                             PointId.NewGuid(),
                             CreateTestVector(vectorSize, vectorDataType),
-                            "test")
+                            (TestPayload) "test")
                     }
                 },
                 CancellationToken.None);
@@ -330,9 +330,9 @@ public class CollectionCreateTests : QdrantTestsBase
         var upsertPointsResult
             = await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
-                new UpsertPointsRequest<TestPayload>()
+                new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
                         new(
                             PointId.NewGuid(),
@@ -344,7 +344,7 @@ public class CollectionCreateTests : QdrantTestsBase
                                     ["Vector_1"] = CreateTestVector(vectorSize, vectorDataType)
                                 }
                             },
-                            "test")
+                            (TestPayload) "test")
                     }
                 },
                 CancellationToken.None);
@@ -767,26 +767,26 @@ public class CollectionCreateTests : QdrantTestsBase
         var upsertPointsToNonExistentCollectionResult
             = await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
-                new UpsertPointsRequest<TestPayload>()
+                new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
                         new(
                             PointId.Integer(1),
                             CreateTestVector(10),
-                            "test1"
+                            (TestPayload) "test1"
                         ),
 
                         new(
                             PointId.Integer(2),
                             CreateTestVector(10),
-                            "test2"
+                            (TestPayload) "test2"
                         ),
 
                         new(
                             PointId.Integer(3),
                             CreateTestVector(10),
-                            "test3"
+                            (TestPayload) "test3"
                         )
                     }
                 },

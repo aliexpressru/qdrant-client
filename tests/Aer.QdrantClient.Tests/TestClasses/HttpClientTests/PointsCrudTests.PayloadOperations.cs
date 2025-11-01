@@ -14,10 +14,10 @@ internal partial class PointsCrudTests
     public async Task SetPointsPayload()
     {
         var (upsertPoints, _, upsertPointIds) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName,
-                payloadInitializerFunction: (i) => i + 1);
+                payloadInitializerFunction: (i) => (TestPayload)(i + 1));
 
         // update payload by id
 
@@ -26,8 +26,8 @@ internal partial class PointsCrudTests
 
         var setPayloadById = await _qdrantHttpClient.SetPointsPayload(
             TestCollectionName,
-            new SetPointsPayloadRequest<TestPayload>(
-                "100",
+            new SetPointsPayloadRequest(
+                (TestPayload) "100",
                 pointIdsToUpdatePayloadFor
             ),
             CancellationToken.None
@@ -71,8 +71,8 @@ internal partial class PointsCrudTests
 
         var setPayloadByFilter = await _qdrantHttpClient.SetPointsPayload(
             TestCollectionName,
-            new SetPointsPayloadRequest<TestPayload>(
-                "1000",
+            new SetPointsPayloadRequest(
+                (TestPayload) "1000",
                 pointFilterToUpdatePayloadFor),
             CancellationToken.None);
 
@@ -122,7 +122,7 @@ internal partial class PointsCrudTests
 
         var setPayloadByIdAndKey = await _qdrantHttpClient.SetPointsPayload(
             TestCollectionName,
-            new SetPointsPayloadRequest<TestComplexPayload.NestedClass>(
+            new SetPointsPayloadRequest(
                 new TestComplexPayload.NestedClass()
                 {
                     Double = 1.567
@@ -175,7 +175,7 @@ internal partial class PointsCrudTests
 
         var setPayloadByFilterAndKey = await _qdrantHttpClient.SetPointsPayload(
             TestCollectionName,
-            new SetPointsPayloadRequest<TestComplexPayload.NestedNestedClass>(
+            new SetPointsPayloadRequest(
                 new TestComplexPayload.NestedNestedClass()
                 {
                     Double = 1567.12
@@ -218,11 +218,11 @@ internal partial class PointsCrudTests
     public async Task OverwritePointsPayload_BatchOperation_NonExistentPoints()
     {
         var (upsertPoints, _, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName,
                 vectorCount: 3,
-                payloadInitializerFunction: (i) => i + 1
+                payloadInitializerFunction: (i) => (TestPayload)(i + 1)
             );
 
         // One present and two non-existent point ids
@@ -272,10 +272,10 @@ internal partial class PointsCrudTests
     public async Task OverwritePointsPayload()
     {
         var (upsertPoints, _, upsertPointIds) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName,
-                payloadInitializerFunction: (i) => i + 1);
+                payloadInitializerFunction: (i) => (TestPayload)(i + 1));
 
         // overwrite payload by id
 
@@ -284,8 +284,8 @@ internal partial class PointsCrudTests
 
         var overwritePayloadById = await _qdrantHttpClient.OverwritePointsPayload(
             TestCollectionName,
-            new OverwritePointsPayloadRequest<TestPayload>(
-                "100",
+            new OverwritePointsPayloadRequest(
+                (TestPayload) "100",
                 pointIdsToUpdatePayloadFor
             ),
             CancellationToken.None
@@ -337,8 +337,8 @@ internal partial class PointsCrudTests
 
         var overwritePayloadByFilter = await _qdrantHttpClient.OverwritePointsPayload(
             TestCollectionName,
-            new OverwritePointsPayloadRequest<TestPayload>(
-                "1000",
+            new OverwritePointsPayloadRequest(
+                (TestPayload) "1000",
                 pointFilterToUpdatePayloadFor),
             CancellationToken.None);
 
@@ -396,7 +396,7 @@ internal partial class PointsCrudTests
 
         var overwritePayloadById = await _qdrantHttpClient.OverwritePointsPayload(
             TestCollectionName,
-            new OverwritePointsPayloadRequest<object>(
+            new OverwritePointsPayloadRequest(
                 new{Integer = 100},
                 pointIdsToUpdatePayloadFor,
                 "nested"
@@ -598,12 +598,14 @@ internal partial class PointsCrudTests
         pointsThatShouldBeUpdated.Should().AllSatisfy(
             p =>
             {
+                p.Payload.RawPayloadString.Should().Be(Payload.EmptyString);
                 p.Payload.IsEmpty.Should().BeTrue();
             });
 
         pointsThatShouldNotBeUpdated.Should().AllSatisfy(
             p =>
             {
+                p.Payload.RawPayloadString.Should().NotBe(Payload.EmptyString);
                 p.Payload.IsEmpty.Should().BeFalse();
             });
 
@@ -636,6 +638,10 @@ internal partial class PointsCrudTests
 
         readAllPoints.Status.IsSuccess.Should().BeTrue();
 
-        readAllPoints.Result.Should().AllSatisfy(p => p.Payload.IsEmpty.Should().BeTrue());
+        readAllPoints.Result.Should().AllSatisfy(p =>
+        {
+            p.Payload.RawPayloadString.Should().Be(Payload.EmptyString);
+            p.Payload.IsEmpty.Should().BeTrue();
+        });
     }
 }

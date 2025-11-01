@@ -10,16 +10,14 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// <summary>
 /// Represents the points payload overwrite request.
 /// </summary>
-/// <typeparam name="TPayload">The type of the point payload.</typeparam>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public sealed class OverwritePointsPayloadRequest<TPayload>
-    where TPayload : class
+public sealed class OverwritePointsPayloadRequest
 {
     /// <summary>
     /// The point payload.
     /// </summary>
-    public TPayload Payload { get; }
+    public object Payload { get; }
 
     /// <summary>
     /// Assigns payload to each point in this list.
@@ -46,14 +44,14 @@ public sealed class OverwritePointsPayloadRequest<TPayload>
     public string Key { get; }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="OverwritePointsPayloadRequest{TPayload}"/> with payload
+    /// Initializes a new instance of <see cref="OverwritePointsPayloadRequest"/> with payload
     /// and point ids to overwrite payload for.
     /// </summary>
     /// <param name="payload">Payload to overwrite.</param>
     /// <param name="pointsToOverwritePayloadFor">Point ids to overwrite payload for.</param>
     /// <param name="nestedPayloadPropertyPath">Assigns payload to each point that satisfy this path of property.</param>
     public OverwritePointsPayloadRequest(
-        TPayload payload,
+        object payload,
         IEnumerable<PointId> pointsToOverwritePayloadFor,
         string nestedPayloadPropertyPath = null)
     {
@@ -63,14 +61,14 @@ public sealed class OverwritePointsPayloadRequest<TPayload>
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="OverwritePointsPayloadRequest{TPayload}"/> with payload
+    /// Initializes a new instance of <see cref="OverwritePointsPayloadRequest"/> with payload
     /// and point filter to overwrite payload for.
     /// </summary>
     /// <param name="payload">Payload to overwrite.</param>
     /// <param name="pointsFilterToOverwritePayloadFor">Points filter to overwrite payload for.</param>
     /// <param name="nestedPayloadPropertyPath">Assigns payload to each point that satisfy this path of property.</param>
     public OverwritePointsPayloadRequest(
-        TPayload payload,
+        object payload,
         QdrantFilter pointsFilterToOverwritePayloadFor,
         string nestedPayloadPropertyPath = null)
     {

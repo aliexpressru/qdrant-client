@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
@@ -10,12 +11,10 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// <summary>
 /// Represents the points upsert request.
 /// </summary>
-/// <typeparam name="TPayload">The type of the point payload.</typeparam>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 
-public sealed class UpsertPointsRequest<TPayload>
-    where TPayload : class
+public sealed class UpsertPointsRequest
 {
     /// <summary>
     /// Represents a point to upsert to qdrant.
@@ -31,7 +30,7 @@ public sealed class UpsertPointsRequest<TPayload>
         /// <summary>
         /// The point payload.
         /// </summary>
-        public TPayload Payload { get; }
+        public object Payload { get; }
 
         /// <summary>
         /// The point vector.
@@ -48,7 +47,7 @@ public sealed class UpsertPointsRequest<TPayload>
         public UpsertPoint(
             PointId id,
             VectorBase vector,
-            TPayload payload)
+            object payload)
         {
             Id = id;
             Vector = vector;

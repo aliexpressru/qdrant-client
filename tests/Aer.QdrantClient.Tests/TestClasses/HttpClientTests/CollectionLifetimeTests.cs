@@ -140,9 +140,9 @@ internal class CollectionLifetimeTests : QdrantTestsBase
 
         await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
-                Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                Points = new List<UpsertPointsRequest.UpsertPoint>()
                 {
                     new(testPointId, testVector, testPayload)
                 }

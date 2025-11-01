@@ -327,7 +327,6 @@ public class QdrantTestsBase
     /// Returns <see cref="QdrantHttpClient"/> for first node of the 2-node cluster.
     /// </summary>
     protected QdrantHttpClient GetClusterClient(ClusterNode requiredClusterNode) =>
-
         new(
             "localhost",
             apiKey: "test",
@@ -340,21 +339,21 @@ public class QdrantTestsBase
                     requiredClusterNode,
                     "Unknown cluster node")
             },
-            useHttps: false);
+            useHttps: false,
+            enableCompression: true);
 
     internal async
-        Task<(IReadOnlyList<UpsertPointsRequest<TPayload>.UpsertPoint> Points,
-            Dictionary<ulong, UpsertPointsRequest<TPayload>.UpsertPoint> PointsByPointIds, 
-            IReadOnlyList<PointId> PointIds)> PrepareCollection<TPayload>(
+        Task<(IReadOnlyList<UpsertPointsRequest.UpsertPoint> Points,
+            Dictionary<ulong, UpsertPointsRequest.UpsertPoint> PointsByPointIds, 
+            IReadOnlyList<PointId> PointIds)> PrepareCollection(
             QdrantHttpClient qdrantHttpClient,
             string collectionName,
             VectorDistanceMetric distanceMetric = VectorDistanceMetric.Dot,
             uint vectorSize = 10U,
             int vectorCount = 10,
-            Func<int, TPayload> payloadInitializerFunction = null,
+            Func<int, object> payloadInitializerFunction = null,
             QuantizationConfiguration quantizationConfig = null,
             StrictModeConfiguration strictModeConfig = null)
-        where TPayload : Payload, new()
     {
         await qdrantHttpClient.CreateCollection(
             collectionName,
@@ -367,14 +366,14 @@ public class QdrantTestsBase
             },
             CancellationToken.None);
 
-        var upsertPoints = new List<UpsertPointsRequest<TPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
         var upsertPointIds = new List<PointId>();
 
         for (int i = 0; i < vectorCount; i++)
         {
             var pointId = PointId.Integer((ulong) i);
 
-            Payload payload = payloadInitializerFunction is null
+            object payload = payloadInitializerFunction is null
                 ? new TestPayload()
                 {
                     Integer = i
@@ -385,19 +384,19 @@ public class QdrantTestsBase
                 new(
                     pointId,
                     CreateTestFloat32Vector(vectorSize),
-                    (TPayload) payload
+                    payload
                 )
             );
 
             upsertPointIds.Add(pointId);
         }
 
-        Dictionary<ulong, UpsertPointsRequest<TPayload>.UpsertPoint> upsertPointsByPointIds =
+        Dictionary<ulong, UpsertPointsRequest.UpsertPoint> upsertPointsByPointIds =
             upsertPoints.ToDictionary(p => ((IntegerPointId) p.Id).Id);
 
         var upsertPointsResult = await qdrantHttpClient.UpsertPoints(
             collectionName,
-            new UpsertPointsRequest<TPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },
@@ -461,11 +460,11 @@ public class QdrantTestsBase
 
             (await qdrantHttpClient.UpsertPoints(
                 collectionName,
-                new UpsertPointsRequest<TestPayload>()
+                new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
-                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), "test"),
+                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), (TestPayload)"test"),
                     },
                     ShardKey = TestShardKey1
                 },
@@ -473,11 +472,11 @@ public class QdrantTestsBase
 
             (await qdrantHttpClient.UpsertPoints(
                 collectionName,
-                new UpsertPointsRequest<TestPayload>()
+                new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
-                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), "test2"),
+                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), (TestPayload) "test2"),
                     },
                     ShardKey = TestShardKey2
                 },
@@ -500,11 +499,11 @@ public class QdrantTestsBase
 
             (await qdrantHttpClient.UpsertPoints(
                 collectionName,
-                new UpsertPointsRequest<TestPayload>()
+                new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
-                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), "test"),
+                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), (TestPayload) "test"),
                     },
                     ShardKey = TestShardKey1
                 },
@@ -544,9 +543,7 @@ public class QdrantTestsBase
 
     protected void OnlyIfVersionAfterOrEqual(string versionInclusive, string reason)
     {
-        var version = Version.Parse(versionInclusive);
-        
-        if (QdrantVersion >= version)
+        if (IsVersionAfterOrEqual(versionInclusive))
         {
             return;
         }
@@ -557,14 +554,26 @@ public class QdrantTestsBase
 
     protected void OnlyIfVersionBefore(string versionExclusive, string reason)
     {
-        var version = Version.Parse(versionExclusive);
-        
-        if (QdrantVersion < version)
+        if (IsVersionBefore(versionExclusive))
         {
             return;
         }
 
         Assert.Ignore(
             $"Test ignored because Qdrant version {QdrantVersion} is higher than required {versionExclusive}. Reason: {reason}");
+    }
+    
+    protected bool IsVersionBefore(string versionExclusive)
+    {
+        var version = Version.Parse(versionExclusive);
+        
+        return QdrantVersion < version;
+    }
+
+    protected bool IsVersionAfterOrEqual(string versionInclusive)
+    {
+        var version = Version.Parse(versionInclusive);
+
+        return QdrantVersion >= version;
     }
 }

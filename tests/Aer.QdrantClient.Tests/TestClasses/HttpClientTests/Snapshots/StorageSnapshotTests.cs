@@ -2,7 +2,6 @@
 using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
-using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots;
 
@@ -77,8 +76,8 @@ public class StorageSnapshotTests : SnapshotTestsBase
     [Test]
     public async Task CreateSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName2);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName2);
 
         var createSnapshotResult = await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None);
 
@@ -92,7 +91,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
     [Test]
     public async Task ListSnapshots()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
 
         // create first snapshot
 
@@ -139,7 +138,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
     [Test]
     public async Task DeleteSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
 
         // create first snapshot
 
@@ -196,7 +195,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
     [Test]
     public async Task DownloadSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult =
             (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
@@ -224,7 +223,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
     [Test]
     public async Task DownloadSnapshot_AfterAllCollectionsDeleted()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult =
             (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
@@ -259,7 +258,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
     [Ignore("Method RecoverStorageFromSnapshot is not implemented in Qdrant client yet")]
     public async Task RecoverFromSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
 
         var createSnapshotResult =
             (await _qdrantHttpClient.CreateStorageSnapshot(CancellationToken.None)).EnsureSuccess();
@@ -292,8 +291,8 @@ public class StorageSnapshotTests : SnapshotTestsBase
     [Ignore("Method RecoverStorageFromSnapshot is not implemented in Qdrant client yet")]
     public async Task RecoverFromUploadedSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName2);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName2);
 
         // Create and download snapshot
 

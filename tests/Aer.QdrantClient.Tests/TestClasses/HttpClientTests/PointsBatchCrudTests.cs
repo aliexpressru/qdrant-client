@@ -32,7 +32,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
     [Test]
     public async Task BatchUpdatePoints_EmptyRequest()
     {
-        var batchUpdateAct = async ()=> await _qdrantHttpClient.BatchUpdate(
+        var batchUpdateAct = async () => await _qdrantHttpClient.BatchUpdate(
             TestCollectionName,
             BatchUpdatePointsRequest.Create(),
             CancellationToken.None);
@@ -54,14 +54,14 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
         for (int i = 0; i < vectorCount; i++)
         {
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
                     CreateTestVector(vectorSize),
-                    i
+                    (TestPayload) i
                 )
             );
         }
@@ -103,14 +103,14 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
         for (int i = 0; i < vectorCount; i++)
         {
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
                     CreateTestVector(vectorSize),
-                    i
+                    (TestPayload) i
                 )
             );
         }
@@ -153,14 +153,14 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
         for (int i = 0; i < vectorCount; i++)
         {
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
                     CreateTestVector(vectorSize),
-                    i
+                    (TestPayload) i
                 )
             );
         }
@@ -205,7 +205,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
 
         for (int i = 0; i < vectorCount; i++)
         {
@@ -215,8 +215,8 @@ internal class PointsBatchCrudTests : QdrantTestsBase
                     CreateTestVector(vectorSize),
                     new TestPayload()
                     {
-                        Integer = i+1,
-                        Text = (i+1).ToString()
+                        Integer = i + 1,
+                        Text = (i + 1).ToString()
                     }
                 )
             );
@@ -289,10 +289,10 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             .Payload.As<TestPayload>().Text.Should().NotBeNull();
 
         readAllPoints.Result.Single(p => p.Id.Equals(pointToClearPayloadFor))
-            .Payload.Should().Be(Payload.Empty);
+            .Payload.RawPayloadString.Should().Be(Payload.EmptyString);
         readAllPoints.Result.Single(p => p.Id.Equals(pointToClearPayloadFor))
             .Payload.IsEmpty.Should().BeTrue();
-        
+
         readAllPoints.Result.Single(p => p.Id.Equals(pointToUpdateVectorFor))
             .Vector.Default.AsDenseVector().VectorValues
             .Should().BeEquivalentTo(vectorToUpdateTo);
@@ -316,7 +316,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
 
         for (int i = 0; i < vectorCount; i++)
         {

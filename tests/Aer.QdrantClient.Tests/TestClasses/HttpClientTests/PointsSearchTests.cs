@@ -69,7 +69,7 @@ internal class PointsSearchTests : QdrantTestsBase
     public async Task SearchPoints_SinglePoint_WithoutFilter()
     {
         var (upsertPoints, upsertPointsByPointIds, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -93,7 +93,7 @@ internal class PointsSearchTests : QdrantTestsBase
 
         var readPointId = searchResult.Result[0].Id.AsInteger();
 
-        var expectedPayload = upsertPointsByPointIds[readPointId].Payload;
+        var expectedPayload = upsertPointsByPointIds[readPointId].Payload.As<TestPayload>();
         var readPayload = searchResult.Result[0].Payload.As<TestPayload>();
 
         readPayload.Text.Should().Be(expectedPayload.Text);
@@ -105,7 +105,7 @@ internal class PointsSearchTests : QdrantTestsBase
     public async Task SearchPoints_WithoutFilter()
     {
         var (upsertPoints, upsertPointsByPointIds, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -135,9 +135,12 @@ internal class PointsSearchTests : QdrantTestsBase
 
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPointPayload.Text);
         }
     }
 
@@ -164,25 +167,25 @@ internal class PointsSearchTests : QdrantTestsBase
 
         collectionCreationResult.EnsureSuccess();
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
         for (int i = 0; i < vectorCount; i++)
         {
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
                     CreateTestNamedVectors(vectorSize, namedVectorsCount),
-                    i
+                    (TestPayload) i
                 )
             );
         }
 
-        Dictionary<ulong, UpsertPointsRequest<TestPayload>.UpsertPoint> upsertPointsByPointIds =
+        Dictionary<ulong, UpsertPointsRequest.UpsertPoint> upsertPointsByPointIds =
             upsertPoints.ToDictionary(p => ((IntegerPointId) p.Id).Id);
 
         var upsertPointsResult
             = await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
-                new UpsertPointsRequest<TestPayload>()
+                new UpsertPointsRequest()
                 {
                     Points = upsertPoints
                 },
@@ -216,9 +219,12 @@ internal class PointsSearchTests : QdrantTestsBase
 
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPointPayload.Text);
         }
     }
 
@@ -243,7 +249,7 @@ internal class PointsSearchTests : QdrantTestsBase
 
         collectionCreationResult.EnsureSuccess();
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
 
         for (int i = 0; i < vectorCount; i++)
         {
@@ -265,13 +271,13 @@ internal class PointsSearchTests : QdrantTestsBase
             );
         }
 
-        Dictionary<ulong, UpsertPointsRequest<TestPayload>.UpsertPoint> upsertPointsByPointIds =
+        Dictionary<ulong, UpsertPointsRequest.UpsertPoint> upsertPointsByPointIds =
             upsertPoints.ToDictionary(p => p.Id.AsInteger());
 
         var upsertPointsResult
             = await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
-                new UpsertPointsRequest<TestPayload>()
+                new UpsertPointsRequest()
                 {
                     Points = upsertPoints
                 },
@@ -305,9 +311,12 @@ internal class PointsSearchTests : QdrantTestsBase
 
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPointPayload.Text);
         }
     }
 
@@ -315,7 +324,7 @@ internal class PointsSearchTests : QdrantTestsBase
     public async Task SearchPoints_WithoutFilter_WithQuantization()
     {
         var (upsertPoints, upsertPointsByPointIds, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName,
                 quantizationConfig: QuantizationConfiguration.Scalar(quantile: 0.99f, isQuantizedVectorAlwaysInRam: true));
@@ -354,9 +363,12 @@ internal class PointsSearchTests : QdrantTestsBase
 
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPointPayload.Text);
         }
     }
 
@@ -364,7 +376,7 @@ internal class PointsSearchTests : QdrantTestsBase
     public async Task SearchPoints_WithFilter()
     {
         var (upsertPoints, upsertPointsByPointIds, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -399,9 +411,12 @@ internal class PointsSearchTests : QdrantTestsBase
 
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPointPayload.Text);
         }
     }
 
@@ -409,7 +424,7 @@ internal class PointsSearchTests : QdrantTestsBase
     public async Task SearchPoints_Euclid_WithFilter()
     {
         var (upsertPoints, upsertPointsByPointIds, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName,
                 distanceMetric: VectorDistanceMetric.Euclid);
@@ -453,9 +468,12 @@ internal class PointsSearchTests : QdrantTestsBase
 
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
+
+            readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.Text.Should().Be(expectedPointPayload.Text);
         }
     }
 
@@ -463,7 +481,7 @@ internal class PointsSearchTests : QdrantTestsBase
     public async Task SearchPoints_Cosine_WithFilter()
     {
         var (upsertPoints, upsertPointsByPointIds, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName,
                 distanceMetric: VectorDistanceMetric.Cosine);
@@ -499,9 +517,12 @@ internal class PointsSearchTests : QdrantTestsBase
 
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-            readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-            readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPoint.Payload.FloatingPointNumber);
-            readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+            var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
+
+            readPointPayload.As<TestPayload>().Integer.Should().Be(expectedPointPayload.Integer);
+            readPointPayload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
+            readPointPayload.As<TestPayload>().Text.Should().Be(expectedPointPayload.Text);
         }
     }
 
@@ -519,7 +540,7 @@ internal class PointsSearchTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
 
         // using the same vector since we are comparing filter return values
 
@@ -531,7 +552,7 @@ internal class PointsSearchTests : QdrantTestsBase
                 new(
                     PointId.Integer((ulong) i),
                     singleVector,
-                    i
+                    (TestPayload) i
                 )
             );
         }
@@ -540,7 +561,7 @@ internal class PointsSearchTests : QdrantTestsBase
 
         await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },
@@ -618,7 +639,7 @@ internal class PointsSearchTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
 
         // using the same vector since we are comparing filter return values
 
@@ -630,7 +651,7 @@ internal class PointsSearchTests : QdrantTestsBase
                 new(
                     PointId.Integer((ulong) i),
                     singleVector,
-                    i
+                    (TestPayload) i
                 )
             );
         }
@@ -639,7 +660,7 @@ internal class PointsSearchTests : QdrantTestsBase
 
         await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },
@@ -703,7 +724,7 @@ internal class PointsSearchTests : QdrantTestsBase
     public async Task SearchPointsBatched_WithFilter()
     {
         var (upsertPoints, upsertPointsByPointIds, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -750,10 +771,13 @@ internal class PointsSearchTests : QdrantTestsBase
 
                 expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-                readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-                readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should()
-                    .Be(expectedPoint.Payload.FloatingPointNumber);
-                readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+                var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+                var readPointPayload = readPoint.Payload.As<TestPayload>();
+
+                readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+                readPointPayload.FloatingPointNumber.Should()
+                    .Be(expectedPointPayload.FloatingPointNumber);
+                readPointPayload.Text.Should().Be(expectedPointPayload.Text);
             }
         }
     }
