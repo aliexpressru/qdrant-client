@@ -50,7 +50,9 @@ public class Payload
     /// <param name="rawPayloadString">The raw payload to initialize this instance with.</param>
     public Payload(string rawPayloadString)
     {
-        RawPayloadString = rawPayloadString;
+        RawPayloadString = string.IsNullOrEmpty(rawPayloadString)
+            ? EmptyString
+            : rawPayloadString;
     }
     
     /// <summary>

@@ -68,7 +68,7 @@ internal partial class PointsCrudTests
         readPointsResult.Result.Id.ObjectId.Should().Be(testPointId.ObjectId);
         readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
             .Should().BeEquivalentTo(testVector);
-        var readTestPayload = readPointsResult.Result.Payload.As<TestPayload>();
+        var readTestPayload = readPointsResult.Result.GetTypedPayload().As<TestPayload>();
 
         readTestPayload.Integer.Should().Be(testPayload.Integer);
         readTestPayload.FloatingPointNumber.Should().Be(testPayload.FloatingPointNumber);
@@ -137,7 +137,7 @@ internal partial class PointsCrudTests
         readPointsResult.Result.Id.ObjectId.Should().Be(testPointId.ObjectId);
         readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
             .Should().BeEquivalentTo(testVector);
-        var readTestPayload = readPointsResult.Result.Payload.As<TestPayload>();
+        var readTestPayload = readPointsResult.Result.GetTypedPayload().As<TestPayload>();
 
         readTestPayload.Integer.Should().Be(testPayload.Integer);
         readTestPayload.FloatingPointNumber.Should().Be(testPayload.FloatingPointNumber);
@@ -193,7 +193,7 @@ internal partial class PointsCrudTests
         readPointsResult.Result.Id.ObjectId.Should().Be(testPointId.ObjectId);
         readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
             .Should().BeEquivalentTo(testVector);
-        var readTestPayload = readPointsResult.Result.Payload.As<JsonObject>();
+        var readTestPayload = readPointsResult.Result.GetTypedPayload().As<JsonObject>();
 
         readTestPayload.Should().NotBeNull();
 
@@ -308,7 +308,7 @@ internal partial class PointsCrudTests
         readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
             .Should().BeEquivalentTo(testVector);
 
-        var readTestPayload = readPointsResult.Result.Payload.As<JsonObject>();
+        var readTestPayload = readPointsResult.Result.GetTypedPayload().As<JsonObject>();
 
         readTestPayload["test_property_1"]!.GetValue<string>().Should().Be("test_value");
         readTestPayload["test_property_2"]!.GetValue<int>().Should().Be(1567);
@@ -408,6 +408,8 @@ internal partial class PointsCrudTests
         readPointsResult.Result[0].Id.ObjectId.Should().Be(testPointId.ObjectId);
         readPointsResult.Result[0].Vector.Should().BeNull();
         readPointsResult.Result[0].Payload.Should().BeNull();
+
+        readPointsResult.Result[0].GetTypedPayload().IsEmpty.Should().BeTrue();
     }
 
     [Test]
@@ -546,6 +548,7 @@ internal partial class PointsCrudTests
         readPointNoPayloadPropertiesImplicitResult.Result.Length.Should().Be(1);
 
         readPointNoPayloadPropertiesImplicitResult.Result[0].Payload.Should().BeNull();
+        readPointNoPayloadPropertiesImplicitResult.Result[0].GetTypedPayload().IsEmpty.Should().BeTrue();
     }
 
     [Test]
