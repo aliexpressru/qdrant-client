@@ -26,6 +26,7 @@ public class Point
     /// <summary>
     /// Gets or sets the point payload.
     /// </summary>
+    [JsonConverter(typeof(PayloadJsonConverter))]
     public string Payload { get; init; }
 
     /// <summary>

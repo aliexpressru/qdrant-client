@@ -250,7 +250,7 @@ internal partial class PointsCrudTests
         readPointsResult.Result.Id.ObjectId.Should().Be(testPointId.ObjectId);
         readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
             .Should().BeEquivalentTo(testVector);
-        var readTestPayload = readPointsResult.Result.Payload.As<JsonObject>();
+        var readTestPayload = readPointsResult.Result.GetTypedPayload().As<JsonObject>();
 
         readTestPayload.Should().NotBeNull();
 
@@ -456,7 +456,7 @@ internal partial class PointsCrudTests
 
         readPointIncludePayloadPropertyResult.Result[0].Payload.Should().NotBeNull();
 
-        var payloadWithIncludedProperties = readPointIncludePayloadPropertyResult.Result[0].Payload.As<TestPayload>();
+        var payloadWithIncludedProperties = readPointIncludePayloadPropertyResult.Result[0].GetTypedPayload().As<TestPayload>();
 
         payloadWithIncludedProperties.Integer.HasValue.Should().BeTrue();
         payloadWithIncludedProperties.FloatingPointNumber.HasValue.Should().BeFalse();
@@ -477,7 +477,7 @@ internal partial class PointsCrudTests
 
         readPointExcludePayloadPropertyResult.Result[0].Payload.Should().NotBeNull();
 
-        var payloadWithExcludedProperties = readPointExcludePayloadPropertyResult.Result[0].Payload.As<TestPayload>();
+        var payloadWithExcludedProperties = readPointExcludePayloadPropertyResult.Result[0].GetTypedPayload().As<TestPayload>();
 
         payloadWithExcludedProperties.Integer.HasValue.Should().BeFalse();
         payloadWithExcludedProperties.FloatingPointNumber.HasValue.Should().BeTrue();
@@ -497,7 +497,7 @@ internal partial class PointsCrudTests
         readPointAllPayloadPropertiesResult.Result.Length.Should().Be(1);
 
         readPointAllPayloadPropertiesResult.Result[0].Payload.Should().NotBeNull();
-        var payloadWithAllProperties = readPointAllPayloadPropertiesResult.Result[0].Payload.As<TestPayload>();
+        var payloadWithAllProperties = readPointAllPayloadPropertiesResult.Result[0].GetTypedPayload().As<TestPayload>();
 
         payloadWithAllProperties.AllPropertiesNotNull().Should().BeTrue();
 
@@ -515,7 +515,7 @@ internal partial class PointsCrudTests
 
         readPointAllPayloadPropertiesImplicitResult.Result[0].Payload.Should().NotBeNull();
 
-        var payloadWithAllProperties2 = readPointAllPayloadPropertiesResult.Result[0].Payload.As<TestPayload>();
+        var payloadWithAllProperties2 = readPointAllPayloadPropertiesResult.Result[0].GetTypedPayload().As<TestPayload>();
 
         payloadWithAllProperties2.AllPropertiesNotNull().Should().BeTrue();
 
