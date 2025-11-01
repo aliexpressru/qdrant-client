@@ -84,21 +84,6 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         OrderingType? ordering = null)
     {
-        foreach(var point in upsertPoints.Points)
-        {
-            if (point.Payload is null)
-            {
-                continue;
-            }
-
-            var payloadType = point.Payload.GetType();
-            
-            if (payloadType == typeof(string))
-            {
-                throw new QdrantInvalidPayloadTypeException(payloadType.FullName);
-            }
-        }
-
         var orderingValue = (ordering ?? OrderingType.Weak).ToString().ToLowerInvariant();
 
         var url =

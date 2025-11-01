@@ -51,12 +51,6 @@ public sealed class UpsertPointsRequest
         {
             Id = id;
             Vector = vector;
-
-            if (payload is string)
-            {
-                throw new QdrantInvalidPayloadTypeException(payload.GetType().FullName);
-            }
-
             Payload = payload;
         }
     }
