@@ -27,12 +27,7 @@ public class Point
     /// Gets or sets the point payload.
     /// </summary>
     [JsonConverter(typeof(PayloadJsonConverter))]
-    public string Payload { get; init; }
-
-    /// <summary>
-    /// Gets the typed payload object.
-    /// </summary>
-    public Payload GetTypedPayload() => _typedPayload ??= new Payload(Payload);
+    public Payload Payload { get; init; }
 
     /// <summary>
     /// Gets or sets the point shard key.

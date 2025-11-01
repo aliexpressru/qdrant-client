@@ -94,7 +94,7 @@ internal class PointsSearchTests : QdrantTestsBase
         var readPointId = searchResult.Result[0].Id.AsInteger();
 
         var expectedPayload = upsertPointsByPointIds[readPointId].Payload.As<TestPayload>();
-        var readPayload = searchResult.Result[0].GetTypedPayload().As<TestPayload>();
+        var readPayload = searchResult.Result[0].Payload.As<TestPayload>();
 
         readPayload.Text.Should().Be(expectedPayload.Text);
         readPayload.Integer.Should().Be(expectedPayload.Integer);
@@ -136,7 +136,7 @@ internal class PointsSearchTests : QdrantTestsBase
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
-            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
 
             readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
             readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
@@ -220,7 +220,7 @@ internal class PointsSearchTests : QdrantTestsBase
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
-            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
 
             readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
             readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
@@ -312,7 +312,7 @@ internal class PointsSearchTests : QdrantTestsBase
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
-            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
 
             readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
             readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
@@ -364,7 +364,7 @@ internal class PointsSearchTests : QdrantTestsBase
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
-            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
 
             readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
             readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
@@ -412,7 +412,7 @@ internal class PointsSearchTests : QdrantTestsBase
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
-            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
 
             readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
             readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
@@ -469,7 +469,7 @@ internal class PointsSearchTests : QdrantTestsBase
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
-            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
 
             readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
             readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
@@ -518,7 +518,7 @@ internal class PointsSearchTests : QdrantTestsBase
             expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
-            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
 
             readPointPayload.As<TestPayload>().Integer.Should().Be(expectedPointPayload.Integer);
             readPointPayload.As<TestPayload>().FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
@@ -772,7 +772,7 @@ internal class PointsSearchTests : QdrantTestsBase
                 expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
                 var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
-                var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+                var readPointPayload = readPoint.Payload.As<TestPayload>();
 
                 readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
                 readPointPayload.FloatingPointNumber.Should()

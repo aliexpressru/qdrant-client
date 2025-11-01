@@ -599,14 +599,14 @@ internal partial class PointsCrudTests
             p =>
             {
                 p.Payload.Should().Be(Payload.EmptyString);
-                p.GetTypedPayload().IsEmpty.Should().BeTrue();
+                p.Payload.IsEmpty.Should().BeTrue();
             });
 
         pointsThatShouldNotBeUpdated.Should().AllSatisfy(
             p =>
             {
                 p.Payload.Should().Be(Payload.EmptyString);
-                p.GetTypedPayload().IsEmpty.Should().BeFalse();
+                p.Payload.IsEmpty.Should().BeFalse();
             });
 
         // clear payload key by filter
@@ -641,7 +641,7 @@ internal partial class PointsCrudTests
         readAllPoints.Result.Should().AllSatisfy(p =>
         {
             p.Payload.Should().Be(Payload.EmptyString);
-            p.GetTypedPayload().IsEmpty.Should().BeTrue();
+            p.Payload.IsEmpty.Should().BeTrue();
         });
     }
 }

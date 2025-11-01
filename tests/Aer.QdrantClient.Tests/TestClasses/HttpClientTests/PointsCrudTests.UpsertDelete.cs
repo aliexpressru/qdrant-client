@@ -68,7 +68,7 @@ internal partial class PointsCrudTests
         readPointsResult.Result.Id.ObjectId.Should().Be(testPointId.ObjectId);
         readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
             .Should().BeEquivalentTo(testVector);
-        var readTestPayload = readPointsResult.Result.GetTypedPayload().As<TestPayload>();
+        var readTestPayload = readPointsResult.Result.Payload.As<TestPayload>();
 
         readTestPayload.Integer.Should().Be(testPayload.Integer);
         readTestPayload.FloatingPointNumber.Should().Be(testPayload.FloatingPointNumber);
@@ -137,7 +137,7 @@ internal partial class PointsCrudTests
         readPointsResult.Result.Id.ObjectId.Should().Be(testPointId.ObjectId);
         readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
             .Should().BeEquivalentTo(testVector);
-        var readTestPayload = readPointsResult.Result.GetTypedPayload().As<TestPayload>();
+        var readTestPayload = readPointsResult.Result.Payload.As<TestPayload>();
 
         readTestPayload.Integer.Should().Be(testPayload.Integer);
         readTestPayload.FloatingPointNumber.Should().Be(testPayload.FloatingPointNumber);
@@ -193,7 +193,7 @@ internal partial class PointsCrudTests
         readPointsResult.Result.Id.ObjectId.Should().Be(testPointId.ObjectId);
         readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
             .Should().BeEquivalentTo(testVector);
-        var readTestPayload = readPointsResult.Result.GetTypedPayload().As<JsonObject>();
+        var readTestPayload = readPointsResult.Result.Payload.As<JsonObject>();
 
         readTestPayload.Should().NotBeNull();
 
@@ -250,7 +250,7 @@ internal partial class PointsCrudTests
         readPointsResult.Result.Id.ObjectId.Should().Be(testPointId.ObjectId);
         readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
             .Should().BeEquivalentTo(testVector);
-        var readTestPayload = readPointsResult.Result.GetTypedPayload().As<JsonObject>();
+        var readTestPayload = readPointsResult.Result.Payload.As<JsonObject>();
 
         readTestPayload.Should().NotBeNull();
 
@@ -308,7 +308,7 @@ internal partial class PointsCrudTests
         readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
             .Should().BeEquivalentTo(testVector);
 
-        var readTestPayload = readPointsResult.Result.GetTypedPayload().As<JsonObject>();
+        var readTestPayload = readPointsResult.Result.Payload.As<JsonObject>();
 
         readTestPayload["test_property_1"]!.GetValue<string>().Should().Be("test_value");
         readTestPayload["test_property_2"]!.GetValue<int>().Should().Be(1567);
@@ -359,7 +359,7 @@ internal partial class PointsCrudTests
             .Should().BeEquivalentTo(testVector);
 
         readPointsResult.Result.Payload.Should().Be(Payload.EmptyString);
-        readPointsResult.Result.GetTypedPayload().IsEmpty.Should().BeTrue();
+        readPointsResult.Result.Payload.IsEmpty.Should().BeTrue();
     }
 
     [Test]
@@ -409,7 +409,7 @@ internal partial class PointsCrudTests
         readPointsResult.Result[0].Vector.Should().BeNull();
         readPointsResult.Result[0].Payload.Should().BeNull();
 
-        readPointsResult.Result[0].GetTypedPayload().IsEmpty.Should().BeTrue();
+        readPointsResult.Result[0].Payload.IsEmpty.Should().BeTrue();
     }
 
     [Test]
@@ -458,7 +458,7 @@ internal partial class PointsCrudTests
 
         readPointIncludePayloadPropertyResult.Result[0].Payload.Should().NotBeNull();
 
-        var payloadWithIncludedProperties = readPointIncludePayloadPropertyResult.Result[0].GetTypedPayload().As<TestPayload>();
+        var payloadWithIncludedProperties = readPointIncludePayloadPropertyResult.Result[0].Payload.As<TestPayload>();
 
         payloadWithIncludedProperties.Integer.HasValue.Should().BeTrue();
         payloadWithIncludedProperties.FloatingPointNumber.HasValue.Should().BeFalse();
@@ -479,7 +479,7 @@ internal partial class PointsCrudTests
 
         readPointExcludePayloadPropertyResult.Result[0].Payload.Should().NotBeNull();
 
-        var payloadWithExcludedProperties = readPointExcludePayloadPropertyResult.Result[0].GetTypedPayload().As<TestPayload>();
+        var payloadWithExcludedProperties = readPointExcludePayloadPropertyResult.Result[0].Payload.As<TestPayload>();
 
         payloadWithExcludedProperties.Integer.HasValue.Should().BeFalse();
         payloadWithExcludedProperties.FloatingPointNumber.HasValue.Should().BeTrue();
@@ -499,7 +499,7 @@ internal partial class PointsCrudTests
         readPointAllPayloadPropertiesResult.Result.Length.Should().Be(1);
 
         readPointAllPayloadPropertiesResult.Result[0].Payload.Should().NotBeNull();
-        var payloadWithAllProperties = readPointAllPayloadPropertiesResult.Result[0].GetTypedPayload().As<TestPayload>();
+        var payloadWithAllProperties = readPointAllPayloadPropertiesResult.Result[0].Payload.As<TestPayload>();
 
         payloadWithAllProperties.AllPropertiesNotNull().Should().BeTrue();
 
@@ -517,7 +517,7 @@ internal partial class PointsCrudTests
 
         readPointAllPayloadPropertiesImplicitResult.Result[0].Payload.Should().NotBeNull();
 
-        var payloadWithAllProperties2 = readPointAllPayloadPropertiesResult.Result[0].GetTypedPayload().As<TestPayload>();
+        var payloadWithAllProperties2 = readPointAllPayloadPropertiesResult.Result[0].Payload.As<TestPayload>();
 
         payloadWithAllProperties2.AllPropertiesNotNull().Should().BeTrue();
 
@@ -548,7 +548,7 @@ internal partial class PointsCrudTests
         readPointNoPayloadPropertiesImplicitResult.Result.Length.Should().Be(1);
 
         readPointNoPayloadPropertiesImplicitResult.Result[0].Payload.Should().BeNull();
-        readPointNoPayloadPropertiesImplicitResult.Result[0].GetTypedPayload().IsEmpty.Should().BeTrue();
+        readPointNoPayloadPropertiesImplicitResult.Result[0].Payload.IsEmpty.Should().BeTrue();
     }
 
     [Test]
@@ -668,7 +668,7 @@ internal partial class PointsCrudTests
 
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
 
-            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
 
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
             
@@ -744,7 +744,7 @@ internal partial class PointsCrudTests
 
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
 
-            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
             
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
 
@@ -823,7 +823,7 @@ internal partial class PointsCrudTests
 
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
 
-            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
 
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
             
@@ -917,7 +917,7 @@ internal partial class PointsCrudTests
 
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
             
-            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
 
             readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
             readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
@@ -1775,7 +1775,7 @@ internal partial class PointsCrudTests
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
 
-            var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+            var readPointPayload = readPoint.Payload.As<TestPayload>();
 
             readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
             readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);

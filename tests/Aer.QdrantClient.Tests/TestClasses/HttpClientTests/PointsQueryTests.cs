@@ -379,7 +379,7 @@ public class PointsQueryTests : QdrantTestsBase
 
                 expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-                var readPointPayload = readPoint.GetTypedPayload().As<TestPayload>();
+                var readPointPayload = readPoint.Payload.As<TestPayload>();
                 
                 var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
 

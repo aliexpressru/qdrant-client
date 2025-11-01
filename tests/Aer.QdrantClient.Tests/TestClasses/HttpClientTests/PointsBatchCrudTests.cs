@@ -291,7 +291,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
         readAllPoints.Result.Single(p => p.Id.Equals(pointToClearPayloadFor))
             .Payload.Should().Be(Payload.EmptyString);
         readAllPoints.Result.Single(p => p.Id.Equals(pointToClearPayloadFor))
-            .GetTypedPayload().IsEmpty.Should().BeTrue();
+            .Payload.IsEmpty.Should().BeTrue();
         
         readAllPoints.Result.Single(p => p.Id.Equals(pointToUpdateVectorFor))
             .Vector.Default.AsDenseVector().VectorValues
