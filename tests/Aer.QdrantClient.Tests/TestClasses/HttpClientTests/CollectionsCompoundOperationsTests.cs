@@ -6,6 +6,7 @@ using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
+using Aer.QdrantClient.Tests.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -70,7 +71,7 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
                 new(
                     PointId.Integer((ulong) i),
                     CreateTestVector(vectorSize),
-                    i
+                    (TestPayload) i
                 )
             );
         }

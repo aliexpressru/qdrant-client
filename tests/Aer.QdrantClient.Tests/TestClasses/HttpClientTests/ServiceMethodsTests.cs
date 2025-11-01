@@ -4,6 +4,7 @@ using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
+using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
@@ -22,7 +23,14 @@ public class ServiceMethodsTests : QdrantTestsBase
     [SetUp]
     public async Task BeforeEachTest()
     {
-        await ResetStorage();
+        await ResetStorage(_qdrantHttpClient);
+        
+        if(IsVersionBefore("1.16.0"))
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            await _qdrantHttpClient.SetLockOptions(areWritesDisabled: false, "Init tests", CancellationToken.None);
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
     }
 
     [Test]
@@ -186,7 +194,7 @@ public class ServiceMethodsTests : QdrantTestsBase
             {
                 Points =
                 [
-                    new UpsertPointsRequest.UpsertPoint(67, CreateTestVector(10), 67)
+                    new UpsertPointsRequest.UpsertPoint(67, CreateTestVector(10), (TestPayload) 67)
                 ]
             },
             CancellationToken.None);

@@ -174,7 +174,7 @@ internal class PointsSearchTests : QdrantTestsBase
                 new(
                     PointId.Integer((ulong) i),
                     CreateTestNamedVectors(vectorSize, namedVectorsCount),
-                    i
+                    (TestPayload) i
                 )
             );
         }
@@ -552,7 +552,7 @@ internal class PointsSearchTests : QdrantTestsBase
                 new(
                     PointId.Integer((ulong) i),
                     singleVector,
-                    i
+                    (TestPayload) i
                 )
             );
         }
@@ -651,7 +651,7 @@ internal class PointsSearchTests : QdrantTestsBase
                 new(
                     PointId.Integer((ulong) i),
                     singleVector,
-                    i
+                    (TestPayload) i
                 )
             );
         }

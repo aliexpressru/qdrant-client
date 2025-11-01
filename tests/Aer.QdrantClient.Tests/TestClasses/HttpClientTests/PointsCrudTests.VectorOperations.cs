@@ -111,7 +111,7 @@ internal partial class PointsCrudTests
                 new(
                     PointId.Integer((ulong) i),
                     CreateTestNamedVectors(vectorSize, namedVectorsCount),
-                    i
+                    (TestPayload) i
                 )
             );
         }
@@ -195,7 +195,7 @@ internal partial class PointsCrudTests
                 new(
                     PointId.Integer((ulong) i),
                     CreateTestNamedVectors(vectorSize, namedVectorsCount),
-                    i
+                    (TestPayload) i
                 )
             );
         }

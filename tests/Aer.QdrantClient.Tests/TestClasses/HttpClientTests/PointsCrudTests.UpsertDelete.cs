@@ -76,10 +76,10 @@ internal partial class PointsCrudTests
     }
 
     [Test]
-    [TestCase((int)1)]
-    [TestCase((uint)1)]
-    [TestCase((long)1)]
-    [TestCase((ulong)1)]
+    [TestCase((int) 1)]
+    [TestCase((uint) 1)]
+    [TestCase((long) 1)]
+    [TestCase((ulong) 1)]
     public async Task UpsertPoint_IntegerId(object pointIdIntegerTypeExample)
     {
         var vectorSize = 10U;
@@ -358,8 +358,13 @@ internal partial class PointsCrudTests
         readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
             .Should().BeEquivalentTo(testVector);
 
-        readPointsResult.Result.Payload.Should().Be(Payload.EmptyString);
-        readPointsResult.Result.Payload.IsEmpty.Should().BeTrue();
+        readPointsResult.Result.Payload.RawPayloadString.Should().Be(Payload.EmptyString);
+
+        // Since we are not filtering out all payload properties but didn't
+        // have any payload in the first place, we get an empty payload {}, not null
+        
+        readPointsResult.Result.Payload.Should().NotBeNull(); 
+        readPointsResult.Result.IsPayloadNullOrEmpty.Should().BeTrue();
     }
 
     [Test]
@@ -408,8 +413,7 @@ internal partial class PointsCrudTests
         readPointsResult.Result[0].Id.ObjectId.Should().Be(testPointId.ObjectId);
         readPointsResult.Result[0].Vector.Should().BeNull();
         readPointsResult.Result[0].Payload.Should().BeNull();
-
-        readPointsResult.Result[0].Payload.IsEmpty.Should().BeTrue();
+        readPointsResult.Result[0].IsPayloadNullOrEmpty.Should().BeTrue();
     }
 
     [Test]
@@ -548,7 +552,7 @@ internal partial class PointsCrudTests
         readPointNoPayloadPropertiesImplicitResult.Result.Length.Should().Be(1);
 
         readPointNoPayloadPropertiesImplicitResult.Result[0].Payload.Should().BeNull();
-        readPointNoPayloadPropertiesImplicitResult.Result[0].Payload.IsEmpty.Should().BeTrue();
+        readPointNoPayloadPropertiesImplicitResult.Result[0].IsPayloadNullOrEmpty.Should().BeTrue();
     }
 
     [Test]
@@ -571,7 +575,7 @@ internal partial class PointsCrudTests
                 {
                     Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
-                        new(PointId.NewGuid(), CreateTestVector(vectorSize), "test")
+                        new(PointId.NewGuid(), CreateTestVector(vectorSize), (TestPayload) "test")
                     }
                 },
                 CancellationToken.None,
@@ -603,7 +607,7 @@ internal partial class PointsCrudTests
                 new(
                     PointId.Integer((ulong) i),
                     CreateTestVector(vectorSize),
-                    i
+                    (TestPayload) i
                 )
             );
         }
@@ -633,7 +637,7 @@ internal partial class PointsCrudTests
         upsertPointsResult.Status.IsSuccess.Should().BeTrue();
         upsertPointsResult.Result.Status.Should()
             .BeOneOf(QdrantOperationStatus.Completed);
-        
+
         // Upsert operations do not report statistics
         if (!IsCiEnvironment)
         {
@@ -671,7 +675,7 @@ internal partial class PointsCrudTests
             var readPointPayload = readPoint.Payload.As<TestPayload>();
 
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
-            
+
             readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
             readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
             readPointPayload.Text.Should().Be(expectedPointPayload.Text);
@@ -703,7 +707,7 @@ internal partial class PointsCrudTests
                 new(
                     PointId.Integer((ulong) i),
                     CreateTestVector(vectorSize, VectorDataType.Uint8),
-                    i
+                    (TestPayload) i
                 )
             );
         }
@@ -745,7 +749,7 @@ internal partial class PointsCrudTests
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
 
             var readPointPayload = readPoint.Payload.As<TestPayload>();
-            
+
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
 
             readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
@@ -784,7 +788,7 @@ internal partial class PointsCrudTests
                 new(
                     PointId.Integer((ulong) i),
                     CreateTestNamedVectors(vectorSize, namedVectorsCount),
-                    i
+                    (TestPayload) i
                 )
             );
         }
@@ -826,7 +830,7 @@ internal partial class PointsCrudTests
             var readPointPayload = readPoint.Payload.As<TestPayload>();
 
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
-            
+
             readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
             readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
             readPointPayload.Text.Should().Be(expectedPointPayload.Text);
@@ -876,7 +880,7 @@ internal partial class PointsCrudTests
                 new(
                     PointId.Integer((ulong) i),
                     CreateTestNamedVectors(vectorSize, namedVectorsCount),
-                    i
+                    (TestPayload) i
                 )
             );
         }
@@ -916,7 +920,7 @@ internal partial class PointsCrudTests
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
 
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
-            
+
             var readPointPayload = readPoint.Payload.As<TestPayload>();
 
             readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
@@ -979,7 +983,7 @@ internal partial class PointsCrudTests
         UpsertPointsRequest.UpsertPoint firstPoint =
             new(
                 id: 1,
-                vector : new NamedVectors()
+                vector: new NamedVectors()
                 {
                     Vectors = new Dictionary<string, VectorBase>()
                     {
@@ -989,7 +993,7 @@ internal partial class PointsCrudTests
                         ["Vector_3"] = CreateTestVector(50U),
                     }
                 },
-                payload : 1);
+                payload: (TestPayload) 1);
 
         UpsertPointsRequest.UpsertPoint secondPoint = new(
             id: 2,
@@ -1001,7 +1005,7 @@ internal partial class PointsCrudTests
                     ["Vector_3"] = CreateTestVector(50U),
                 }
             },
-            payload: 2);
+            payload: (TestPayload) 2);
 
         UpsertPointsRequest.UpsertPoint thirdPoint = new(
             id: 3,
@@ -1012,9 +1016,10 @@ internal partial class PointsCrudTests
                     ["Vector_1"] = CreateTestVector(100U),
                 }
             },
-            payload: 3);
+            payload: (TestPayload) 3);
 
-        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>(){
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>()
+        {
             firstPoint,
             secondPoint,
             thirdPoint
@@ -1031,7 +1036,7 @@ internal partial class PointsCrudTests
 
         var readPointsResult = await _qdrantHttpClient.GetPoints(
             TestCollectionName,
-            upsertPoints.Select(p=>p.Id),
+            upsertPoints.Select(p => p.Id),
             PayloadPropertiesSelector.All,
             CancellationToken.None,
             withVector: true);
@@ -1101,7 +1106,7 @@ internal partial class PointsCrudTests
         UpsertPointsRequest.UpsertPoint firstPoint =
             new(
                 id: 1,
-                vector : new NamedVectors()
+                vector: new NamedVectors()
                 {
                     Vectors = new Dictionary<string, VectorBase>()
                     {
@@ -1110,7 +1115,7 @@ internal partial class PointsCrudTests
                         ["Vector_2"] = CreateTestVector(5U),
                     }
                 },
-                payload : 1);
+                payload: (TestPayload) 1);
 
         UpsertPointsRequest.UpsertPoint secondPoint = new(
             id: 2,
@@ -1121,7 +1126,7 @@ internal partial class PointsCrudTests
                     [VectorBase.DefaultVectorName] = CreateTestVector(100, VectorDataType.Uint8),
                 }
             },
-            payload: 2);
+            payload: (TestPayload) 2);
 
         UpsertPointsRequest.UpsertPoint thirdPoint = new(
             id: 3,
@@ -1132,9 +1137,10 @@ internal partial class PointsCrudTests
                     ["Vector_2"] = CreateTestVector(5U),
                 }
             },
-            payload: 3);
+            payload: (TestPayload) 3);
 
-        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>(){
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>()
+        {
             firstPoint,
             secondPoint,
             thirdPoint
@@ -1151,7 +1157,7 @@ internal partial class PointsCrudTests
 
         var readPointsResult = await _qdrantHttpClient.GetPoints(
             TestCollectionName,
-            upsertPoints.Select(p=>p.Id),
+            upsertPoints.Select(p => p.Id),
             PayloadPropertiesSelector.All,
             CancellationToken.None,
             withVector: true);
@@ -1215,7 +1221,7 @@ internal partial class PointsCrudTests
         UpsertPointsRequest.UpsertPoint firstPoint =
             new(
                 id: 1,
-                vector : new NamedVectors()
+                vector: new NamedVectors()
                 {
                     Vectors = new Dictionary<string, VectorBase>()
                     {
@@ -1223,7 +1229,7 @@ internal partial class PointsCrudTests
                         ["Vector_2"] = CreateTestSparseVector(50U, 5),
                     }
                 },
-                payload : 1);
+                payload: (TestPayload) 1);
 
         UpsertPointsRequest.UpsertPoint secondPoint = new(
             id: 2,
@@ -1235,9 +1241,10 @@ internal partial class PointsCrudTests
                     ["Vector_2"] = CreateTestSparseVector(50U, 7),
                 }
             },
-            payload: 2);
+            payload: (TestPayload) 2);
 
-        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>(){
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>()
+        {
             firstPoint,
             secondPoint,
         };
@@ -1253,7 +1260,7 @@ internal partial class PointsCrudTests
 
         var readPointsResult = await _qdrantHttpClient.GetPoints(
             TestCollectionName,
-            upsertPoints.Select(p=>p.Id),
+            upsertPoints.Select(p => p.Id),
             PayloadPropertiesSelector.All,
             CancellationToken.None,
             withVector: true);
@@ -1323,7 +1330,7 @@ internal partial class PointsCrudTests
         UpsertPointsRequest.UpsertPoint firstPoint =
             new(
                 id: 1,
-                vector : new NamedVectors()
+                vector: new NamedVectors()
                 {
                     Vectors = new Dictionary<string, VectorBase>()
                     {
@@ -1331,7 +1338,7 @@ internal partial class PointsCrudTests
                         ["Vector_2"] = CreateTestSparseVector(50U, 5),
                     }
                 },
-                payload : 1);
+                payload: (TestPayload) 1);
 
         UpsertPointsRequest.UpsertPoint secondPoint = new(
             id: 2,
@@ -1343,9 +1350,10 @@ internal partial class PointsCrudTests
                     ["Vector_2"] = CreateTestSparseVector(50U, 7),
                 }
             },
-            payload: 2);
+            payload: (TestPayload) 2);
 
-        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>(){
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>()
+        {
             firstPoint,
             secondPoint,
         };
@@ -1361,7 +1369,7 @@ internal partial class PointsCrudTests
 
         var readPointsResult = await _qdrantHttpClient.GetPoints(
             TestCollectionName,
-            upsertPoints.Select(p=>p.Id),
+            upsertPoints.Select(p => p.Id),
             PayloadPropertiesSelector.All,
             CancellationToken.None,
             withVector: true);
@@ -1386,7 +1394,8 @@ internal partial class PointsCrudTests
 
                 if (readPointVectors[upsertPointVector.Key].VectorKind != VectorKind.Sparse)
                 {
-                    var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsDenseVector().VectorValues;
+                    var readPointNamedVectorValue =
+                        readPointVectors[upsertPointVector.Key].AsDenseVector().VectorValues;
                     var upsertPointNamedVectorValue = upsertPointVector.Value.AsDenseVector().VectorValues;
 
                     readPointNamedVectorValue.Should().Equal(upsertPointNamedVectorValue);
@@ -1430,7 +1439,7 @@ internal partial class PointsCrudTests
                 {
                     Vectors = CreateTestMultivector(vectorLength, 2, VectorDataType.Float32)
                 },
-                payload: 1);
+                payload: (TestPayload) 1);
 
         UpsertPointsRequest.UpsertPoint secondPoint = new(
             id: 2,
@@ -1438,9 +1447,10 @@ internal partial class PointsCrudTests
             {
                 Vectors = CreateTestMultivector(vectorLength, 3, VectorDataType.Float32)
             },
-            payload: 2);
+            payload: (TestPayload) 2);
 
-        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>(){
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>()
+        {
             firstPoint,
             secondPoint,
         };
@@ -1456,7 +1466,7 @@ internal partial class PointsCrudTests
 
         var readPointsResult = await _qdrantHttpClient.GetPoints(
             TestCollectionName,
-            upsertPoints.Select(p=>p.Id),
+            upsertPoints.Select(p => p.Id),
             PayloadPropertiesSelector.All,
             CancellationToken.None,
             withVector: true);
@@ -1518,7 +1528,7 @@ internal partial class PointsCrudTests
         UpsertPointsRequest.UpsertPoint firstPoint =
             new(
                 id: 1,
-                vector : new NamedVectors()
+                vector: new NamedVectors()
                 {
                     Vectors = new Dictionary<string, VectorBase>()
                     {
@@ -1527,7 +1537,7 @@ internal partial class PointsCrudTests
                         ["Vector_3"] = CreateTestMultivector(20, 5, VectorDataType.Float32),
                     }
                 },
-                payload : 1);
+                payload: (TestPayload) 1);
 
         UpsertPointsRequest.UpsertPoint secondPoint = new(
             id: 2,
@@ -1540,9 +1550,10 @@ internal partial class PointsCrudTests
                     ["Vector_3"] = CreateTestMultivector(20, 10, VectorDataType.Float32),
                 }
             },
-            payload: 2);
+            payload: (TestPayload) 2);
 
-        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>(){
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>()
+        {
             firstPoint,
             secondPoint,
         };
@@ -1558,7 +1569,7 @@ internal partial class PointsCrudTests
 
         var readPointsResult = await _qdrantHttpClient.GetPoints(
             TestCollectionName,
-            upsertPoints.Select(p=>p.Id),
+            upsertPoints.Select(p => p.Id),
             PayloadPropertiesSelector.All,
             CancellationToken.None,
             withVector: true);
@@ -1595,12 +1606,13 @@ internal partial class PointsCrudTests
                 }
                 else if (readPointVectorKind == VectorKind.Dense)
                 {
-                    var readPointNamedVectorValue = readPointVectors[upsertPointVector.Key].AsDenseVector().VectorValues;
+                    var readPointNamedVectorValue =
+                        readPointVectors[upsertPointVector.Key].AsDenseVector().VectorValues;
                     var upsertPointNamedVectorValue = upsertPointVector.Value.AsDenseVector().VectorValues;
 
                     readPointNamedVectorValue.Should().Equal(upsertPointNamedVectorValue);
                 }
-                else if(readPointVectorKind == VectorKind.Multi)
+                else if (readPointVectorKind == VectorKind.Multi)
                 {
                     var readPointNamedMultiVectorValue = readPointVectors[upsertPointVector.Key].AsMultiVector();
 
@@ -1642,7 +1654,7 @@ internal partial class PointsCrudTests
                 {
                     Vectors = CreateTestMultivector(vectorLength, 2, VectorDataType.Float16)
                 },
-                payload: 1);
+                payload: (TestPayload) 1);
 
         UpsertPointsRequest.UpsertPoint secondPoint = new(
             id: 2,
@@ -1650,17 +1662,18 @@ internal partial class PointsCrudTests
             {
                 Vectors = CreateTestMultivector(vectorLength, 3, VectorDataType.Float16)
             },
-            payload: 2);
+            payload: (TestPayload) 2);
 
         // when we have a collection configured for multivectors single vectors get
         // automatically converted to multivectors
 
         UpsertPointsRequest.UpsertPoint thirdPoint = new(
             id: 3,
-            vector: new DenseVector(){
+            vector: new DenseVector()
+            {
                 VectorValues = CreateTestVector(vectorLength, VectorDataType.Float16)
             },
-            payload: 3);
+            payload: (TestPayload) 3);
 
         var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>()
         {
@@ -1744,7 +1757,7 @@ internal partial class PointsCrudTests
 
         deletePointsByPointIdResult.Status.IsSuccess.Should().BeTrue();
         deletePointsByPointIdResult.Result.Status.Should().Be(QdrantOperationStatus.Completed);
-        
+
         var deletePointsByFilterResult = await _qdrantHttpClient.DeletePoints(
             TestCollectionName,
             // We use only the id filter for the test purposes, but we can actually use any filter
@@ -1753,16 +1766,14 @@ internal partial class PointsCrudTests
 
         deletePointsByFilterResult.Status.IsSuccess.Should().BeTrue();
         deletePointsByFilterResult.Result.Status.Should().Be(QdrantOperationStatus.Completed);
-        
+
         var readPointsResult = await _qdrantHttpClient.GetPoints(
             TestCollectionName,
             pointsByPointIds.Keys.Select(PointId.Integer),
             PayloadPropertiesSelector.All,
             CancellationToken.None,
             withVector: true);
-
         
-
         readPointsResult.Status.IsSuccess.Should().BeTrue();
         readPointsResult.Result.Length.Should().Be(vectorCount - pointsToDeleteCount);
 

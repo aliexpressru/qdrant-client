@@ -339,7 +339,8 @@ public class QdrantTestsBase
                     requiredClusterNode,
                     "Unknown cluster node")
             },
-            useHttps: false);
+            useHttps: false,
+            enableCompression: true);
 
     internal async
         Task<(IReadOnlyList<UpsertPointsRequest.UpsertPoint> Points,
@@ -463,7 +464,7 @@ public class QdrantTestsBase
                 {
                     Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
-                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), "test"),
+                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), (TestPayload)"test"),
                     },
                     ShardKey = TestShardKey1
                 },
@@ -475,7 +476,7 @@ public class QdrantTestsBase
                 {
                     Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
-                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), "test2"),
+                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), (TestPayload) "test2"),
                     },
                     ShardKey = TestShardKey2
                 },
@@ -502,7 +503,7 @@ public class QdrantTestsBase
                 {
                     Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
-                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), "test"),
+                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), (TestPayload) "test"),
                     },
                     ShardKey = TestShardKey1
                 },
@@ -542,9 +543,7 @@ public class QdrantTestsBase
 
     protected void OnlyIfVersionAfterOrEqual(string versionInclusive, string reason)
     {
-        var version = Version.Parse(versionInclusive);
-        
-        if (QdrantVersion >= version)
+        if (IsVersionAfterOrEqual(versionInclusive))
         {
             return;
         }
@@ -555,14 +554,26 @@ public class QdrantTestsBase
 
     protected void OnlyIfVersionBefore(string versionExclusive, string reason)
     {
-        var version = Version.Parse(versionExclusive);
-        
-        if (QdrantVersion < version)
+        if (IsVersionBefore(versionExclusive))
         {
             return;
         }
 
         Assert.Ignore(
             $"Test ignored because Qdrant version {QdrantVersion} is higher than required {versionExclusive}. Reason: {reason}");
+    }
+    
+    protected bool IsVersionBefore(string versionExclusive)
+    {
+        var version = Version.Parse(versionExclusive);
+        
+        return QdrantVersion < version;
+    }
+
+    protected bool IsVersionAfterOrEqual(string versionInclusive)
+    {
+        var version = Version.Parse(versionInclusive);
+
+        return QdrantVersion >= version;
     }
 }

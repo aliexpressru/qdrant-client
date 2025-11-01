@@ -11,12 +11,10 @@ internal sealed class PayloadJsonConverter : JsonConverter<Payload>
         using var jsonDoc = JsonDocument.ParseValue(ref reader);
         
         var readString = jsonDoc.RootElement.GetRawText();
-        if (readString.Equals(Payload.EmptyString, StringComparison.OrdinalIgnoreCase))
-        {
-            return Payload.Empty;
-        }
-
-        return new Payload(readString);
+        
+        return readString.Equals(Payload.EmptyString, StringComparison.OrdinalIgnoreCase)
+            ? Payload.Empty
+            : new Payload(readString);
     }
 
     public override void Write(Utf8JsonWriter writer, Payload value, JsonSerializerOptions options)

@@ -9,9 +9,9 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 /// Represents the point payload.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public class Payload
+public sealed class Payload
 {
-    // To reduce memory footprint caused by storing JsonObject when not needed we use lazy parsing
+    // To reduce memory footprint caused by storing JsonObject when it is not needed we don't populate this right away
     private JsonObject _parsedPayloadJson;
     
     /// <summary>

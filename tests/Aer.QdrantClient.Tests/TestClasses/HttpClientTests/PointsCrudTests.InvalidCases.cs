@@ -4,6 +4,7 @@ using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Helpers;
+using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
@@ -160,7 +161,7 @@ internal partial class PointsCrudTests
                         new(
                             PointId.Integer(1),
                             CreateTestVector(1),
-                            "test"
+                            (TestPayload) "test"
                         )
                     }
                 },
@@ -185,7 +186,7 @@ internal partial class PointsCrudTests
                         new(
                             PointId.Integer(1),
                             CreateTestVector(1),
-                            "test"
+                            "this is an invalid string payload" // Deliberately not casting to TestPayload 
                         )
                     }
                 },

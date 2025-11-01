@@ -211,10 +211,8 @@ internal class PointsScrollTests : QdrantTestsBase
             var expectedPointId = upsertPointsByPointIds[readPointId].Id.As<IntegerPointId>().Id;
 
             readPointId.Should().Be(expectedPointId);
-            
-            var readPayloadString = readPoint.Payload;
-            
-            readPayloadString.Should().Be(Payload.EmptyString);
+
+            readPoint.Payload.RawPayloadString.Should().Be(Payload.EmptyString);
             readPoint.Payload.IsEmpty.Should().BeTrue();
         }
     }
@@ -865,7 +863,7 @@ internal class PointsScrollTests : QdrantTestsBase
                         ["Vector_3"] = CreateTestVector(50U),
                     }
                 },
-                payload: 1);
+                payload: (TestPayload) 1);
 
         UpsertPointsRequest.UpsertPoint secondPoint = new(
             id: 2,
@@ -877,7 +875,7 @@ internal class PointsScrollTests : QdrantTestsBase
                     ["Vector_3"] = CreateTestVector(50U),
                 }
             },
-            payload: 2);
+            payload: (TestPayload) 2);
 
         UpsertPointsRequest.UpsertPoint thirdPoint = new(
             id: 3,
@@ -888,7 +886,7 @@ internal class PointsScrollTests : QdrantTestsBase
                     ["Vector_1"] = CreateTestVector(100U),
                 }
             },
-            payload: 3);
+            payload: (TestPayload) 3);
 
         var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>()
         {

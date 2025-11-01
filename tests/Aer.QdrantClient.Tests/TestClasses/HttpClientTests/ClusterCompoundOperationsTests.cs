@@ -129,7 +129,7 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
                 new(
                     PointId.Integer((ulong) i),
                     CreateTestVector(vectorSize),
-                    i
+                    (TestPayload)i
                 )
             );
         }

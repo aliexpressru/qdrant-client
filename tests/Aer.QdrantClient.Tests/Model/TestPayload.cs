@@ -17,7 +17,7 @@ internal class TestPayload
         && DateTimeValue.HasValue;
 
     #region Operators
-
+    
     public static implicit operator TestPayload(string value)
     {
         return new TestPayload()
