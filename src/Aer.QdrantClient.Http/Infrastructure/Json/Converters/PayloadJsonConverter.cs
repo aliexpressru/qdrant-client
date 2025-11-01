@@ -21,17 +21,16 @@ internal sealed class PayloadJsonConverter : JsonConverter<Payload>
 
     public override void Write(Utf8JsonWriter writer, Payload value, JsonSerializerOptions options)
     {
-        writer.WriteStringValue(value.RawPayloadString);
-        // if (value is null || value.IsEmpty)
-        // {
-        //     // Write empty object if payload is null or empty
-        //     writer.WriteStartObject();
-        //     writer.WriteEndObject();
-        //     
-        //     return;
-        // }
-        //
-        // // just serialize as object
-        // JsonSerializer.Serialize(writer, value, JsonSerializerConstants.DefaultSerializerOptions);
+        if (value is null
+            || value.IsEmpty)
+        {
+            // Write empty object if payload is null or empty
+            writer.WriteStartObject();
+            writer.WriteEndObject();
+
+            return;
+        }
+        
+        value.RawPayload.WriteTo(writer, options);
     }
 }
