@@ -318,7 +318,7 @@ public class QdrantTestsBase
     protected QdrantClientSettings GetQdrantClientSettings(string clientName = null)
     {
         var qdrantSettings = ServiceProvider.GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>()
-            .Get(clientName ?? ServiceCollectionExtensions.DefaultHttpClientName);
+            .Get(clientName ?? ServiceCollectionExtensions.DefaultQdrantHttpClientName);
 
         return qdrantSettings;
     }
