@@ -24,7 +24,6 @@ public class Payload
     /// </summary>
     public static Payload Empty { get; } = new()
     {
-        _parsedPayloadJson = new JsonObject(),
         RawPayloadString = EmptyString,
     };
 

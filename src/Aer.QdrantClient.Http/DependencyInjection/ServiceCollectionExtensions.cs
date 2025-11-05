@@ -2,6 +2,7 @@ using Aer.QdrantClient.Http.Abstractions;
 using Aer.QdrantClient.Http.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
 using Polly;
@@ -95,6 +96,10 @@ public static class ServiceCollectionExtensions
         var actualClientName = clientName ?? DefaultHttpClientName;
         
         services.Configure<QdrantClientSettings>(actualClientName, configuration.GetSection(clientConfigurationSectionName));
+        
+        // Remove when multi-client support lands
+        services.Configure<QdrantClientSettings>(configuration.GetSection(clientConfigurationSectionName));
+        services.TryAddSingleton(serviceProvider => serviceProvider.GetRequiredService<QdrantClientSettings>());
 
         if (configureQdrantClientSettings is not null)
         {
