@@ -26,7 +26,7 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
         _qdrantHttpClient = ServiceProvider.GetRequiredService<QdrantHttpClient>();
         
         _qdrantClientSettings = ServiceProvider.GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>().Get(
-            ServiceCollectionExtensions.DefaultHttpClientName);
+            ServiceCollectionExtensions.DefaultQdrantHttpClientName);
         
         _logger = ServiceProvider.GetRequiredService<ILogger<CollectionsCompoundOperationsTests>>();
     }

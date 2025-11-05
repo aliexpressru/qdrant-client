@@ -16,7 +16,11 @@ namespace Aer.QdrantClient.Http.DependencyInjection;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
-    internal const string DefaultHttpClientName = "DefaultQdrantHttpClient";
+    /// <summary>
+    /// The default name of the Qdrant HTTP client.
+    /// Used when no explicit name is provided.
+    /// </summary>
+    public const string DefaultQdrantHttpClientName = "DefaultQdrantHttpClient";
 
     /// <summary>
     /// Adds Qdrant HTTP client to the <see cref="IServiceCollection"/> with explicitly defined settings.
@@ -46,16 +50,23 @@ public static class ServiceCollectionExtensions
         string clientName = null,
         bool registerAsInterface = false)
     {
-        var actualClientName = clientName ?? DefaultHttpClientName;
+        var actualClientName = clientName ?? DefaultQdrantHttpClientName;
         
         services.Configure(actualClientName, configureQdrantClientSettings);
-        
+
+        // Remove when multi-client support lands
+        {
+            services.Configure(configureQdrantClientSettings);
+            services.TryAddSingleton(serviceProvider =>
+                serviceProvider.GetRequiredService<IOptions<QdrantClientSettings>>().Value);
+        }
+
         AddQdrantHttpClientInternal(
             services,
             circuitBreakerStrategyOptions,
             resiliencePipelineTelemetryOptions,
             shouldSelectResiliencePipelineByAuthority: true,
-            clientName ?? DefaultHttpClientName,
+            clientName: actualClientName,
             registerAsInterface);
 
         return services;
@@ -93,13 +104,16 @@ public static class ServiceCollectionExtensions
         string clientName = null,
         bool registerAsInterface = false)
     {
-        var actualClientName = clientName ?? DefaultHttpClientName;
+        var actualClientName = clientName ?? DefaultQdrantHttpClientName;
         
         services.Configure<QdrantClientSettings>(actualClientName, configuration.GetSection(clientConfigurationSectionName));
         
         // Remove when multi-client support lands
-        services.Configure<QdrantClientSettings>(configuration.GetSection(clientConfigurationSectionName));
-        services.TryAddSingleton(serviceProvider => serviceProvider.GetRequiredService<QdrantClientSettings>());
+        {
+            services.Configure<QdrantClientSettings>(configuration.GetSection(clientConfigurationSectionName));
+            services.TryAddSingleton(serviceProvider =>
+                serviceProvider.GetRequiredService<IOptions<QdrantClientSettings>>().Value);
+        }
 
         if (configureQdrantClientSettings is not null)
         {
@@ -111,7 +125,7 @@ public static class ServiceCollectionExtensions
             circuitBreakerStrategyOptions,
             resiliencePipelineTelemetryOptions,
             shouldSelectResiliencePipelineByAuthority: true,
-            actualClientName,
+            clientName: actualClientName,
             registerInterface: registerAsInterface);
 
         return services;
