@@ -108,7 +108,8 @@ public class QdrantTestsBase
                 registerAsInterface: false
             );
         }
-        ServiceProvider = services.BuildServiceProvider();
+        
+        ServiceProvider = services.BuildServiceProvider(validateScopes: true);
     }
 
     private string GetQdrantVersionFromEnvFile()
