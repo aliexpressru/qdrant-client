@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
@@ -28,8 +27,9 @@ public sealed class UpsertPointsRequest
         public PointId Id { get; }
 
         /// <summary>
-        /// The point payload.
+        /// The point payload. May contain either any serializable object or a dictionary or an already serialized JSON string.
         /// </summary>
+        [JsonConverter(typeof(ObjectPayloadJsonConverter))]
         public object Payload { get; }
 
         /// <summary>

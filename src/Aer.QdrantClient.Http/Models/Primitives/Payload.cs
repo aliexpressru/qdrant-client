@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Aer.QdrantClient.Http.Infrastructure.Json;
@@ -69,23 +70,78 @@ public sealed class Payload
     {
         get
         {
-            var payloadObject = RawPayload;
-
             if (fieldName.Contains('.'))
-            { 
+            {
                 // Means we are trying to access a nested property. This is not supported yet
                 
                 throw new NotSupportedException($"Getting nested payload property is not supported. Requested property '{fieldName}'");
             }
 
-            if (!payloadObject.ContainsKey(fieldName))
+            if (!RawPayload.ContainsKey(fieldName))
             { 
                 throw new KeyNotFoundException($"Payload property not found: {fieldName}");
             }
 
-            var payloadProperty = GetParsedPayloadJson()[fieldName];
+            var payloadProperty = RawPayload[fieldName];
             
             return payloadProperty;
+        }
+    }
+    
+    /// <summary>
+    /// Determines whether the payload contains the specified field.
+    /// </summary>
+    /// <param name="fieldName">The field to check.</param>
+    public bool ContainsField(string fieldName)
+    {
+        if (fieldName.Contains('.'))
+        { 
+            // Means we are trying to access a nested property. This is not supported yet
+            
+            return false;
+        }
+
+        return RawPayload.ContainsKey(fieldName);
+    }
+
+    /// <summary>
+    /// Tries to get the value of the specified payload field.
+    /// If the field is not found or can't be converted to specified type - returns <c>false</c>.
+    /// </summary>
+    /// <param name="fieldName">The name of the field to get value for.</param>
+    /// <param name="defaultValue">The default value to return if field is not found.</param>
+    /// <typeparam name="T">The type of the value to get.</typeparam>
+    public bool TryGetValue<T>(string fieldName, out T value, T defaultValue = default)
+    {
+        value = defaultValue;
+
+        if (fieldName.Contains('.'))
+        { 
+            // Means we are trying to access a nested property. This is not supported yet
+            
+            return false;
+        }
+
+        if (!RawPayload.ContainsKey(fieldName))
+        { 
+            return false;
+        }
+
+        var payloadField = RawPayload[fieldName];
+
+        if (payloadField is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            value = payloadField.GetValue<T>();
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -94,6 +150,9 @@ public sealed class Payload
     /// </summary>
     /// <param name="fieldName">The name of the field to get value for.</param>
     /// <typeparam name="T">The type of the value to get.</typeparam>
+    /// <exception cref="KeyNotFoundException">
+    /// Occurs when specified field is not found in payload json.
+    /// </exception>
     public T GetValue<T>(string fieldName) => this[fieldName].GetValue<T>();
 
     /// <summary>
@@ -106,6 +165,7 @@ public sealed class Payload
     /// Default is <c>true</c>.
     /// </param>
     /// <typeparam name="T">The type of the deserialized payload object.</typeparam>
+    [OverloadResolutionPriority(1)]
     public T As<T>(bool throwIfEmpty = true)
         where T : class
     {

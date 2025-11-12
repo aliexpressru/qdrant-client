@@ -15,8 +15,9 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 public sealed class OverwritePointsPayloadRequest
 {
     /// <summary>
-    /// The point payload.
+    /// The point payload. May contain either any serializable object or a dictionary or an already serialized JSON string.
     /// </summary>
+    [JsonConverter(typeof(ObjectPayloadJsonConverter))]
     public object Payload { get; }
 
     /// <summary>
