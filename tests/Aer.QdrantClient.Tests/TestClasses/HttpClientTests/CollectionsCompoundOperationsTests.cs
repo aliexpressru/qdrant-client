@@ -8,7 +8,6 @@ using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Model;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
@@ -24,9 +23,8 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
         Initialize();
 
         _qdrantHttpClient = ServiceProvider.GetRequiredService<QdrantHttpClient>();
-        
-        _qdrantClientSettings = ServiceProvider.GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>().Get(
-            ServiceCollectionExtensions.DefaultQdrantHttpClientName);
+
+        _qdrantClientSettings = GetQdrantClientSettings(ServiceCollectionExtensions.DefaultQdrantHttpClientName);
         
         _logger = ServiceProvider.GetRequiredService<ILogger<CollectionsCompoundOperationsTests>>();
     }

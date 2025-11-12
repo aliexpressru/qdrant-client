@@ -108,7 +108,8 @@ public class QdrantTestsBase
                 registerAsInterface: false
             );
         }
-        ServiceProvider = services.BuildServiceProvider();
+        
+        ServiceProvider = services.BuildServiceProvider(validateScopes: true);
     }
 
     private string GetQdrantVersionFromEnvFile()
@@ -317,7 +318,8 @@ public class QdrantTestsBase
 
     protected QdrantClientSettings GetQdrantClientSettings(string clientName = null)
     {
-        var qdrantSettings = ServiceProvider.GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>()
+        var qdrantSettings = ServiceProvider.CreateScope().ServiceProvider
+            .GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>()
             .Get(clientName ?? ServiceCollectionExtensions.DefaultQdrantHttpClientName);
 
         return qdrantSettings;

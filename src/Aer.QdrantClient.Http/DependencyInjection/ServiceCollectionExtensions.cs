@@ -141,8 +141,11 @@ public static class ServiceCollectionExtensions
     {
         Action<IServiceProvider, HttpClient> configureClient = (serviceProvider, client) =>
         {
-            var qdrantSettings =
-                serviceProvider.GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>().Get(clientName);
+            var scopedServiceProvider = serviceProvider.CreateScope().ServiceProvider;
+            
+            var qdrantSettings = scopedServiceProvider
+                .GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>()
+                .Get(clientName);
 
             client.BaseAddress = new Uri(qdrantSettings.HttpAddress);
             client.Timeout = qdrantSettings.HttpClientTimeout;
@@ -158,8 +161,11 @@ public static class ServiceCollectionExtensions
 
         httpClientBuilder.ConfigurePrimaryHttpMessageHandler(serviceProvider =>
         {
-            var qdrantSettings =
-                serviceProvider.GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>().Get(clientName);
+            var scopedServiceProvider = serviceProvider.CreateScope().ServiceProvider;
+
+            var qdrantSettings = scopedServiceProvider
+                .GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>()
+                .Get(clientName);
             
             var handler = QdrantHttpClient.CreateHttpClientHandler(
                 isCompressionEnabled: qdrantSettings.EnableCompression,
