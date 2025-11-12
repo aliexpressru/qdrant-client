@@ -176,8 +176,8 @@ internal partial class PointsCrudTests
     [Test]
     public async Task UpsertPoint_InvalidPayloadType()
     {
-        var upsertPointsResult =
-             await _qdrantHttpClient.UpsertPoints(
+        var upsertPointsAct = async () =>
+            await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
@@ -192,8 +192,8 @@ internal partial class PointsCrudTests
                 },
                 CancellationToken.None);
 
-        upsertPointsResult.Status.IsSuccess.Should().BeFalse();
-        upsertPointsResult.Status.GetErrorMessage().Should().Contain("Format error in JSON body: invalid type: string");
+        await upsertPointsAct.Should().ThrowAsync<QdrantJsonSerializationException>()
+            .Where(e => e.Message.Contains("Invalid json value"));
     }
 
     [Test]

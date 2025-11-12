@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Exceptions;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -22,7 +23,16 @@ internal sealed class ObjectPayloadJsonConverter : JsonConverter<object>
                 return;
             
             case string str:
-                writer.WriteRawValue(str);
+                try
+                {
+                    writer.WriteRawValue(str);
+                }
+                catch (JsonException ex)
+                {
+                    throw new QdrantJsonSerializationException(
+                        $"Invalid json value: {value}. Error: {ex.Message}");
+                }
+
                 return;
 
             default:
