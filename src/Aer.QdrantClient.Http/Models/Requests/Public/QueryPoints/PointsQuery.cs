@@ -87,10 +87,10 @@ public abstract class PointsQuery
         public sealed class RecommendPointsQueryUnit
         {
             [JsonConverter(typeof(PointIdOrQueryVectorCollectionJsonConverter))]
-            public IEnumerable<PointIdOrQueryVector> Positive { get; init; }
+            public ICollection<PointIdOrQueryVector> Positive { get; init; }
 
             [JsonConverter(typeof(PointIdOrQueryVectorCollectionJsonConverter))]
-            public IEnumerable<PointIdOrQueryVector> Negative { get; init; }
+            public ICollection<PointIdOrQueryVector> Negative { get; init; }
 
             /// <summary>
             /// How to use positive and negative examples to find the results.
@@ -101,8 +101,8 @@ public abstract class PointsQuery
         public RecommendPointsQueryUnit Recommend { get; }
 
         internal RecommendPointsQuery(
-            IEnumerable<PointIdOrQueryVector> positive,
-            IEnumerable<PointIdOrQueryVector> negative,
+            ICollection<PointIdOrQueryVector> positive,
+            ICollection<PointIdOrQueryVector> negative,
             RecommendStrategy? strategy
         )
         {
