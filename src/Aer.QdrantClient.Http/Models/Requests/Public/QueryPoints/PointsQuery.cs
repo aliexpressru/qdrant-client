@@ -175,6 +175,7 @@ public abstract class PointsQuery
 
     internal sealed class SampleQuery : PointsQuery
     {
+        [SuppressMessage("ReSharper", "UnusedMember.Global", Justification = "Required for serialization")]
         public string Sample { get; } = "random";
     }
     
