@@ -23,7 +23,14 @@ public class ServiceMethodsTests : QdrantTestsBase
     [SetUp]
     public async Task BeforeEachTest()
     {
-        await ResetStorage();
+        await ResetStorage(_qdrantHttpClient);
+        
+        if(IsVersionBefore("1.16.0"))
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            await _qdrantHttpClient.SetLockOptions(areWritesDisabled: false, "Init tests", CancellationToken.None);
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
     }
 
     [Test]
@@ -169,7 +176,7 @@ public class ServiceMethodsTests : QdrantTestsBase
     {
         OnlyIfVersionBefore("1.16.0", "lock API is removed in 1.16.0");
         
-        await PrepareCollection<TestPayload>(_qdrantHttpClient, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName);
 
         var lockReason = "Writes disabled";
 
@@ -183,11 +190,11 @@ public class ServiceMethodsTests : QdrantTestsBase
 
         var upsertPointsAct = async ()=> await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points =
                 [
-                    new UpsertPointsRequest<TestPayload>.UpsertPoint(67, CreateTestVector(10), 67)
+                    new UpsertPointsRequest.UpsertPoint(67, CreateTestVector(10), (TestPayload) 67)
                 ]
             },
             CancellationToken.None);

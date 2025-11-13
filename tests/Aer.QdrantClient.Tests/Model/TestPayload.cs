@@ -1,8 +1,6 @@
-using Aer.QdrantClient.Http.Models.Primitives;
-
 namespace Aer.QdrantClient.Tests.Model;
 
-internal class TestPayload : Payload
+internal class TestPayload
 {
     public string Text { get; set; }
 
@@ -19,7 +17,7 @@ internal class TestPayload : Payload
         && DateTimeValue.HasValue;
 
     #region Operators
-
+    
     public static implicit operator TestPayload(string value)
     {
         return new TestPayload()

@@ -18,13 +18,12 @@ public partial interface IQdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="ordering">The upsert operation ordering settings.</param>
-    /// <typeparam name="TPayload">The type of the point payload.</typeparam>
-    Task<PointsOperationResponse> UpsertPoints<TPayload>(
+    Task<PointsOperationResponse> UpsertPoints(
         string collectionName,
-        UpsertPointsRequest<TPayload> upsertPoints,
+        UpsertPointsRequest upsertPoints,
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
-        OrderingType? ordering = null) where TPayload : class;
+        OrderingType? ordering = null);
 
     /// <summary>
     /// Set payload keys values for points.
@@ -35,14 +34,12 @@ public partial interface IQdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="ordering">The batch update operation ordering settings.</param>
-    /// <typeparam name="TPayload">The type of the point payload.</typeparam>
-    Task<PointsOperationResponse> SetPointsPayload<TPayload>(
+    Task<PointsOperationResponse> SetPointsPayload(
         string collectionName,
-        SetPointsPayloadRequest<TPayload> setPointsPayload,
+        SetPointsPayloadRequest setPointsPayload,
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
-        OrderingType? ordering = null)
-        where TPayload : class;
+        OrderingType? ordering = null);
 
     /// <summary>
     /// Replace full payload of points with new one.
@@ -52,14 +49,12 @@ public partial interface IQdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="ordering">The batch update operation ordering settings.</param>
-    /// <typeparam name="TPayload">The type of the point payload.</typeparam>
-    Task<PointsOperationResponse> OverwritePointsPayload<TPayload>(
+    Task<PointsOperationResponse> OverwritePointsPayload(
         string collectionName,
-        OverwritePointsPayloadRequest<TPayload> overwritePointsPayload,
+        OverwritePointsPayloadRequest overwritePointsPayload,
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
-        OrderingType? ordering = null)
-        where TPayload : class;
+        OrderingType? ordering = null);
     
     /// <summary>
     /// Delete points by specified ids.

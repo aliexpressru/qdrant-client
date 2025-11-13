@@ -17,8 +17,8 @@ namespace Aer.QdrantClient.Http.DependencyInjection;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// The default Qdrant HTTP client name.
-    /// Used when no client name is specified.
+    /// The default name of the Qdrant HTTP client.
+    /// Used when no explicit name is provided.
     /// </summary>
     public const string DefaultQdrantHttpClientName = "DefaultQdrantHttpClient";
 
@@ -53,14 +53,14 @@ public static class ServiceCollectionExtensions
         var actualClientName = clientName ?? DefaultQdrantHttpClientName;
         
         services.Configure(actualClientName, configureQdrantClientSettings);
-        
+
         // Remove when multi-client support lands
         {
             services.Configure(configureQdrantClientSettings);
             services.TryAddSingleton(serviceProvider =>
                 serviceProvider.GetRequiredService<IOptions<QdrantClientSettings>>().Value);
         }
-        
+
         AddQdrantHttpClientInternal(
             services,
             circuitBreakerStrategyOptions,
@@ -107,7 +107,7 @@ public static class ServiceCollectionExtensions
         var actualClientName = clientName ?? DefaultQdrantHttpClientName;
         
         services.Configure<QdrantClientSettings>(actualClientName, configuration.GetSection(clientConfigurationSectionName));
-
+        
         // Remove when multi-client support lands
         {
             services.Configure<QdrantClientSettings>(configuration.GetSection(clientConfigurationSectionName));

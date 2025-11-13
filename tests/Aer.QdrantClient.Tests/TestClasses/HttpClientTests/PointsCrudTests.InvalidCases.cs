@@ -154,14 +154,14 @@ internal partial class PointsCrudTests
         var upsertPointsToNonExistentCollectionResult
             = await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
-                new UpsertPointsRequest<TestPayload>()
+                new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+                    Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
                         new(
                             PointId.Integer(1),
                             CreateTestVector(1),
-                            "test"
+                            (TestPayload) "test"
                         )
                     }
                 },
@@ -176,23 +176,24 @@ internal partial class PointsCrudTests
     [Test]
     public async Task UpsertPoint_InvalidPayloadType()
     {
-        var upsertPointsToNonExistentCollectionAct
-            = async () => await _qdrantHttpClient.UpsertPoints(
+        var upsertPointsAct = async () =>
+            await _qdrantHttpClient.UpsertPoints(
                 TestCollectionName,
-                new UpsertPointsRequest<string>()
+                new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest<string>.UpsertPoint>()
+                    Points = new List<UpsertPointsRequest.UpsertPoint>()
                     {
                         new(
                             PointId.Integer(1),
                             CreateTestVector(1),
-                            "test"
+                            "this is an invalid string payload" // Deliberately not casting to TestPayload 
                         )
                     }
                 },
                 CancellationToken.None);
 
-        await upsertPointsToNonExistentCollectionAct.Should().ThrowAsync<QdrantInvalidPayloadTypeException>();
+        await upsertPointsAct.Should().ThrowAsync<QdrantJsonSerializationException>()
+            .Where(e => e.Message.Contains("Invalid json value"));
     }
 
     [Test]

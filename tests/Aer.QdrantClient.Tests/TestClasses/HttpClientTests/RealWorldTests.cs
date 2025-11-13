@@ -109,11 +109,11 @@ internal class RealWorldTests : QdrantTestsBase
 
         (await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<object>()
+            new UpsertPointsRequest()
             {
                 Points =
                 [
-                    new UpsertPointsRequest<object>.UpsertPoint(PointId.NewGuid(), vector, payload)
+                    new UpsertPointsRequest.UpsertPoint(PointId.NewGuid(), vector, payload)
                 ]
             },
             CancellationToken.None)).EnsureSuccess();

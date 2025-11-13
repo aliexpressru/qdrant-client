@@ -4,7 +4,6 @@ using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
-using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots;
 
@@ -106,7 +105,7 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
     [Test]
     public async Task ListSnapshots_ExistingCollectionNoSnapshotsYet()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClientSingleNode, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClientSingleNode, TestCollectionName);
 
         var listSnapshotsResult = await _qdrantHttpClientSingleNode.ListCollectionSnapshots(
             TestCollectionName,
@@ -119,7 +118,7 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
     [Test]
     public async Task CreateSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClientSingleNode, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClientSingleNode, TestCollectionName);
 
         var createSnapshotResult =
             await _qdrantHttpClientSingleNode.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None);
@@ -142,7 +141,7 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
     [Test]
     public async Task ListSnapshots()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClientSingleNode, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClientSingleNode, TestCollectionName);
 
         // create first snapshot
 
@@ -210,7 +209,7 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
     [Test]
     public async Task DeleteSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClientSingleNode, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClientSingleNode, TestCollectionName);
 
         // create first snapshot and delete it
 
@@ -286,7 +285,7 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
     [Test]
     public async Task DownloadSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClientSingleNode, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClientSingleNode, TestCollectionName);
 
         var createSnapshotResult =
             (await _qdrantHttpClientSingleNode.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None))
@@ -326,7 +325,7 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
         // This test proves that deleting collection does not delete snapshots (which is fair enough)!
         // And if we create collection with the same name again we will be able to download previous snapshot
 
-        await PrepareCollection<TestPayload>(_qdrantHttpClientSingleNode, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClientSingleNode, TestCollectionName);
 
         var createSnapshotResult =
             (await _qdrantHttpClientSingleNode.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None))
@@ -382,7 +381,7 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
     [Test]
     public async Task RecoverFromDeletedSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClientSingleNode, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClientSingleNode, TestCollectionName);
 
         var createSnapshotResult =
             (await _qdrantHttpClientSingleNode.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None))
@@ -417,7 +416,7 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
     {
         var expectedVectorCount = 50;
         
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
                 _qdrantHttpClientSingleNode,
                 TestCollectionName,
                 vectorCount: expectedVectorCount);
@@ -474,7 +473,7 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
     [Test]
     public async Task RecoverFromUploadedSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClientSingleNode, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClientSingleNode, TestCollectionName);
 
         // Create and download snapshot
 

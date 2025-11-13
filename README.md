@@ -73,7 +73,7 @@ var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
 
 ```csharp
 var upsertPoints = Enumerable.Range(0, 100).Select(
-    i => new UpsertPointsRequest<TestPayload>.UpsertPoint(
+    i => new UpsertPointsRequest.UpsertPoint(
         PointId.Integer((ulong) i),
         Enumerable.Range(0, 128)
             .Select(_ => float.CreateTruncating(Random.Shared.NextDouble()))
@@ -88,7 +88,7 @@ var upsertPoints = Enumerable.Range(0, 100).Select(
 
 var upsertPointsResult = await _qdrantHttpClient.UpsertPoints(
     "my_collection",
-    new UpsertPointsRequest<TestPayload>()
+    new UpsertPointsRequest()
     {
         Points = upsertPoints
     },
@@ -174,7 +174,7 @@ Here we are using typed builders for building filters for typed payload.
 Conditions are built using `Q` (from Qdrant or Query) and `Q<TPayload>` condition builders.
 Top level filter should contain only `Must`, `MustNot` or `Should` condition groups.
 Result if any call on `Q` or `Q<TPayload>` is implicitly convertible to `QdrantFilter`, that is accepted everywhere the filter is expected, for ease of use.
-`QdrantFilter` can be directly directly using `QdrantFilter.Create()` factory method.
+`QdrantFilter` can be created directly using `QdrantFilter.Create()` factory method.
 
 #### Non-generic condition builder `Q`
 
@@ -274,7 +274,7 @@ In addition to combining filters explicitly, the more terse combination is possi
     }
     ```
 
-- `|` combines two conditions using `Should` condiiton group. Nested `Should` groups are automatically unwrapped.
+- `|` combines two conditions using `Should` condition group. Nested `Should` groups are automatically unwrapped.
 
     ```csharp
     Q.Must(
@@ -311,7 +311,7 @@ In addition to combining filters explicitly, the more terse combination is possi
     }
     ```
 
-- `&` combines two conditions using `Must` condiiton group. Nested `Must` groups are automatically unwrapped.
+- `&` combines two conditions using `Must` condition group. Nested `Must` groups are automatically unwrapped.
 
     ```csharp
     Q.MustNot(

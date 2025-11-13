@@ -254,19 +254,19 @@ public class ClusterTests : QdrantTestsBase
         createSecondShardKey.Status.IsSuccess.Should().BeTrue();
         createSecondShardKey.Result.Should().BeTrue();
 
-        UpsertPointsRequest<TestPayload>.UpsertPoint firstShardPoint = new(
+        UpsertPointsRequest.UpsertPoint firstShardPoint = new(
             id: 1,
             vector: CreateTestVector(vectorSize),
-            payload: 1);
+            payload: (TestPayload)1);
 
-        UpsertPointsRequest<TestPayload>.UpsertPoint secondShardPoint = new(
+        UpsertPointsRequest.UpsertPoint secondShardPoint = new(
             id: 2,
             vector: CreateTestVector(vectorSize),
-            payload: 2);
+            payload: (TestPayload) 2);
 
         var upsertOnFirstShardResponse = await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points =
                 [
@@ -278,7 +278,7 @@ public class ClusterTests : QdrantTestsBase
 
         var upsertOnSecondShardResponse = await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points =
                 [

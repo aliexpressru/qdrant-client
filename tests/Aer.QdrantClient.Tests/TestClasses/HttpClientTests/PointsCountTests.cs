@@ -30,7 +30,7 @@ public class PointsCountTests : QdrantTestsBase
     {
         var vectorCount = 10;
 
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName,
             vectorCount: vectorCount);
@@ -53,7 +53,7 @@ public class PointsCountTests : QdrantTestsBase
     {
         var vectorCount = 10;
 
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName,
             vectorCount: vectorCount);

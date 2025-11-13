@@ -122,21 +122,21 @@ public class ClusterCompoundOperationsTests : QdrantTestsBase
 
         var vectorCount = 10;
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
         for (int i = 0; i < vectorCount; i++)
         {
             upsertPoints.Add(
                 new(
                     PointId.Integer((ulong) i),
                     CreateTestVector(vectorSize),
-                    i
+                    (TestPayload)i
                 )
             );
         }
 
         (await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },

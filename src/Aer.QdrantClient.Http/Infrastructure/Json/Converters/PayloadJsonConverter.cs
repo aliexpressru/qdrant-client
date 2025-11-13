@@ -11,29 +11,24 @@ internal sealed class PayloadJsonConverter : JsonConverter<Payload>
         using var jsonDoc = JsonDocument.ParseValue(ref reader);
         
         var readString = jsonDoc.RootElement.GetRawText();
-        if (readString.Equals(Payload.EmptyString, StringComparison.OrdinalIgnoreCase))
-        {
-            return Payload.Empty;
-        }
-
-        return new Payload()
-        {
-            RawPayloadString = readString
-        };
+        
+        return readString.Equals(Payload.EmptyString, StringComparison.OrdinalIgnoreCase)
+            ? Payload.Empty
+            : new Payload(readString);
     }
 
     public override void Write(Utf8JsonWriter writer, Payload value, JsonSerializerOptions options)
     {
-        if (value is null || value.IsEmpty)
+        if (value is null
+            || value.IsEmpty)
         {
             // Write empty object if payload is null or empty
             writer.WriteStartObject();
             writer.WriteEndObject();
-            
+
             return;
         }
-
-        // just serialize as object
-        JsonSerializer.Serialize(writer, value, JsonSerializerConstants.DefaultSerializerOptions);
+        
+        value.RawPayload.WriteTo(writer, options);
     }
 }

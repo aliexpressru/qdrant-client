@@ -30,7 +30,7 @@ public class PointsQueryTests : QdrantTestsBase
     [Test]
     public async Task PrefetchWithoutQuery()
     {
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -63,7 +63,7 @@ public class PointsQueryTests : QdrantTestsBase
     public async Task FindNearestPoints()
     {
         var (_, upsertPointsByPointIds, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -117,7 +117,7 @@ public class PointsQueryTests : QdrantTestsBase
     public async Task FindNearestPoints_WithPrefetch()
     {
         var (_, upsertPointsByPointIds, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -159,7 +159,7 @@ public class PointsQueryTests : QdrantTestsBase
     public async Task FindNearestPoints_WithOrderByViaPrefetch()
     {
         var (_, upsertPointsByPointIds, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -215,7 +215,7 @@ public class PointsQueryTests : QdrantTestsBase
     public async Task Fusion(FusionAlgorithm fusionAlgorithm)
     {
         var (_, upsertPointsByPointIds, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -257,7 +257,7 @@ public class PointsQueryTests : QdrantTestsBase
     [Test]
     public async Task Sample()
     {
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -282,7 +282,7 @@ public class PointsQueryTests : QdrantTestsBase
     [Test]
     public async Task OrderByPoints()
     {
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName);
 
@@ -334,7 +334,7 @@ public class PointsQueryTests : QdrantTestsBase
     public async Task QueryPointsBatched()
     {
         var (_, upsertPointsByPointIds, upsertPointIds) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName);
 
@@ -379,10 +379,14 @@ public class PointsQueryTests : QdrantTestsBase
 
                 expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
-                readPoint.Payload.As<TestPayload>().Integer.Should().Be(expectedPoint.Payload.Integer);
-                readPoint.Payload.As<TestPayload>().FloatingPointNumber.Should()
-                    .Be(expectedPoint.Payload.FloatingPointNumber);
-                readPoint.Payload.As<TestPayload>().Text.Should().Be(expectedPoint.Payload.Text);
+                var readPointPayload = readPoint.Payload.As<TestPayload>();
+                
+                var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
+
+                readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
+                readPointPayload.FloatingPointNumber.Should()
+                    .Be(expectedPointPayload.FloatingPointNumber);
+                readPointPayload.Text.Should().Be(expectedPointPayload.Text);
                 
                 readPoint.Score.Should().BeGreaterThan(0);
             }
