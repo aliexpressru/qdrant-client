@@ -109,6 +109,7 @@ public sealed class Payload
     /// If the field is not found or can't be converted to specified type - returns <c>false</c>.
     /// </summary>
     /// <param name="fieldName">The name of the field to get value for.</param>
+    /// <param name="value">The obtained typed value of the field if it was found and successfully converted to <typeparamref name="T"/>. <paramref name="defaultValue"/> otherwise.</param>
     /// <param name="defaultValue">The default value to return if field is not found.</param>
     /// <typeparam name="T">The type of the value to get.</typeparam>
     public bool TryGetValue<T>(string fieldName, out T value, T defaultValue = default)
