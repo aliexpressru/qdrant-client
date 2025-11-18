@@ -54,6 +54,44 @@ services.AddQdrantHttpClient(options =>
 );
 ```
 
+#### Register multiple clients
+
+To register multiple Qdrant clients in the dependency injection container use named clients feature:
+
+```csharp
+services.AddQdrantHttpClient(
+    Configuration,
+    clientConfigurationSectionName: "ConfigSecrtion_1",
+    clientName: "My client 1"
+);
+
+services.AddQdrantHttpClient(
+    Configuration,
+    clientConfigurationSectionName: "ConfigSecrtion_2",
+    clientName: "My client 2"
+);
+```
+
+Note that you can use different configuration sections for each client.
+
+Then inject `IQdrantHttpClientFactory` and create clients by name:
+
+```csharp
+public class MyService
+{
+    private readonly IQdrantHttpClient _qdrantHttpClient;
+
+    public MyService(IQdrantHttpClientFactory qdrantHttpClientFactory)
+    {
+        _qdrantHttpClient = qdrantHttpClientFactory.CreateClient("My client 1");
+    }
+}
+```
+
+Be sure to call `services.AddQdrantHttpClient` for each named client and use the same `clientName` when creating the client from the factory.
+
+**!!! When using multiple named clients feature don't inject `IQdrantHttpClient` or `IQdrantHttpClientFactory` directly as it will lead to ambiguity. !!!**
+
 ### Working with collections
 
 Once a client has been created, create a new collection

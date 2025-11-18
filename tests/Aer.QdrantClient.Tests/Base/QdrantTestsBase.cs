@@ -121,14 +121,6 @@ public class QdrantTestsBase
         {
             services.AddQdrantHttpClient(
                 Configuration,
-                configureQdrantClientSettings: config =>
-                {
-                    if (clientTimeout.HasValue)
-                    {
-                        config.HttpClientTimeout = clientTimeout.Value;
-                    }
-                },
-                circuitBreakerStrategyOptions: circuitBreakerOptions,
                 registerAsInterface: true,
                 clientName: FirstClientName
             );
