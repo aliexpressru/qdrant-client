@@ -1,23 +1,29 @@
 name: Run Tests
 
 on:
-# As per https://github.com/orgs/community/discussions/26276 - we run build\test on every push or pull request but not both
-  push:
-    branches:
-    - main
-  pull_request:
-    branches:
-    - main
+    # As per https://github.com/orgs/community/discussions/26276 - we run build\test on every push or pull request but not both
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
 
 jobs:
-  test_qdrant_1_15_5:
-    uses: ./.github/workflows/test_template.yml
-    with:
-      qdrant_image: qdrant/qdrant:v1.15.5
-      qdrant_version: 1.15.5
+    test_qdrant_1_16_x:
+        uses: ./.github/workflows/test_template.yml
+        with:
+            qdrant_image: qdrant/qdrant:v1.16.0
+            qdrant_version: 1.16.0
 
-  test_qdrant_v1_14_1:
-    uses: ./.github/workflows/test_template.yml
-    with:
-        qdrant_image: qdrant/qdrant:v1.14.1
-        qdrant_version: 1.14.1
+    test_qdrant_1_15_x:
+        uses: ./.github/workflows/test_template.yml
+        with:
+            qdrant_image: qdrant/qdrant:v1.15.5
+            qdrant_version: 1.15.5
+
+    test_qdrant_v1_14_x:
+        uses: ./.github/workflows/test_template.yml
+        with:
+            qdrant_image: qdrant/qdrant:v1.14.1
+            qdrant_version: 1.14.1

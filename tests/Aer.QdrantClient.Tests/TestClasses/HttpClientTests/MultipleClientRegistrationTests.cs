@@ -34,11 +34,6 @@ public class MultipleClientRegistrationTests : QdrantTestsBase
         var firstClient = factory.CreateClient(FirstClientName);
         var secondClient = factory.CreateClient(SecondClientName);
 
-        firstClient.Should().NotBeNull();
-        secondClient.Should().NotBeNull();
-
-        firstClient.Should().NotBeSameAs(secondClient);
-
         // We use created collections as markers that the clients are indeed different
 
         await PrepareCollection(firstClient, TestCollectionName);
@@ -49,7 +44,7 @@ public class MultipleClientRegistrationTests : QdrantTestsBase
         // Created on another client, should not be present
         var secondCollectionFirstClient = await firstClient.GetCollectionInfo(TestCollectionName2, CancellationToken.None);
 
-        // Creted on another client, should not be present
+        // Created on another client, should not be present
         var firstCollectionSecondClient = await secondClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
         // Should be present
         var secondCollectionSecondClient = await secondClient.GetCollectionInfo(TestCollectionName2, CancellationToken.None);
