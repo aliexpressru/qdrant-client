@@ -40,13 +40,17 @@ public class QdrantTestsBase
     protected const string TestPayloadFieldName2 = "test_payload_field_2";
     protected const string TestPayloadFieldName3 = "test_payload_field_3";
 
+    protected const string FirstClientName = "Client1";
+    protected const string SecondClientName = "Client2";
+    
     // shared random with constant seed to make tests repeatable
     protected static readonly Random Random = new(1567);
 
     protected void Initialize(
         bool isDisableAuthorization = false,
         CircuitBreakerStrategyOptions<HttpResponseMessage> circuitBreakerOptions = null,
-        TimeSpan? clientTimeout = null)
+        TimeSpan? clientTimeout = null,
+        bool isAddMultipleQdrantClients = false)
     {
         Environment.SetEnvironmentVariable(
             "ASPNETCORE_ENVIRONMENT",
@@ -108,7 +112,39 @@ public class QdrantTestsBase
                 registerAsInterface: false
             );
         }
-        
+
+        if (isAddMultipleQdrantClients)
+        {
+            services.AddQdrantHttpClient(
+                Configuration,
+                configureQdrantClientSettings: config =>
+                {
+                    if (clientTimeout.HasValue)
+                    {
+                        config.HttpClientTimeout = clientTimeout.Value;
+                    }
+                },
+                circuitBreakerStrategyOptions: circuitBreakerOptions,
+                registerAsInterface: true,
+                clientName: FirstClientName
+            );
+            
+            services.AddQdrantHttpClient(
+                Configuration,
+                configureQdrantClientSettings: config =>
+                {
+                    if (clientTimeout.HasValue)
+                    {
+                        config.HttpClientTimeout = clientTimeout.Value;
+                    }
+                },
+                clientConfigurationSectionName: "QdrantClientSettings_2",
+                circuitBreakerStrategyOptions: circuitBreakerOptions,
+                registerAsInterface: false,
+                clientName: SecondClientName
+            );
+        }
+
         ServiceProvider = services.BuildServiceProvider(validateScopes: true);
     }
 

@@ -1,12 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Aer.QdrantClient.Http.Models.Requests;
 
 #if  NETSTANDARD2_0
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 #endif
 
 using Aer.QdrantClient.Http.Models.Responses;
-using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http;
 
@@ -96,109 +94,5 @@ public partial class QdrantHttpClient
             retryCount: 0);
 
         return response;
-    }
-
-    /// <inheritdoc/>
-    public async Task<DefaultOperationResponse> RecoverStorageFromSnapshot(
-        string snapshotName,
-        CancellationToken cancellationToken,
-        bool isWaitForResult = true,
-        SnapshotPriority? snapshotPriority = null,
-        string snapshotChecksum = null)
-    {
-        var localSnapshotUri = new Uri($"file:///qdrant/snapshots/{snapshotName}");
-    
-        return await RecoverStorageFromSnapshot(
-            localSnapshotUri,
-            cancellationToken,
-            isWaitForResult,
-            snapshotPriority,
-            snapshotChecksum);
-    }
-    
-    /// <inheritdoc/>
-    public async Task<DefaultOperationResponse> RecoverStorageFromSnapshot(
-        Uri snapshotLocationUri,
-        CancellationToken cancellationToken,
-        bool isWaitForResult = true,
-        SnapshotPriority? snapshotPriority = null,
-        string snapshotChecksum = null)
-    {
-        // Full storage snapshot is a .tar file with each collection having its own snapshot inside.
-        // Alongside it the config.json maps snapshots to collections.
-
-        /*
-        {
-          "collections_mapping": {
-            "test_collection": "test_collection-7273830188020032-2025-09-19-15-30-41.snapshot"
-          },
-          "collections_aliases": {}
-        }
-        */
-        
-        // We need to unpack tar and apply snapshots to collections according to config.json
-
-        throw new NotImplementedException(
-            "This method is not available as a direct Qdrant API call and not implemented yet.");
-        
-        var url =
-            $"/snapshots/recover?wait={ToUrlQueryString(isWaitForResult)}";
-    
-        var request = new RecoverEntityFromSnapshotRequest(snapshotLocationUri, snapshotPriority, snapshotChecksum);
-        
-        var response = await ExecuteRequest<RecoverEntityFromSnapshotRequest, DefaultOperationResponse>(
-            url,
-            HttpMethod.Put,
-            request,
-            cancellationToken,
-            retryCount: 0);
-    
-        return response;
-    }
-    
-    /// <inheritdoc/>
-    public async Task<DefaultOperationResponse> RecoverStorageFromUploadedSnapshot(
-        Stream snapshotContent,
-        CancellationToken cancellationToken,
-        bool isWaitForResult = true,
-        SnapshotPriority? snapshotPriority = null,
-        string snapshotChecksum = null
-    )
-    {
-        // Full storage snapshot is a .tar file with each collection having its own snapshot inside.
-        // Alongside it the config.json maps snapshots to collections.
-
-        /*
-        {
-          "collections_mapping": {
-            "test_collection": "test_collection-7273830188020032-2025-09-19-15-30-41.snapshot"
-          },
-          "collections_aliases": {}
-        }
-        */
-
-        // We need to unpack tar and apply snapshots to collections according to config.json
-
-        throw new NotImplementedException("This method is not available as a direct Qdrant API call and not implemented yet.");
-        
-        var url =
-            $"/snapshots/upload?wait={ToUrlQueryString(isWaitForResult)}";
-    
-        if (snapshotPriority.HasValue)
-        {
-            url += $"&priority={ToUrlQueryString(snapshotPriority.Value)}";
-        }
-    
-        if (!string.IsNullOrEmpty(snapshotChecksum))
-        { 
-            url+= $"&checksum={snapshotChecksum}";
-        }
-    
-        var result = await RecoverFromUploadedSnapshot(
-            url,
-            snapshotContent,
-            cancellationToken);
-    
-        return result;
     }
 }

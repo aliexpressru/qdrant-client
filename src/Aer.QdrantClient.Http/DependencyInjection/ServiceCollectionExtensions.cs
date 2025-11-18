@@ -22,113 +22,106 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public const string DefaultQdrantHttpClientName = "DefaultQdrantHttpClient";
 
-    /// <summary>
-    /// Adds Qdrant HTTP client to the <see cref="IServiceCollection"/> with explicitly defined settings.
-    /// </summary>
     /// <param name="services">The service collection to add qdrant HTTP client to.</param>
-    /// <param name="configureQdrantClientSettings">
-    /// The action to configure the <see cref="QdrantClientSettings"/> parameters.
-    /// </param>
-    /// <param name="circuitBreakerStrategyOptions">
-    /// If set, configures the circuit breaker strategy for all qdrant backend calls with specified options.
-    /// The circuit breaker strategy is cached by authority (scheme + host + port).
-    /// </param>
-    /// <param name="resiliencePipelineTelemetryOptions">
-    /// The resilience pipeline telemetry configuration.
-    /// Configures telemetry for circuit breaker.
-    /// </param>
-    /// <param name="clientName">The name of the client to be registered.</param>
-    /// <param name="registerAsInterface">
-    /// If set to <c>true</c> registers <see cref="IQdrantHttpClient"/> interface instead of concrete <see cref="QdrantHttpClient"/>.
-    /// This setting exists for backwards compatibility, since concrete registration was default behaviour in versions before 1.15.13.
-    /// </param>
-    public static IServiceCollection AddQdrantHttpClient(
-        this IServiceCollection services,
-        Action<QdrantClientSettings> configureQdrantClientSettings,
-        CircuitBreakerStrategyOptions<HttpResponseMessage> circuitBreakerStrategyOptions = null,
-        TelemetryOptions resiliencePipelineTelemetryOptions = null,
-        string clientName = null,
-        bool registerAsInterface = false)
+    extension(IServiceCollection services)
     {
-        var actualClientName = clientName ?? DefaultQdrantHttpClientName;
-        
-        services.Configure(actualClientName, configureQdrantClientSettings);
-
-        // Remove when multi-client support lands
+        /// <summary>
+        /// Adds Qdrant HTTP client to the <see cref="IServiceCollection"/> with explicitly defined settings.
+        /// </summary>
+        /// <param name="configureQdrantClientSettings">
+        /// The action to configure the <see cref="QdrantClientSettings"/> parameters.
+        /// </param>
+        /// <param name="circuitBreakerStrategyOptions">
+        /// If set, configures the circuit breaker strategy for all qdrant backend calls with specified options.
+        /// The circuit breaker strategy is cached by authority (scheme + host + port).
+        /// </param>
+        /// <param name="resiliencePipelineTelemetryOptions">
+        /// The resilience pipeline telemetry configuration.
+        /// Configures telemetry for circuit breaker.
+        /// </param>
+        /// <param name="clientName">The name of the client to be registered.</param>
+        /// <param name="registerAsInterface">
+        /// If set to <c>true</c> registers <see cref="IQdrantHttpClient"/> interface instead of concrete <see cref="QdrantHttpClient"/>.
+        /// This setting exists for backwards compatibility, since concrete registration was default behaviour in versions before 1.15.13.
+        /// </param>
+        public IServiceCollection AddQdrantHttpClient(
+            Action<QdrantClientSettings> configureQdrantClientSettings,
+            CircuitBreakerStrategyOptions<HttpResponseMessage> circuitBreakerStrategyOptions = null,
+            TelemetryOptions resiliencePipelineTelemetryOptions = null,
+            string clientName = null,
+            bool registerAsInterface = false)
         {
-            services.Configure(configureQdrantClientSettings);
-            services.TryAddSingleton(serviceProvider =>
-                serviceProvider.GetRequiredService<IOptions<QdrantClientSettings>>().Value);
+            var actualClientName = clientName ?? DefaultQdrantHttpClientName;
+
+            services.Configure(actualClientName, configureQdrantClientSettings);
+
+            // Remove when multi-client support lands
+            {
+                services.Configure(configureQdrantClientSettings);
+                services.TryAddSingleton(serviceProvider =>
+                    serviceProvider.GetRequiredService<IOptions<QdrantClientSettings>>().Value);
+            }
+
+            AddQdrantHttpClientInternal(
+                services,
+                circuitBreakerStrategyOptions,
+                resiliencePipelineTelemetryOptions,
+                shouldSelectResiliencePipelineByAuthority: true,
+                clientName: actualClientName,
+                registerAsInterface);
+
+            return services;
         }
 
-        AddQdrantHttpClientInternal(
-            services,
-            circuitBreakerStrategyOptions,
-            resiliencePipelineTelemetryOptions,
-            shouldSelectResiliencePipelineByAuthority: true,
-            clientName: actualClientName,
-            registerAsInterface);
-
-        return services;
-    }
-
-    /// <summary>
-    /// Adds Qdrant HTTP client to the <see cref="IServiceCollection"/> with settings from app configuration.
-    /// </summary>
-    /// <param name="services">The service collection to add qdrant HTTP client to.</param>
-    /// <param name="configuration">The application configuration.</param>
-    /// <param name="clientConfigurationSectionName">The name of the appsettings.json file section where <see cref="QdrantClientSettings"/> is configured.</param>
-    /// <param name="configureQdrantClientSettings">
-    /// The action to modify the <see cref="QdrantClientSettings"/> parameters after they are obtained from appsettings.json.
-    /// </param>
-    /// <param name="circuitBreakerStrategyOptions">
-    /// If set, configures the circuit breaker strategy for all qdrant backend calls with specified options.
-    /// The circuit breaker strategy is cached by authority (scheme + host + port).
-    /// </param>
-    /// <param name="resiliencePipelineTelemetryOptions">
-    /// The resilience pipeline telemetry configuration.
-    /// Configures telemetry for circuit breaker.
-    /// </param>
-    /// <param name="clientName">The name of the client to be registered.</param>
-    /// <param name="registerAsInterface">
-    /// If set to <c>true</c> registers <see cref="IQdrantHttpClient"/> interface instead of concrete <see cref="QdrantHttpClient"/>.
-    /// This setting exists for backwards compatibility, since concrete registration was default behaviour in versions before 1.15.13.
-    /// </param>
-    public static IServiceCollection AddQdrantHttpClient(
-        this IServiceCollection services,
-        IConfiguration configuration,
-        string clientConfigurationSectionName = nameof(QdrantClientSettings),
-        Action<QdrantClientSettings> configureQdrantClientSettings = null,
-        CircuitBreakerStrategyOptions<HttpResponseMessage> circuitBreakerStrategyOptions = null,
-        TelemetryOptions resiliencePipelineTelemetryOptions = null,
-        string clientName = null,
-        bool registerAsInterface = false)
-    {
-        var actualClientName = clientName ?? DefaultQdrantHttpClientName;
-        
-        services.Configure<QdrantClientSettings>(actualClientName, configuration.GetSection(clientConfigurationSectionName));
-        
-        // Remove when multi-client support lands
+        /// <summary>
+        /// Adds Qdrant HTTP client to the <see cref="IServiceCollection"/> with settings from app configuration.
+        /// </summary>
+        /// <param name="configuration">The application configuration.</param>
+        /// <param name="clientConfigurationSectionName">The name of the appsettings.json file section where <see cref="QdrantClientSettings"/> is configured.</param>
+        /// <param name="configureQdrantClientSettings">
+        /// The action to modify the <see cref="QdrantClientSettings"/> parameters after they are obtained from appsettings.json.
+        /// </param>
+        /// <param name="circuitBreakerStrategyOptions">
+        /// If set, configures the circuit breaker strategy for all qdrant backend calls with specified options.
+        /// The circuit breaker strategy is cached by authority (scheme + host + port).
+        /// </param>
+        /// <param name="resiliencePipelineTelemetryOptions">
+        /// The resilience pipeline telemetry configuration.
+        /// Configures telemetry for circuit breaker.
+        /// </param>
+        /// <param name="clientName">The name of the client to be registered.</param>
+        /// <param name="registerAsInterface">
+        /// If set to <c>true</c> registers <see cref="IQdrantHttpClient"/> interface instead of concrete <see cref="QdrantHttpClient"/>.
+        /// This setting exists for backwards compatibility, since concrete registration was default behaviour in versions before 1.15.13.
+        /// </param>
+        public IServiceCollection AddQdrantHttpClient(
+            IConfiguration configuration,
+            string clientConfigurationSectionName = nameof(QdrantClientSettings),
+            Action<QdrantClientSettings> configureQdrantClientSettings = null,
+            CircuitBreakerStrategyOptions<HttpResponseMessage> circuitBreakerStrategyOptions = null,
+            TelemetryOptions resiliencePipelineTelemetryOptions = null,
+            string clientName = null,
+            bool registerAsInterface = false)
         {
-            services.Configure<QdrantClientSettings>(configuration.GetSection(clientConfigurationSectionName));
-            services.TryAddSingleton(serviceProvider =>
-                serviceProvider.GetRequiredService<IOptions<QdrantClientSettings>>().Value);
+            var actualClientName = clientName ?? DefaultQdrantHttpClientName;
+
+            services.Configure<QdrantClientSettings>(actualClientName, configuration.GetSection(clientConfigurationSectionName));
+
+            if (configureQdrantClientSettings is not null)
+            {
+                services.PostConfigure(actualClientName, configureQdrantClientSettings);
+            }
+
+            AddQdrantHttpClientInternal(
+                services,
+                circuitBreakerStrategyOptions,
+                resiliencePipelineTelemetryOptions,
+                shouldSelectResiliencePipelineByAuthority: true,
+                clientName: actualClientName,
+                registerInterface: registerAsInterface);
+
+            return services;
         }
-
-        if (configureQdrantClientSettings is not null)
-        {
-            services.PostConfigure(actualClientName, configureQdrantClientSettings);
-        }
-
-        AddQdrantHttpClientInternal(
-            services,
-            circuitBreakerStrategyOptions,
-            resiliencePipelineTelemetryOptions,
-            shouldSelectResiliencePipelineByAuthority: true,
-            clientName: actualClientName,
-            registerInterface: registerAsInterface);
-
-        return services;
     }
 
     private static void AddQdrantHttpClientInternal(
@@ -142,7 +135,7 @@ public static class ServiceCollectionExtensions
         Action<IServiceProvider, HttpClient> configureClient = (serviceProvider, client) =>
         {
             var scopedServiceProvider = serviceProvider.CreateScope().ServiceProvider;
-            
+
             var qdrantSettings = scopedServiceProvider
                 .GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>()
                 .Get(clientName);
@@ -166,12 +159,12 @@ public static class ServiceCollectionExtensions
             var qdrantSettings = scopedServiceProvider
                 .GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>()
                 .Get(clientName);
-            
+
             var handler = QdrantHttpClient.CreateHttpClientHandler(
                 isCompressionEnabled: qdrantSettings.EnableCompression,
                 isDisableTracing: qdrantSettings.DisableTracing,
                 apiKey: qdrantSettings.ApiKey);
-            
+
             return handler;
         });
 

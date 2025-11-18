@@ -34,28 +34,28 @@ internal sealed class PointIdCollectionJsonConverter : JsonConverter<IReadOnlyLi
             switch (valueKind)
             {
                 case JsonValueKind.Number:
-                {
-                    var ulongValue = arrayJElement.GetValue<ulong>();
-                    var pointId = PointId.Integer(ulongValue);
+                    {
+                        var ulongValue = arrayJElement.GetValue<ulong>();
+                        var pointId = PointId.Integer(ulongValue);
 
-                    collection.Add(pointId);
-                    break;
-                }
+                        collection.Add(pointId);
+                        break;
+                    }
                 case JsonValueKind.String:
-                {
-                    var pointIdValueString = arrayJElement.GetValue<string>();
+                    {
+                        var pointIdValueString = arrayJElement.GetValue<string>();
 
-                    // try parse as Guid then try parse as ulong
-                    var parsedPointId = Guid.TryParse(pointIdValueString, out Guid parsedIdGuid)
-                        ? PointId.Guid(parsedIdGuid)
+                        // try parse as Guid then try parse as ulong
+                        var parsedPointId = Guid.TryParse(pointIdValueString, out Guid parsedIdGuid)
+                            ? PointId.Guid(parsedIdGuid)
 #if NETSTANDARD2_0
-                        : PointId.Integer(ulong.Parse(pointIdValueString));
+                            : PointId.Integer(ulong.Parse(pointIdValueString));
 #else
-                        : PointId.Integer(ulong.Parse((ReadOnlySpan<char>) pointIdValueString));
+                    : PointId.Integer(ulong.Parse((ReadOnlySpan<char>) pointIdValueString));
 #endif
-                    collection.Add(parsedPointId);
-                    break;
-                }
+                        collection.Add(parsedPointId);
+                        break;
+                    }
                 default:
                     throw new QdrantJsonValueParsingException(reader.GetString());
             }

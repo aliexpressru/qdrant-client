@@ -8,49 +8,56 @@ internal static class HttpResponseMessageExtensions
 {
 	private const string StatusCodeKeyName = "StatusCode";
 
-	public static bool SetStatusCode(this HttpRequestException httpRequestException, HttpStatusCode httpStatusCode)
-	{
-		httpRequestException.Data[StatusCodeKeyName] = httpStatusCode;
+	extension(HttpRequestException httpRequestException)
+    {
+        public bool SetStatusCode(HttpStatusCode httpStatusCode)
+        {
+            httpRequestException.Data[StatusCodeKeyName] = httpStatusCode;
 
-		return false;
-	}
+            return false;
+        }
 
-	public static HttpStatusCode? GetStatusCode(this HttpRequestException httpRequestException)
-	{
-		return (HttpStatusCode?) httpRequestException.Data[StatusCodeKeyName];
-	}
+        public HttpStatusCode? GetStatusCode()
+        {
+            return (HttpStatusCode?) httpRequestException.Data[StatusCodeKeyName];
+        }
+    }
 
-	public static HttpResponseMessage SetStatusCode(this HttpResponseMessage httpResponseMessage)
-	{
-		try
-		{
-			httpResponseMessage.EnsureSuccessStatusCode();
-		}
-		catch (HttpRequestException ex) when (ex.SetStatusCode(httpResponseMessage.StatusCode))
-		{
-			// Intentionally left empty. Will never be reached.
-		}
+    extension(HttpResponseMessage httpResponseMessage)
+    {
+        public HttpResponseMessage SetStatusCode()
+        {
+            try
+            {
+                httpResponseMessage.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException ex) when (ex.SetStatusCode(httpResponseMessage.StatusCode))
+            {
+                // Intentionally left empty. Will never be reached.
+            }
 
-		return httpResponseMessage;
-	}
+            return httpResponseMessage;
+        }
+    }
 	
-	public static async Task<Stream> ReadAsStreamAsync(this HttpContent httpContent, CancellationToken cancellationToken)
-	{
-		return await httpContent.ReadAsStreamAsync().WaitAsync(
-			timeout: Timeout.InfiniteTimeSpan,
-			TimeProvider.System,
-			cancellationToken: cancellationToken);
-	}
+	extension(HttpContent httpContent)
+    {
+        public async Task<Stream> ReadAsStreamAsync(CancellationToken cancellationToken)
+        {
+            return await httpContent.ReadAsStreamAsync().WaitAsync(
+                timeout: Timeout.InfiniteTimeSpan,
+                TimeProvider.System,
+                cancellationToken: cancellationToken);
+        }
 
-	public static async Task<string> ReadAsStringAsync(
-		this HttpContent httpContent,
-		CancellationToken cancellationToken)
-	{
-		return await httpContent.ReadAsStringAsync().WaitAsync(
-			timeout: Timeout.InfiniteTimeSpan,
-			TimeProvider.System,
-			cancellationToken: cancellationToken);
-	}
+        public async Task<string> ReadAsStringAsync(CancellationToken cancellationToken)
+        {
+            return await httpContent.ReadAsStringAsync().WaitAsync(
+                timeout: Timeout.InfiniteTimeSpan,
+                TimeProvider.System,
+                cancellationToken: cancellationToken);
+        }
+    }
 }
 
 #endif
@@ -59,32 +66,43 @@ internal static class HttpResponseMessageExtensions
 
 internal static class Netstandard20Extensions
 {
-	public static HashSet<T> ToHashSet<T>(this IEnumerable<T> collection) => [..collection];
+	extension<T>(IEnumerable<T> collection)
+    {
+        public HashSet<T> ToHashSet() => [..collection];
+    }
 
-	public static bool TryAdd<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue value)
-	{
-		if (dictionary.ContainsKey(key))
-		{
-			return false;
-		}
+	extension<TKey, TValue>(Dictionary<TKey, TValue> dictionary)
+    {
+        public bool TryAdd(TKey key, TValue value)
+        {
+            if (dictionary.ContainsKey(key))
+            {
+                return false;
+            }
 
-		dictionary.Add(key, value);
-		return true;
-	}
+            dictionary.Add(key, value);
+            return true;
+        }
+    }
 
-	public static void Deconstruct<TKey, TValue>(
-		this KeyValuePair<TKey, TValue> target,
-		out TKey key,
-		out TValue value)
-	{
-		key = target.Key;
-		value = target.Value;
-	}
+	extension<TKey, TValue>(KeyValuePair<TKey, TValue> target)
+    {
+        public void Deconstruct(
+            out TKey key,
+            out TValue value)
+        {
+            key = target.Key;
+            value = target.Value;
+        }
+    }
 
-	public static bool Contains(this string target, string value, StringComparison comparisonType)
-	{
-		return target.IndexOf(value, comparisonType) >= 0;
-	}
+	extension(string target)
+    {
+        public bool Contains(string value, StringComparison comparisonType)
+        {
+            return target.IndexOf(value, comparisonType) >= 0;
+        }
+    }
 }
 
 #endif
