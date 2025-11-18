@@ -45,26 +45,19 @@ public class MultipleClientRegistrationTests : QdrantTestsBase
         await PrepareCollection(firstClient, TestCollectionName);
         await PrepareCollection(secondClient, TestCollectionName2);
 
-        // Should be present
-        var firstCollectionFirstClient = await firstClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
-        // Created on another client, should not be present
-        var secondCollectionFirstClient = await firstClient.GetCollectionInfo(TestCollectionName2, CancellationToken.None);
+        var firstClientCollections = (await firstClient.ListCollections(CancellationToken.None)).EnsureSuccess();
+        var secondClientCollections = (await secondClient.ListCollections(CancellationToken.None)).EnsureSuccess();
 
-        // Created on another client, should not be present
-        var firstCollectionSecondClient = await secondClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
-        // Should be present
-        var secondCollectionSecondClient = await secondClient.GetCollectionInfo(TestCollectionName2, CancellationToken.None);
+        firstClientCollections.Collections.Length.Should().Be(1);
+        secondClientCollections.Collections.Length.Should().Be(1);
 
-        firstCollectionFirstClient.Result.Should().NotBeNull();
-        secondCollectionSecondClient.Result.Should().NotBeNull();
+        firstClientCollections.Collections.Should().ContainSingle(c => c.Name == TestCollectionName);
+        firstClientCollections.Collections.Should().NotContain(c => c.Name == TestCollectionName2);
 
-        // These collections were created on another client, should not be present
+        secondClientCollections.Collections.Should().ContainSingle(c => c.Name == TestCollectionName2);
+        secondClientCollections.Collections.Should().NotContain(c => c.Name == TestCollectionName);
 
-        secondCollectionFirstClient.Status.IsSuccess.Should().BeFalse();
-        secondCollectionFirstClient.Result.Should().BeNull();
-
-        firstCollectionSecondClient.Status.IsSuccess.Should().BeFalse();
-        firstCollectionSecondClient.Result.Should().BeNull();
+        // Cleanup
 
         await ResetStorage(firstClient);
         await ResetStorage(secondClient);
