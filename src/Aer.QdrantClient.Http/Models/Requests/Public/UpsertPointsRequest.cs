@@ -10,12 +10,10 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// <summary>
 /// Represents the points upsert request.
 /// </summary>
-/// <typeparam name="TPayload">The type of the point payload.</typeparam>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 
-public sealed class UpsertPointsRequest<TPayload>
-    where TPayload : class
+public sealed class UpsertPointsRequest
 {
     /// <summary>
     /// Represents a point to upsert to qdrant.
@@ -29,9 +27,10 @@ public sealed class UpsertPointsRequest<TPayload>
         public PointId Id { get; }
 
         /// <summary>
-        /// The point payload.
+        /// The point payload. May contain either any serializable object or a dictionary or an already serialized JSON string.
         /// </summary>
-        public TPayload Payload { get; }
+        [JsonConverter(typeof(ObjectPayloadJsonConverter))]
+        public object Payload { get; }
 
         /// <summary>
         /// The point vector.
@@ -48,7 +47,7 @@ public sealed class UpsertPointsRequest<TPayload>
         public UpsertPoint(
             PointId id,
             VectorBase vector,
-            TPayload payload)
+            object payload)
         {
             Id = id;
             Vector = vector;

@@ -3,7 +3,7 @@ using Aer.QdrantClient.Http.Models.Primitives;
 
 namespace Aer.QdrantClient.Tests.Model;
 
-internal class TestComplexPayload : Payload
+internal class TestComplexPayload
 {
     public string Text { get; set; }
 

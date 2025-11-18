@@ -14,10 +14,10 @@ internal partial class PointsCrudTests
     public async Task SetPointsPayload()
     {
         var (upsertPoints, _, upsertPointIds) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName,
-                payloadInitializerFunction: (i) => i + 1);
+                payloadInitializerFunction: (i) => (TestPayload) (i + 1));
 
         // update payload by id
 
@@ -26,8 +26,8 @@ internal partial class PointsCrudTests
 
         var setPayloadById = await _qdrantHttpClient.SetPointsPayload(
             TestCollectionName,
-            new SetPointsPayloadRequest<TestPayload>(
-                "100",
+            new SetPointsPayloadRequest(
+                (TestPayload) "100",
                 pointIdsToUpdatePayloadFor
             ),
             CancellationToken.None
@@ -71,8 +71,12 @@ internal partial class PointsCrudTests
 
         var setPayloadByFilter = await _qdrantHttpClient.SetPointsPayload(
             TestCollectionName,
-            new SetPointsPayloadRequest<TestPayload>(
-                "1000",
+            new SetPointsPayloadRequest(
+                """
+                {
+                    "text": "1000"
+                }
+                """,
                 pointFilterToUpdatePayloadFor),
             CancellationToken.None);
 
@@ -94,15 +98,12 @@ internal partial class PointsCrudTests
             .Where(p => !pointIdsToUpdateByFilter.Contains(p.Id));
 
         // check initial key is intact
-        readAllPoints.Result.Should().AllSatisfy(
-            p => p.Payload.As<TestPayload>().Integer.Should().BeGreaterThan(0)
+        readAllPoints.Result.Should().AllSatisfy(p => p.Payload.As<TestPayload>().Integer.Should().BeGreaterThan(0)
         );
 
-        pointsThatShouldBeUpdated.Should().AllSatisfy(
-            p => p.Payload.As<TestPayload>().Text.Should().Be("1000")
+        pointsThatShouldBeUpdated.Should().AllSatisfy(p => p.Payload.As<TestPayload>().Text.Should().Be("1000")
         );
-        pointsThatShouldNotBeUpdated.Should().AllSatisfy(
-            p => p.Payload.As<TestPayload>().Text.Should().NotBe("1000")
+        pointsThatShouldNotBeUpdated.Should().AllSatisfy(p => p.Payload.As<TestPayload>().Text.Should().NotBe("1000")
         );
     }
 
@@ -122,7 +123,7 @@ internal partial class PointsCrudTests
 
         var setPayloadByIdAndKey = await _qdrantHttpClient.SetPointsPayload(
             TestCollectionName,
-            new SetPointsPayloadRequest<TestComplexPayload.NestedClass>(
+            new SetPointsPayloadRequest(
                 new TestComplexPayload.NestedClass()
                 {
                     Double = 1.567
@@ -175,7 +176,7 @@ internal partial class PointsCrudTests
 
         var setPayloadByFilterAndKey = await _qdrantHttpClient.SetPointsPayload(
             TestCollectionName,
-            new SetPointsPayloadRequest<TestComplexPayload.NestedNestedClass>(
+            new SetPointsPayloadRequest(
                 new TestComplexPayload.NestedNestedClass()
                 {
                     Double = 1567.12
@@ -218,25 +219,25 @@ internal partial class PointsCrudTests
     public async Task OverwritePointsPayload_BatchOperation_NonExistentPoints()
     {
         var (upsertPoints, _, _) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName,
                 vectorCount: 3,
-                payloadInitializerFunction: (i) => i + 1
+                payloadInitializerFunction: (i) => (TestPayload) (i + 1)
             );
 
         // One present and two non-existent point ids
         PointId[] pointIdsToUpdatePayloadFor = [upsertPoints[0].Id, 1567, 1568];
 
         var expectedText = "overwritten";
-        
+
         var newPayload = new TestPayload()
         {
             Text = expectedText
         };
-        
+
         var batchUpdateRequest = BatchUpdatePointsRequest.Create();
-        
+
         batchUpdateRequest.OverwritePointsPayload(
             newPayload,
             pointsToOverwritePayloadFor: pointIdsToUpdatePayloadFor);
@@ -246,7 +247,7 @@ internal partial class PointsCrudTests
             batchUpdateRequest,
             CancellationToken.None,
             isWaitForResult: true);
-        
+
         // Success is false since we haven't found points by non-existent ids 1567 and 1568
         // Error message contains only one point id though - the first not found
         // The update operation for existent points are successful though
@@ -272,10 +273,10 @@ internal partial class PointsCrudTests
     public async Task OverwritePointsPayload()
     {
         var (upsertPoints, _, upsertPointIds) =
-            await PrepareCollection<TestPayload>(
+            await PrepareCollection(
                 _qdrantHttpClient,
                 TestCollectionName,
-                payloadInitializerFunction: (i) => i + 1);
+                payloadInitializerFunction: (i) => (TestPayload) (i + 1));
 
         // overwrite payload by id
 
@@ -284,8 +285,8 @@ internal partial class PointsCrudTests
 
         var overwritePayloadById = await _qdrantHttpClient.OverwritePointsPayload(
             TestCollectionName,
-            new OverwritePointsPayloadRequest<TestPayload>(
-                "100",
+            new OverwritePointsPayloadRequest(
+                (TestPayload) "100",
                 pointIdsToUpdatePayloadFor
             ),
             CancellationToken.None
@@ -307,16 +308,16 @@ internal partial class PointsCrudTests
         var pointsThatShouldNotBeUpdated = readAllPoints.Result
             .Where(p => !pointIdsToUpdatePayloadFor.Contains(p.Id));
 
-        pointsThatShouldBeUpdated.Should().AllSatisfy(
-            p =>
-            {
-                // check initial key is overwritten
-                p.Payload.As<TestPayload>().Integer.Should().BeNull();
+        pointsThatShouldBeUpdated.Should().AllSatisfy(p =>
+        {
+            // check initial key is overwritten
+            p.Payload.As<TestPayload>().Integer.Should().BeNull();
 
-                p.Payload.As<TestPayload>().Text.Should().Be("100");
-            });
+            p.Payload.As<TestPayload>().Text.Should().Be("100");
+        });
 
-        pointsThatShouldNotBeUpdated.Should().AllSatisfy(p => {
+        pointsThatShouldNotBeUpdated.Should().AllSatisfy(p =>
+        {
             // check initial key is not overwritten
             p.Payload.As<TestPayload>().Integer.Should().NotBeNull();
 
@@ -337,8 +338,8 @@ internal partial class PointsCrudTests
 
         var overwritePayloadByFilter = await _qdrantHttpClient.OverwritePointsPayload(
             TestCollectionName,
-            new OverwritePointsPayloadRequest<TestPayload>(
-                "1000",
+            new OverwritePointsPayloadRequest(
+                (TestPayload) "1000",
                 pointFilterToUpdatePayloadFor),
             CancellationToken.None);
 
@@ -360,14 +361,13 @@ internal partial class PointsCrudTests
         pointsThatShouldNotBeUpdated = readAllPoints.Result
             .Where(p => !pointIdsToUpdateByFilter.Contains(p.Id));
 
-        pointsThatShouldBeUpdated.Should().AllSatisfy(
-            p =>
-            {
-                // check initial key is overwritten
-                p.Payload.As<TestPayload>().Integer.Should().BeNull();
+        pointsThatShouldBeUpdated.Should().AllSatisfy(p =>
+        {
+            // check initial key is overwritten
+            p.Payload.As<TestPayload>().Integer.Should().BeNull();
 
-                p.Payload.As<TestPayload>().Text.Should().Be("1000");
-            });
+            p.Payload.As<TestPayload>().Text.Should().Be("1000");
+        });
 
         pointsThatShouldNotBeUpdated.Should().AllSatisfy(p => p.Payload.As<TestPayload>()
             .Text.Should().NotBe("1000"));
@@ -396,8 +396,8 @@ internal partial class PointsCrudTests
 
         var overwritePayloadById = await _qdrantHttpClient.OverwritePointsPayload(
             TestCollectionName,
-            new OverwritePointsPayloadRequest<object>(
-                new{Integer = 100},
+            new OverwritePointsPayloadRequest(
+                new {Integer = 100},
                 pointIdsToUpdatePayloadFor,
                 "nested"
             ),
@@ -420,16 +420,82 @@ internal partial class PointsCrudTests
         var pointsThatShouldNotBeUpdated = readAllPoints.Result
             .Where(p => !pointIdsToUpdatePayloadFor.Contains(p.Id));
 
-        pointsThatShouldBeUpdated.Should().AllSatisfy(
-            p =>
-            {
-                // check initial key is overwritten
-                p.Payload.As<TestComplexPayload>().IntProperty.Should().NotBeNull();
+        pointsThatShouldBeUpdated.Should().AllSatisfy(p =>
+        {
+            // check initial key is overwritten
+            p.Payload.As<TestComplexPayload>().IntProperty.Should().NotBeNull();
 
-                p.Payload.As<TestComplexPayload>().Nested.Integer.Should().Be(100);
-            });
+            p.Payload.As<TestComplexPayload>().Nested.Integer.Should().Be(100);
+        });
 
-        pointsThatShouldNotBeUpdated.Should().AllSatisfy(p => {
+        pointsThatShouldNotBeUpdated.Should().AllSatisfy(p =>
+        {
+            // check initial key is not overwritten
+            p.Payload.As<TestComplexPayload>().IntProperty.Should().NotBeNull();
+
+            p.Payload.As<TestComplexPayload>().Nested.Integer.Should().NotBe(100);
+        });
+    }
+
+    [Test]
+    public async Task OverwritePointsPayload_SingleValue_ByJsonKey()
+    {
+        var (upsertPoints, _, upsertPointIds) =
+            await PrepareCollection(
+                _qdrantHttpClient,
+                TestCollectionName,
+                payloadInitializerFunction: (i) => new TestComplexPayload()
+                {
+                    IntProperty = i,
+                    Nested = new TestComplexPayload.NestedClass()
+                    {
+                        Integer = i
+                    }
+                });
+
+        var pointIdsToUpdatePayloadFor = upsertPoints.Take(5)
+            .Select(p => p.Id).ToHashSet();
+
+        var overwritePayloadById = await _qdrantHttpClient.OverwritePointsPayload(
+            TestCollectionName,
+            new OverwritePointsPayloadRequest(
+                """
+                {
+                    "integer": 100
+                }
+                """,
+                pointIdsToUpdatePayloadFor,
+                "nested"
+            ),
+            CancellationToken.None
+        );
+
+        overwritePayloadById.Status.IsSuccess.Should().BeTrue();
+
+        // check payload updated by id and path
+
+        var readAllPoints = await _qdrantHttpClient.GetPoints(
+            TestCollectionName,
+            upsertPointIds,
+            PayloadPropertiesSelector.All,
+            CancellationToken.None);
+
+        var pointsThatShouldBeUpdated = readAllPoints.Result
+            .Where(p => pointIdsToUpdatePayloadFor.Contains(p.Id));
+
+        var pointsThatShouldNotBeUpdated = readAllPoints.Result
+            .Where(p => !pointIdsToUpdatePayloadFor.Contains(p.Id));
+
+        pointsThatShouldBeUpdated.Should().AllSatisfy(p =>
+        {
+            // check initial key is overwritten
+            p.Payload.As<TestComplexPayload>().IntProperty.Should().NotBeNull();
+
+            p.Payload.As<TestComplexPayload>().Nested.Integer.Should().Be(100);
+        });
+
+        pointsThatShouldNotBeUpdated.Should().AllSatisfy(p =>
+        {
             // check initial key is not overwritten
             p.Payload.As<TestComplexPayload>().IntProperty.Should().NotBeNull();
 
@@ -481,23 +547,21 @@ internal partial class PointsCrudTests
         var pointsThatShouldNotBeUpdated = readAllPoints.Result
             .Where(p => !pointIdsToDeletePayloadKeysFor.Contains(p.Id));
 
-        pointsThatShouldBeUpdated.Should().AllSatisfy(
-            p =>
-            {
-                // check initial key intact
-                p.Payload.As<TestPayload>().Text.Should().NotBeNull();
+        pointsThatShouldBeUpdated.Should().AllSatisfy(p =>
+        {
+            // check initial key intact
+            p.Payload.As<TestPayload>().Text.Should().NotBeNull();
 
-                p.Payload.As<TestPayload>().Integer.Should().BeNull();
-            });
+            p.Payload.As<TestPayload>().Integer.Should().BeNull();
+        });
 
-        pointsThatShouldNotBeUpdated.Should().AllSatisfy(
-            p =>
-            {
-                // check initial key intact
-                p.Payload.As<TestPayload>().Text.Should().NotBeNull();
+        pointsThatShouldNotBeUpdated.Should().AllSatisfy(p =>
+        {
+            // check initial key intact
+            p.Payload.As<TestPayload>().Text.Should().NotBeNull();
 
-                p.Payload.As<TestPayload>().Integer.Should().NotBeNull();
-            });
+            p.Payload.As<TestPayload>().Integer.Should().NotBeNull();
+        });
 
         // delete payload key by filter
 
@@ -538,21 +602,17 @@ internal partial class PointsCrudTests
         pointsThatShouldNotBeUpdated = readAllPoints.Result
             .Where(p => !pointIdsToUpdateByFilter.Contains(p.Id));
 
-        pointsThatShouldBeUpdated.Should().AllSatisfy(
-            p =>
-            {
-                // check initial key intact
-                p.Payload.As<TestPayload>().Text.Should().BeNull();
+        pointsThatShouldBeUpdated.Should().AllSatisfy(p =>
+        {
+            // check initial key intact
+            p.Payload.As<TestPayload>().Text.Should().BeNull();
 
-                // check initial key is overwritten
-                p.Payload.As<TestPayload>().Integer.Should().NotBeNull();
-            });
+            // check initial key is overwritten
+            p.Payload.As<TestPayload>().Integer.Should().NotBeNull();
+        });
 
-        pointsThatShouldNotBeUpdated.Should().AllSatisfy(
-            p =>
-            {
-                p.Payload.As<TestPayload>().Text.Should().NotBeNull();
-            });
+        pointsThatShouldNotBeUpdated.Should()
+            .AllSatisfy(p => { p.Payload.As<TestPayload>().Text.Should().NotBeNull(); });
     }
 
     [Test]
@@ -595,17 +655,17 @@ internal partial class PointsCrudTests
         var pointsThatShouldNotBeUpdated = readAllPoints.Result
             .Where(p => !pointIdsToClearPayloadFor.Contains(p.Id));
 
-        pointsThatShouldBeUpdated.Should().AllSatisfy(
-            p =>
-            {
-                p.Payload.IsEmpty.Should().BeTrue();
-            });
+        pointsThatShouldBeUpdated.Should().AllSatisfy(p =>
+        {
+            p.Payload.RawPayloadString.Should().Be(Payload.EmptyString);
+            p.Payload.IsEmpty.Should().BeTrue();
+        });
 
-        pointsThatShouldNotBeUpdated.Should().AllSatisfy(
-            p =>
-            {
-                p.Payload.IsEmpty.Should().BeFalse();
-            });
+        pointsThatShouldNotBeUpdated.Should().AllSatisfy(p =>
+        {
+            p.Payload.RawPayloadString.Should().NotBe(Payload.EmptyString);
+            p.Payload.IsEmpty.Should().BeFalse();
+        });
 
         // clear payload key by filter
 
@@ -636,6 +696,10 @@ internal partial class PointsCrudTests
 
         readAllPoints.Status.IsSuccess.Should().BeTrue();
 
-        readAllPoints.Result.Should().AllSatisfy(p => p.Payload.IsEmpty.Should().BeTrue());
+        readAllPoints.Result.Should().AllSatisfy(p =>
+        {
+            p.Payload.RawPayloadString.Should().Be(Payload.EmptyString);
+            p.Payload.IsEmpty.Should().BeTrue();
+        });
     }
 }

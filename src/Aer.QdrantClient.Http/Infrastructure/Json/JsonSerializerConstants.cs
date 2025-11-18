@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
+using JsonConverter = System.Text.Json.Serialization.JsonConverter;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json;
 
@@ -8,7 +9,8 @@ internal static class JsonSerializerConstants
 {
     private static readonly JTokenJsonConverter _jTokenJsonConverter = new();
 
-    public static JsonNamingPolicy NamingStrategy { get; } = JsonNamingPolicy.SnakeCaseLower;
+    public static JsonNamingPolicy NamingStrategy => JsonNamingPolicy.SnakeCaseLower;
+    
     public static JsonConverter EnumConverter { get; } = new JsonStringEnumConverter(NamingStrategy);
 
     public static JsonSerializerOptions DefaultSerializerOptions { get; } = CreateSerializerOptions();

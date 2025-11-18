@@ -36,7 +36,7 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
     [Test]
     public async Task CreateSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClientClusterNode1, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClientClusterNode1, TestCollectionName);
 
         var createNode1SnapshotResult =
             await _qdrantHttpClientClusterNode1.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None);
@@ -76,7 +76,7 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
     [Test]
     public async Task ListSnapshots()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClientClusterNode1, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClientClusterNode1, TestCollectionName);
 
         // create first snapshot on first node 
 
@@ -142,7 +142,7 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
     [Test]
     public async Task DeleteSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClientClusterNode1, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClientClusterNode1, TestCollectionName);
 
         // create first snapshot and delete it
 
@@ -230,7 +230,7 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
     [Test]
     public async Task DownloadSnapshot()
     {
-        await PrepareCollection<TestPayload>(_qdrantHttpClientClusterNode1, TestCollectionName);
+        await PrepareCollection(_qdrantHttpClientClusterNode1, TestCollectionName);
 
         var createFirstNodeSnapshotResult =
             (await _qdrantHttpClientClusterNode1.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None))
@@ -290,7 +290,7 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
     {
         var expectedVectorCount = 50;
 
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClientClusterNode1,
             TestCollectionName,
             vectorCount: expectedVectorCount);
@@ -392,7 +392,7 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
     {
         var expectedVectorCount = 50;
 
-        await PrepareCollection<TestPayload>(
+        await PrepareCollection(
             _qdrantHttpClientClusterNode1,
             TestCollectionName,
             vectorCount: expectedVectorCount);

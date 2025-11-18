@@ -80,7 +80,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         var vector1Vector2Vector = CreateTestVector(vectorSize);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>()
         {
             new(
                 PointId.Integer(1),
@@ -111,7 +111,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },
@@ -158,7 +158,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         var vector1Vector2Vector = CreateTestVector(vectorSize);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>()
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>()
         {
             new(
                 PointId.Integer(1),
@@ -189,7 +189,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },
@@ -245,7 +245,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         var singleVector = CreateConstantTestVector(1.1f, vectorSize);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
         for (int i = 0; i < vectorCount; i++)
         {
             upsertPoints.Add(
@@ -263,7 +263,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },
@@ -313,7 +313,7 @@ public class PointsRecommendTests : QdrantTestsBase
         var singleVector1 = CreateConstantTestVector(1.1f, vectorSize);
         var singleVector2 = CreateConstantTestVector(1.1f, vectorSize);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
         for (int i = 0; i < vectorCount; i++)
         {
             var vector = i < 5
@@ -335,7 +335,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },
@@ -376,7 +376,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         var singleVector = CreateConstantTestVector(1.1f, vectorSize);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
         for (int i = 0; i < vectorCount; i++)
         {
             upsertPoints.Add(
@@ -394,7 +394,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },
@@ -455,7 +455,7 @@ public class PointsRecommendTests : QdrantTestsBase
         var singleVector1 = CreateConstantTestVector(1.1f, vectorSize);
         var singleVector2 = CreateConstantTestVector(1.1f, vectorSize);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
         for (int i = 0; i < vectorCount; i++)
         {
             var vector = i < 5
@@ -477,7 +477,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },
@@ -533,7 +533,7 @@ public class PointsRecommendTests : QdrantTestsBase
         var singleVector1 = CreateConstantTestVector(1.1f, vectorSize);
         var singleVector2 = CreateConstantTestVector(1.1f, vectorSize);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
         for (int i = 0; i < vectorCount; i++)
         {
             var vector = i < 5
@@ -555,7 +555,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },
@@ -631,7 +631,7 @@ public class PointsRecommendTests : QdrantTestsBase
         var singleVector1 = CreateConstantTestVector(1.1f, vectorSize);
         var singleVector2 = CreateConstantTestVector(1.1f, vectorSize);
 
-        var upsertPoints = new List<UpsertPointsRequest<TestPayload>.UpsertPoint>();
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
         for (int i = 0; i < vectorCount; i++)
         {
             var vector = i < 5
@@ -655,7 +655,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
-            new UpsertPointsRequest<TestPayload>()
+            new UpsertPointsRequest()
             {
                 Points = upsertPoints
             },

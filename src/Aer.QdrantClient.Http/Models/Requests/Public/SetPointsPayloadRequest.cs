@@ -10,16 +10,15 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// <summary>
 /// Represents the request to set payload to each point by its id or by filter match.
 /// </summary>
-/// <typeparam name="TPayload">The type of the point payload.</typeparam>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public sealed class SetPointsPayloadRequest<TPayload>
-    where TPayload : class
+public sealed class SetPointsPayloadRequest
 {
     /// <summary>
-    /// The point payload.
+    /// The point payload. May contain either any serializable object or a dictionary or an already serialized JSON string.
     /// </summary>
-    public TPayload Payload { get; }
+    [JsonConverter(typeof(ObjectPayloadJsonConverter))]
+    public object Payload { get; }
     
     /// <summary>
     /// The specific key of the payload to set. If specified the <see cref="Payload"/> will be set to that key.
@@ -46,13 +45,13 @@ public sealed class SetPointsPayloadRequest<TPayload>
     public ShardSelector ShardKey { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="SetPointsPayloadRequest{TPayload}"/> with payload
+    /// Initializes a new instance of <see cref="SetPointsPayloadRequest"/> with payload
     /// and point ids to set payload for.
     /// </summary>
     /// <param name="payload">Payload to set.</param>
     /// <param name="pointsToSetPayloadFor">Point ids to set payload for.</param>
     /// <param name="key">The key of the payload to set. If specified the <paramref name="payload"/> will be set tot that key.</param>
-    public SetPointsPayloadRequest(TPayload payload, IEnumerable<PointId> pointsToSetPayloadFor, string key = null)
+    public SetPointsPayloadRequest(object payload, IEnumerable<PointId> pointsToSetPayloadFor, string key = null)
     {
         Payload = payload;
         Points = pointsToSetPayloadFor;
@@ -60,13 +59,13 @@ public sealed class SetPointsPayloadRequest<TPayload>
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="SetPointsPayloadRequest{TPayload}"/> with payload
+    /// Initializes a new instance of <see cref="SetPointsPayloadRequest"/> with payload
     /// and point filter to set payload for.
     /// </summary>
     /// <param name="payload">Payload to set.</param>
     /// <param name="pointsFilterToSetPayloadFor">Points filter to set payload for.</param>
     /// <param name="key">The specific key of the payload to set. If specified the <paramref name="payload"/> will be set to that key.</param>
-    public SetPointsPayloadRequest(TPayload payload, QdrantFilter pointsFilterToSetPayloadFor, string key = null)
+    public SetPointsPayloadRequest(object payload, QdrantFilter pointsFilterToSetPayloadFor, string key = null)
     {
         Payload = payload;
         Filter = pointsFilterToSetPayloadFor;
