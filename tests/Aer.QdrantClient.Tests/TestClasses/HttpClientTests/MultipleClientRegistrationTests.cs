@@ -13,6 +13,12 @@ public class MultipleClientRegistrationTests : QdrantTestsBase
         Initialize(isAddMultipleQdrantClients: true);
     }
 
+    [SetUp]
+    public async Task BeforeEachTest()
+    {
+        await ResetStorage();
+    }
+
     [Test]
     public async Task GetClientByName_NonExistsntName()
     {
