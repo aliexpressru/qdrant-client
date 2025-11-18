@@ -48,7 +48,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         HttpStatusCode.Forbidden,
         HttpStatusCode.Unauthorized
     ];
-    
+
     // Codes which should be handled specially
     private static readonly HashSet<HttpStatusCode> _specialStatusCodes =
     [
@@ -57,7 +57,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         HttpStatusCode.BadRequest,
         HttpStatusCode.NotFound,
         HttpStatusCode.Conflict,
-        
+
         .._unauthorizedStatusCodes,
     ];
 
@@ -124,7 +124,8 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         logger,
         disableTracing,
         enableCompression)
-    { }
+    {
+    }
 
     /// <summary>
     /// Initializes a new Qdrant HTTP client instance.
@@ -147,7 +148,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
 
         var handler =
             CreateHttpClientHandler(
-                isCompressionEnabled: enableCompression, 
+                isCompressionEnabled: enableCompression,
                 isDisableTracing: disableTracing,
                 apiKey);
 
@@ -156,12 +157,12 @@ public partial class QdrantHttpClient : IQdrantHttpClient
             BaseAddress = httpAddress,
             Timeout = httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout,
         };
-        
+
         ApiClient = apiClient;
     }
-    
+
     internal static HttpMessageHandler CreateHttpClientHandler(
-        bool isCompressionEnabled, 
+        bool isCompressionEnabled,
         bool isDisableTracing,
         string apiKey = null)
     {
@@ -174,7 +175,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         };
 
         // Wrap with API key handler if api key is provided
-        if (apiKey is {Length: > 0})
+        if (apiKey is { Length: > 0 })
         {
             handler = new ApiKeyHttpClientHandler(apiKey, handler);
         }
@@ -183,7 +184,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         if (isDisableTracing)
         {
             DistributedContextPropagator.Current = new ConditionalPropagator();
-            
+
             handler = new DisableActivityHttpClientHandler(handler);
         }
 
@@ -199,7 +200,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         uint requiredNumberOfGreenCollectionResponses = 1,
         bool isCheckShardTransfersCompleted = false)
     {
-        if (timeout is {TotalMilliseconds: 0})
+        if (timeout is { TotalMilliseconds: 0 })
         {
             throw new InvalidOperationException(
                 $"{nameof(timeout)} should be greater than zero or not set but was {timeout:g}");
@@ -276,7 +277,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
                 if (typeof(TResponse) == typeof(string))
                 {
                     // If the result type is string - return result as is
-                    return (TResponse) Convert.ChangeType(resultString, typeof(TResponse));
+                    return (TResponse)Convert.ChangeType(resultString, typeof(TResponse));
                 }
 
                 var deserializedResult =
@@ -371,8 +372,8 @@ public partial class QdrantHttpClient : IQdrantHttpClient
             responseReader: async responseMessage =>
             {
                 // Handle NotFound for read as stream specially since it contains error message in content and no Status field
-                if(responseMessage.StatusCode == HttpStatusCode.NotFound)
-                { 
+                if (responseMessage.StatusCode == HttpStatusCode.NotFound)
+                {
                     var errorMessage = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
 
                     return (
@@ -382,7 +383,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
                         ErrorMessage: errorMessage
                     );
                 }
-                
+
                 var resultStream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
 
                 var contentLength = response.Content.Headers.ContentLength ?? 0;
@@ -428,7 +429,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
                 .OrResult<HttpResponseMessage>(r =>
                     !r.IsSuccessStatusCode && !_noRetryStatusCodes.Contains(r.StatusCode))
                 .WaitAndRetryAsync(
-                    (int) retryCount,
+                    (int)retryCount,
                     _ => retryDelay ?? _defaultPointsReadRetryDelay,
                     onRetry: (result, currentRetryDelay, retryNumber, _) =>
                     {
@@ -528,7 +529,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     {
         // We have already checked that the request uri is not null
         var url = requestMessage.RequestUri!.ToString();
-        
+
         // Throw if the response status code is not successful and not a special one
         if (!responseMessage.IsSuccessStatusCode
             && !_specialStatusCodes.Contains(responseMessage.StatusCode))
@@ -543,7 +544,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
                 responseMessage.ReasonPhrase,
                 errorResultString);
         }
-        
+
         // Handle unauthorized codes
         if (_unauthorizedStatusCodes.Contains(responseMessage.StatusCode))
         {
@@ -584,7 +585,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
 
             return badRequestResponseMessageReader(errorResult);
         }
-        
+
         var readResult = await responseReader(responseMessage);
 
         return readResult;
@@ -593,7 +594,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void EnsureQdrantNameCorrect(string qdrantEntityName)
     {
-        if (qdrantEntityName is null or {Length: 0})
+        if (qdrantEntityName is null or { Length: 0 })
         {
             throw new QdrantInvalidEntityNameException(
                 qdrantEntityName,

@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Models.Primitives;
@@ -59,9 +59,9 @@ internal class PointsBatchCrudTests : QdrantTestsBase
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     CreateTestVector(vectorSize),
-                    (TestPayload) i
+                    (TestPayload)i
                 )
             );
         }
@@ -108,9 +108,9 @@ internal class PointsBatchCrudTests : QdrantTestsBase
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     CreateTestVector(vectorSize),
-                    (TestPayload) i
+                    (TestPayload)i
                 )
             );
         }
@@ -158,9 +158,9 @@ internal class PointsBatchCrudTests : QdrantTestsBase
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     CreateTestVector(vectorSize),
-                    (TestPayload) i
+                    (TestPayload)i
                 )
             );
         }
@@ -211,7 +211,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     CreateTestVector(vectorSize),
                     new TestPayload()
                     {
@@ -235,11 +235,11 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             .UpsertPoints(upsertPoints)
             .DeletePoints(pointsToDelete)
             .SetPointsPayload(
-                new TestPayload() {Integer = 100},
+                new TestPayload() { Integer = 100 },
                 pointToSetPayloadFor.YieldSingle()
             )
             .OverwritePointsPayload(
-                new TestPayload() {Text = "Test"},
+                new TestPayload() { Text = "Test" },
                 pointToOverwritePayloadFor.YieldSingle()
             )
             .DeletePointsPayloadKeys(
@@ -322,7 +322,7 @@ internal class PointsBatchCrudTests : QdrantTestsBase
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     CreateTestNamedVectors(vectorSize, 2),
                     new TestPayload()
                     {

@@ -55,13 +55,6 @@ public static class ServiceCollectionExtensions
 
             services.Configure(actualClientName, configureQdrantClientSettings);
 
-            // Remove when multi-client support lands
-            {
-                services.Configure(configureQdrantClientSettings);
-                services.TryAddSingleton(serviceProvider =>
-                    serviceProvider.GetRequiredService<IOptions<QdrantClientSettings>>().Value);
-            }
-
             AddQdrantHttpClientInternal(
                 services,
                 circuitBreakerStrategyOptions,
@@ -151,6 +144,9 @@ public static class ServiceCollectionExtensions
             : services.AddHttpClient<QdrantHttpClient, QdrantHttpClient>(
                 clientName,
                 configureClient);
+
+        // We use try add to avoid multiple registrations in case of registering multiple clients
+        services.TryAddSingleton<IQdrantClientFactory, DefaultQdrantClientFactory>();
 
         httpClientBuilder.ConfigurePrimaryHttpMessageHandler(serviceProvider =>
         {

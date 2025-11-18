@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 
 namespace Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 
@@ -6,20 +6,20 @@ namespace Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 
 internal static class HttpResponseMessageExtensions
 {
-	private const string StatusCodeKeyName = "StatusCode";
+    private const string STATUS_CODE_KEY_NAME = "StatusCode";
 
-	extension(HttpRequestException httpRequestException)
+    extension(HttpRequestException httpRequestException)
     {
         public bool SetStatusCode(HttpStatusCode httpStatusCode)
         {
-            httpRequestException.Data[StatusCodeKeyName] = httpStatusCode;
+            httpRequestException.Data[STATUS_CODE_KEY_NAME] = httpStatusCode;
 
             return false;
         }
 
         public HttpStatusCode? GetStatusCode()
         {
-            return (HttpStatusCode?) httpRequestException.Data[StatusCodeKeyName];
+            return (HttpStatusCode?)httpRequestException.Data[STATUS_CODE_KEY_NAME];
         }
     }
 
@@ -39,8 +39,8 @@ internal static class HttpResponseMessageExtensions
             return httpResponseMessage;
         }
     }
-	
-	extension(HttpContent httpContent)
+
+    extension(HttpContent httpContent)
     {
         public async Task<Stream> ReadAsStreamAsync(CancellationToken cancellationToken)
         {
@@ -66,12 +66,12 @@ internal static class HttpResponseMessageExtensions
 
 internal static class Netstandard20Extensions
 {
-	extension<T>(IEnumerable<T> collection)
+    extension<T>(IEnumerable<T> collection)
     {
-        public HashSet<T> ToHashSet() => [..collection];
+        public HashSet<T> ToHashSet() => [.. collection];
     }
 
-	extension<TKey, TValue>(Dictionary<TKey, TValue> dictionary)
+    extension<TKey, TValue>(Dictionary<TKey, TValue> dictionary)
     {
         public bool TryAdd(TKey key, TValue value)
         {
@@ -85,7 +85,7 @@ internal static class Netstandard20Extensions
         }
     }
 
-	extension<TKey, TValue>(KeyValuePair<TKey, TValue> target)
+    extension<TKey, TValue>(KeyValuePair<TKey, TValue> target)
     {
         public void Deconstruct(
             out TKey key,
@@ -96,7 +96,7 @@ internal static class Netstandard20Extensions
         }
     }
 
-	extension(string target)
+    extension(string target)
     {
         public bool Contains(string value, StringComparison comparisonType)
         {

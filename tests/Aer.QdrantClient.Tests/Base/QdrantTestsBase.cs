@@ -1,4 +1,5 @@
 using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http.Abstractions;
 using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.DependencyInjection;
 using Aer.QdrantClient.Http.Models.Primitives;
@@ -24,7 +25,10 @@ public class QdrantTestsBase
     protected IConfiguration Configuration;
     protected IServiceProvider ServiceProvider;
 
-    protected Version QdrantVersion { get; private set; }
+    protected Version QdrantVersion
+    {
+        get; private set;
+    }
 
     protected const string TestCollectionName = "test_collection";
     protected const string TestCollectionAlias = "test_collection_alias";
@@ -42,7 +46,7 @@ public class QdrantTestsBase
 
     protected const string FirstClientName = "Client1";
     protected const string SecondClientName = "Client2";
-    
+
     // shared random with constant seed to make tests repeatable
     protected static readonly Random Random = new(1567);
 
@@ -128,7 +132,7 @@ public class QdrantTestsBase
                 registerAsInterface: true,
                 clientName: FirstClientName
             );
-            
+
             services.AddQdrantHttpClient(
                 Configuration,
                 configureQdrantClientSettings: config =>
@@ -157,11 +161,11 @@ public class QdrantTestsBase
         var envFileLines = File.ReadAllLines(envFilePath);
 
         string foundVersion = null;
-        
+
         foreach (var fileLine in envFileLines)
         {
             if (fileLine.StartsWith("#"))
-            { 
+            {
                 continue;
             }
 
@@ -178,14 +182,14 @@ public class QdrantTestsBase
         }
 
         if (foundVersion == null)
-        { 
+        {
             throw new InvalidOperationException("QDRANT_VERSION is not set in .env file");
         }
-        
+
         return foundVersion;
     }
 
-    protected async Task ResetStorage(QdrantHttpClient qdrantClient = null)
+    protected async Task ResetStorage(IQdrantHttpClient qdrantClient = null)
     {
         bool wasException = true;
         while (wasException)
@@ -211,7 +215,7 @@ public class QdrantTestsBase
         await Task.Delay(TimeSpan.FromMilliseconds(500));
     }
 
-    private async Task DeleteCollectionsAndSnapshots(QdrantHttpClient qdrantClient = null)
+    private async Task DeleteCollectionsAndSnapshots(IQdrantHttpClient qdrantClient = null)
     {
         var qdrantHttpClient = qdrantClient ?? ServiceProvider.GetRequiredService<QdrantHttpClient>();
 
@@ -219,7 +223,7 @@ public class QdrantTestsBase
         await qdrantHttpClient.DeleteAllCollectionShardSnapshots(CancellationToken.None);
         await qdrantHttpClient.DeleteAllCollectionSnapshots(CancellationToken.None);
         await qdrantHttpClient.DeleteAllStorageSnapshots(CancellationToken.None);
-        
+
         try
         {
             if (QdrantVersion <= Version.Parse("1.15"))
@@ -230,7 +234,7 @@ public class QdrantTestsBase
             }
         }
         catch
-        { 
+        {
             // ignore
         }
 
@@ -258,10 +262,10 @@ public class QdrantTestsBase
     {
         var values = CreateTestVector(numberOfNonZeroIndices, vectorDataType);
 
-        var indices = Enumerable.Range(0, (int) vectorLength)
-            .RandomSubset((int) numberOfNonZeroIndices)
+        var indices = Enumerable.Range(0, (int)vectorLength)
+            .RandomSubset((int)numberOfNonZeroIndices)
             .OrderBy(v => v)
-            .Select(v => (uint) v)
+            .Select(v => (uint)v)
             .ToArray();
 
         return (indices, values);
@@ -284,7 +288,7 @@ public class QdrantTestsBase
 
     private float[] CreateTestFloat32Vector(uint vectorLength)
         =>
-            Enumerable.Range(0, (int) vectorLength)
+            Enumerable.Range(0, (int)vectorLength)
 #if NET7_0_OR_GREATER
                 .Select(_ => float.CreateTruncating(Random.NextDouble()))
 #else
@@ -294,9 +298,9 @@ public class QdrantTestsBase
 
     private float[] CreateTestFloat16Vector(uint vectorLength)
         =>
-            Enumerable.Range(0, (int) vectorLength)
+            Enumerable.Range(0, (int)vectorLength)
 #if NET7_0_OR_GREATER
-                .Select(_ => (float) Half.CreateTruncating(Random.NextDouble()))
+                .Select(_ => (float)Half.CreateTruncating(Random.NextDouble()))
 #else
                 .Select(_ => (float) ((Half) Random.NextSingle()))
 #endif
@@ -304,9 +308,9 @@ public class QdrantTestsBase
 
     private float[] CreateTestByteVector(uint vectorLength)
         =>
-            Enumerable.Range(0, (int) vectorLength)
+            Enumerable.Range(0, (int)vectorLength)
 #if NET7_0_OR_GREATER
-                .Select(_ => (float) byte.CreateTruncating(Random.Next()))
+                .Select(_ => (float)byte.CreateTruncating(Random.Next()))
 #else
                 .Select(_ => (float) unchecked((byte) Random.Next()))
 #endif
@@ -348,7 +352,7 @@ public class QdrantTestsBase
 
     protected float[] CreateConstantTestVector(float vectorElement, uint vectorLength)
         =>
-            Enumerable.Range(0, (int) vectorLength)
+            Enumerable.Range(0, (int)vectorLength)
                 .Select(_ => vectorElement)
                 .ToArray();
 
@@ -382,9 +386,9 @@ public class QdrantTestsBase
 
     internal async
         Task<(IReadOnlyList<UpsertPointsRequest.UpsertPoint> Points,
-            Dictionary<ulong, UpsertPointsRequest.UpsertPoint> PointsByPointIds, 
+            Dictionary<ulong, UpsertPointsRequest.UpsertPoint> PointsByPointIds,
             IReadOnlyList<PointId> PointIds)> PrepareCollection(
-            QdrantHttpClient qdrantHttpClient,
+            IQdrantHttpClient qdrantHttpClient,
             string collectionName,
             VectorDistanceMetric distanceMetric = VectorDistanceMetric.Dot,
             uint vectorSize = 10U,
@@ -400,7 +404,7 @@ public class QdrantTestsBase
                 OnDiskPayload = true,
                 QuantizationConfig = quantizationConfig,
                 StrictModeConfig = strictModeConfig,
-                OptimizersConfig = new OptimizersConfiguration() {IndexingThreshold = 10}
+                OptimizersConfig = new OptimizersConfiguration() { IndexingThreshold = 10 }
             },
             CancellationToken.None);
 
@@ -409,7 +413,7 @@ public class QdrantTestsBase
 
         for (int i = 0; i < vectorCount; i++)
         {
-            var pointId = PointId.Integer((ulong) i);
+            var pointId = PointId.Integer((ulong)i);
 
             object payload = payloadInitializerFunction is null
                 ? new TestPayload()
@@ -430,7 +434,7 @@ public class QdrantTestsBase
         }
 
         Dictionary<ulong, UpsertPointsRequest.UpsertPoint> upsertPointsByPointIds =
-            upsertPoints.ToDictionary(p => ((IntegerPointId) p.Id).Id);
+            upsertPoints.ToDictionary(p => ((IntegerPointId)p.Id).Id);
 
         var upsertPointsResult = await qdrantHttpClient.UpsertPoints(
             collectionName,
@@ -484,7 +488,7 @@ public class QdrantTestsBase
                 // for a specific shard. Thus, we need to manually tell it both primary peer and a replica peer
                 placement: replicationFactor == 1
                     ? [allPeers.First()]
-                    : [..allPeers])).EnsureSuccess();
+                    : [.. allPeers])).EnsureSuccess();
 
             (await qdrantHttpClient.CreateShardKey(
                 collectionName,
@@ -494,7 +498,7 @@ public class QdrantTestsBase
                 replicationFactor: replicationFactor,
                 placement: replicationFactor == 1
                     ? [allPeers.Skip(1).First()]
-                    : [..allPeers])).EnsureSuccess();
+                    : [.. allPeers])).EnsureSuccess();
 
             (await qdrantHttpClient.UpsertPoints(
                 collectionName,
@@ -521,7 +525,7 @@ public class QdrantTestsBase
                 CancellationToken.None)).EnsureSuccess();
         }
         else
-        { 
+        {
             (await qdrantHttpClient.CreateShardKey(
                 collectionName,
                 TestShardKey1,
@@ -533,7 +537,7 @@ public class QdrantTestsBase
                 // for a specific shard. Thus, we need to manually tell it both primary peer and a replica peer
                 placement: replicationFactor == 1
                     ? [allPeers.First()]
-                    : [..allPeers])).EnsureSuccess();
+                    : [.. allPeers])).EnsureSuccess();
 
             (await qdrantHttpClient.UpsertPoints(
                 collectionName,
@@ -600,11 +604,11 @@ public class QdrantTestsBase
         Assert.Ignore(
             $"Test ignored because Qdrant version {QdrantVersion} is higher than required {versionExclusive}. Reason: {reason}");
     }
-    
+
     protected bool IsVersionBefore(string versionExclusive)
     {
         var version = Version.Parse(versionExclusive);
-        
+
         return QdrantVersion < version;
     }
 

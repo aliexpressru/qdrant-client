@@ -1,11 +1,12 @@
 using Aer.QdrantClient.Http.Abstractions;
+using Aer.QdrantClient.Http.Exceptions;
 
 namespace Aer.QdrantClient.Http.DependencyInjection;
 
 /// <summary>
-/// Represents a factory for creating <see cref="QdrantClient"/> instances.
+/// Default implementation of <see cref="IQdrantClientFactory"/>.
 /// </summary>
-public class QdrantClientFactory(IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
+internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) : IQdrantClientFactory
 {
     /// <summary>
     /// Creates a new instance of <see cref="IQdrantHttpClient"/> with the specified client name.
@@ -14,7 +15,13 @@ public class QdrantClientFactory(IHttpClientFactory httpClientFactory, IServiceP
     public IQdrantHttpClient CreateClient(string clientName)
     {
         var httpClient = httpClientFactory.CreateClient(clientName);
-        
+
+        if (httpClient.BaseAddress == null)
+        {
+            // Means that no HttpClient was registered with such name
+            throw new QdrantNamedQdrantClientNotFound(clientName);
+        }
+
         return new QdrantHttpClient(httpClient);
     }
 }

@@ -10,7 +10,7 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
     /// <summary>
     /// Minimal number of conditions that should match to render ths filter matched.
     /// </summary>
-    internal readonly int MinCount;
+    private readonly int _minCount;
 
     public MinimumShouldCondition(int minCount, IEnumerable<FilterConditionBase> conditions) : base(DiscardPayloadFieldName)
     {
@@ -19,7 +19,7 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
             throw new InvalidOperationException("Minimum matched condition count should be greater than 0");
         }
 
-        MinCount = minCount;
+        _minCount = minCount;
 
         foreach (var condition in conditions)
         {
@@ -28,7 +28,7 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
                 foreach (var groupCondition in fgc.Conditions)
                 {
                     if (groupCondition is MinimumShouldCondition gsc
-                        && gsc.MinCount == MinCount)
+                        && gsc._minCount == _minCount)
                     {
                         // unfold nested groups only if the MinCount is the same
                         Conditions.AddRange(gsc.Conditions);
@@ -41,7 +41,7 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
             }
 
             if (condition is MinimumShouldCondition sc
-                && sc.MinCount == MinCount)
+                && sc._minCount == _minCount)
             {
                 Conditions.AddRange(sc.Conditions);
             }
@@ -57,7 +57,7 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
         jsonWriter.WritePropertyName("min_should");
         jsonWriter.WriteStartObject();
         {
-            jsonWriter.WriteNumber("min_count", MinCount);
+            jsonWriter.WriteNumber("min_count", _minCount);
 
             jsonWriter.WritePropertyName("conditions");
             jsonWriter.WriteStartArray();
