@@ -26,7 +26,7 @@ internal sealed class FieldRangeDoubleCondition : FilterConditionBase
         _gte = gte;
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
         jsonWriter.WritePropertyName("range");
@@ -55,5 +55,5 @@ internal sealed class FieldRangeDoubleCondition : FilterConditionBase
         jsonWriter.WriteEndObject();
     }
 
-    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitFieldRangeDoubleCondition(this);
+    internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldRangeDoubleCondition(this);
 }

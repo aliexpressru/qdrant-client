@@ -26,7 +26,7 @@ internal sealed class FieldValuesCountCondition : FilterConditionBase
         _greaterThanOrEqual = greaterThanOrEqual;
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
         jsonWriter.WritePropertyName("values_count");
@@ -55,5 +55,5 @@ internal sealed class FieldValuesCountCondition : FilterConditionBase
         jsonWriter.WriteEndObject();
     }
 
-    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitFieldValuesCountCondition(this);
+    internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldValuesCountCondition(this);
 }

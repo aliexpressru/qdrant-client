@@ -22,7 +22,7 @@ internal sealed class FieldMatchExceptCondition<T> : FilterConditionBase
         _exceptValues = exceptValues;
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
         jsonWriter.WritePropertyName("match");
@@ -34,5 +34,5 @@ internal sealed class FieldMatchExceptCondition<T> : FilterConditionBase
         jsonWriter.WriteEndObject();
     }
 
-    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitFieldMatchExceptCondition(this);
+    internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldMatchExceptCondition(this);
 }

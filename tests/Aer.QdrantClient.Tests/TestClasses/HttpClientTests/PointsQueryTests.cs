@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Formulas.Builders;
 using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
@@ -102,7 +102,7 @@ public class PointsQueryTests : QdrantTestsBase
         if (!IsCiEnvironment)
         {
             // CI environment container does not have usage statistics enabled
-            
+
             nearestPointsByVectorResponse.Usage.Cpu.Should().BeGreaterThan(0);
             nearestPointsByVectorResponse.Usage.PayloadIoRead.Should().BeGreaterThan(0);
             nearestPointsByVectorResponse.Usage.VectorIoRead.Should().BeGreaterThan(0);
@@ -204,8 +204,17 @@ public class PointsQueryTests : QdrantTestsBase
                     p.Payload.As<TestPayload>().Integer.Should().BeInRange(0, 2)
             ).And.AllSatisfy(
                 p =>
-                    // Since we are ordering by as the final stage of the multi-stage query we don't get any scores
-                    p.Score.Should().Be(0)
+                {
+                    if (IsVersionBefore("1.16.0"))
+                    {
+                        // Since we are ordering by as the final stage of the multi-stage query we don't get any scores
+                        p.Score.Should().Be(0);
+                    }
+                    else
+                    {
+                        p.Score.Should().Be(1);
+                    }
+                }
             );
     }
 
@@ -248,7 +257,7 @@ public class PointsQueryTests : QdrantTestsBase
         // first prefetch returns 3 points
         // second prefetch returns up to 5 points
         nearestPointsResponse.Result.Points.Length.Should().BeInRange(5, 8);
-        
+
         nearestPointsResponse.Result.Points.Should().AllSatisfy(
             p => p.Score.Should().BeGreaterThan(0)
         );
@@ -273,10 +282,22 @@ public class PointsQueryTests : QdrantTestsBase
 
         sampleRandomPointsResponse.Status.IsSuccess.Should().BeTrue();
         sampleRandomPointsResponse.Result.Points.Length.Should().Be(3);
-        sampleRandomPointsResponse.Result.Points.Should().AllSatisfy(
-            // Since we are not using query vector we don't get any scores
-            p => p.Score.Should().Be(0)
-        );
+
+        if (IsVersionBefore("1.16.0"))
+        {
+            sampleRandomPointsResponse.Result.Points.Should().AllSatisfy(
+                // Since we are not using query vector we don't get any scores
+                p => p.Score.Should().Be(0)
+            );
+        }
+        else
+        {
+            // Score is set to 1 for sample query starting from Qdrant 1.16.0
+            sampleRandomPointsResponse.Result.Points.Should().AllSatisfy(
+                // Since we are not using query vector we don't get any scores
+                p => p.Score.Should().Be(1)
+            );
+        }
     }
 
     [Test]
@@ -322,9 +343,18 @@ public class PointsQueryTests : QdrantTestsBase
         var firstPoint = orderedPoints.First();
         var secondPoint = orderedPoints.Skip(1).First();
 
-        // Since we are not using the query vector we don't get any scores
-        firstPoint.Score.Should().Be(0);
-        secondPoint.Score.Should().Be(0);
+        if (IsVersionBefore("1.16.0"))
+        {
+            // Since we are not using the query vector we don't get any scores
+            firstPoint.Score.Should().Be(0);
+            secondPoint.Score.Should().Be(0);
+        }
+        else
+        {
+            // Since we are not using the query vector we don't get any scores
+            firstPoint.Score.Should().Be(1);
+            secondPoint.Score.Should().Be(1);
+        }
 
         firstPoint.Payload.As<TestPayload>().Integer!.Value
             .Should().BeLessThan(secondPoint.Payload.As<TestPayload>().Integer!.Value);
@@ -380,14 +410,14 @@ public class PointsQueryTests : QdrantTestsBase
                 expectedPoint.Id.AsInteger().Should().Be(readPointId);
 
                 var readPointPayload = readPoint.Payload.As<TestPayload>();
-                
+
                 var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
 
                 readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
                 readPointPayload.FloatingPointNumber.Should()
                     .Be(expectedPointPayload.FloatingPointNumber);
                 readPointPayload.Text.Should().Be(expectedPointPayload.Text);
-                
+
                 readPoint.Score.Should().BeGreaterThan(0);
             }
         }
@@ -431,7 +461,7 @@ public class PointsQueryTests : QdrantTestsBase
                 g => g.Hits.Should()
                     .AllSatisfy(h => h.Payload.Should().NotBeNull())
                     .And.AllSatisfy(h => h.Vector.Should().NotBeNull())
-                    .And.AllSatisfy(h=>h.Score.Should().BeGreaterThan(0))
+                    .And.AllSatisfy(h => h.Score.Should().BeGreaterThan(0))
             );
     }
 
@@ -458,7 +488,8 @@ public class PointsQueryTests : QdrantTestsBase
             new QueryPointsRequest(
                 PointsQuery.CreateFormulaQuery(F.Constant(10)), // All resulting points will have score 10
                 withVector: true,
-                withPayload: true){
+                withPayload: true)
+            {
                 Prefetch =
                 [
                     new PrefetchPoints()
@@ -466,13 +497,13 @@ public class PointsQueryTests : QdrantTestsBase
                         Query = PointsQuery.CreateFindNearestPointsQuery(upsertPoints[0].Vector),
                         Limit = 2
                     }
-                ]  
+                ]
             },
             CancellationToken.None);
 
         queryResponse.Status.IsSuccess.Should().BeTrue();
-        
-        queryResponse.Result.Points.Should().AllSatisfy(p=>p.Score.Should().Be(10));
+
+        queryResponse.Result.Points.Should().AllSatisfy(p => p.Score.Should().Be(10));
     }
 
     [Test]
@@ -520,8 +551,8 @@ public class PointsQueryTests : QdrantTestsBase
             CancellationToken.None);
 
         queryResponse.Status.IsSuccess.Should().BeTrue();
-        
-        foreach(var readPoint in queryResponse.Result.Points)
+
+        foreach (var readPoint in queryResponse.Result.Points)
         {
             var readPointInteger = readPoint.Payload.As<TestPayload>().Integer;
 
@@ -538,7 +569,7 @@ public class PointsQueryTests : QdrantTestsBase
 
     [Test]
     public async Task QueryPoints_Mmr()
-    { 
+    {
         OnlyIfVersionAfterOrEqual("1.15.0", "MMR query parameters is supported starting from Qdrant 1.15.0");
 
         var vectorCount = 10;

@@ -23,7 +23,7 @@ internal sealed class FieldInGeoRadiusCondition : FilterConditionBase
         _radius = radius;
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
         jsonWriter.WritePropertyName("geo_radius");
@@ -47,5 +47,5 @@ internal sealed class FieldInGeoRadiusCondition : FilterConditionBase
         jsonWriter.WriteEndObject();
     }
 
-    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitFieldInGeoRadiusCondition(this);
+    internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldInGeoRadiusCondition(this);
 }

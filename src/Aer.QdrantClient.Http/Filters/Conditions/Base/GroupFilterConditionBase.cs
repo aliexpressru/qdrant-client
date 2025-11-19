@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http.Models.Shared;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
@@ -10,7 +10,8 @@ internal abstract class FilterGroupConditionBase : FilterConditionBase
     protected internal override PayloadIndexedFieldType? PayloadFieldType => null;
 
     protected internal readonly List<FilterConditionBase> Conditions = [];
-    
+
     protected FilterGroupConditionBase(string payloadFieldName) : base(payloadFieldName)
-    { }
+    {
+    }
 }

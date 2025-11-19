@@ -21,7 +21,7 @@ internal sealed class FieldInGeoPolygonCondition : FilterConditionBase
         _interiorPolygonsPoints = interiorPolygonsPoints;
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
         jsonWriter.WritePropertyName("geo_polygon");
@@ -84,5 +84,5 @@ internal sealed class FieldInGeoPolygonCondition : FilterConditionBase
         jsonWriter.WriteEndObject();
     }
 
-    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitFieldInGeoPolygonCondition(this);
+    internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldInGeoPolygonCondition(this);
 }

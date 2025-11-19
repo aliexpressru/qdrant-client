@@ -32,6 +32,14 @@ public abstract class FilterConditionBase
     }
 
     /// <summary>
+    /// Contains optimized condition if available. If available, this condition will be used instead of the current one.
+    /// </summary>
+    protected internal FilterConditionBase OptimizedCondition
+    {
+        get; set;
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="FilterConditionBase"/> class.
     /// </summary>
     /// <param name="payloadFieldName">The payload key to apply filter to.</param>
@@ -138,7 +146,23 @@ public abstract class FilterConditionBase
     /// Write out the condition json to specified writer.
     /// </summary>
     /// <param name="jsonWriter">The json writer to write filter json to.</param>
-    public abstract void WriteConditionJson(Utf8JsonWriter jsonWriter);
+    internal abstract void WriteConditionJson(Utf8JsonWriter jsonWriter);
+
+    /// <summary>
+    /// Writes the condition json to specified writer, using optimized condition if available.
+    /// </summary>
+    /// <param name="jsonWriter">The json writer to write filter json to.</param>
+    public void WriteJson(Utf8JsonWriter jsonWriter)
+    {
+        if (OptimizedCondition != null)
+        {
+            OptimizedCondition.WriteConditionJson(jsonWriter);
+        }
+        else
+        {
+            WriteConditionJson(jsonWriter);
+        }
+    }
 
     /// <summary>
     /// Writes the payload field to resulting filter json.
@@ -197,5 +221,5 @@ public abstract class FilterConditionBase
     /// Accepts the specified visitor.
     /// </summary>
     /// <param name="visitor">The visitor to accept.</param>
-    internal abstract void Accept(IFilterConditionVisitor visitor);
+    internal abstract void Accept(FilterConditionVisitor visitor);
 }

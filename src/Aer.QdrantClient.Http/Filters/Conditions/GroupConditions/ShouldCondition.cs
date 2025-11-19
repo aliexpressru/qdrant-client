@@ -37,7 +37,7 @@ internal sealed class ShouldCondition : FilterGroupConditionBase
         }
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         jsonWriter.WritePropertyName("should");
         jsonWriter.WriteStartArray();
@@ -46,7 +46,7 @@ internal sealed class ShouldCondition : FilterGroupConditionBase
         {
             jsonWriter.WriteStartObject();
 
-            condition.WriteConditionJson(jsonWriter);
+            condition.WriteJson(jsonWriter);
 
             jsonWriter.WriteEndObject();
         }
@@ -54,5 +54,13 @@ internal sealed class ShouldCondition : FilterGroupConditionBase
         jsonWriter.WriteEndArray();
     }
 
-    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitShouldCondition(this);
+    internal override void Accept(FilterConditionVisitor visitor)
+    {
+        visitor.VisitShouldCondition(this);
+
+        foreach (var condition in Conditions)
+        {
+            condition.Accept(visitor);
+        }
+    }
 }

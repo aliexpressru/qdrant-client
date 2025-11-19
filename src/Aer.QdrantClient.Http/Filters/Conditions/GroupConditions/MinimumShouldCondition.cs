@@ -53,7 +53,7 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
         }
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         jsonWriter.WritePropertyName("min_should");
         jsonWriter.WriteStartObject();
@@ -67,7 +67,7 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
             {
                 jsonWriter.WriteStartObject();
                 {
-                    condition.WriteConditionJson(jsonWriter);
+                    condition.WriteJson(jsonWriter);
                 }
                 jsonWriter.WriteEndObject();
             }
@@ -78,5 +78,13 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
         jsonWriter.WriteEndObject();
     }
 
-    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitMinimumShouldCondition(this);
+    internal override void Accept(FilterConditionVisitor visitor)
+    {
+        visitor.VisitMinimumShouldCondition(this);
+
+        foreach (var condition in Conditions)
+        {
+            condition.Accept(visitor);
+        }
+    }
 }

@@ -15,11 +15,11 @@ internal sealed class HasNamedVectorCondition : FilterConditionBase
         _namedVectorName = namedVectorName;
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         jsonWriter.WritePropertyName("has_vector");
         jsonWriter.WriteStringValue(_namedVectorName);
     }
 
-    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitHasNamedVectorCondition(this);
+    internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitHasNamedVectorCondition(this);
 }

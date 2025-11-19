@@ -1,14 +1,13 @@
 using System.Text.Json;
 using Aer.QdrantClient.Http.Filters.Introspection;
-using Aer.QdrantClient.Http.Filters.Optimization.Abstractions;
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal sealed class FieldMatchAnyCondition<T> : FilterConditionBase, IOptimizableCondition
+internal sealed class FieldMatchAnyCondition<T> : FilterConditionBase
 {
-    private readonly IEnumerable<T> _anyValuesToMatch;
+    internal readonly IEnumerable<T> _anyValuesToMatch;
 
     protected internal override PayloadIndexedFieldType? PayloadFieldType { get; } = GetPayloadFieldType<T>();
 
@@ -18,7 +17,7 @@ internal sealed class FieldMatchAnyCondition<T> : FilterConditionBase, IOptimiza
         _anyValuesToMatch = matchAnyValuesToMatchValues;
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
         jsonWriter.WritePropertyName("match");
@@ -31,10 +30,5 @@ internal sealed class FieldMatchAnyCondition<T> : FilterConditionBase, IOptimiza
         jsonWriter.WriteEndObject();
     }
 
-    public void Accept(IOptimizationVisitor visitor)
-    {
-        visitor.Visit(this);
-    }
-
-    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitFieldMatchAnyCondition(this);
+    internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldMatchAnyCondition(this);
 }

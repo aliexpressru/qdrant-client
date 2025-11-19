@@ -13,7 +13,7 @@ internal sealed class NestedCondition : FilterGroupConditionBase
         Conditions.AddRange(conditions);
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         jsonWriter.WritePropertyName("nested");
         jsonWriter.WriteStartObject();
@@ -25,7 +25,7 @@ internal sealed class NestedCondition : FilterGroupConditionBase
 
         foreach (var condition in Conditions)
         {
-            condition.WriteConditionJson(jsonWriter);
+            condition.WriteJson(jsonWriter);
         }
 
         jsonWriter.WriteEndObject();
@@ -33,5 +33,13 @@ internal sealed class NestedCondition : FilterGroupConditionBase
         jsonWriter.WriteEndObject();
     }
 
-    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitNestedCondition(this);
+    internal override void Accept(FilterConditionVisitor visitor)
+    {
+        visitor.VisitNestedCondition(this);
+
+        foreach (var condition in Conditions)
+        {
+            condition.Accept(visitor);
+        }
+    }
 }

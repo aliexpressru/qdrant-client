@@ -26,7 +26,7 @@ internal sealed class FieldInGeoBoundingBoxCondition : FilterConditionBase
         _bottomRightLatitude = bottomRightLatitude;
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
         jsonWriter.WritePropertyName("geo_bounding_box");
@@ -58,5 +58,5 @@ internal sealed class FieldInGeoBoundingBoxCondition : FilterConditionBase
         jsonWriter.WriteEndObject();
     }
 
-    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitFieldInGeoBoundingBoxCondition(this);
+    internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldInGeoBoundingBoxCondition(this);
 }

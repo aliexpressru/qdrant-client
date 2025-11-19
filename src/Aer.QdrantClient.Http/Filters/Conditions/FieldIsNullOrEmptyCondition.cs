@@ -12,7 +12,7 @@ internal sealed class FieldIsNullOrEmptyCondition : FilterConditionBase
     {
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         jsonWriter.WritePropertyName("is_empty");
         jsonWriter.WriteStartObject();
@@ -22,5 +22,5 @@ internal sealed class FieldIsNullOrEmptyCondition : FilterConditionBase
         jsonWriter.WriteEndObject();
     }
 
-    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitFieldIsNullOrEmptyCondition(this);
+    internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldIsNullOrEmptyCondition(this);
 }

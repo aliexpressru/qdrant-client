@@ -34,13 +34,21 @@ internal sealed class FilterGroupCondition : FilterGroupConditionBase
         }
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         foreach (var condition in Conditions)
         {
-            condition.WriteConditionJson(jsonWriter);
+            condition.WriteJson(jsonWriter);
         }
     }
 
-    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitFilterGroupCondition(this);
+    internal override void Accept(FilterConditionVisitor visitor)
+    {
+        visitor.VisitFilterGroupCondition(this);
+
+        foreach (var condition in Conditions)
+        {
+            condition.Accept(visitor);
+        }
+    }
 }

@@ -32,7 +32,7 @@ internal sealed class HasAnyIdCondition : FilterConditionBase
         _pointIds = stringPointIds.Select(PointId.Guid);
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         jsonWriter.WritePropertyName("has_id");
         jsonWriter.WriteStartArray();
@@ -45,5 +45,5 @@ internal sealed class HasAnyIdCondition : FilterConditionBase
         jsonWriter.WriteEndArray();
     }
 
-    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitHasAnyIdCondition(this);
+    internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitHasAnyIdCondition(this);
 }

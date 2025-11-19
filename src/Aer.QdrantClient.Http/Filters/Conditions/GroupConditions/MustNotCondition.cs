@@ -63,7 +63,7 @@ internal sealed class MustNotCondition : FilterGroupConditionBase
         }
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         jsonWriter.WritePropertyName("must_not");
         jsonWriter.WriteStartArray();
@@ -72,7 +72,7 @@ internal sealed class MustNotCondition : FilterGroupConditionBase
         {
             jsonWriter.WriteStartObject();
 
-            condition.WriteConditionJson(jsonWriter);
+            condition.WriteJson(jsonWriter);
 
             jsonWriter.WriteEndObject();
         }
@@ -80,5 +80,13 @@ internal sealed class MustNotCondition : FilterGroupConditionBase
         jsonWriter.WriteEndArray();
     }
 
-    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitMustNotCondition(this);
+    internal override void Accept(FilterConditionVisitor visitor)
+    {
+        visitor.VisitMustNotCondition(this);
+
+        foreach (var condition in Conditions)
+        {
+            condition.Accept(visitor);
+        }
+    }
 }

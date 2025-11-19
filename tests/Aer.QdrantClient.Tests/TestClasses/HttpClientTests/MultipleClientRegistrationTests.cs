@@ -16,7 +16,7 @@ public class MultipleClientRegistrationTests : QdrantTestsBase
     [SetUp]
     public async Task BeforeEachTest()
     {
-        await ResetStorage();
+        //await ResetStorage();
     }
 
     [Test]
@@ -39,6 +39,9 @@ public class MultipleClientRegistrationTests : QdrantTestsBase
 
         var firstClient = factory.CreateClient(FirstClientName);
         var secondClient = factory.CreateClient(SecondClientName);
+
+        await ResetStorage(firstClient);
+        await ResetStorage(secondClient);
 
         // We use created collections as markers that the clients are indeed different
 
