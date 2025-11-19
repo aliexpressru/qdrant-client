@@ -1,5 +1,6 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
+using Aer.QdrantClient.Http.Filters.Introspection;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
@@ -27,4 +28,6 @@ internal sealed class FieldMatchAnyConditionFast<T> : FilterConditionBase
     {
         _optimizedShouldCondition.WriteConditionJson(jsonWriter);
     }
+
+    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitFieldMatchAnyConditionFast(this);
 }

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aer.QdrantClient.Http.Filters.Introspection;
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -43,4 +44,6 @@ internal sealed class HasAnyIdCondition : FilterConditionBase
 
         jsonWriter.WriteEndArray();
     }
+
+    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitHasAnyIdCondition(this);
 }

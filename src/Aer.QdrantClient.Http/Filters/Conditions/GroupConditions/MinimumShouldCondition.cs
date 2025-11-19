@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Filters.Introspection;
 using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
@@ -76,4 +77,6 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
 
         jsonWriter.WriteEndObject();
     }
+
+    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitMinimumShouldCondition(this);
 }

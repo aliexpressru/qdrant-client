@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Filters.Introspection;
 using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
@@ -78,4 +79,6 @@ internal sealed class MustNotCondition : FilterGroupConditionBase
 
         jsonWriter.WriteEndArray();
     }
+
+    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitMustNotCondition(this);
 }

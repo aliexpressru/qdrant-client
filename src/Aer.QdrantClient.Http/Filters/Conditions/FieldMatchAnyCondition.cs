@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aer.QdrantClient.Http.Filters.Introspection;
 using Aer.QdrantClient.Http.Filters.Optimization.Abstractions;
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -34,4 +35,6 @@ internal sealed class FieldMatchAnyCondition<T> : FilterConditionBase, IOptimiza
     {
         visitor.Visit(this);
     }
+
+    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitFieldMatchAnyCondition(this);
 }

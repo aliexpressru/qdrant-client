@@ -197,8 +197,5 @@ public abstract class FilterConditionBase
     /// Accepts the specified visitor.
     /// </summary>
     /// <param name="visitor">The visitor to accept.</param>
-    internal void Accept(IFilterConditionVisitor visitor)
-    {
-
-    }
+    internal abstract void Accept(IFilterConditionVisitor visitor);
 }

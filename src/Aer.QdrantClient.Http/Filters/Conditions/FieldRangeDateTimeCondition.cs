@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aer.QdrantClient.Http.Filters.Introspection;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
@@ -53,4 +54,6 @@ internal sealed class FieldRangeDateTimeCondition : FilterConditionBase
 
         jsonWriter.WriteEndObject();
     }
+
+    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitFieldRangeDateTimeCondition(this);
 }

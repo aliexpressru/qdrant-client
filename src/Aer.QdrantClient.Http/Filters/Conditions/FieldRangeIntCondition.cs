@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aer.QdrantClient.Http.Filters.Introspection;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
@@ -10,7 +11,7 @@ internal sealed class FieldRangeIntCondition : FilterConditionBase
     private readonly int? _greaterThan;
     private readonly int? _greaterThanOrEqual;
 
-    protected internal override PayloadIndexedFieldType? PayloadFieldType => PayloadIndexedFieldType.Integer; 
+    protected internal override PayloadIndexedFieldType? PayloadFieldType => PayloadIndexedFieldType.Integer;
 
     public FieldRangeIntCondition(
         string payloadFieldName,
@@ -53,4 +54,6 @@ internal sealed class FieldRangeIntCondition : FilterConditionBase
 
         jsonWriter.WriteEndObject();
     }
+
+    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitFieldRangeIntCondition(this);
 }

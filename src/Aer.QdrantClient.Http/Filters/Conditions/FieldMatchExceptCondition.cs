@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aer.QdrantClient.Http.Filters.Introspection;
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Models.Shared;
 
@@ -32,4 +33,6 @@ internal sealed class FieldMatchExceptCondition<T> : FilterConditionBase
         }
         jsonWriter.WriteEndObject();
     }
+
+    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitFieldMatchExceptCondition(this);
 }

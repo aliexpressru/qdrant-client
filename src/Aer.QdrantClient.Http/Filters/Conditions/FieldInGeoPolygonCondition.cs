@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aer.QdrantClient.Http.Filters.Introspection;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Shared;
 
@@ -10,7 +11,7 @@ internal sealed class FieldInGeoPolygonCondition : FilterConditionBase
     private readonly IEnumerable<GeoPoint>[] _interiorPolygonsPoints;
 
     protected internal override PayloadIndexedFieldType? PayloadFieldType => PayloadIndexedFieldType.Geo;
-    
+
     public FieldInGeoPolygonCondition(
         string payloadFieldName,
         IEnumerable<GeoPoint> exteriorPolygonPoints,
@@ -51,7 +52,7 @@ internal sealed class FieldInGeoPolygonCondition : FilterConditionBase
 
             jsonWriter.WriteStartArray();
 
-            if (_interiorPolygonsPoints is {Length: > 0})
+            if (_interiorPolygonsPoints is { Length: > 0 })
             {
 
                 foreach (var interiorPolygonPoints in _interiorPolygonsPoints)
@@ -82,4 +83,6 @@ internal sealed class FieldInGeoPolygonCondition : FilterConditionBase
 
         jsonWriter.WriteEndObject();
     }
+
+    internal override void Accept(IFilterConditionVisitor visitor) => visitor.VisitFieldInGeoPolygonCondition(this);
 }
