@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
+using Aer.QdrantClient.Http.Filters.Introspection;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
@@ -21,11 +22,14 @@ public abstract class FilterConditionBase
     /// The payload filed to apply filter to.
     /// </summary>
     protected internal readonly string PayloadFieldName;
-    
+
     /// <summary>
     /// The type of the payload field corresponding to the actual filter parameter.
     /// </summary>
-    protected internal abstract PayloadIndexedFieldType? PayloadFieldType { get; }
+    protected internal abstract PayloadIndexedFieldType? PayloadFieldType
+    {
+        get;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FilterConditionBase"/> class.
@@ -149,7 +153,7 @@ public abstract class FilterConditionBase
 
         jsonWriter.WriteString("key", PayloadFieldName);
     }
-    
+
     /// <summary>
     /// Gets the <see cref="PayloadIndexedFieldType"/> for the specified parameter type.
     /// </summary>
@@ -167,10 +171,10 @@ public abstract class FilterConditionBase
             TypeCode.Single => PayloadIndexedFieldType.Float,
             TypeCode.Double => PayloadIndexedFieldType.Float,
             TypeCode.Boolean => PayloadIndexedFieldType.Keyword,
-            
+
             // Guid will have an Object type code so we need to check for it explicitly.
             TypeCode.Object when type == typeof(Guid) => PayloadIndexedFieldType.Uuid,
-            
+
             TypeCode.Char => PayloadIndexedFieldType.Keyword,
             TypeCode.SByte => PayloadIndexedFieldType.Integer,
             TypeCode.Byte => PayloadIndexedFieldType.Integer,
@@ -185,7 +189,16 @@ public abstract class FilterConditionBase
             TypeCode.Empty => null,
             _ => throw new ArgumentOutOfRangeException($"Unknown type code '{typeCode}' for type {typeof(T).FullName}")
         };
-        
+
         return payloadFieldType;
+    }
+
+    /// <summary>
+    /// Accepts the specified visitor.
+    /// </summary>
+    /// <param name="visitor">The visitor to accept.</param>
+    internal void Accept(IFilterConditionVisitor visitor)
+    {
+
     }
 }
