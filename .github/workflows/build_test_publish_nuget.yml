@@ -8,8 +8,7 @@ on:
 env:
   NUGET_SOURCE_URL: 'https://api.nuget.org/v3/index.json'
   PACKAGE_OUTPUT_DIRECTORY: ${{ github.workspace }}/output
-  QDRANT_IMAGE: 'qdrant/qdrant:1.16.0'
-
+  
 jobs:
 
   build_test_publish_nuget:
@@ -19,7 +18,7 @@ jobs:
     services:
         # single node qdrant
         qdrant:
-            image: ${{ env.QDRANT_IMAGE }}
+            image: qdrant/qdrant:1.16.0
             ports:
                 - "6333:6333"
                 - "6334:6334"
@@ -27,7 +26,7 @@ jobs:
 
         # 2-node qdrant cluster
         qdrant-1:
-            image: ${{ env.QDRANT_IMAGE }}
+            image: qdrant/qdrant:1.16.0
             ports:
                 - "6343:6333"
                 - "6344:6334"
@@ -37,7 +36,7 @@ jobs:
                 QDRANT_URI: "http://qdrant-1:6343"
 
         qdrant-2:
-            image: ${{ env.QDRANT_IMAGE }}
+            image: qdrant/qdrant:1.16.0
             ports:
                 - "6353:6333"
                 - "6354:6334"
@@ -49,7 +48,7 @@ jobs:
 
         # single node qdrant for multi-client tests
         qdrant-00:
-            image: ${{ env.QDRANT_IMAGE }}
+            image: qdrant/qdrant:1.16.0
             ports:
                 - "6363:6333"
                 - "6364:6334"
