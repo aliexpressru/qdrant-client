@@ -33,7 +33,8 @@ public sealed class QdrantFilter
     public static QdrantFilter Empty { get; } = new();
 
     /// <summary>
-    /// Returns <c>true</c> if this filter is empty (i.e. does not have any conditions and was not created from a raw filter string), otherwise <c>false</c>.
+    /// Returns <c>true</c> if this filter is empty (i.e. does not have any conditions and was not
+    /// created from a raw filter string), otherwise <c>false</c>.
     /// </summary>
     public bool IsEmpty => _conditions.Count == 0 && string.IsNullOrWhiteSpace(_rawFilterString);
 
@@ -43,8 +44,8 @@ public sealed class QdrantFilter
     public string RawFilterString => _rawFilterString;
 
     /// <summary>
-    /// Gets the payload filed names used in all of this filter conditions along with their inferred types.
-    /// Is this filter was constructed with raw filter string - returns an empty collection.
+    /// Gets the payload filed names used in all of this filter conditions along with their inferred
+    /// types. Is this filter was constructed with raw filter string - returns an empty collection.
     /// </summary>
     public IReadOnlyCollection<FieldNameType> GetPayloadFieldsWithTypes()
     {
@@ -240,7 +241,9 @@ public sealed class QdrantFilter
     /// <summary>
     /// Build qdrant filter string representation. For debug and testing purposes.
     /// </summary>
-    /// <param name="isIndentFilterSyntax">Determines whether the resulting filter string should be indented. Default value <c>false</c>.</param>
+    /// <param name="isIndentFilterSyntax">
+    /// Determines whether the resulting filter string should be indented. Default value <c>false</c>.
+    /// </param>
     public string ToString(bool isIndentFilterSyntax)
     {
         if (!string.IsNullOrWhiteSpace(_rawFilterString))

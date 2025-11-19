@@ -376,8 +376,7 @@ public class QdrantTestsBase
             useHttps: false,
             enableCompression: true);
 
-    internal async
-        Task<(IReadOnlyList<UpsertPointsRequest.UpsertPoint> Points,
+    internal async Task<(IReadOnlyList<UpsertPointsRequest.UpsertPoint> Points,
             Dictionary<ulong, UpsertPointsRequest.UpsertPoint> PointsByPointIds,
             IReadOnlyList<PointId> PointIds)> PrepareCollection(
             IQdrantHttpClient qdrantHttpClient,
@@ -475,9 +474,10 @@ public class QdrantTestsBase
                 CancellationToken.None,
                 shardsNumber: shardNumber / 2, // place half of the shards on this key
                 replicationFactor: replicationFactor,
-                // with manual shard placement we need to manually specify all replica peers,
-                // since qdrant allows having collection replication factor of 2 while having only one peer
-                // for a specific shard. Thus, we need to manually tell it both primary peer and a replica peer
+                // with manual shard placement we need to manually specify all replica peers, since
+                // qdrant allows having collection replication factor of 2 while having only one
+                // peer for a specific shard. Thus, we need to manually tell it both primary peer
+                // and a replica peer
                 placement: replicationFactor == 1
                     ? [allPeers.First()]
                     : [.. allPeers])).EnsureSuccess();
@@ -524,9 +524,10 @@ public class QdrantTestsBase
                 CancellationToken.None,
                 shardsNumber: shardNumber, // place all the shards on this key
                 replicationFactor: replicationFactor,
-                // with manual shard placement we need to manually specify all replica peers,
-                // since qdrant allows having collection replication factor of 2 while having only one peer
-                // for a specific shard. Thus, we need to manually tell it both primary peer and a replica peer
+                // with manual shard placement we need to manually specify all replica peers, since
+                // qdrant allows having collection replication factor of 2 while having only one
+                // peer for a specific shard. Thus, we need to manually tell it both primary peer
+                // and a replica peer
                 placement: replicationFactor == 1
                     ? [allPeers.First()]
                     : [.. allPeers])).EnsureSuccess();
