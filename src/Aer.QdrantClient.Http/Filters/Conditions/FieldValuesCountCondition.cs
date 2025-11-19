@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aer.QdrantClient.Http.Filters.Introspection;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
@@ -10,7 +11,7 @@ internal sealed class FieldValuesCountCondition : FilterConditionBase
     private readonly int? _greaterThan;
     private readonly int? _greaterThanOrEqual;
 
-    protected internal override PayloadIndexedFieldType? PayloadFieldType => null; 
+    protected internal override PayloadIndexedFieldType? PayloadFieldType => null;
 
     public FieldValuesCountCondition(
         string payloadFieldName,
@@ -25,7 +26,7 @@ internal sealed class FieldValuesCountCondition : FilterConditionBase
         _greaterThanOrEqual = greaterThanOrEqual;
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
         jsonWriter.WritePropertyName("values_count");
@@ -53,4 +54,6 @@ internal sealed class FieldValuesCountCondition : FilterConditionBase
 
         jsonWriter.WriteEndObject();
     }
+
+    internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldValuesCountCondition(this);
 }

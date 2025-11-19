@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aer.QdrantClient.Http.Filters.Introspection;
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -31,7 +32,7 @@ internal sealed class HasAnyIdCondition : FilterConditionBase
         _pointIds = stringPointIds.Select(PointId.Guid);
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         jsonWriter.WritePropertyName("has_id");
         jsonWriter.WriteStartArray();
@@ -43,4 +44,6 @@ internal sealed class HasAnyIdCondition : FilterConditionBase
 
         jsonWriter.WriteEndArray();
     }
+
+    internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitHasAnyIdCondition(this);
 }

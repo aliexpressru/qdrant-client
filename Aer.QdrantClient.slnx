@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Aer.QdrantClient.Http/Aer.QdrantClient.Http.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Aer.QdrantClient.Tests/Aer.QdrantClient.Tests.csproj" />
+  </Folder>
+</Solution>

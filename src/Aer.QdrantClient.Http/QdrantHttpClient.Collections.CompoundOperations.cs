@@ -95,10 +95,11 @@ public partial class QdrantHttpClient
         string collectionName,
         ICollection<CollectionPayloadIndexDefinition> payloadIndexes)
     {
-        Task.Run(async () => {
+        Task.Run(async () =>
+        {
             try
             {
-                if (payloadIndexes is null or {Count: 0})
+                if (payloadIndexes is null or { Count: 0 })
                 {
                     return;
                 }

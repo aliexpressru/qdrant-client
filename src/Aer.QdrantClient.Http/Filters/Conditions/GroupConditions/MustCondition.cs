@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Filters.Introspection;
 using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
@@ -46,7 +47,7 @@ internal sealed class MustCondition : FilterGroupConditionBase
         }
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         jsonWriter.WritePropertyName("must");
         jsonWriter.WriteStartArray();
@@ -55,11 +56,21 @@ internal sealed class MustCondition : FilterGroupConditionBase
         {
             jsonWriter.WriteStartObject();
 
-            condition.WriteConditionJson(jsonWriter);
+            condition.WriteJson(jsonWriter);
 
             jsonWriter.WriteEndObject();
         }
 
         jsonWriter.WriteEndArray();
+    }
+
+    internal override void Accept(FilterConditionVisitor visitor)
+    {
+        visitor.VisitMustCondition(this);
+
+        foreach (var condition in Conditions)
+        {
+            condition.Accept(visitor);
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+using Aer.QdrantClient.Http.Filters.Introspection;
+using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 
@@ -8,7 +9,8 @@ namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 internal sealed class FilterGroupCondition : FilterGroupConditionBase
 {
     public FilterGroupCondition(params FilterConditionBase[] conditions) : this((IEnumerable<FilterConditionBase>)conditions)
-    { }
+    {
+    }
 
     public FilterGroupCondition(IEnumerable<FilterConditionBase> conditions) : base(DiscardPayloadFieldName)
     {
@@ -32,11 +34,21 @@ internal sealed class FilterGroupCondition : FilterGroupConditionBase
         }
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         foreach (var condition in Conditions)
         {
-            condition.WriteConditionJson(jsonWriter);
+            condition.WriteJson(jsonWriter);
+        }
+    }
+
+    internal override void Accept(FilterConditionVisitor visitor)
+    {
+        visitor.VisitFilterGroupCondition(this);
+
+        foreach (var condition in Conditions)
+        {
+            condition.Accept(visitor);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aer.QdrantClient.Http.Filters.Introspection;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
@@ -25,7 +26,7 @@ internal sealed class FieldRangeDateTimeCondition : FilterConditionBase
         _greaterThanOrEqual = greaterThanOrEqual;
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
         jsonWriter.WritePropertyName("range");
@@ -53,4 +54,6 @@ internal sealed class FieldRangeDateTimeCondition : FilterConditionBase
 
         jsonWriter.WriteEndObject();
     }
+
+    internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldRangeDateTimeCondition(this);
 }

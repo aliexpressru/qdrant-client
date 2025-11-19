@@ -70,6 +70,30 @@ services:
           cpus: '3'
           memory: 2G
 
+  # single node qdrant for multi-client tests
+
+  qdrant-00:
+    container_name: qdrant-00
+    image: qdrant/qdrant:${QDRANT_VERSION}
+    entrypoint: ./entrypoint.sh
+    command: --uri 'http://qdrant-00:6335'
+    volumes:
+      - qdrant-storage-00:/qdrant/storage
+      - snapshot-data-00:/qdrant/snapshots
+      - ./qdrant-config.yaml:/qdrant/config/production.yaml
+    ports:
+      - "6363:6333"
+      - "6364:6334"
+      - "6365:6335"
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 6G
+        reservations:
+          cpus: '3'
+          memory: 2G
+
 # We need to use named volumes instead of local volumes to avoid qdrant zerioing out the vectors after index creation.
 # And also to avoid the " \"called `Result::unwrap()` on an `Err` value: OutputTooSmall { expected: 4, actual: 0 }" error on version 1.14.x.
 volumes:
@@ -84,6 +108,7 @@ volumes:
     #   o: bind
   qdrant-storage-1:
   qdrant-storage-2:
+  qdrant-storage-00:
 
   # qdrant-config-single-node:
   #   driver: local
@@ -107,4 +132,5 @@ volumes:
     #   o: bind
   snapshot-data-1:
   snapshot-data-2:
+  snapshot-data-00:
   

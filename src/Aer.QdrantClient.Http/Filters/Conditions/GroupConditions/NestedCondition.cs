@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Filters.Introspection;
 using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
@@ -12,7 +13,7 @@ internal sealed class NestedCondition : FilterGroupConditionBase
         Conditions.AddRange(conditions);
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         jsonWriter.WritePropertyName("nested");
         jsonWriter.WriteStartObject();
@@ -24,11 +25,21 @@ internal sealed class NestedCondition : FilterGroupConditionBase
 
         foreach (var condition in Conditions)
         {
-            condition.WriteConditionJson(jsonWriter);
+            condition.WriteJson(jsonWriter);
         }
 
         jsonWriter.WriteEndObject();
 
         jsonWriter.WriteEndObject();
+    }
+
+    internal override void Accept(FilterConditionVisitor visitor)
+    {
+        visitor.VisitNestedCondition(this);
+
+        foreach (var condition in Conditions)
+        {
+            condition.Accept(visitor);
+        }
     }
 }

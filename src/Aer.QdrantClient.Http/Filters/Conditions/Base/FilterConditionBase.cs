@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
+using Aer.QdrantClient.Http.Filters.Introspection;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
@@ -21,11 +22,22 @@ public abstract class FilterConditionBase
     /// The payload filed to apply filter to.
     /// </summary>
     protected internal readonly string PayloadFieldName;
-    
+
     /// <summary>
     /// The type of the payload field corresponding to the actual filter parameter.
     /// </summary>
-    protected internal abstract PayloadIndexedFieldType? PayloadFieldType { get; }
+    protected internal abstract PayloadIndexedFieldType? PayloadFieldType
+    {
+        get;
+    }
+
+    /// <summary>
+    /// Contains optimized condition if available. If available, this condition will be used instead of the current one.
+    /// </summary>
+    protected internal FilterConditionBase OptimizedCondition
+    {
+        get; set;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FilterConditionBase"/> class.
@@ -134,7 +146,23 @@ public abstract class FilterConditionBase
     /// Write out the condition json to specified writer.
     /// </summary>
     /// <param name="jsonWriter">The json writer to write filter json to.</param>
-    public abstract void WriteConditionJson(Utf8JsonWriter jsonWriter);
+    internal abstract void WriteConditionJson(Utf8JsonWriter jsonWriter);
+
+    /// <summary>
+    /// Writes the condition json to specified writer, using optimized condition if available.
+    /// </summary>
+    /// <param name="jsonWriter">The json writer to write filter json to.</param>
+    public void WriteJson(Utf8JsonWriter jsonWriter)
+    {
+        if (OptimizedCondition != null)
+        {
+            OptimizedCondition.WriteConditionJson(jsonWriter);
+        }
+        else
+        {
+            WriteConditionJson(jsonWriter);
+        }
+    }
 
     /// <summary>
     /// Writes the payload field to resulting filter json.
@@ -149,7 +177,7 @@ public abstract class FilterConditionBase
 
         jsonWriter.WriteString("key", PayloadFieldName);
     }
-    
+
     /// <summary>
     /// Gets the <see cref="PayloadIndexedFieldType"/> for the specified parameter type.
     /// </summary>
@@ -167,10 +195,10 @@ public abstract class FilterConditionBase
             TypeCode.Single => PayloadIndexedFieldType.Float,
             TypeCode.Double => PayloadIndexedFieldType.Float,
             TypeCode.Boolean => PayloadIndexedFieldType.Keyword,
-            
+
             // Guid will have an Object type code so we need to check for it explicitly.
             TypeCode.Object when type == typeof(Guid) => PayloadIndexedFieldType.Uuid,
-            
+
             TypeCode.Char => PayloadIndexedFieldType.Keyword,
             TypeCode.SByte => PayloadIndexedFieldType.Integer,
             TypeCode.Byte => PayloadIndexedFieldType.Integer,
@@ -185,7 +213,13 @@ public abstract class FilterConditionBase
             TypeCode.Empty => null,
             _ => throw new ArgumentOutOfRangeException($"Unknown type code '{typeCode}' for type {typeof(T).FullName}")
         };
-        
+
         return payloadFieldType;
     }
+
+    /// <summary>
+    /// Accepts the specified visitor.
+    /// </summary>
+    /// <param name="visitor">The visitor to accept.</param>
+    internal abstract void Accept(FilterConditionVisitor visitor);
 }

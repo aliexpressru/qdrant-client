@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
@@ -250,8 +250,8 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
             createSecondNodeSnapshotResult.Name,
             CancellationToken.None);
 
-        await AssertSnapshot(downloadFirstNodeSnapshotResponse, createFirstNodeSnapshotResult);
-        await AssertSnapshot(downloadSecondNodeSnapshotResponse, createSecondNodeSnapshotResult);
+        await AssertSnapshotAsync(downloadFirstNodeSnapshotResponse, createFirstNodeSnapshotResult);
+        await AssertSnapshotAsync(downloadSecondNodeSnapshotResponse, createSecondNodeSnapshotResult);
 
         // Clean up snapshots
 
@@ -265,7 +265,7 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
             createSecondNodeSnapshotResult.Name,
             CancellationToken.None)).EnsureSuccess();
 
-        async Task AssertSnapshot(DownloadSnapshotResponse downloadedSnapshot, SnapshotInfo createdSnapshot)
+        async Task AssertSnapshotAsync(DownloadSnapshotResponse downloadedSnapshot, SnapshotInfo createdSnapshot)
         {
             downloadedSnapshot.Status.IsSuccess.Should().BeTrue();
             downloadedSnapshot.Result.SnapshotName.Should().Be(createdSnapshot.Name);
@@ -372,7 +372,7 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
 
         // If we fail here we might consider increasing the Task.Delay time above
 
-        countPointsResult.Count.Should().Be((ulong) expectedVectorCount);
+        countPointsResult.Count.Should().Be((ulong)expectedVectorCount);
 
         // Clean up snapshots
 
@@ -492,7 +492,7 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
 
         // If we fail here we might consider increasing the Task.Delay time above
 
-        countPointsResult.Count.Should().Be((ulong) expectedVectorCount);
+        countPointsResult.Count.Should().Be((ulong)expectedVectorCount);
 
         // Clean up snapshots
 

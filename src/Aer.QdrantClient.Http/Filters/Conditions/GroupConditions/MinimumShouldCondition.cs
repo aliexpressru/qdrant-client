@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Filters.Introspection;
 using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
@@ -10,7 +11,7 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
     /// <summary>
     /// Minimal number of conditions that should match to render ths filter matched.
     /// </summary>
-    internal readonly int MinCount;
+    private readonly int _minCount;
 
     public MinimumShouldCondition(int minCount, IEnumerable<FilterConditionBase> conditions) : base(DiscardPayloadFieldName)
     {
@@ -19,7 +20,7 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
             throw new InvalidOperationException("Minimum matched condition count should be greater than 0");
         }
 
-        MinCount = minCount;
+        _minCount = minCount;
 
         foreach (var condition in conditions)
         {
@@ -28,7 +29,7 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
                 foreach (var groupCondition in fgc.Conditions)
                 {
                     if (groupCondition is MinimumShouldCondition gsc
-                        && gsc.MinCount == MinCount)
+                        && gsc._minCount == _minCount)
                     {
                         // unfold nested groups only if the MinCount is the same
                         Conditions.AddRange(gsc.Conditions);
@@ -41,7 +42,7 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
             }
 
             if (condition is MinimumShouldCondition sc
-                && sc.MinCount == MinCount)
+                && sc._minCount == _minCount)
             {
                 Conditions.AddRange(sc.Conditions);
             }
@@ -52,12 +53,12 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
         }
     }
 
-    public override void WriteConditionJson(Utf8JsonWriter jsonWriter)
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         jsonWriter.WritePropertyName("min_should");
         jsonWriter.WriteStartObject();
         {
-            jsonWriter.WriteNumber("min_count", MinCount);
+            jsonWriter.WriteNumber("min_count", _minCount);
 
             jsonWriter.WritePropertyName("conditions");
             jsonWriter.WriteStartArray();
@@ -66,7 +67,7 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
             {
                 jsonWriter.WriteStartObject();
                 {
-                    condition.WriteConditionJson(jsonWriter);
+                    condition.WriteJson(jsonWriter);
                 }
                 jsonWriter.WriteEndObject();
             }
@@ -75,5 +76,15 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
         }
 
         jsonWriter.WriteEndObject();
+    }
+
+    internal override void Accept(FilterConditionVisitor visitor)
+    {
+        visitor.VisitMinimumShouldCondition(this);
+
+        foreach (var condition in Conditions)
+        {
+            condition.Accept(visitor);
+        }
     }
 }

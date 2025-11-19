@@ -1,11 +1,11 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
-using System.Text.Json;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters.Conditions;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 using Aer.QdrantClient.Http.Filters.Introspection;
 using Aer.QdrantClient.Http.Filters.Optimization;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
+using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters;
 
@@ -15,6 +15,14 @@ namespace Aer.QdrantClient.Http.Filters;
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public sealed class QdrantFilter
 {
+#if NET9_0_OR_GREATER
+    [FeatureSwitchDefinition("Aer.QdrantClient.OptimizeFilterConditions")]
+    internal static bool IsFilterOptimizationEnabled =>
+        AppContext.TryGetSwitch("Aer.QdrantClient.OptimizeFilterConditions", out bool isEnabled)
+            ? isEnabled
+            : false;
+#endif
+
     private readonly List<FilterConditionBase> _conditions = [];
 
     private string _rawFilterString;
@@ -28,19 +36,19 @@ public sealed class QdrantFilter
     /// Returns <c>true</c> if this filter is empty (i.e. does not have any conditions and was not created from a raw filter string), otherwise <c>false</c>.
     /// </summary>
     public bool IsEmpty => _conditions.Count == 0 && string.IsNullOrWhiteSpace(_rawFilterString);
-    
+
     /// <summary>
     /// Gets the raw filter string if this filter was created from a raw filter string.
     /// </summary>
     public string RawFilterString => _rawFilterString;
-    
+
     /// <summary>
     /// Gets the payload filed names used in all of this filter conditions along with their inferred types.
     /// Is this filter was constructed with raw filter string - returns an empty collection.
     /// </summary>
     public IReadOnlyCollection<FieldNameType> GetPayloadFieldsWithTypes()
     {
-        if (IsEmpty 
+        if (IsEmpty
             || !string.IsNullOrEmpty(_rawFilterString))
         {
             return [];
@@ -60,7 +68,8 @@ public sealed class QdrantFilter
     /// This ctor is for preventing builder from being created manually.
     /// </summary>
     private QdrantFilter()
-    { }
+    {
+    }
 
     /// <summary>
     /// Creates the qdrant filter instance from a single condition.
@@ -68,7 +77,7 @@ public sealed class QdrantFilter
     public static QdrantFilter Create(FilterConditionBase singleCondition)
     {
         if (singleCondition is null)
-        { 
+        {
             throw new ArgumentNullException(nameof(singleCondition));
         }
 
@@ -86,7 +95,7 @@ public sealed class QdrantFilter
     /// </summary>
     public static QdrantFilter Create(params FilterConditionBase[] conditions)
     {
-        if (conditions is null or {Length: 0})
+        if (conditions is null or { Length: 0 })
         {
             return Empty;
         }
@@ -142,7 +151,7 @@ public sealed class QdrantFilter
         {
             throw new ArgumentNullException(nameof(filter));
         }
-        
+
         QdrantFilter ret = new()
         {
             _rawFilterString = filter
@@ -163,7 +172,7 @@ public sealed class QdrantFilter
             throw new ArgumentNullException(nameof(target));
         }
 
-        if (source is null or {IsEmpty: true})
+        if (source is null or { IsEmpty: true })
         {
             return target;
         }
@@ -259,7 +268,7 @@ public sealed class QdrantFilter
         jsonWriter.Flush();
 
         var builtFilter = Encoding.UTF8.GetString(stream.ToArray());
-        
+
         return builtFilter;
     }
 
@@ -291,14 +300,13 @@ public sealed class QdrantFilter
             return;
         }
 
-        // TODO: implement optimization
-        //Optimize();
-        
+        Optimize();
+
         jsonWriter.WriteStartObject();
 
         foreach (var condition in _conditions)
         {
-            condition.WriteConditionJson(jsonWriter);
+            condition.WriteJson(jsonWriter);
         }
 
         jsonWriter.WriteEndObject();
@@ -309,12 +317,15 @@ public sealed class QdrantFilter
     /// </summary>
     internal void Optimize()
     {
-        ConditionOptimizationVisitor conditionOptimizationVisitor = new ConditionOptimizationVisitor();
-        
-        foreach (var filterCondition in _conditions)
+#if NET9_0_OR_GREATER
+        if (IsFilterOptimizationEnabled)
         {
-            conditionOptimizationVisitor.Visit(filterCondition);
+            foreach (var condition in _conditions)
+            {
+                condition.Accept(ConditionOptimizerVisitor.Instance);
+            }
         }
+#endif
     }
 
     private void GetPayloadFieldNameTypesInternal(FilterConditionBase condition, HashSet<FieldNameType> payloadFiledNameTypes)
@@ -332,7 +343,7 @@ public sealed class QdrantFilter
             }
         }
         else
-        { 
+        {
             // Means this is a leaf condition, not a group
             payloadFiledNameTypes.Add(new(condition.PayloadFieldName, condition.PayloadFieldType));
         }
