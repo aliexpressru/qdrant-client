@@ -21,9 +21,3 @@ dotnet_diagnostic.HAA0401.severity = suggestion
 
 [*.config]
 indent_size = 2
-
-[*.csproj]
-indent_size = 2
-
-[{*.yml, *yaml}]
-indent_size = 2
