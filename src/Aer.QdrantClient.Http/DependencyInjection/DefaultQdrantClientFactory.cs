@@ -1,5 +1,7 @@
 using Aer.QdrantClient.Http.Abstractions;
+using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace Aer.QdrantClient.Http.DependencyInjection;
 
@@ -8,12 +10,87 @@ namespace Aer.QdrantClient.Http.DependencyInjection;
 /// </summary>
 internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) : IQdrantClientFactory
 {
+    private class StoredQdrantClientSettings : QdrantClientSettings
+    {
+        public ILogger Logger { get; set; }
+    }
+
     readonly HashSet<string> _unregisteredClientNames = [];
 
-    /// <summary>
-    /// Creates a new instance of <see cref="IQdrantHttpClient"/> with the specified client name.
-    /// </summary>
-    /// <param name="clientName">The name of the client to get.</param>
+    readonly Dictionary<string, StoredQdrantClientSettings> _clientSettings = [];
+
+    /// <inheritdoc/>
+    public void AddClientConfiguration(
+        string clientName,
+        QdrantClientSettings settings,
+        ILogger logger = null)
+    {
+        _clientSettings[clientName] = new()
+        {
+            HttpAddress = settings.HttpAddress,
+            ApiKey = settings.ApiKey,
+            HttpClientTimeout = settings.HttpClientTimeout,
+            DisableTracing = settings.DisableTracing,
+            EnableCompression = settings.EnableCompression,
+
+            Logger = logger
+        };
+    }
+
+    /// <inheritdoc/>
+    public void AddClientConfiguration(
+        string clientName,
+        string httpAddress,
+        string apiKey = null,
+        TimeSpan? httpClientTimeout = null,
+        ILogger logger = null,
+        bool disableTracing = false,
+        bool enableCompression = false)
+    {
+        var settings = new StoredQdrantClientSettings()
+        {
+            HttpAddress = httpAddress,
+            ApiKey = apiKey,
+            HttpClientTimeout = httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout,
+            DisableTracing = disableTracing,
+            EnableCompression = enableCompression,
+
+            Logger = logger
+        };
+
+        _clientSettings[clientName] = settings;
+    }
+
+    /// <inheritdoc/>
+    public void AddClientConfiguration(
+        string clientName,
+        string host,
+        int port = 6334,
+        bool useHttps = false,
+        string apiKey = null,
+        TimeSpan? httpClientTimeout = null,
+        ILogger logger = null,
+        bool disableTracing = false,
+        bool enableCompression = false)
+    {
+        var httpAddress = new UriBuilder(
+            useHttps
+                ? "https"
+                : "http",
+            host,
+            port).Uri.ToString();
+
+        AddClientConfiguration(
+            clientName,
+            httpAddress,
+            apiKey,
+            httpClientTimeout,
+            logger,
+            disableTracing,
+            enableCompression);
+    }
+
+    /// <inheritdoc/>
     public IQdrantHttpClient CreateClient(string clientName)
     {
         // If we have already determined that this client name is not registered, throw immediately
@@ -22,15 +99,32 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) 
             throw new QdrantNamedQdrantClientNotFound(clientName);
         }
 
-        var httpClient = httpClientFactory.CreateClient(clientName);
-
-        if (httpClient.BaseAddress == null)
+        if (_clientSettings.ContainsKey(clientName))
         {
-            // Means that no HttpClient was registered with such name
-            _ = _unregisteredClientNames.Add(clientName);
-            throw new QdrantNamedQdrantClientNotFound(clientName);
-        }
+            // Means we are trying to created a client that has not been registered manually with this factory
+            var settings = _clientSettings[clientName];
 
-        return new QdrantHttpClient(httpClient);
+            return new QdrantHttpClient(
+                new Uri(settings.HttpAddress),
+                settings.ApiKey,
+                settings.HttpClientTimeout,
+                settings.Logger,
+                settings.DisableTracing,
+                settings.EnableCompression);
+        }
+        else
+        {
+            // Means we are trying to created a client that has been registered in DI
+            var httpClient = httpClientFactory.CreateClient(clientName);
+
+            if (httpClient.BaseAddress == null)
+            {
+                // Means that no HttpClient was registered with such name
+                _ = _unregisteredClientNames.Add(clientName);
+                throw new QdrantNamedQdrantClientNotFound(clientName);
+            }
+
+            return new QdrantHttpClient(httpClient);
+        }
     }
 }

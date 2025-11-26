@@ -3,7 +3,7 @@ namespace Aer.QdrantClient.Http.Configuration;
 /// <summary>
 /// Represents a Qdrant client configuration.
 /// </summary>
-public sealed class QdrantClientSettings
+public class QdrantClientSettings
 {
     /// <summary>
     /// The default value of http client timeout.
@@ -13,12 +13,7 @@ public sealed class QdrantClientSettings
     /// <summary>
     /// The HTTP or HTTPs host and port that Qdrant db engine listens to.
     /// </summary>
-    public required string HttpAddress { set; get; }
-
-    /// <summary>
-    /// The http address as an <see cref="Uri"/> object.
-    /// </summary>
-    public Uri HttpAddressUri { get => field ??= new(HttpAddress); private set; }
+    public string HttpAddress { set; get; }
 
     /// <summary>
     /// The authorization key for Qdrant db requests authorization.

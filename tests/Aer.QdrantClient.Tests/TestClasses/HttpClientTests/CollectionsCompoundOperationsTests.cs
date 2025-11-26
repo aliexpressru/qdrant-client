@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.DependencyInjection;
 using Aer.QdrantClient.Http.Models.Primitives;
@@ -25,7 +25,7 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
         _qdrantHttpClient = ServiceProvider.GetRequiredService<QdrantHttpClient>();
 
         _qdrantClientSettings = GetQdrantClientSettings(ServiceCollectionExtensions.DefaultQdrantHttpClientName);
-        
+
         _logger = ServiceProvider.GetRequiredService<ILogger<CollectionsCompoundOperationsTests>>();
     }
 
@@ -67,9 +67,9 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     CreateTestVector(vectorSize),
-                    (TestPayload) i
+                    (TestPayload)i
                 )
             );
         }
@@ -139,11 +139,11 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
     {
         var qdrantClient =
             new QdrantHttpClient(
-                _qdrantClientSettings.HttpAddressUri,
+                new Uri(_qdrantClientSettings.HttpAddress),
                 apiKey: _qdrantClientSettings.ApiKey,
                 logger: _logger,
                 disableTracing: true);
-            
+
         await qdrantClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
@@ -159,7 +159,7 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
                     TestPayloadFieldName,
                     PayloadIndexedFieldType.Keyword,
                     isTenant: true),
-                
+
                 new CollectionPayloadIndexDefinition(
                     TestPayloadFieldName2,
                     PayloadIndexedFieldType.Integer,
@@ -167,13 +167,13 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
                     isPrincipal: true)
             ]
         );
-        
+
         await Task.Delay(TimeSpan.FromMilliseconds(1000));
 
         await qdrantClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
 
         var collectionInfo = await qdrantClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
-        
+
         collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
         collectionInfo.Status.IsSuccess.Should().BeTrue();
 
@@ -181,13 +181,13 @@ public class CollectionsCompoundOperationsTests : QdrantTestsBase
         collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName);
         collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName2);
 
-        var firstPayloadSchema = collectionInfo.Result.PayloadSchema[TestPayloadFieldName]; 
-        
+        var firstPayloadSchema = collectionInfo.Result.PayloadSchema[TestPayloadFieldName];
+
         firstPayloadSchema.DataType.Should().Be(PayloadIndexedFieldType.Keyword);
         firstPayloadSchema.Params.IsTenant.Should().BeTrue();
 
         var secondPayloadSchema = collectionInfo.Result.PayloadSchema[TestPayloadFieldName2];
-        
+
         secondPayloadSchema.DataType.Should().Be(PayloadIndexedFieldType.Integer);
         secondPayloadSchema.Params.OnDisk.Should().BeTrue();
         secondPayloadSchema.Params.IsPrincipal.Should().BeTrue();
