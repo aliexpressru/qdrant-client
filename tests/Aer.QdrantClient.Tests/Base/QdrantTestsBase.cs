@@ -156,7 +156,7 @@ public class QdrantTestsBase
 
         foreach (var fileLine in envFileLines)
         {
-            if (fileLine.StartsWith("#"))
+            if (fileLine.StartsWith('#'))
             {
                 continue;
             }

@@ -69,7 +69,20 @@ using System.Diagnostics.CodeAnalysis;
     Target = "~T:Aer.QdrantClient.Http.Abstractions.IQdrantHttpClient")]
 
 [assembly: SuppressMessage(
+    "Design",
+    "CA1068:CancellationToken parameters must come last",
+    Justification = "Backwards compatibility",
+    Scope = "type",
+    Target = "~T:Aer.QdrantClient.Http.QdrantHttpClient")]
+
+[assembly: SuppressMessage(
     "CodeQuality",
     "IDE0079:Remove unnecessary suppression",
     Justification = "Using ReSharper suppressions",
+    Scope = "module")]
+
+[assembly: SuppressMessage(
+    "Maintainability",
+    "CA1510:Use ArgumentNullException throw helper",
+    Justification = "Using target frameworks which do not have this helper",
     Scope = "module")]

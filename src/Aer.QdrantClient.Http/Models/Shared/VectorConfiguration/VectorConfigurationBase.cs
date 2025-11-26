@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -30,7 +30,7 @@ public abstract class VectorConfigurationBase
         [JsonIgnore]
         public VectorDistanceMetric DistanceMetric =>
 #if NETSTANDARD2_0
-            (VectorDistanceMetric) Enum.Parse(typeof(VectorDistanceMetric), Distance, ignoreCase: true);
+            (VectorDistanceMetric)Enum.Parse(typeof(VectorDistanceMetric), Distance, ignoreCase: true);
 #else
             Enum.Parse<VectorDistanceMetric>(Distance, ignoreCase: true);
 #endif
@@ -144,7 +144,7 @@ public abstract class VectorConfigurationBase
             QuantizationConfiguration vectorQuantizationConfiguration,
             VectorDataType vectorDataType = VectorDataType.Float32)
         {
-            Dictionary<string, SingleVectorConfiguration> namedVectors = new();
+            Dictionary<string, SingleVectorConfiguration> namedVectors = [];
 
             foreach (var vectorName in namedVectorNames)
             {

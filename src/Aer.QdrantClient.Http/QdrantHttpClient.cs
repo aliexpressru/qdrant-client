@@ -432,15 +432,13 @@ public partial class QdrantHttpClient : IQdrantHttpClient
                     (int)retryCount,
                     _ => retryDelay ?? _defaultPointsReadRetryDelay,
                     onRetry: (result, currentRetryDelay, retryNumber, _) =>
-                    {
                         // result.Exception can be null when retrying not the exceptional case but unsuccessful status code
                         // To avoid null reference exception we substitute null exceptions with a special QdrantRequestRetryException
                         onRetry?.Invoke(
                             result.Exception ?? new QdrantRequestRetryException(result.Result),
                             currentRetryDelay,
                             retryNumber,
-                            retryCount);
-                    }
+                            retryCount)
                 )
                 .ExecuteAsync(
 #if NETSTANDARD2_0

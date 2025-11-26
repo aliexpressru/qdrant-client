@@ -129,14 +129,17 @@ public partial class QdrantHttpClient
                 collectionNames = [.. collectionInfos.Keys];
             }
 
-            logger?.LogInformation(
-                "Going to replicate shards for collections {CollectionNames} from peer {PeerToMoveShardsFrom}({PeerToMoveShardsFromUri}) to peer {PeerToMoveShardsTo}({PeerToMoveShardsToUri})",
-                collectionInfos.Keys,
-                sourcePeerId,
-                peerUriPerPeerId[sourcePeerId],
-                targetPeerId,
-                peerUriPerPeerId[targetPeerId]
-            );
+            if (logger?.IsEnabled(LogLevel.Information) == true)
+            {
+                logger?.LogInformation(
+                    "Going to replicate shards for collections {CollectionNames} from peer {PeerToMoveShardsFrom}({PeerToMoveShardsFromUri}) to peer {PeerToMoveShardsTo}({PeerToMoveShardsToUri})",
+                    collectionInfos.Keys,
+                    sourcePeerId,
+                    peerUriPerPeerId[sourcePeerId],
+                    targetPeerId,
+                    peerUriPerPeerId[targetPeerId]
+                );
+            }
 
             foreach (var collectionName in collectionNames)
             {
@@ -188,15 +191,18 @@ public partial class QdrantHttpClient
 
                     if (targetPeerDoesNotHaveSourceShard)
                     {
-                        logger?.LogInformation(
-                            "Going to replicate collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri})",
-                            collectionName,
-                            sourceShardId,
-                            sourcePeerId,
-                            peerUriPerPeerId[sourcePeerId],
-                            targetPeerId,
-                            peerUriPerPeerId[targetPeerId]
-                        );
+                        if (logger?.IsEnabled(LogLevel.Information) == true)
+                        {
+                            logger?.LogInformation(
+                                "Going to replicate collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri})",
+                                collectionName,
+                                sourceShardId,
+                                sourcePeerId,
+                                peerUriPerPeerId[sourcePeerId],
+                                targetPeerId,
+                                peerUriPerPeerId[targetPeerId]
+                            );
+                        }
 
                         if (!isDryRun)
                         {
@@ -218,15 +224,19 @@ public partial class QdrantHttpClient
                             if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
                                 || isSuccessfullyStartOperationResponse.Result is false)
                             {
-                                logger?.LogError(
-                                    "Error replicating collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri}): {ErrorMessage}",
-                                    collectionName,
-                                    sourceShardId,
-                                    sourcePeerId,
-                                    peerUriPerPeerId[sourcePeerId],
-                                    targetPeerId,
-                                    peerUriPerPeerId[targetPeerId],
-                                    isSuccessfullyStartOperationResponse.Status.GetErrorMessage());
+                                if (logger?.IsEnabled(LogLevel.Error) == true)
+                                {
+                                    logger?.LogError(
+                                        "Error replicating collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri}): {ErrorMessage}",
+                                        collectionName,
+                                        sourceShardId,
+                                        sourcePeerId,
+                                        peerUriPerPeerId[sourcePeerId],
+                                        targetPeerId,
+                                        peerUriPerPeerId[targetPeerId],
+                                        isSuccessfullyStartOperationResponse.Status.GetErrorMessage()
+                                    );
+                                }
 
                                 // means issuing replicate operation failed - abandon move
 
@@ -247,14 +257,17 @@ public partial class QdrantHttpClient
                     }
                     else
                     {
-                        // shard already exists on target peer
-                        logger?.LogInformation(
-                            "Collection '{CollectionName}' shard {ShardId} already exists on a target peer {TargetPeerId}({PeerUri}). Shard won't be replicated",
-                            collectionName,
-                            sourceShardId,
-                            targetPeerId,
-                            peerUriPerPeerId[targetPeerId]
-                        );
+                        if (logger?.IsEnabled(LogLevel.Information) == true)
+                        {
+                            // shard already exists on target peer
+                            logger?.LogInformation(
+                                "Collection '{CollectionName}' shard {ShardId} already exists on a target peer {TargetPeerId}({PeerUri}). Shard won't be replicated",
+                                collectionName,
+                                sourceShardId,
+                                targetPeerId,
+                                peerUriPerPeerId[targetPeerId]
+                            );
+                        }
                     }
                 }
             }
@@ -373,13 +386,16 @@ public partial class QdrantHttpClient
                 collectionNames = [.. collectionInfos.Keys];
             }
 
-            logger?.LogInformation(
-                "Going to replicate shards for collections {CollectionNames} from peers {PeersToMoveShardsFrom} to peer {PeerToMoveShardsTo}({PeerUri})",
-                collectionInfos.Keys,
-                sourcePeerIds,
-                targetPeerId,
-                peerUriPerPeerId[targetPeerId]
-            );
+            if (logger?.IsEnabled(LogLevel.Information) == true)
+            {
+                logger?.LogInformation(
+                    "Going to replicate shards for collections {CollectionNames} from peers {PeersToMoveShardsFrom} to peer {PeerToMoveShardsTo}({PeerUri})",
+                    collectionInfos.Keys,
+                    sourcePeerIds,
+                    targetPeerId,
+                    peerUriPerPeerId[targetPeerId]
+                );
+            }
 
             foreach (var collectionName in collectionNames)
             {
@@ -393,10 +409,12 @@ public partial class QdrantHttpClient
 
                 if (collectionTargetReplicationFactor == 0U)
                 {
-                    logger?.LogError(
-                        "Collection '{CollectionName}' replication factor is unknown. Skipping collection shards replication",
-                        collectionName);
-
+                    if (logger?.IsEnabled(LogLevel.Error) == true)
+                    {
+                        logger?.LogError(
+                            "Collection '{CollectionName}' replication factor is unknown. Skipping collection shards replication",
+                            collectionName);
+                    }
                     continue;
                 }
 
@@ -439,28 +457,34 @@ public partial class QdrantHttpClient
                     }
                     else
                     {
-                        // shard already exists on target peer
-                        logger?.LogInformation(
-                            "Collection '{CollectionName}' shard {ShardId} already exists on a target peer {TargetPeerId}({PeerUri}). Shard won't be replicated",
-                            collectionName,
-                            sourceShardId,
-                            targetPeerId,
-                            peerUriPerPeerId[targetPeerId]
-                        );
+                        if (logger?.IsEnabled(LogLevel.Information) == true)
+                        {
+                            // shard already exists on target peer
+                            logger?.LogInformation(
+                                "Collection '{CollectionName}' shard {ShardId} already exists on a target peer {TargetPeerId}({PeerUri}). Shard won't be replicated",
+                                collectionName,
+                                sourceShardId,
+                                targetPeerId,
+                                peerUriPerPeerId[targetPeerId]
+                            );
+                        }
                     }
                 }
 
                 foreach (var (sourceShardId, shardReplicaSourcePeerId) in shardReplicationSources)
                 {
-                    logger?.LogInformation(
-                        "Going to replicate collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri})",
-                        collectionName,
-                        sourceShardId,
-                        shardReplicaSourcePeerId,
-                        peerUriPerPeerId[shardReplicaSourcePeerId],
-                        targetPeerId,
-                        peerUriPerPeerId[targetPeerId]
-                    );
+                    if (logger?.IsEnabled(LogLevel.Information) == true)
+                    {
+                        logger?.LogInformation(
+                            "Going to replicate collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri})",
+                            collectionName,
+                            sourceShardId,
+                            shardReplicaSourcePeerId,
+                            peerUriPerPeerId[shardReplicaSourcePeerId],
+                            targetPeerId,
+                            peerUriPerPeerId[targetPeerId]
+                        );
+                    }
 
                     if (!isDryRun)
                     {
@@ -476,15 +500,19 @@ public partial class QdrantHttpClient
                         if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
                             || isSuccessfullyStartOperationResponse.Result is false)
                         {
-                            logger?.LogError(
-                                "Error replicating collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri}): {ErrorMessage}",
-                                collectionName,
-                                sourceShardId,
-                                shardReplicaSourcePeerId,
-                                peerUriPerPeerId[shardReplicaSourcePeerId],
-                                targetPeerId,
-                                peerUriPerPeerId[targetPeerId],
-                                isSuccessfullyStartOperationResponse.Status.GetErrorMessage());
+                            if (logger?.IsEnabled(LogLevel.Error) == true)
+                            {
+                                logger?.LogError(
+                                    "Error replicating collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri}): {ErrorMessage}",
+                                    collectionName,
+                                    sourceShardId,
+                                    shardReplicaSourcePeerId,
+                                    peerUriPerPeerId[shardReplicaSourcePeerId],
+                                    targetPeerId,
+                                    peerUriPerPeerId[targetPeerId],
+                                    isSuccessfullyStartOperationResponse.Status.GetErrorMessage()
+                                );
+                            }
 
                             // means issuing replicate operation failed - abandon move
 
@@ -631,15 +659,17 @@ public partial class QdrantHttpClient
             {
                 collectionNames = [.. collectionInfos.Keys];
             }
-
-            logger?.LogInformation(
-                "Going to equalize shards for collections {CollectionNames} between source peer {PeerToMoveShardsFrom}({PeerToMoveShardsFromUri}) and target peer {PeerToMoveShardsTo}({PeerToMoveShardsToUri})",
-                collectionInfos.Keys,
-                sourcePeerId,
-                peerUriPerPeerId[sourcePeerId],
-                targetPeerId,
-                peerUriPerPeerId[targetPeerId]
-            );
+            if (logger?.IsEnabled(LogLevel.Information) == true)
+            {
+                logger?.LogInformation(
+                    "Going to equalize shards for collections {CollectionNames} between source peer {PeerToMoveShardsFrom}({PeerToMoveShardsFromUri}) and target peer {PeerToMoveShardsTo}({PeerToMoveShardsToUri})",
+                    collectionInfos.Keys,
+                    sourcePeerId,
+                    peerUriPerPeerId[sourcePeerId],
+                    targetPeerId,
+                    peerUriPerPeerId[targetPeerId]
+                );
+            }
 
             foreach (var collectionName in collectionNames)
             {
@@ -695,14 +725,18 @@ public partial class QdrantHttpClient
 
                 foreach (var shardIdToMove in shardIdsToMove)
                 {
-                    logger?.LogInformation(
-                        "Going to move collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri})",
-                        collectionName,
-                        shardIdToMove,
-                        sourcePeerId,
-                        peerUriPerPeerId[sourcePeerId],
-                        targetPeerId,
-                        peerUriPerPeerId[targetPeerId]);
+                    if (logger?.IsEnabled(LogLevel.Information) == true)
+                    {
+                        logger?.LogInformation(
+                            "Going to move collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri})",
+                            collectionName,
+                            shardIdToMove,
+                            sourcePeerId,
+                            peerUriPerPeerId[sourcePeerId],
+                            targetPeerId,
+                            peerUriPerPeerId[targetPeerId]
+                        );
+                    }
 
                     if (!isDryRun)
                     {
@@ -718,15 +752,19 @@ public partial class QdrantHttpClient
                         if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
                             || isSuccessfullyStartOperationResponse.Result is false)
                         {
-                            logger?.LogError(
-                                "Error moving collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri}): {ErrorMessage}",
-                                collectionName,
-                                shardIdToMove,
-                                sourcePeerId,
-                                peerUriPerPeerId[sourcePeerId],
-                                targetPeerId,
-                                peerUriPerPeerId[targetPeerId],
-                                isSuccessfullyStartOperationResponse.Status.GetErrorMessage());
+                            if (logger?.IsEnabled(LogLevel.Error) == true)
+                            {
+                                logger?.LogError(
+                                    "Error moving collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri}): {ErrorMessage}",
+                                    collectionName,
+                                    shardIdToMove,
+                                    sourcePeerId,
+                                    peerUriPerPeerId[sourcePeerId],
+                                    targetPeerId,
+                                    peerUriPerPeerId[targetPeerId],
+                                    isSuccessfullyStartOperationResponse.Status.GetErrorMessage()
+                                );
+                            }
 
                             // means issuing move shard operation failed - abandon move
 
@@ -863,12 +901,16 @@ public partial class QdrantHttpClient
 
             var targetPeers = new CircularEnumerable<ulong>(targetPeerIds);
 
-            logger?.LogInformation(
-                "Going to move all active shards for collections '{CollectionNames}' from peer {PeerToEmpty}({PeerUri}) to peers {PeersToMoveShardsTo}",
-                collectionNames,
-                sourcePeerId,
-                peerUriPerPeerId[sourcePeerId],
-                targetPeerIds);
+            if (logger?.IsEnabled(LogLevel.Information) == true)
+            {
+                logger?.LogInformation(
+                    "Going to move all active shards for collections '{CollectionNames}' from peer {PeerToEmpty}({PeerUri}) to peers {PeersToMoveShardsTo}",
+                    collectionNames,
+                    sourcePeerId,
+                    peerUriPerPeerId[sourcePeerId],
+                    targetPeerIds
+                );
+            }
 
             foreach (var collectionName in collectionNames)
             {
@@ -885,11 +927,15 @@ public partial class QdrantHttpClient
 
                 if (!collectionShardsPerPeers.TryGetValue(sourcePeerId, out HashSet<uint> shardsIdsToMoveAwayFromPeer))
                 {
-                    logger?.LogInformation(
-                        "Collection '{CollectionName}' has no shards on peer {SourcePeerId}({SourceUri})",
-                        collectionName,
-                        sourcePeerId,
-                        peerUriPerPeerId[sourcePeerId]);
+                    if (logger?.IsEnabled(LogLevel.Information) == true)
+                    {
+                        logger?.LogInformation(
+                            "Collection '{CollectionName}' has no shards on peer {SourcePeerId}({SourceUri})",
+                            collectionName,
+                            sourcePeerId,
+                            peerUriPerPeerId[sourcePeerId]
+                        );
+                    }
 
                     continue;
                 }
@@ -909,15 +955,18 @@ public partial class QdrantHttpClient
 
                     foreach (var shardToMoveToPeer in shardsToMoveToPeer)
                     {
-                        logger?.LogInformation(
-                            "Going to move collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri})",
-                            collectionName,
-                            shardToMoveToPeer,
-                            sourcePeerId,
-                            peerUriPerPeerId[sourcePeerId],
-                            targetPeerId,
-                            peerUriPerPeerId[targetPeerId]
-                        );
+                        if (logger?.IsEnabled(LogLevel.Information) == true)
+                        {
+                            logger?.LogInformation(
+                                "Going to move collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri})",
+                                collectionName,
+                                shardToMoveToPeer,
+                                sourcePeerId,
+                                peerUriPerPeerId[sourcePeerId],
+                                targetPeerId,
+                                peerUriPerPeerId[targetPeerId]
+                            );
+                        }
 
                         if (!isDryRun)
                         {
@@ -933,15 +982,19 @@ public partial class QdrantHttpClient
                             if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
                                 || isSuccessfullyStartOperationResponse.Result is false)
                             {
-                                logger?.LogError(
-                                    "Error moving collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri}): {ErrorMessage}",
-                                    collectionName,
-                                    shardToMoveToPeer,
-                                    sourcePeerId,
-                                    peerUriPerPeerId[sourcePeerId],
-                                    targetPeerId,
-                                    peerUriPerPeerId[targetPeerId],
-                                    isSuccessfullyStartOperationResponse.Status.GetErrorMessage());
+                                if (logger?.IsEnabled(LogLevel.Error) == true)
+                                {
+                                    logger?.LogError(
+                                        "Error moving collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) to peer {TargetPeer}({TargetPeerUri}): {ErrorMessage}",
+                                        collectionName,
+                                        shardToMoveToPeer,
+                                        sourcePeerId,
+                                        peerUriPerPeerId[sourcePeerId],
+                                        targetPeerId,
+                                        peerUriPerPeerId[targetPeerId],
+                                        isSuccessfullyStartOperationResponse.Status.GetErrorMessage()
+                                    );
+                                }
 
                                 // means issuing move operation failed - abandon move
 
@@ -1074,11 +1127,15 @@ public partial class QdrantHttpClient
                 collectionNames = collectionNamesToMove;
             }
 
-            logger?.LogInformation(
-                "Going to drop all shards for collections '{CollectionNames}' from peer {PeerToEmpty}({PeerUri})",
-                collectionNames,
-                sourcePeerId,
-                peerUriPerPeerId[sourcePeerId]);
+            if (logger?.IsEnabled(LogLevel.Information) == true)
+            {
+                logger?.LogInformation(
+                    "Going to drop all shards for collections '{CollectionNames}' from peer {PeerToEmpty}({PeerUri})",
+                    collectionNames,
+                    sourcePeerId,
+                    peerUriPerPeerId[sourcePeerId]
+                );
+            }
 
             foreach (var collectionName in collectionNames)
             {
@@ -1095,11 +1152,15 @@ public partial class QdrantHttpClient
 
                 if (!collectionShardsPerPeers.TryGetValue(sourcePeerId, out HashSet<uint> shardsIdsToDropFromPeer))
                 {
-                    logger?.LogInformation(
-                        "Collection '{CollectionName}' has no shards on peer {SourcePeerId} ({SourceUri})",
-                        collectionName,
-                        sourcePeerId,
-                        peerUriPerPeerId[sourcePeerId]);
+                    if (logger?.IsEnabled(LogLevel.Information) == true)
+                    {
+                        logger?.LogInformation(
+                            "Collection '{CollectionName}' has no shards on peer {SourcePeerId} ({SourceUri})",
+                            collectionName,
+                            sourcePeerId,
+                            peerUriPerPeerId[sourcePeerId]
+                        );
+                    }
 
                     continue;
                 }
@@ -1118,13 +1179,17 @@ public partial class QdrantHttpClient
                         if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
                             || isSuccessfullyStartOperationResponse.Result is false)
                         {
-                            logger?.LogError(
-                                "Error dropping collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) : {ErrorMessage}",
-                                collectionName,
-                                shardIdToDrop,
-                                sourcePeerId,
-                                peerUriPerPeerId[sourcePeerId],
-                                isSuccessfullyStartOperationResponse.Status.GetErrorMessage());
+                            if (logger?.IsEnabled(LogLevel.Error) == true)
+                            {
+                                logger?.LogError(
+                                    "Error dropping collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) : {ErrorMessage}",
+                                    collectionName,
+                                    shardIdToDrop,
+                                    sourcePeerId,
+                                    peerUriPerPeerId[sourcePeerId],
+                                    isSuccessfullyStartOperationResponse.Status.GetErrorMessage()
+                                );
+                            }
 
                             // means issuing move operation failed - abandon move
 
@@ -1445,13 +1510,16 @@ public partial class QdrantHttpClient
         {
             if (collectOnlyActiveShards && localShard.State != ShardState.Active)
             {
-                logger?.LogInformation(
-                    "Shard {ShardId} for collection '{CollectionName}' has non-active state '{ShardState}' on peer {PeerId}. Shard won't be processed",
-                    localShard.ShardId,
-                    collectionName,
-                    localShard.State.ToString(),
-                    collectionShardingInfo.PeerId
-                );
+                if (logger?.IsEnabled(LogLevel.Information) == true)
+                {
+                    logger?.LogInformation(
+                        "Shard {ShardId} for collection '{CollectionName}' has non-active state '{ShardState}' on peer {PeerId}. Shard won't be processed",
+                        localShard.ShardId,
+                        collectionName,
+                        localShard.State.ToString(),
+                        collectionShardingInfo.PeerId
+                    );
+                }
 
                 continue;
             }
@@ -1473,13 +1541,16 @@ public partial class QdrantHttpClient
         {
             if (collectOnlyActiveShards && remoteShard.State != ShardState.Active)
             {
-                logger?.LogInformation(
-                    "Shard {ShardId} for collection '{CollectionName}' has non-active state '{ShardState}' on peer {PeerId}. Shard won't be processed",
-                    remoteShard.ShardId,
-                    collectionName,
-                    remoteShard.State.ToString(),
-                    remoteShard.PeerId
-                );
+                if (logger?.IsEnabled(LogLevel.Information) == true)
+                {
+                    logger?.LogInformation(
+                        "Shard {ShardId} for collection '{CollectionName}' has non-active state '{ShardState}' on peer {PeerId}. Shard won't be processed",
+                        remoteShard.ShardId,
+                        collectionName,
+                        remoteShard.State.ToString(),
+                        remoteShard.PeerId
+                    );
+                }
 
                 continue;
             }

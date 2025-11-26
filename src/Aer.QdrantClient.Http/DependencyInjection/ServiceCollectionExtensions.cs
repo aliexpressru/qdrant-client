@@ -125,7 +125,7 @@ public static class ServiceCollectionExtensions
         string clientName,
         bool registerInterface)
     {
-        Action<IServiceProvider, HttpClient> configureClient = (serviceProvider, client) =>
+        void ConfigureClient(IServiceProvider serviceProvider, HttpClient client)
         {
             var scopedServiceProvider = serviceProvider.CreateScope().ServiceProvider;
 
@@ -135,15 +135,15 @@ public static class ServiceCollectionExtensions
 
             client.BaseAddress = new Uri(qdrantSettings.HttpAddress);
             client.Timeout = qdrantSettings.HttpClientTimeout;
-        };
+        }
 
         IHttpClientBuilder httpClientBuilder = registerInterface
             ? services.AddHttpClient<IQdrantHttpClient, QdrantHttpClient>(
                     clientName,
-                    configureClient)
+                    ConfigureClient)
             : services.AddHttpClient<QdrantHttpClient, QdrantHttpClient>(
                 clientName,
-                configureClient);
+                ConfigureClient);
 
         // We use try add to avoid multiple registrations in case of registering multiple clients
         services.TryAddSingleton<IQdrantClientFactory, DefaultQdrantClientFactory>();

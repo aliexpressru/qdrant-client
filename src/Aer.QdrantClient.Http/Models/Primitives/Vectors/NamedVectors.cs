@@ -80,7 +80,7 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
             vectorNumber++;
         }
 
-        sb.Append("}");
+        sb.Append('}');
 
         return sb.ToString();
     }

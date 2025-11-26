@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Primitives;
@@ -7,15 +7,13 @@ namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 internal sealed class ShardKeyJsonConverter : JsonConverter<ShardKey>
 {
-    public override ShardKey Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        return reader.TokenType switch
+    public override ShardKey Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+        reader.TokenType switch
         {
             JsonTokenType.String => new StringShardKey(reader.GetString()),
             JsonTokenType.Number => new IntegerShardKey(reader.GetUInt64()),
             _ => throw new QdrantJsonSerializationException($"Can't deserialize {reader.GetString()} shard key value")
         };
-    }
 
     public override void Write(Utf8JsonWriter writer, ShardKey value, JsonSerializerOptions options)
     {

@@ -117,27 +117,37 @@ public partial class QdrantHttpClient
 
                         if (!createPayloadIndexResponse.Status.IsSuccess)
                         {
-                            _logger.LogError(
-                                "Failed to create payload index {PayloadIndex} for collection {CollectionName}. Details: {ErrorMessage}",
-                                payloadIndexDefinition.ToString(),
-                                collectionName,
-                                createPayloadIndexResponse.Status.GetErrorMessage());
+                            if (_logger.IsEnabled(LogLevel.Error) == true)
+                            {
+                                _logger.LogError(
+                                    "Failed to create payload index {PayloadIndex} for collection {CollectionName}. Details: {ErrorMessage}",
+                                    payloadIndexDefinition.ToString(),
+                                    collectionName,
+                                    createPayloadIndexResponse.Status.GetErrorMessage()
+                                );
+                            }
 
                             return;
                         }
                     }
 
-                    _logger.LogInformation(
-                        "Successfully started collection {CollectionName} HNSW and payload indexes [{PayloadIndexDefinitions}] creation",
-                        collectionName,
-                        string.Join(", ", payloadIndexes.Select(x => x.ToString()))
-                    );
+                    if (_logger.IsEnabled(LogLevel.Information) == true)
+                    {
+                        _logger.LogInformation(
+                            "Successfully started collection {CollectionName} HNSW and payload indexes [{PayloadIndexDefinitions}] creation",
+                            collectionName,
+                            string.Join(", ", payloadIndexes.Select(x => x.ToString()))
+                        );
+                    }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Exception during collection {CollectionName} indexes creation start: {ExceptionMessage}",
+                    if (_logger.IsEnabled(LogLevel.Error) == true)
+                    {
+                        _logger.LogError("Exception during collection {CollectionName} indexes creation start: {ExceptionMessage}",
                         collectionName,
                         ex.Message);
+                    }
                 }
             }
         );

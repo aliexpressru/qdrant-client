@@ -11,6 +11,9 @@ indent_size = 4
 [*.cs]
 max_line_length = 130
 
+# suppress primary ctor suggestion
+dotnet_diagnostic.IDE0290.severity = silent
+
 # Heap allocations viewer
 dotnet_diagnostic.HAA0101.severity = silent
 dotnet_diagnostic.HAA0102.severity = suggestion
