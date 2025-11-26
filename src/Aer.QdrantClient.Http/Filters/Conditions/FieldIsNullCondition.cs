@@ -4,13 +4,9 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal sealed class FieldIsNullCondition : FilterConditionBase
+internal sealed class FieldIsNullCondition(string payloadFieldName) : FilterConditionBase(payloadFieldName)
 {
     protected internal override PayloadIndexedFieldType? PayloadFieldType => null;
-
-    public FieldIsNullCondition(string payloadFieldName) : base(payloadFieldName)
-    {
-    }
 
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {

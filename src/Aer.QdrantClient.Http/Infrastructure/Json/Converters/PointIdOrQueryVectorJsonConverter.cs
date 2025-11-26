@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
@@ -12,10 +12,8 @@ internal sealed class PointIdOrQueryVectorJsonConverter : JsonConverter<PointIdO
             new QueryVectorJsonConverter()
         );
 
-    public override PointIdOrQueryVector Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
+    public override PointIdOrQueryVector Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
         throw new NotSupportedException($"Reading {nameof(PointIdOrQueryVector)} instances is not supported");
-    }
 
     public override void Write(Utf8JsonWriter writer, PointIdOrQueryVector value, JsonSerializerOptions options)
     {

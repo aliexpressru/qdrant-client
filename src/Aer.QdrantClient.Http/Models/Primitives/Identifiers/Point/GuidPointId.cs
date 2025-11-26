@@ -6,30 +6,23 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 /// <summary>
 /// String point identifier.
 /// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="GuidPointId"/> class.
+/// </remarks>
+/// <param name="id">The identifier value.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public sealed class GuidPointId : PointId
+public sealed class GuidPointId(Guid id) : PointId
 {
-    internal override object ObjectId { get; }
+    internal override object ObjectId { get; } = id.ToString();
 
     /// <summary>
     /// The identifier value.
     /// </summary>
-    public Guid Id { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GuidPointId"/> class.
-    /// </summary>
-    /// <param name="id">The identifier value.</param>
-    public GuidPointId(Guid id)
-    {
-        Id = id;
-        ObjectId = id.ToString();
-    }
+    public Guid Id { get; } = id;
 
     /// <inheritdoc/>
-    public override ulong AsInteger()
-        => 
-            throw new QdrantPointIdConversionException(GetType().FullName, typeof(int).FullName);
+    public override ulong AsInteger() =>
+        throw new QdrantPointIdConversionException(GetType().FullName, typeof(int).FullName);
 
     /// <inheritdoc/>
     public override Guid AsGuid() => Id;
@@ -37,7 +30,7 @@ public sealed class GuidPointId : PointId
     /// <inheritdoc/>
     protected override bool EqualsCore(PointId other)
     {
-        if (ReferenceEquals(null, other))
+        if (other is null)
         {
             return false;
         }
@@ -62,11 +55,10 @@ public sealed class GuidPointId : PointId
     public override string ToString() => Id.ToString();
 
     /// <inheritdoc />
-    public override string ToString(bool includeTypeInfo)
-        =>
-            includeTypeInfo
-                ? $"Guid: {ToString()}"
-                : ToString();
+    public override string ToString(bool includeTypeInfo) =>
+        includeTypeInfo
+            ? $"Guid: {ToString()}"
+            : ToString();
 
     /// <summary>
     /// Performs an implicit conversion from <see cref="ulong"/> to <see cref="GuidPointId"/>.

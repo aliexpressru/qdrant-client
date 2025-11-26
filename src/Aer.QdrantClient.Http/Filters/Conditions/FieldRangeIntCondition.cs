@@ -4,27 +4,14 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal sealed class FieldRangeIntCondition : FilterConditionBase
+internal sealed class FieldRangeIntCondition(
+    string payloadFieldName,
+    int? lessThan = null,
+    int? lessThanOrEqual = null,
+    int? greaterThan = null,
+    int? greaterThanOrEqual = null) : FilterConditionBase(payloadFieldName)
 {
-    private readonly int? _lessThan;
-    private readonly int? _lessThanOrEqual;
-    private readonly int? _greaterThan;
-    private readonly int? _greaterThanOrEqual;
-
     protected internal override PayloadIndexedFieldType? PayloadFieldType => PayloadIndexedFieldType.Integer;
-
-    public FieldRangeIntCondition(
-        string payloadFieldName,
-        int? lessThan = null,
-        int? lessThanOrEqual = null,
-        int? greaterThan = null,
-        int? greaterThanOrEqual = null) : base(payloadFieldName)
-    {
-        _lessThan = lessThan;
-        _lessThanOrEqual = lessThanOrEqual;
-        _greaterThan = greaterThan;
-        _greaterThanOrEqual = greaterThanOrEqual;
-    }
 
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
@@ -32,24 +19,24 @@ internal sealed class FieldRangeIntCondition : FilterConditionBase
         jsonWriter.WritePropertyName("range");
         jsonWriter.WriteStartObject();
 
-        if (_lessThan is not null)
+        if (lessThan is not null)
         {
-            jsonWriter.WriteNumber("lt", _lessThan.Value);
+            jsonWriter.WriteNumber("lt", lessThan.Value);
         }
 
-        if (_lessThanOrEqual is not null)
+        if (lessThanOrEqual is not null)
         {
-            jsonWriter.WriteNumber("lte", _lessThanOrEqual.Value);
+            jsonWriter.WriteNumber("lte", lessThanOrEqual.Value);
         }
 
-        if (_greaterThan is not null)
+        if (greaterThan is not null)
         {
-            jsonWriter.WriteNumber("gt", _greaterThan.Value);
+            jsonWriter.WriteNumber("gt", greaterThan.Value);
         }
 
-        if (_greaterThanOrEqual is not null)
+        if (greaterThanOrEqual is not null)
         {
-            jsonWriter.WriteNumber("gte", _greaterThanOrEqual.Value);
+            jsonWriter.WriteNumber("gte", greaterThanOrEqual.Value);
         }
 
         jsonWriter.WriteEndObject();

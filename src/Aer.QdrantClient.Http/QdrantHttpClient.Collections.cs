@@ -10,7 +10,7 @@ public partial class QdrantHttpClient
 {
     private static readonly HttpMethod _patchHttpMethod =
 #if NETSTANDARD2_0
-        new HttpMethod("PATCH");
+        new("PATCH");
 #else
         HttpMethod.Patch;
 #endif

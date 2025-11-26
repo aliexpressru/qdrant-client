@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
@@ -8,34 +8,19 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public abstract class PayloadPropertiesSelector
 {
-    internal sealed class AllPayloadPropertiesSelector : PayloadPropertiesSelector
+    internal sealed class AllPayloadPropertiesSelector(bool areAllPayloadPropertiesSelected) : PayloadPropertiesSelector
     {
-        public bool AreAllPayloadPropertiesSelected { get; }
-
-        public AllPayloadPropertiesSelector(bool areAllPayloadPropertiesSelected)
-        {
-            AreAllPayloadPropertiesSelected = areAllPayloadPropertiesSelected;
-        }
+        public bool AreAllPayloadPropertiesSelected { get; } = areAllPayloadPropertiesSelected;
     }
 
-    internal sealed class IncludePayloadPropertiesSelector : PayloadPropertiesSelector
+    internal sealed class IncludePayloadPropertiesSelector(params string[] includedPayloadProperties) : PayloadPropertiesSelector
     {
-        public string[] IncludedPayloadProperties { get; }
-
-        public IncludePayloadPropertiesSelector(params string[] includedPayloadProperties)
-        {
-            IncludedPayloadProperties = includedPayloadProperties;
-        }
+        public string[] IncludedPayloadProperties { get; } = includedPayloadProperties;
     }
 
-    internal sealed class ExcludePayloadPropertiesSelector : PayloadPropertiesSelector
+    internal sealed class ExcludePayloadPropertiesSelector(string[] excludedPayloadProperties) : PayloadPropertiesSelector
     {
-        public string[] ExcludedPayloadProperties { get; }
-
-        public ExcludePayloadPropertiesSelector(string[] excludedPayloadProperties)
-        {
-            ExcludedPayloadProperties = excludedPayloadProperties;
-        }
+        public string[] ExcludedPayloadProperties { get; } = excludedPayloadProperties;
     }
 
     /// <summary>
@@ -53,7 +38,7 @@ public abstract class PayloadPropertiesSelector
     /// </summary>
     public static PayloadPropertiesSelector Include(params string[] includedPayloadProperties) =>
         new IncludePayloadPropertiesSelector(includedPayloadProperties);
-    
+
     /// <summary>
     /// Creates an instance of the payload properties selector that selects all payload properties except specified to be returned.
     /// </summary>
@@ -65,10 +50,7 @@ public abstract class PayloadPropertiesSelector
     /// </summary>
     /// <param name="value">If <c>true</c> - includes all payload properties to the result.
     /// If <c>false</c> excludes all payload properties.</param>
-    public static implicit operator PayloadPropertiesSelector(bool value)
-    {
-        return new AllPayloadPropertiesSelector(value);
-    }
+    public static implicit operator PayloadPropertiesSelector(bool value) => new AllPayloadPropertiesSelector(value);
 
     /// <summary>
     /// Implicitly converts string array values to <see cref="AllPayloadPropertiesSelector"/> instances.
@@ -77,8 +59,8 @@ public abstract class PayloadPropertiesSelector
     /// If null or empty - includes all payload properties.</param>
     public static implicit operator PayloadPropertiesSelector(string[] includedPayloadProperties)
     {
-        if (includedPayloadProperties is null or {Length: 0})
-        { 
+        if (includedPayloadProperties is null or { Length: 0 })
+        {
             return new AllPayloadPropertiesSelector(true);
         }
 

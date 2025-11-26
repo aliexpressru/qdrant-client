@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
@@ -101,7 +101,7 @@ public abstract class VectorBase : IEquatable<VectorBase>
     /// <param name="reader">The reader to read vector representation from.</param>
     public static VectorBase ReadFromStream(
         VectorKind vectorKind,
-        BinaryReader reader) 
+        BinaryReader reader)
         =>
         vectorKind switch
         {
@@ -120,7 +120,7 @@ public abstract class VectorBase : IEquatable<VectorBase>
     /// <param name="vectorValues">The vector values.</param>
     public static implicit operator VectorBase(float[] vectorValues)
     {
-        if (vectorValues is null or {Length: 0})
+        if (vectorValues is null or { Length: 0 })
         {
             throw new ArgumentNullException(nameof(vectorValues));
         }
@@ -138,7 +138,7 @@ public abstract class VectorBase : IEquatable<VectorBase>
     /// <param name="namedVectors">The named vectors.</param>
     public static implicit operator VectorBase(Dictionary<string, float[]> namedVectors)
     {
-        if (namedVectors is null or {Count: 0})
+        if (namedVectors is null or { Count: 0 })
         {
             throw new ArgumentNullException(nameof(namedVectors));
         }
@@ -148,9 +148,9 @@ public abstract class VectorBase : IEquatable<VectorBase>
             Vectors = namedVectors
                 .ToDictionary(
                     nv => nv.Key,
-                    nv => (VectorBase) new DenseVector()
+                    nv => (VectorBase)new DenseVector()
                     {
-                        VectorValues = nv.Value is null or {Length: 0}
+                        VectorValues = nv.Value is null or { Length: 0 }
                             ? throw new InvalidOperationException(
                                 $"Can't create named vector {nv.Key} with null or empty vector value")
                             : nv.Value
@@ -165,7 +165,7 @@ public abstract class VectorBase : IEquatable<VectorBase>
     /// <param name="namedVectors">The named vectors.</param>
     public static implicit operator VectorBase(Dictionary<string, VectorBase> namedVectors)
     {
-        if (namedVectors is null or {Count: 0})
+        if (namedVectors is null or { Count: 0 })
         {
             throw new ArgumentNullException(nameof(namedVectors));
         }
@@ -186,7 +186,7 @@ public abstract class VectorBase : IEquatable<VectorBase>
     /// <param name="namedSparseVectors">The named sparse vectors.</param>
     public static implicit operator VectorBase(Dictionary<string, (uint[] Indices, float[] Values)> namedSparseVectors)
     {
-        if (namedSparseVectors is null or {Count: 0})
+        if (namedSparseVectors is null or { Count: 0 })
         {
             throw new ArgumentNullException(nameof(namedSparseVectors));
         }
@@ -197,7 +197,7 @@ public abstract class VectorBase : IEquatable<VectorBase>
                 .ToDictionary(
                     nv => nv.Key,
                     nv =>
-                        (VectorBase) new SparseVector(nv.Value.Indices, nv.Value.Values)
+                        (VectorBase)new SparseVector(nv.Value.Indices, nv.Value.Values)
                 )
         };
     }
@@ -231,7 +231,7 @@ public abstract class VectorBase : IEquatable<VectorBase>
         {
             DenseVector denseVector => denseVector.VectorValues,
             MultiVector multiVector => multiVector.Default.AsDenseVector().VectorValues,
-            NamedVectors namedVectors => (float[]) namedVectors.Default,
+            NamedVectors namedVectors => (float[])namedVectors.Default,
             SparseVector =>
                 throw new NotSupportedException(
                     "Conversion from sparse vector to float[] is not supported since sparse vector is a multi-component value"),
@@ -262,7 +262,7 @@ public abstract class VectorBase : IEquatable<VectorBase>
     public abstract override bool Equals(object obj);
 
     /// <inheritdoc/>
-    public abstract override int GetHashCode();   
-    
+    public abstract override int GetHashCode();
+
     #endregion
 }

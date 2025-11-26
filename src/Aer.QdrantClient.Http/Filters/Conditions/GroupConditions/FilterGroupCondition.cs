@@ -21,8 +21,6 @@ internal sealed class FilterGroupCondition : FilterGroupConditionBase
                 continue;
             }
 
-            QdrantFilter.CheckTopLevelConditionIsGroup(condition);
-
             if (condition is FilterGroupCondition fgc)
             {
                 Conditions.AddRange(fgc.Conditions);

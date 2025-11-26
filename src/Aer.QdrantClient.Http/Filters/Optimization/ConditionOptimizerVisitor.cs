@@ -5,7 +5,7 @@ namespace Aer.QdrantClient.Http.Filters.Optimization;
 
 internal sealed class ConditionOptimizerVisitor : FilterConditionVisitor
 {
-    public static readonly ConditionOptimizerVisitor Instance = new ConditionOptimizerVisitor();
+    public static readonly ConditionOptimizerVisitor Instance = new();
 
     public override void VisitFieldMatchAnyCondition<T>(FieldMatchAnyCondition<T> condition)
     {

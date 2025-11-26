@@ -57,18 +57,16 @@ public sealed class QdrantStatus
     /// </summary>
     /// <param name="errorMessage">The error message.</param>
     /// <param name="exception">The exception that happened during qdrant operation execution.</param>
-    public static QdrantStatus Fail(string errorMessage, Exception exception = null)
-        =>
-            new(QdrantOperationStatusType.Error)
-            {
-                Error = errorMessage,
-                Exception = exception
-            };
+    public static QdrantStatus Fail(string errorMessage, Exception exception = null) =>
+        new(QdrantOperationStatusType.Error)
+        {
+            Error = errorMessage,
+            Exception = exception
+        };
 
     /// <summary>
     /// Returns a string representation of the Qdrant status.
     /// </summary>
-    public override string ToString()
-        =>
-            $"[{Type}]; IsSuccess: '{IsSuccess}'; Error: '{GetErrorMessage() ?? "NONE"}'; Exception: {Exception?.ToString() ?? "NONE"}";
+    public override string ToString() =>
+        $"[{Type}]; IsSuccess: '{IsSuccess}'; Error: '{GetErrorMessage() ?? "NONE"}'; Exception: {Exception?.ToString() ?? "NONE"}";
 }

@@ -17,15 +17,15 @@ internal static class ReflectionHelper
 
     private class MethodCallVisitor : ExpressionVisitor
     {
-        public List<MethodCallExpression> MethodCalls { get; } = new();
-        
+        public List<MethodCallExpression> MethodCalls { get; } = [];
+
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
             MethodCalls.Add(node);
             return base.VisitMethodCall(node);
         }
     }
-    
+
     /// <summary>
     /// Checks whether the retry strategy is configured in the resilience pipeline builder action.
     /// </summary>
@@ -35,8 +35,8 @@ internal static class ReflectionHelper
     {
         var visitor = new MethodCallVisitor();
         visitor.Visit(actionToInspect);
-        
-        foreach(var methodCall in visitor.MethodCalls)
+
+        foreach (var methodCall in visitor.MethodCalls)
         {
             if (methodCall.Method.Name.Contains(
                 nameof(RetryResiliencePipelineBuilderExtensions.AddRetry)))
@@ -58,7 +58,7 @@ internal static class ReflectionHelper
         Expression<Func<TPayload, TProperty>> payloadMemberSelectorExpression)
     {
         if (payloadMemberSelectorExpression.Body
-            is MemberExpression {Member: PropertyInfo} expressionBody)
+            is MemberExpression { Member: PropertyInfo } expressionBody)
         {
             var namesCallChain = new List<string>();
 
@@ -93,7 +93,7 @@ internal static class ReflectionHelper
     {
         switch (expression.Expression)
         {
-            case MemberExpression {Member: PropertyInfo} memberExpression:
+            case MemberExpression { Member: PropertyInfo } memberExpression:
             {
                 // means that expression higher in the call chain is another property name call
 
@@ -106,11 +106,11 @@ internal static class ReflectionHelper
                 break;
             }
 
-            case BinaryExpression {NodeType: ExpressionType.ArrayIndex} arrayCallExpression:
+            case BinaryExpression { NodeType: ExpressionType.ArrayIndex } arrayCallExpression:
             {
                 // means that expression higher in the call chain is another property name call with indexer access
 
-                CollectPropertyNamesFromCallChain((MemberExpression)arrayCallExpression.Left, propertyNamesCallChain, isIndexer : true);
+                CollectPropertyNamesFromCallChain((MemberExpression)arrayCallExpression.Left, propertyNamesCallChain, isIndexer: true);
 
                 var jsonObjectPropertyName = ReflectMemberName(expression.Member, isIndexer);
 
@@ -118,7 +118,7 @@ internal static class ReflectionHelper
 
                 break;
             }
-            
+
             default:
             {
                 // means that expression higher in the call chain is either null or of some other type : recursion exit condition

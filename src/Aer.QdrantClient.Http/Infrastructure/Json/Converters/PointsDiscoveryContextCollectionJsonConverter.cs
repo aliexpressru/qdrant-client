@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
@@ -12,10 +12,7 @@ internal sealed class PointsDiscoveryContextCollectionJsonConverter : JsonConver
     public override ICollection<PointsDiscoveryContext> Read(
         ref Utf8JsonReader reader,
         Type typeToConvert,
-        JsonSerializerOptions options)
-    {
-        throw new NotSupportedException($"Reading {nameof(PointsDiscoveryContext)} instances is not supported");
-    }
+        JsonSerializerOptions options) => throw new NotSupportedException($"Reading {nameof(PointsDiscoveryContext)} instances is not supported");
 
     public override void Write(
         Utf8JsonWriter writer,

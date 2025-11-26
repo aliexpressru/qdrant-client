@@ -9,7 +9,7 @@ namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 internal sealed class MinimumShouldCondition : FilterGroupConditionBase
 {
     /// <summary>
-    /// Minimal number of conditions that should match to render ths filter matched.
+    /// Minimal number of conditions that should match to render this filter matched.
     /// </summary>
     private readonly int _minCount;
 

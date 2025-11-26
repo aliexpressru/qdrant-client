@@ -1,11 +1,11 @@
-﻿using Aer.QdrantClient.Http.Models.Shared;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Requests;
 
 /// <summary>
 /// Request for recovering a single collection or collection shard from a snapshot.
 /// </summary>
-internal sealed class RecoverEntityFromSnapshotRequest
+internal sealed class RecoverEntityFromSnapshotRequest(Uri location, SnapshotPriority? priority, string checksum)
 {
     /// <summary>
     /// Snapshot location.
@@ -15,7 +15,7 @@ internal sealed class RecoverEntityFromSnapshotRequest
     /// <li>Local path <c>file:///qdrant/snapshots/test_collection-2022-08-04-10-49-10.snapshot</c></li>
     /// </ul>
     /// </summary>
-    public Uri Location { get; }
+    public Uri Location { get; } = location;
 
     /// <summary>
     /// Defines which data should be used as a source of truth if there are other replicas
@@ -24,17 +24,10 @@ internal sealed class RecoverEntityFromSnapshotRequest
     /// If set to <see cref="SnapshotPriority.Replica"/>, the current state will be used
     /// as a source of truth, and after recovery it will be synchronized with the snapshot.
     /// </summary>
-    public SnapshotPriority? Priority { set; get; }
-    
+    public SnapshotPriority? Priority { set; get; } = priority;
+
     /// <summary>
     /// Optional SHA256 checksum to verify snapshot integrity before recovery.
     /// </summary>
-    public string Checksum { set; get; }
-
-    public RecoverEntityFromSnapshotRequest(Uri location, SnapshotPriority? priority, string checksum)
-    {
-        Location = location;
-        Priority = priority;
-        Checksum = checksum;
-    }
+    public string Checksum { set; get; } = checksum;
 }

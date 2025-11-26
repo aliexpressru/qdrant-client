@@ -12,12 +12,14 @@ indent_size = 4
 max_line_length = 130
 
 # Heap allocations viewer
-dotnet_diagnostic.HAA0101.severity = suggestion
-dotnet_diagnostic.HAA0601.severity = suggestion
+dotnet_diagnostic.HAA0101.severity = silent
+dotnet_diagnostic.HAA0102.severity = suggestion
 dotnet_diagnostic.HAA0301.severity = suggestion
 dotnet_diagnostic.HAA0302.severity = suggestion
 dotnet_diagnostic.HAA0303.severity = suggestion
-dotnet_diagnostic.HAA0401.severity = suggestion
-
-[*.config]
-indent_size = 2
+dotnet_diagnostic.HAA0401.severity = silent
+dotnet_diagnostic.HAA0501.severity = silent
+dotnet_diagnostic.HAA0502.severity = silent
+dotnet_diagnostic.HAA0505.severity = silent
+dotnet_diagnostic.HAA0601.severity = silent
+dotnet_diagnostic.HAA0603.severity = suggestion

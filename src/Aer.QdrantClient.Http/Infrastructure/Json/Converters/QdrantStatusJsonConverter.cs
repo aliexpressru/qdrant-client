@@ -58,8 +58,6 @@ internal sealed class QdrantStatusJsonConverter : JsonConverter<QdrantStatus>
         }
     }
 
-    public override void Write(Utf8JsonWriter writer, QdrantStatus value, JsonSerializerOptions options)
-    {
+    public override void Write(Utf8JsonWriter writer, QdrantStatus value, JsonSerializerOptions options) =>
         JsonSerializer.Serialize(writer, value, JsonSerializerConstants.DefaultSerializerOptions);
-    }
 }

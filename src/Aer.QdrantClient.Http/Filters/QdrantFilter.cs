@@ -25,8 +25,6 @@ public sealed class QdrantFilter
 
     private readonly List<FilterConditionBase> _conditions = [];
 
-    private string _rawFilterString;
-
     /// <summary>
     /// Returns an empty filter.
     /// </summary>
@@ -36,12 +34,12 @@ public sealed class QdrantFilter
     /// Returns <c>true</c> if this filter is empty (i.e. does not have any conditions and was not
     /// created from a raw filter string), otherwise <c>false</c>.
     /// </summary>
-    public bool IsEmpty => _conditions.Count == 0 && string.IsNullOrWhiteSpace(_rawFilterString);
+    public bool IsEmpty => _conditions.Count == 0 && string.IsNullOrWhiteSpace(RawFilterString);
 
     /// <summary>
     /// Gets the raw filter string if this filter was created from a raw filter string.
     /// </summary>
-    public string RawFilterString => _rawFilterString;
+    public string RawFilterString { get; private set; }
 
     /// <summary>
     /// Gets the payload filed names used in all of this filter conditions along with their inferred
@@ -50,7 +48,7 @@ public sealed class QdrantFilter
     public IReadOnlyCollection<FieldNameType> GetPayloadFieldsWithTypes()
     {
         if (IsEmpty
-            || !string.IsNullOrEmpty(_rawFilterString))
+            || !string.IsNullOrEmpty(RawFilterString))
         {
             return [];
         }
@@ -155,7 +153,7 @@ public sealed class QdrantFilter
 
         QdrantFilter ret = new()
         {
-            _rawFilterString = filter
+            RawFilterString = filter
         };
 
         return ret;
@@ -178,14 +176,14 @@ public sealed class QdrantFilter
             return target;
         }
 
-        if (!string.IsNullOrWhiteSpace(target._rawFilterString))
+        if (!string.IsNullOrWhiteSpace(target.RawFilterString))
         {
-            throw new QdrantFilterModificationForbiddenException(target._rawFilterString);
+            throw new QdrantFilterModificationForbiddenException(target.RawFilterString);
         }
 
-        if (!string.IsNullOrWhiteSpace(source._rawFilterString))
+        if (!string.IsNullOrWhiteSpace(source.RawFilterString))
         {
-            throw new QdrantFilterModificationForbiddenException(source._rawFilterString);
+            throw new QdrantFilterModificationForbiddenException(source.RawFilterString);
         }
 
         target._conditions.AddRange(source._conditions);
@@ -200,9 +198,9 @@ public sealed class QdrantFilter
     /// <param name="condition">The condition to add to the filter.</param>
     public static QdrantFilter operator +(QdrantFilter filter, FilterConditionBase condition)
     {
-        if (!string.IsNullOrWhiteSpace(filter?._rawFilterString))
+        if (!string.IsNullOrWhiteSpace(filter?.RawFilterString))
         {
-            throw new QdrantFilterModificationForbiddenException(filter._rawFilterString);
+            throw new QdrantFilterModificationForbiddenException(filter.RawFilterString);
         }
 
         var isConditionGroup = CheckTopLevelConditionIsGroup(condition);
@@ -246,9 +244,9 @@ public sealed class QdrantFilter
     /// </param>
     public string ToString(bool isIndentFilterSyntax)
     {
-        if (!string.IsNullOrWhiteSpace(_rawFilterString))
+        if (!string.IsNullOrWhiteSpace(RawFilterString))
         {
-            return _rawFilterString;
+            return RawFilterString;
         }
 
         if (_conditions is null or { Count: 0 })
@@ -258,7 +256,7 @@ public sealed class QdrantFilter
 
         using var stream = new MemoryStream();
 
-        Utf8JsonWriter jsonWriter = new Utf8JsonWriter(
+        Utf8JsonWriter jsonWriter = new(
             stream,
             new JsonWriterOptions()
             {
@@ -291,9 +289,9 @@ public sealed class QdrantFilter
     /// </summary>
     internal void WriteFilterJson(Utf8JsonWriter jsonWriter)
     {
-        if (!string.IsNullOrWhiteSpace(_rawFilterString))
+        if (!string.IsNullOrWhiteSpace(RawFilterString))
         {
-            jsonWriter.WriteRawValue(_rawFilterString);
+            jsonWriter.WriteRawValue(RawFilterString);
             return;
         }
 
@@ -333,7 +331,7 @@ public sealed class QdrantFilter
 
     private void GetPayloadFieldNameTypesInternal(FilterConditionBase condition, HashSet<FieldNameType> payloadFiledNameTypes)
     {
-        if (IsEmpty || !string.IsNullOrEmpty(_rawFilterString))
+        if (IsEmpty || !string.IsNullOrEmpty(RawFilterString))
         {
             return;
         }

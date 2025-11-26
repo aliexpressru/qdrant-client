@@ -1,19 +1,12 @@
-﻿namespace Aer.QdrantClient.Http.HttpClientHanders;
+namespace Aer.QdrantClient.Http.HttpClientHanders;
 
-internal class ApiKeyHttpClientHandler : DelegatingHandler
+internal class ApiKeyHttpClientHandler(string apiKey, HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
 {
-    private readonly string _apiKey;
-    
-    public ApiKeyHttpClientHandler(string apiKey, HttpMessageHandler innerHandler): base(innerHandler)
-    {
-        _apiKey = apiKey;
-    }
-
     protected override Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        request.Headers.Add(QdrantHttpClient.ApiKeyHeaderName, _apiKey);
+        request.Headers.Add(QdrantHttpClient.ApiKeyHeaderName, apiKey);
         return base.SendAsync(request, cancellationToken);
     }
 }

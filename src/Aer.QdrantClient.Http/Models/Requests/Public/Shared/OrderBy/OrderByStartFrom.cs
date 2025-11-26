@@ -1,59 +1,44 @@
-﻿namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
+namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 /// <summary>
 /// Which payload value to start scrolling from. Default is the lowest value for asc and the highest for desc.
 /// </summary>
 public abstract class OrderByStartFrom
 {
-    internal sealed class OrderByStartFromInteger : OrderByStartFrom
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OrderByStartFrom"/> class with integer start.
+    /// </summary>
+    /// <param name="startFrom">The starting value for the order by.</param>
+    internal sealed class OrderByStartFromInteger(int startFrom) : OrderByStartFrom
     {
         /// <summary>
         /// Which payload value to start scrolling from.
         /// </summary>
-        public int StartFrom { get; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OrderByStartFrom"/> class with integer start.
-        /// </summary>
-        /// <param name="startFrom">The starting value for the order by.</param>
-        public OrderByStartFromInteger(int startFrom)
-        {
-            StartFrom = startFrom;
-        }
+        public int StartFrom { get; } = startFrom;
     }
 
-    internal sealed class OrderByStartFromDouble : OrderByStartFrom
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OrderByStartFrom"/> class with double start.
+    /// </summary>
+    /// <param name="startFrom">The starting value for the order by.</param>
+    internal sealed class OrderByStartFromDouble(double startFrom) : OrderByStartFrom
     {
         /// <summary>
         /// Which payload value to start scrolling from.
         /// </summary>
-        public double StartFrom { get; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OrderByStartFrom"/> class with double start.
-        /// </summary>
-        /// <param name="startFrom">The starting value for the order by.</param>
-        public OrderByStartFromDouble(double startFrom)
-        {
-            StartFrom = startFrom;
-        }
+        public double StartFrom { get; } = startFrom;
     }
 
-    internal sealed class OrderByStartFromDateTime : OrderByStartFrom
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OrderByStartFrom"/> class with date-time start.
+    /// </summary>
+    /// <param name="startFrom">The starting value for the order by.</param>
+    internal sealed class OrderByStartFromDateTime(DateTimeOffset startFrom) : OrderByStartFrom
     {
         /// <summary>
         /// Which payload value to start scrolling from.
         /// </summary>
-        public DateTimeOffset StartFrom { get; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OrderByStartFrom"/> class with date-time start.
-        /// </summary>
-        /// <param name="startFrom">The starting value for the order by.</param>
-        public OrderByStartFromDateTime(DateTimeOffset startFrom)
-        {
-            StartFrom = startFrom;
-        }
+        public DateTimeOffset StartFrom { get; } = startFrom;
     }
 
     /// <summary>

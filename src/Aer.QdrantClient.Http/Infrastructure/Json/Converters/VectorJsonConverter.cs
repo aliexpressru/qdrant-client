@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
@@ -82,12 +82,12 @@ internal sealed class VectorJsonConverter : JsonConverter<VectorBase>
 
             case SparseVector sv:
                 writer.WriteStartObject();
-            {
-                writer.WritePropertyName("indices");
-                JsonSerializer.Serialize(writer, sv.Indices, JsonSerializerConstants.DefaultSerializerOptions);
-                writer.WritePropertyName("values");
-                JsonSerializer.Serialize(writer, sv.Values, JsonSerializerConstants.DefaultSerializerOptions);
-            }
+                {
+                    writer.WritePropertyName("indices");
+                    JsonSerializer.Serialize(writer, sv.Indices, JsonSerializerConstants.DefaultSerializerOptions);
+                    writer.WritePropertyName("values");
+                    JsonSerializer.Serialize(writer, sv.Values, JsonSerializerConstants.DefaultSerializerOptions);
+                }
                 writer.WriteEndObject();
                 return;
 
@@ -97,54 +97,54 @@ internal sealed class VectorJsonConverter : JsonConverter<VectorBase>
 
             case NamedVectors nv:
                 writer.WriteStartObject();
-            {
-                // named vector contains either DenseVector, SparseVector or MultiVector as value
-
-                foreach (var (vectorName, vector) in nv.Vectors)
                 {
-                    writer.WritePropertyName(vectorName);
+                    // named vector contains either DenseVector, SparseVector or MultiVector as value
 
-                    switch (vector.VectorKind)
+                    foreach (var (vectorName, vector) in nv.Vectors)
                     {
-                        case VectorKind.Dense:
-                            var singleVector = vector.AsDenseVector();
+                        writer.WritePropertyName(vectorName);
 
-                            JsonSerializer.Serialize(
-                                writer,
-                                singleVector.VectorValues,
-                                JsonSerializerConstants.DefaultSerializerOptions);
+                        switch (vector.VectorKind)
+                        {
+                            case VectorKind.Dense:
+                                var singleVector = vector.AsDenseVector();
 
-                            break;
-                        case VectorKind.Sparse:
-                            var sparseVector = vector.AsSparseVector();
+                                JsonSerializer.Serialize(
+                                    writer,
+                                    singleVector.VectorValues,
+                                    JsonSerializerConstants.DefaultSerializerOptions);
 
-                            JsonSerializer.Serialize(
-                                writer,
-                                sparseVector,
-                                JsonSerializerConstants.DefaultSerializerOptions);
+                                break;
+                            case VectorKind.Sparse:
+                                var sparseVector = vector.AsSparseVector();
 
-                            break;
-                        case VectorKind.Multi:
+                                JsonSerializer.Serialize(
+                                    writer,
+                                    sparseVector,
+                                    JsonSerializerConstants.DefaultSerializerOptions);
 
-                            var multiVector = vector.AsMultiVector();
+                                break;
+                            case VectorKind.Multi:
 
-                            JsonSerializer.Serialize(
-                                writer,
-                                multiVector.Vectors,
-                                JsonSerializerConstants.DefaultSerializerOptions);
+                                var multiVector = vector.AsMultiVector();
 
-                            break;
+                                JsonSerializer.Serialize(
+                                    writer,
+                                    multiVector.Vectors,
+                                    JsonSerializerConstants.DefaultSerializerOptions);
 
-                        case VectorKind.Named:
-                            throw new QdrantJsonSerializationException(
-                                $"Can't serialize {value} vector of type {value.GetType()}. Named vector can't be a member of another named vector");
+                                break;
 
-                        default:
-                            throw new QdrantJsonSerializationException(
-                                $"Can't serialize {value} vector of type {value.GetType()}. Unknown vector kind {vector.VectorKind}");
+                            case VectorKind.Named:
+                                throw new QdrantJsonSerializationException(
+                                    $"Can't serialize {value} vector of type {value.GetType()}. Named vector can't be a member of another named vector");
+
+                            default:
+                                throw new QdrantJsonSerializationException(
+                                    $"Can't serialize {value} vector of type {value.GetType()}. Unknown vector kind {vector.VectorKind}");
+                        }
                     }
                 }
-            }
                 writer.WriteEndObject();
                 return;
 
@@ -153,11 +153,11 @@ internal sealed class VectorJsonConverter : JsonConverter<VectorBase>
         }
     }
 
-    private VectorBase ReadSingleOrMultiVectorFromJArray(JsonArray vectorValuesJArray, Type typeToConvert)
+    private static VectorBase ReadSingleOrMultiVectorFromJArray(JsonArray vectorValuesJArray, Type typeToConvert)
     {
         // vectorValuesJArray can either contain a multivector or a single vector
 
-        if (vectorValuesJArray is null or {Count: 0})
+        if (vectorValuesJArray is null or { Count: 0 })
         {
             throw new QdrantJsonParsingException(
                 $"Unable to deserialize Qdrant vector value as {typeToConvert}. The vector value is missing");
@@ -195,7 +195,7 @@ internal sealed class VectorJsonConverter : JsonConverter<VectorBase>
             case JsonValueKind.False:
             case JsonValueKind.Null:
             default:
-                throw new ArgumentOutOfRangeException();
+                throw new InvalidOperationException($"Unsupported JSON token kind: {firstJArrayValueKind}");
         }
     }
 }

@@ -30,10 +30,7 @@ public abstract class ReadPointsConsistency
         }
 
         /// <inheritdoc/>
-        public override string ToQueryParameterValue()
-        {
-            return ConsistencyValue.ToString();
-        }
+        public override string ToQueryParameterValue() => ConsistencyValue.ToString();
     }
 
     /// <summary>
@@ -56,10 +53,7 @@ public abstract class ReadPointsConsistency
         }
 
         /// <inheritdoc/>
-        public override string ToQueryParameterValue()
-        {
-            return Consistency.ToString().ToLowerInvariant();
-        }
+        public override string ToQueryParameterValue() => Consistency.ToString().ToLowerInvariant();
     }
 
     #endregion
@@ -78,13 +72,13 @@ public abstract class ReadPointsConsistency
     /// Gets the <see cref="PresetReadConsistency"/> consistency type.
     /// </summary>
     /// <param name="consistencyType">The type of the preset consistency.</param>
-    public static ReadPointsConsistency Preset(ConsistencyType consistencyType)
-        => new PresetReadConsistency(consistencyType);
+    public static ReadPointsConsistency Preset(ConsistencyType consistencyType) =>
+        new PresetReadConsistency(consistencyType);
 
     /// <summary>
     /// Gets the <see cref="IntegerReadConsistency"/> consistency type.
     /// </summary>
     /// <param name="consistencyValue">Return points that are present on specified number of nodes.</param>
-    public static ReadPointsConsistency Integer(int consistencyValue)
-        => new IntegerReadConsistency(consistencyValue);
+    public static ReadPointsConsistency Integer(int consistencyValue) =>
+        new IntegerReadConsistency(consistencyValue);
 }

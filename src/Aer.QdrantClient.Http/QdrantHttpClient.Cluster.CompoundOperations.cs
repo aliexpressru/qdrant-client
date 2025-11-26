@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Collections;
 using Aer.QdrantClient.Http.Exceptions;
@@ -30,11 +30,11 @@ public partial class QdrantHttpClient
         var sourcePeerInfo = await GetPeerInfo(
             sourcePeerId,
             cancellationToken);
-        
+
         var targetPeerInfo = await GetPeerInfo(
             targetPeerId,
             cancellationToken);
-        
+
         return await ReplicateShardsInternal(
             sourcePeerInfo,
             targetPeerInfo,
@@ -56,13 +56,13 @@ public partial class QdrantHttpClient
         bool isDryRun = false,
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
         bool isMoveShards = false,
-        string[] collectionNamesToReplicate= null,
+        string[] collectionNamesToReplicate = null,
         uint[] shardIdsToReplicate = null)
     {
         var sourcePeerInfo = await GetPeerInfo(
             sourcePeerUriSelectorString,
             cancellationToken);
-        
+
         var targetPeerInfo = await GetPeerInfo(
             targetPeerUriSelectorString,
             cancellationToken);
@@ -78,7 +78,7 @@ public partial class QdrantHttpClient
             shardIdsToReplicate ?? [],
             isMoveShards);
     }
-    
+
     private async Task<ReplicateShardsToPeerResponse> ReplicateShardsInternal(
         GetPeerResponse sourcePeerInfoResponse,
         GetPeerResponse targetPeerInfoResponse,
@@ -89,7 +89,7 @@ public partial class QdrantHttpClient
         string[] collectionNamesToReplicate,
         uint[] shardIdsToReplicate,
         bool isMoveShards)
-    { 
+    {
         Stopwatch sw = Stopwatch.StartNew();
 
         try
@@ -103,7 +103,7 @@ public partial class QdrantHttpClient
 
             string[] collectionNames;
 
-            if (collectionNamesToReplicate is {Length: > 0})
+            if (collectionNamesToReplicate is { Length: > 0 })
             {
                 // check that all collection names are stated correctly
                 foreach (var collectionNameFromParameter in collectionNamesToReplicate)
@@ -126,7 +126,7 @@ public partial class QdrantHttpClient
             }
             else
             {
-                collectionNames = collectionInfos.Keys.ToArray();
+                collectionNames = [.. collectionInfos.Keys];
             }
 
             logger?.LogInformation(
@@ -150,11 +150,11 @@ public partial class QdrantHttpClient
                         collectionShardingInfo,
                         collectOnlyActiveShards: true,
                         logger);
-                
+
                 IEnumerable<uint> sourceShardIds;
 
-                if (shardIdsToReplicate is {Length: >0})
-                { 
+                if (shardIdsToReplicate is { Length: >0 })
+                {
                     // Check that all provided shard ids exist on the source peer
                     foreach (var shardIdToReplicate in shardIdsToReplicate)
                     {
@@ -175,7 +175,7 @@ public partial class QdrantHttpClient
                     sourceShardIds = shardIdsToReplicate;
                 }
                 else
-                { 
+                {
                     sourceShardIds = collectionShardsPerPeers[sourcePeerId];
                 }
 
@@ -280,7 +280,7 @@ public partial class QdrantHttpClient
             };
         }
     }
-    
+
     /// <inheritdoc/>
     public async Task<ReplicateShardsToPeerResponse> ReplicateShardsToPeer(
         ulong targetPeerId,
@@ -347,7 +347,7 @@ public partial class QdrantHttpClient
 
             string[] collectionNames;
 
-            if (collectionNamesToReplicate is {Length: > 0})
+            if (collectionNamesToReplicate is { Length: > 0 })
             {
                 // check that all collection names are stated correctly
                 foreach (var collectionNameFromParameter in collectionNamesToReplicate)
@@ -369,8 +369,8 @@ public partial class QdrantHttpClient
                 collectionNames = collectionNamesToReplicate;
             }
             else
-            { 
-                collectionNames = collectionInfos.Keys.ToArray();
+            {
+                collectionNames = [.. collectionInfos.Keys];
             }
 
             logger?.LogInformation(
@@ -409,7 +409,7 @@ public partial class QdrantHttpClient
 
                 // collect source shards to replicate and peers to replicate shards from
 
-                List<(uint sourceShardId, ulong sourcePeerId)> shardReplicationSources = new();
+                List<(uint sourceShardId, ulong sourcePeerId)> shardReplicationSources = [];
 
                 foreach (var (sourceShardId, _) in shardsWithReplicationFactors)
                 {
@@ -430,7 +430,7 @@ public partial class QdrantHttpClient
                             {
                                 // here we should not get an infinite cycle since
                                 // at least one peer will contain a source shard replica
-                                // but if we do - circe detection in CircularEnumerable should throw
+                                // but if we do - circle detection in CircularEnumerable should throw
                                 candidateSourcePeer = sourcePeers.GetNext();
                             }
                         }
@@ -540,7 +540,7 @@ public partial class QdrantHttpClient
         GetPeerResponse sourcePeerInfo = await GetPeerInfo(
             sourcePeerUriSelectorString,
             cancellationToken);
-        
+
         GetPeerResponse targetPeerInfo = await GetPeerInfo(
             emptyTargetPeerUriSelectorString,
             cancellationToken);
@@ -568,7 +568,7 @@ public partial class QdrantHttpClient
         GetPeerResponse sourcePeerInfo = await GetPeerInfo(
             sourcePeerId,
             cancellationToken);
-        
+
         GetPeerResponse targetPeerInfo = await GetPeerInfo(
             emptyTargetPeerId,
             cancellationToken);
@@ -606,7 +606,7 @@ public partial class QdrantHttpClient
 
             string[] collectionNames;
 
-            if (collectionNamesToEqualize is {Length: > 0})
+            if (collectionNamesToEqualize is { Length: > 0 })
             {
                 // check that all collection names are stated correctly
                 foreach (var collectionNameFromParameter in collectionNamesToEqualize)
@@ -629,7 +629,7 @@ public partial class QdrantHttpClient
             }
             else
             {
-                collectionNames = collectionInfos.Keys.ToArray();
+                collectionNames = [.. collectionInfos.Keys];
             }
 
             logger?.LogInformation(
@@ -837,7 +837,7 @@ public partial class QdrantHttpClient
                 .Select(c => c.Name)
                 .ToArray();
 
-            if (collectionNamesToMove is {Length: > 0})
+            if (collectionNamesToMove is { Length: > 0 })
             {
                 // check that all collection names are stated correctly
                 // this method gets called very rarely, so we don't bother with HashSet
@@ -999,7 +999,7 @@ public partial class QdrantHttpClient
         var peerToDrainInfo = await GetPeerInfo(
             peerId,
             cancellationToken);
-        
+
         return await ClearPeerInternal(
             peerToDrainInfo,
             cancellationToken,
@@ -1020,7 +1020,7 @@ public partial class QdrantHttpClient
         var peerToDrainInfo = await GetPeerInfo(
             peerUriSelectorString,
             cancellationToken);
-        
+
         return await ClearPeerInternal(
             peerToDrainInfo,
             cancellationToken,
@@ -1050,7 +1050,7 @@ public partial class QdrantHttpClient
                 .Select(c => c.Name)
                 .ToArray();
 
-            if (collectionNamesToMove is {Length: > 0})
+            if (collectionNamesToMove is { Length: > 0 })
             {
                 // check that all collection names are stated correctly
                 // this method gets called very rarely, so we don't bother with HashSet
@@ -1105,7 +1105,7 @@ public partial class QdrantHttpClient
                 }
 
                 foreach (var shardIdToDrop in shardsIdsToDropFromPeer)
-                { 
+                {
                     if (!isDryRun)
                     {
                         var isSuccessfullyStartOperationResponse = await UpdateCollectionClusteringSetup(
@@ -1288,9 +1288,9 @@ public partial class QdrantHttpClient
 
         // Here we need to check whether the cluster don't have duplicated peers by same URI.
 
-        HashSet<string> seenPeerUrls = new();
-        List<KeyValuePair<string, ulong>> peerIdsByNodeUrls = new();
-        List<KeyValuePair<string, ulong>> duplicatePeers = new();
+        HashSet<string> seenPeerUrls = [];
+        List<KeyValuePair<string, ulong>> peerIdsByNodeUrls = [];
+        List<KeyValuePair<string, ulong>> duplicatePeers = [];
 
         foreach (var peer in clusterInfo.ParsedPeers)
         {
@@ -1339,7 +1339,7 @@ public partial class QdrantHttpClient
             .Select(kv => kv.Value)
             .ToList();
 
-        Dictionary<ulong, string> peerUriPerPeerId = new();
+        Dictionary<ulong, string> peerUriPerPeerId = [];
 
         foreach (var peer in peerIdsByNodeUrls)
         {
@@ -1387,7 +1387,7 @@ public partial class QdrantHttpClient
             .Select(p => p.Key)
             .ToList();
 
-        Dictionary<ulong, string> peerUriPerPeerId = new();
+        Dictionary<ulong, string> peerUriPerPeerId = [];
 
         foreach (var peer in clusterInfo.ParsedPeers)
         {
@@ -1424,10 +1424,7 @@ public partial class QdrantHttpClient
     public Task<GetPeerResponse>
         GetPeerInfoByUriSubstring(
             string clusterNodeUriSubstring,
-            CancellationToken cancellationToken)
-    {
-        return GetPeerInfo(clusterNodeUriSubstring, cancellationToken);
-    }
+            CancellationToken cancellationToken) => GetPeerInfo(clusterNodeUriSubstring, cancellationToken);
 
     private (Dictionary<ulong, HashSet<uint>> ShardsPerPeers, Dictionary<uint, uint> ShardReplicationFactors)
         GetShardIdsPerPeerIdsAndReplicationFactors(
@@ -1436,7 +1433,7 @@ public partial class QdrantHttpClient
             bool collectOnlyActiveShards,
             ILogger logger)
     {
-        Dictionary<uint, uint> shardReplicationFactors = new();
+        Dictionary<uint, uint> shardReplicationFactors = [];
 
         Dictionary<ulong, HashSet<uint>> collectionShardsPerPeers = new()
         {
@@ -1462,7 +1459,7 @@ public partial class QdrantHttpClient
             collectionShardsPerPeers[collectionShardingInfo.PeerId].Add(localShard.ShardId);
 
 #if NETSTANDARD2_0
-            if (!shardReplicationFactors.TryAdd(localShard.ShardId, (uint) 1))
+            if (!shardReplicationFactors.TryAdd(localShard.ShardId, (uint)1))
 #else
             if (!shardReplicationFactors.TryAdd(localShard.ShardId, 1))
 #endif
@@ -1489,11 +1486,11 @@ public partial class QdrantHttpClient
 
             if (!collectionShardsPerPeers.ContainsKey(remoteShard.PeerId))
             {
-                collectionShardsPerPeers.Add(remoteShard.PeerId, new());
+                collectionShardsPerPeers.Add(remoteShard.PeerId, []);
             }
 
 #if NETSTANDARD2_0
-            if (!shardReplicationFactors.TryAdd(remoteShard.ShardId, (uint) 1))
+            if (!shardReplicationFactors.TryAdd(remoteShard.ShardId, (uint)1))
 #else
             if (!shardReplicationFactors.TryAdd(remoteShard.ShardId, 1))
 #endif

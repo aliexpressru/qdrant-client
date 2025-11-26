@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 #if  NETSTANDARD2_0
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
@@ -27,9 +27,9 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
-        if (response.Result is {Count: > 0})
-        { 
-            foreach(var snapshot in response.Result)
+        if (response.Result is { Count: > 0 })
+        {
+            foreach (var snapshot in response.Result)
             {
                 snapshot.SnapshotType = SnapshotType.Collection;
             }
@@ -37,7 +37,7 @@ public partial class QdrantHttpClient
 
         return response;
     }
-    
+
     /// <inheritdoc/>
     public async Task<CreateSnapshotResponse> CreateCollectionSnapshot(
         string collectionName,
@@ -52,15 +52,12 @@ public partial class QdrantHttpClient
             HttpMethod.Post,
             cancellationToken,
             retryCount: 0);
-        
-        if (response.Result is not null)
-        {
-            response.Result.SnapshotType = SnapshotType.Collection;
-        }
+
+        response.Result?.SnapshotType = SnapshotType.Collection;
 
         return response;
     }
-    
+
     /// <inheritdoc/>
     public async Task<DefaultOperationResponse> RecoverCollectionFromSnapshot(
         string collectionName,
@@ -94,7 +91,7 @@ public partial class QdrantHttpClient
             $"/collections/{collectionName}/snapshots/recover?wait={ToUrlQueryString(isWaitForResult)}";
 
         var request = new RecoverEntityFromSnapshotRequest(snapshotLocationUri, snapshotPriority, snapshotChecksum);
-        
+
         var response = await ExecuteRequest<RecoverEntityFromSnapshotRequest, DefaultOperationResponse>(
             url,
             HttpMethod.Put,
@@ -124,7 +121,7 @@ public partial class QdrantHttpClient
         }
 
         if (!string.IsNullOrEmpty(snapshotChecksum))
-        { 
+        {
             url+= $"&checksum={snapshotChecksum}";
         }
 
@@ -151,11 +148,8 @@ public partial class QdrantHttpClient
             snapshotName,
             message,
             cancellationToken);
-        
-        if (result.Result is not null)
-        {
-            result.Result.SnapshotType = SnapshotType.Collection;
-        }
+
+        result.Result?.SnapshotType = SnapshotType.Collection;
 
         return result;
     }

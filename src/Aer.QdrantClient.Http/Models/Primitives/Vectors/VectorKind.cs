@@ -1,4 +1,4 @@
-﻿namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
+namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
 /// <summary>
 /// Describes the kind of the vector that is contained in <see cref="VectorBase"/>.

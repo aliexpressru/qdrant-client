@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Exceptions;
 
@@ -50,11 +50,12 @@ public partial class QdrantHttpClient
 
         try
         {
-            var result = await ExecuteRequestReadAsStream(message, cancellationToken);
+            var (contentLength, responseStream, isSuccess, errorMessage)
+                = await ExecuteRequestReadAsStream(message, cancellationToken);
 
             sw.Stop();
 
-            if (!result.IsSuccess)
+            if (!isSuccess)
             {
                 // Means the request did not succeed but its processing didn't trigger an exception
                 return new DownloadSnapshotResponse(
@@ -63,7 +64,7 @@ public partial class QdrantHttpClient
                     -1,
                     new QdrantStatus(QdrantOperationStatusType.Error)
                     {
-                        Error = result.ErrorMessage
+                        Error = errorMessage
                     },
                     sw.Elapsed
                 );
@@ -71,8 +72,8 @@ public partial class QdrantHttpClient
 
             return new DownloadSnapshotResponse(
                 snapshotName: snapshotName,
-                snapshotDataStream: result.ResponseStream,
-                snapshotSizeBytes: result.ContentLength,
+                snapshotDataStream: responseStream,
+                snapshotSizeBytes: contentLength,
                 new QdrantStatus(QdrantOperationStatusType.Ok),
                 sw.Elapsed
             );

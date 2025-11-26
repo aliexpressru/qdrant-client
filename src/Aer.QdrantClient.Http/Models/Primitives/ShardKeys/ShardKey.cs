@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Primitives;
 
@@ -34,15 +34,13 @@ public abstract class ShardKey
     /// Creates a <see cref="ShardKey"/> instance from string shard key value.
     /// </summary>
     /// <param name="shardKeyValue">Shard key value.</param>
-    public static ShardKey String(string shardKeyValue)
-        => new StringShardKey(shardKeyValue);
+    public static ShardKey String(string shardKeyValue) => new StringShardKey(shardKeyValue);
 
     /// <summary>
     /// Creates a <see cref="ShardKey"/> instance from integer shard key value.
     /// </summary>
     /// <param name="shardKeyValue">Shard key value.</param>
-    public static ShardKey Integer(ulong shardKeyValue)
-        => new IntegerShardKey(shardKeyValue);
+    public static ShardKey Integer(ulong shardKeyValue) => new IntegerShardKey(shardKeyValue);
 
     #endregion
 
@@ -52,38 +50,24 @@ public abstract class ShardKey
     /// Performs an implicit conversion from <see cref="ulong"/> to <see cref="ShardKey"/>.
     /// </summary>
     /// <param name="shardKeyValue">The shard key value.</param>
-    public static implicit operator ShardKey(ulong shardKeyValue)
-    {
-        return Integer(shardKeyValue);
-    }
+    public static implicit operator ShardKey(ulong shardKeyValue) => Integer(shardKeyValue);
 
     /// <summary>
     /// Performs an implicit conversion from <see cref="int"/> to <see cref="ShardKey"/>.
     /// </summary>
     /// <param name="shardKeyValue">The shard key value.</param>
-    public static implicit operator ShardKey(int shardKeyValue)
-    {
-        if (shardKeyValue < 0)
-        {
-            throw new InvalidOperationException($"Can't use negative integer {shardKeyValue} as shard key value");
-        }
-
-        return Integer(checked((ulong) shardKeyValue));
-    }
+    public static implicit operator ShardKey(int shardKeyValue) => shardKeyValue < 0
+            ? throw new InvalidOperationException($"Can't use negative integer {shardKeyValue} as shard key value")
+            : Integer(checked((ulong)shardKeyValue));
 
     /// <summary>
     /// Performs an implicit conversion from <see cref="String"/> to <see cref="ShardKey"/>.
     /// </summary>
     /// <param name="shardKeyValue">The shard key value.</param>
-    public static implicit operator ShardKey(string shardKeyValue)
-    {
-        if (string.IsNullOrEmpty(shardKeyValue))
-        {
-            throw new ArgumentNullException(nameof(shardKeyValue));
-        }
-
-        return String(shardKeyValue);
-    }
+    public static implicit operator ShardKey(string shardKeyValue) =>
+        string.IsNullOrEmpty(shardKeyValue)
+            ? throw new ArgumentNullException(nameof(shardKeyValue))
+            : String(shardKeyValue);
 
     #endregion
 }

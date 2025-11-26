@@ -93,53 +93,52 @@ public partial class QdrantHttpClient
     /// <inheritdoc/>
     public void StartCreatingCollectionPayloadIndexes(
         string collectionName,
-        ICollection<CollectionPayloadIndexDefinition> payloadIndexes)
-    {
+        ICollection<CollectionPayloadIndexDefinition> payloadIndexes) =>
         Task.Run(async () =>
-        {
-            try
             {
-                if (payloadIndexes is null or { Count: 0 })
+                try
                 {
-                    return;
-                }
-
-                foreach (var payloadIndexDefinition in payloadIndexes)
-                {
-                    var createPayloadIndexResponse = await CreatePayloadIndex(
-                        collectionName,
-                        payloadIndexDefinition.PayloadIndexedFieldName,
-                        payloadIndexDefinition.PayloadIndexedFieldSchema,
-                        CancellationToken.None,
-                        onDisk: payloadIndexDefinition.OnDisk,
-                        isTenant: payloadIndexDefinition.IsTenant,
-                        isPrincipal: payloadIndexDefinition.IsPrincipal,
-                        isWaitForResult: false);
-
-                    if (!createPayloadIndexResponse.Status.IsSuccess)
+                    if (payloadIndexes is null or { Count: 0 })
                     {
-                        _logger.LogError(
-                            "Failed to create payload index {PayloadIndex} for collection {CollectionName}. Details: {ErrorMessage}",
-                            payloadIndexDefinition.ToString(),
-                            collectionName,
-                            createPayloadIndexResponse.Status.GetErrorMessage());
-
                         return;
                     }
-                }
 
-                _logger.LogInformation(
-                    "Successfully started collection {CollectionName} HNSW and payload indexes [{PayloadIndexDefinitions}] creation",
-                    collectionName,
-                    string.Join(", ", payloadIndexes.Select(x => x.ToString()))
-                );
+                    foreach (var payloadIndexDefinition in payloadIndexes)
+                    {
+                        var createPayloadIndexResponse = await CreatePayloadIndex(
+                            collectionName,
+                            payloadIndexDefinition.PayloadIndexedFieldName,
+                            payloadIndexDefinition.PayloadIndexedFieldSchema,
+                            CancellationToken.None,
+                            onDisk: payloadIndexDefinition.OnDisk,
+                            isTenant: payloadIndexDefinition.IsTenant,
+                            isPrincipal: payloadIndexDefinition.IsPrincipal,
+                            isWaitForResult: false);
+
+                        if (!createPayloadIndexResponse.Status.IsSuccess)
+                        {
+                            _logger.LogError(
+                                "Failed to create payload index {PayloadIndex} for collection {CollectionName}. Details: {ErrorMessage}",
+                                payloadIndexDefinition.ToString(),
+                                collectionName,
+                                createPayloadIndexResponse.Status.GetErrorMessage());
+
+                            return;
+                        }
+                    }
+
+                    _logger.LogInformation(
+                        "Successfully started collection {CollectionName} HNSW and payload indexes [{PayloadIndexDefinitions}] creation",
+                        collectionName,
+                        string.Join(", ", payloadIndexes.Select(x => x.ToString()))
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Exception during collection {CollectionName} indexes creation start: {ExceptionMessage}",
+                        collectionName,
+                        ex.Message);
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError("Exception during collection {CollectionName} indexes creation start: {ExceptionMessage}",
-                    collectionName,
-                    ex.Message);
-            }
-        });
-    }
+        );
 }

@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
@@ -15,28 +15,18 @@ public abstract class QueryVector
     /// <summary>
     /// Represents a dense search vector.
     /// </summary>
-    internal sealed class DenseQueryVector : QueryVector
+    internal sealed class DenseQueryVector(float[] vector) : QueryVector
     {
-        public float[] Vector { get; }
-
-        public DenseQueryVector(float[] vector)
-        {
-            Vector = vector;
-        }
+        public float[] Vector { get; } = vector;
     }
 
     /// <summary>
     /// Represents a sparse search vector.
     /// </summary>
-    internal sealed class SparseQueryVector : QueryVector
+    internal sealed class SparseQueryVector(SparseVector vector) : QueryVector
     {
         [JsonConverter(typeof(VectorJsonConverter))]
-        public SparseVector Vector { get; }
-
-        public SparseQueryVector(SparseVector vector)
-        {
-            Vector = vector;
-        }
+        public SparseVector Vector { get; } = vector;
     }
 
     #endregion
@@ -55,7 +45,7 @@ public abstract class QueryVector
     /// <param name="vector">The value to convert.</param>
     public static implicit operator QueryVector(float[] vector)
     {
-        if (vector is null or {Length: 0})
+        if (vector is null or { Length: 0 })
         {
             throw new ArgumentNullException(nameof(vector));
         }
@@ -67,30 +57,27 @@ public abstract class QueryVector
     /// Implicitly converts sparse vector components to an instance of <see cref="QueryVector"/>.
     /// </summary>
     /// <param name="sparseVectorComponents">The value to convert.</param>
-    public static implicit operator QueryVector((uint[] Indices, float[] Values) sparseVectorComponents) 
-        => 
-            new SparseQueryVector((SparseVector) sparseVectorComponents);
+    public static implicit operator QueryVector((uint[] Indices, float[] Values) sparseVectorComponents) =>
+        new SparseQueryVector((SparseVector)sparseVectorComponents);
 
     /// <summary>
     /// Implicitly converts an instance of <see cref="VectorBase"/> to an instance of <see cref="QueryVector"/>.
     /// </summary>
     /// <param name="vector">The value to convert.</param>
-    public static implicit operator QueryVector(VectorBase vector)
-        =>
-            vector switch
-            {
-                null => throw new ArgumentNullException(nameof(vector)),
-                DenseVector v => new DenseQueryVector(v.VectorValues),
-                SparseVector sv => new SparseQueryVector(sv),
-                _ => throw GetException(vector.GetType())
-            };
+    public static implicit operator QueryVector(VectorBase vector) =>
+        vector switch
+        {
+            null => throw new ArgumentNullException(nameof(vector)),
+            DenseVector v => new DenseQueryVector(v.VectorValues),
+            SparseVector sv => new SparseQueryVector(sv),
+            _ => throw GetException(vector.GetType())
+        };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static InvalidCastException GetException(Type vectorType)
-        =>
-            new(
-                $"Can't implicitly cast instance of type {vectorType} to {typeof(QueryVector)}. "
-                + $"The value should either be either a dense or a sparse vector");
+    private static InvalidCastException GetException(Type vectorType) =>
+        new(
+            $"Can't implicitly cast instance of type {vectorType} to {typeof(QueryVector)}. "
+            + $"The value should either be either a dense or a sparse vector");
 
     #endregion
 }

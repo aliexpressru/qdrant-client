@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
@@ -7,10 +7,8 @@ namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 internal sealed class ShardSelectorJsonConverter : JsonConverter<ShardSelector>
 {
-    public override ShardSelector Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
+    public override ShardSelector Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
         throw new NotSupportedException($"Reading {nameof(ShardSelector)} instances is not supported");
-    }
 
     public override void Write(Utf8JsonWriter writer, ShardSelector value, JsonSerializerOptions options)
     {
@@ -18,7 +16,7 @@ internal sealed class ShardSelectorJsonConverter : JsonConverter<ShardSelector>
         {
             case ShardSelector.IntegerShardKeyShardSelector iss:
             {
-                if (iss.ShardKeyValues is {Length: > 1})
+                if (iss.ShardKeyValues is { Length: > 1 })
                 {
                     JsonSerializer.Serialize(writer, iss.ShardKeyValues, JsonSerializerConstants.DefaultSerializerOptions);
                 }
@@ -32,7 +30,7 @@ internal sealed class ShardSelectorJsonConverter : JsonConverter<ShardSelector>
             }
             case ShardSelector.StringShardKeyShardSelector sss:
             {
-                if (sss.ShardKeyValues is {Length: > 1})
+                if (sss.ShardKeyValues is { Length: > 1 })
                 {
                     JsonSerializer.Serialize(writer, sss.ShardKeyValues, JsonSerializerConstants.DefaultSerializerOptions);
                 }

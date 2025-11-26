@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
@@ -16,61 +16,39 @@ public abstract class SearchVector
     /// <summary>
     /// Represents a dense search vector without a name. The single or default vector will be used to perform points search.
     /// </summary>
-    internal sealed class DenseSearchVector : SearchVector
+    internal sealed class DenseSearchVector(float[] vector) : SearchVector
     {
-        public float[] Vector { get; }
-
-        public DenseSearchVector(float[] vector)
-        {
-            Vector = vector;
-        }
+        public float[] Vector { get; } = vector;
     }
 
     /// <summary>
     /// Represents a search vector without a name. The single or default vector will be used to perform points search.
     /// </summary>
-    internal sealed class SparseSearchVector : SearchVector
+    internal sealed class SparseSearchVector(SparseVector vector) : SearchVector
     {
         [JsonConverter(typeof(VectorJsonConverter))]
-        public SparseVector Vector { get; }
-
-        public SparseSearchVector(SparseVector vector)
-        {
-            Vector = vector;
-        }
+        public SparseVector Vector { get; } = vector;
     }
 
     /// <summary>
     /// Represents a named search vector. The vector with same name will be used to perform points search.
     /// </summary>
-    internal sealed class NamedDenseSearchVector : SearchVector
+    internal sealed class NamedDenseSearchVector(string name, float[] vector) : SearchVector
     {
-        public string Name { get; }
+        public string Name { get; } = name;
 
-        public float[] Vector { get; }
-
-        public NamedDenseSearchVector(string name, float[] vector)
-        {
-            Name = name;
-            Vector = vector;
-        }
+        public float[] Vector { get; } = vector;
     }
 
     /// <summary>
     /// Represents a named search vector. The vector with same name will be used to perform points search.
     /// </summary>
-    internal sealed class NamedSparseSearchVector : SearchVector
+    internal sealed class NamedSparseSearchVector(string name, SparseVector vector) : SearchVector
     {
-        public string Name { get; }
+        public string Name { get; } = name;
 
         [JsonConverter(typeof(VectorJsonConverter))]
-        public VectorBase Vector { get; }
-
-        public NamedSparseSearchVector(string name, SparseVector vector)
-        {
-            Name = name;
-            Vector = vector;
-        }
+        public VectorBase Vector { get; } = vector;
     }
 
     #endregion
@@ -115,7 +93,7 @@ public abstract class SearchVector
     /// <param name="vector">The value to convert.</param>
     public static implicit operator SearchVector(float[] vector)
     {
-        if (vector is null or {Length: 0})
+        if (vector is null or { Length: 0 })
         {
             throw new ArgumentNullException(nameof(vector));
         }
@@ -127,10 +105,8 @@ public abstract class SearchVector
     /// Implicitly converts sparse vector components to an instance of <see cref="SearchVector"/>.
     /// </summary>
     /// <param name="sparseVectorComponents">The value to convert.</param>
-    public static implicit operator SearchVector((uint[] Indices, float[] Values) sparseVectorComponents)
-    {
-        return new SparseSearchVector((SparseVector) sparseVectorComponents);
-    }
+    public static implicit operator SearchVector((uint[] Indices, float[] Values) sparseVectorComponents) =>
+        new SparseSearchVector((SparseVector)sparseVectorComponents);
 
     /// <summary>
     /// Implicitly converts an instance of <see cref="VectorBase"/> to an instance of <see cref="SearchVector"/>.
@@ -144,14 +120,14 @@ public abstract class SearchVector
                 throw new ArgumentNullException(nameof(vector));
             case DenseVector v:
                 return new DenseSearchVector(v.VectorValues);
-            case NamedVectors {Vectors.Count: 1} nv:
+            case NamedVectors { Vectors.Count: 1 } nv:
             {
                 var firstVector = nv.Vectors.Single();
 
                 return firstVector.Value.VectorKind switch
                 {
                     VectorKind.Dense => new NamedDenseSearchVector(firstVector.Key, firstVector.Value.AsDenseVector().VectorValues),
-                    VectorKind.Sparse => new NamedSparseSearchVector(firstVector.Key, (SparseVector) firstVector.Value),
+                    VectorKind.Sparse => new NamedSparseSearchVector(firstVector.Key, (SparseVector)firstVector.Value),
                     _ => throw GetException(vector.GetType())
                 };
             }
@@ -163,11 +139,10 @@ public abstract class SearchVector
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static InvalidCastException GetException(Type vectorType)
-        =>
-            new(
-                $"Can't implicitly cast instance of type {vectorType} to {typeof(SearchVector)}. "
-                + $"The value should either be an unnamed dense or sparse vector or a named vectors collection with length of 1");
+    private static InvalidCastException GetException(Type vectorType) =>
+        new(
+            $"Can't implicitly cast instance of type {vectorType} to {typeof(SearchVector)}. "
+            + $"The value should either be an unnamed dense or sparse vector or a named vectors collection with length of 1");
 
     #endregion
 }

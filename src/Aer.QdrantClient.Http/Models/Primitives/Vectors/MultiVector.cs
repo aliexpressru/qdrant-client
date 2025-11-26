@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -22,33 +22,28 @@ public sealed class MultiVector : VectorBase, IEquatable<VectorBase>, IEquatable
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public override VectorBase Default
-        =>
-            Vectors.Length > 0
-                ? Vectors[0]
-                : throw new InvalidOperationException("Multivector is empty");
+    public override VectorBase Default =>
+        Vectors.Length > 0
+            ? Vectors[0]
+            : throw new InvalidOperationException("Multivector is empty");
 
     /// <inheritdoc/>
-    public override VectorBase this[string vectorName]
-        =>
-            throw new NotSupportedException($"Vector names are not supported for multivector values {GetType()}");
+    public override VectorBase this[string vectorName] =>
+        throw new NotSupportedException($"Vector names are not supported for multivector values {GetType()}");
 
     /// <inheritdoc/>
-    public override VectorBase FirstOrDefault()
-        =>
-            throw new NotSupportedException(
-                $"Getting default vector from multivector {GetType()} is not supported since multivector is a multi-component value");
+    public override VectorBase FirstOrDefault() =>
+        throw new NotSupportedException(
+            $"Getting default vector from multivector {GetType()} is not supported since multivector is a multi-component value");
 
     /// <inheritdoc/>
-    public override bool ContainsVector(string vectorName)
-        =>
-            throw new NotSupportedException(
-                $"Vector names are not supported for multivector values {GetType()}");
+    public override bool ContainsVector(string vectorName) =>
+        throw new NotSupportedException($"Vector names are not supported for multivector values {GetType()}");
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new();
 
         sb.AppendLine("[");
 
@@ -118,7 +113,7 @@ public sealed class MultiVector : VectorBase, IEquatable<VectorBase>, IEquatable
         }
 
         writer.Write("[");
-        
+
         writer.Write(Vectors.Length);
 
         for (int vectorIndex = 0; vectorIndex < Vectors.Length; vectorIndex++)
@@ -144,7 +139,7 @@ public sealed class MultiVector : VectorBase, IEquatable<VectorBase>, IEquatable
 
             writer.Write(']');
         }
-        
+
         writer.Write("]");
     }
 
@@ -215,7 +210,7 @@ public sealed class MultiVector : VectorBase, IEquatable<VectorBase>, IEquatable
         {
             return true;
         }
-        
+
         return other is MultiVector otherMultiVector && Equals(otherMultiVector);
     }
 
@@ -227,7 +222,7 @@ public sealed class MultiVector : VectorBase, IEquatable<VectorBase>, IEquatable
             return false;
         }
 
-        return ReferenceEquals(this, obj) 
+        return ReferenceEquals(this, obj)
             || obj is MultiVector other && Equals(other);
     }
 
@@ -243,13 +238,13 @@ public sealed class MultiVector : VectorBase, IEquatable<VectorBase>, IEquatable
         {
             return true;
         }
-        
-        if(Vectors.Length != other.Vectors.Length)
+
+        if (Vectors.Length != other.Vectors.Length)
         {
             return false;
         }
-        
-        for(int i=0; i<Vectors.Length; i++)
+
+        for (int i = 0; i<Vectors.Length; i++)
         {
             if (Vectors[i].Length != other.Vectors[i].Length)
             {
@@ -259,7 +254,7 @@ public sealed class MultiVector : VectorBase, IEquatable<VectorBase>, IEquatable
             var componentVectorEquals = Vectors[i].SequenceEqual(other.Vectors[i]);
 
             if (!componentVectorEquals)
-            { 
+            {
                 return false;
             }
         }
@@ -270,13 +265,13 @@ public sealed class MultiVector : VectorBase, IEquatable<VectorBase>, IEquatable
     /// <inheritdoc/>
     public override int GetHashCode()
     {
-        if (Vectors is null or {Length: 0})
+        if (Vectors is null or { Length: 0 })
         {
             return 0;
         }
-        
-        HashCode hashCode = new HashCode();
-        
+
+        HashCode hashCode = new();
+
         foreach (var vector in Vectors)
         {
             foreach (var value in vector)
@@ -284,7 +279,7 @@ public sealed class MultiVector : VectorBase, IEquatable<VectorBase>, IEquatable
                 hashCode.Add(value);
             }
         }
-        
+
         return hashCode.ToHashCode();
     }
 }

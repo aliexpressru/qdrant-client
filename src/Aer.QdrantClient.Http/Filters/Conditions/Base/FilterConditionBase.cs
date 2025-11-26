@@ -9,9 +9,13 @@ namespace Aer.QdrantClient.Http.Filters.Conditions;
 /// <summary>
 /// A base class for all filter conditions.
 /// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="FilterConditionBase"/> class.
+/// </remarks>
+/// <param name="payloadFieldName">The payload key to apply filter to.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public abstract class FilterConditionBase
+public abstract class FilterConditionBase(string payloadFieldName)
 {
     /// <summary>
     /// This value indicates that we don't care about the payload property name in the filter condition.
@@ -21,7 +25,7 @@ public abstract class FilterConditionBase
     /// <summary>
     /// The payload filed to apply filter to.
     /// </summary>
-    protected internal readonly string PayloadFieldName;
+    protected internal readonly string PayloadFieldName = payloadFieldName;
 
     /// <summary>
     /// The type of the payload field corresponding to the actual filter parameter.
@@ -40,18 +44,9 @@ public abstract class FilterConditionBase
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="FilterConditionBase"/> class.
-    /// </summary>
-    /// <param name="payloadFieldName">The payload key to apply filter to.</param>
-    protected FilterConditionBase(string payloadFieldName)
-    {
-        PayloadFieldName = payloadFieldName;
-    }
-
-    /// <summary>
     /// Combines two conditions into one <see cref="FilterGroupCondition"/> with conditions on one level.
     /// Useful for creating many-conditional filters avoiding using <c>QdrantFilter.Create</c> factory method.
-    /// Note that equal conditions like <c>must</c> or <c>should</c> wil overwrite each other and only the last one will be added.
+    /// Note that equal conditions like <c>must</c> or <c>should</c> will overwrite each other and only the last one will be added.
     /// </summary>
     /// <param name="left">The left condition to combine.</param>
     /// <param name="right">The right condition to combine.</param>
@@ -127,20 +122,13 @@ public abstract class FilterConditionBase
     /// or <see cref="MustNotCondition"/> it gets transformed into an opposite condition.
     /// </summary>
     /// <param name="condition">The condition to negate.</param>
-    public static FilterConditionBase operator !(FilterConditionBase condition)
-    {
-        if (condition is MustNotCondition mnc)
+    public static FilterConditionBase operator !(FilterConditionBase condition) =>
+        condition switch
         {
-            return new MustCondition(mnc.Conditions);
-        }
-
-        if (condition is MustCondition mc)
-        {
-            return new MustNotCondition(mc.Conditions);
-        }
-
-        return new MustNotCondition(condition);
-    }
+            MustNotCondition mnc => new MustCondition(mnc.Conditions),
+            MustCondition mc => new MustNotCondition(mc.Conditions),
+            _ => new MustNotCondition(condition)
+        };
 
     /// <summary>
     /// Write out the condition json to specified writer.

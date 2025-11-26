@@ -520,7 +520,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         return result;
     }
 
-    private async Task<TResponse> ReadResponseAndHandleErrors<TResponse>(
+    private static async Task<TResponse> ReadResponseAndHandleErrors<TResponse>(
         HttpRequestMessage requestMessage,
         HttpResponseMessage responseMessage,
         Func<HttpResponseMessage, Task<TResponse>> responseReader,
@@ -573,17 +573,14 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         {
             var errorResult = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
 
-            if (badRequestResponseMessageReader == null)
-            {
-                throw new QdrantCommunicationException(
+            return badRequestResponseMessageReader == null
+                ? throw new QdrantCommunicationException(
                     requestMessage.Method.Method,
                     url,
                     responseMessage.StatusCode,
                     responseMessage.ReasonPhrase,
-                    errorResult);
-            }
-
-            return badRequestResponseMessageReader(errorResult);
+                    errorResult)
+                : badRequestResponseMessageReader(errorResult);
         }
 
         var readResult = await responseReader(responseMessage);
@@ -592,13 +589,13 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void EnsureQdrantNameCorrect(string qdrantEntityName)
+    private static void EnsureQdrantNameCorrect(string qdrantEntityName)
     {
         if (qdrantEntityName is null or { Length: 0 })
         {
             throw new QdrantInvalidEntityNameException(
                 qdrantEntityName,
-                "Entity name name should not be null or empty");
+                "Entity name should not be null or empty");
         }
 
         if (qdrantEntityName.Length is 0 or > 255)
@@ -617,13 +614,12 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static string ToUrlQueryString(bool target)
-        =>
-            target switch
-            {
-                true => "true",
-                false => "false"
-            };
+    private static string ToUrlQueryString(bool target) =>
+        target switch
+        {
+            true => "true",
+            false => "false"
+        };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static string ToUrlQueryString<TEnum>(TEnum enumValue)
@@ -636,6 +632,6 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static double GetTimeoutValueOrDefault(TimeSpan? timeout)
-        => timeout?.TotalSeconds ?? DEFAULT_OPERATION_TIMEOUT_SECONDS;
+    private static double GetTimeoutValueOrDefault(TimeSpan? timeout) =>
+        timeout?.TotalSeconds ?? DEFAULT_OPERATION_TIMEOUT_SECONDS;
 }

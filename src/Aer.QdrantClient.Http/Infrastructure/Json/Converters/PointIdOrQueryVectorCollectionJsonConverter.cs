@@ -9,10 +9,8 @@ internal sealed class PointIdOrQueryVectorCollectionJsonConverter : JsonConverte
     private static readonly JsonSerializerOptions _serializerOptions =
         JsonSerializerConstants.CreateSerializerOptions(new PointIdOrQueryVectorJsonConverter());
 
-    public override ICollection<PointIdOrQueryVector> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
+    public override ICollection<PointIdOrQueryVector> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
         throw new NotSupportedException($"Reading {nameof(IEnumerable<>)} instances is not supported");
-    }
 
     public override void Write(Utf8JsonWriter writer, ICollection<PointIdOrQueryVector> value, JsonSerializerOptions options)
     {

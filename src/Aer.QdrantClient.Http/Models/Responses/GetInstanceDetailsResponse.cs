@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
 
@@ -9,35 +9,33 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public sealed class GetInstanceDetailsResponse
 {
-    private Version _parsedVersion;
-    
-	/// <summary>
-	/// The qdrant version title.
-	/// </summary>
-	public string Title { get; set; }
+    /// <summary>
+    /// The qdrant version title.
+    /// </summary>
+    public string Title { get; set; }
 
-	/// <summary>
-	/// The qdrant version.
-	/// </summary>
-	public string Version { get; set; }
-    
+    /// <summary>
+    /// The qdrant version.
+    /// </summary>
+    public string Version { get; set; }
+
     /// <summary>
     /// The <see cref="System.Version"/> parsed from the <see cref="Version"/> string.
     /// </summary>
     public Version ParsedVersion
     {
-        get
-        {
-            if (_parsedVersion == null)
+        get {
+            if (field == null)
             {
-                _parsedVersion = System.Version.Parse(Version);
+                field = System.Version.Parse(Version);
             }
-            return _parsedVersion;
+
+            return field;
         }
     }
 
-	/// <summary>
-	/// The commit hash this version was built from.
-	/// </summary>
-	public string Commit { get; set; }
+    /// <summary>
+    /// The commit hash this version was built from.
+    /// </summary>
+    public string Commit { get; set; }
 }

@@ -1,48 +1,37 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Formulas.Expressions;
 
 /// <summary>
 /// Represents a Haversine geo distance expression that calculates distance between origin and target geographic point.
 /// </summary>
-internal sealed class GeoDistanceExpression : ExpressionBase
+internal sealed class GeoDistanceExpression(double originLongitude, double originLatitude, string toPayloadFieldName) : ExpressionBase
 {
-	private readonly double _originLongitude;
-	private readonly double _originLatitude;
-	private readonly string _toPayloadFieldName;
+    public override void WriteExpressionJson(Utf8JsonWriter jsonWriter)
+    {
+        jsonWriter.WriteStartObject();
+        {
+            jsonWriter.WritePropertyName("geo_distance");
 
-	public GeoDistanceExpression(double originLongitude, double originLatitude, string toPayloadFieldName)
-	{
-		_originLongitude = originLongitude;
-		_originLatitude = originLatitude;
-		_toPayloadFieldName = toPayloadFieldName;
-	}
+            jsonWriter.WriteStartObject();
+            {
+                jsonWriter.WritePropertyName("origin");
 
-	public override void WriteExpressionJson(Utf8JsonWriter jsonWriter)
-	{
-		jsonWriter.WriteStartObject();
-		{
-			jsonWriter.WritePropertyName("geo_distance");
+                jsonWriter.WriteStartObject();
+                {
+                    jsonWriter.WritePropertyName("lon");
+                    jsonWriter.WriteNumberValue(originLongitude);
 
-			jsonWriter.WriteStartObject();
-			{
-				jsonWriter.WritePropertyName("origin");
-				
-				jsonWriter.WriteStartObject();
-				{ 
-					jsonWriter.WritePropertyName("lon");
-					jsonWriter.WriteNumberValue(_originLongitude);
-					
-					jsonWriter.WritePropertyName("lat");
-					jsonWriter.WriteNumberValue(_originLatitude);
-				}
-				jsonWriter.WriteEndObject();
-				
-				jsonWriter.WritePropertyName("to");
-				jsonWriter.WriteStringValue(_toPayloadFieldName);
-			}
-			jsonWriter.WriteEndObject();
-		}
-		jsonWriter.WriteEndObject();
-	}
+                    jsonWriter.WritePropertyName("lat");
+                    jsonWriter.WriteNumberValue(originLatitude);
+                }
+                jsonWriter.WriteEndObject();
+
+                jsonWriter.WritePropertyName("to");
+                jsonWriter.WriteStringValue(toPayloadFieldName);
+            }
+            jsonWriter.WriteEndObject();
+        }
+        jsonWriter.WriteEndObject();
+    }
 }

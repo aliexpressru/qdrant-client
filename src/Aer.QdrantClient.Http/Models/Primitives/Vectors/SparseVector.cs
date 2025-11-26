@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json.Serialization;
 #if NETSTANDARD2_0
@@ -39,12 +39,12 @@ public sealed class SparseVector : VectorBase, IEquatable<VectorBase>, IEquatabl
     [JsonConstructor]
     public SparseVector(HashSet<uint> indices, float[] values)
     {
-        if (indices is not {Count: > 0})
+        if (indices is not { Count: > 0 })
         {
             throw new ArgumentException($"{nameof(indices)} array can't be empty", nameof(indices));
         }
 
-        if (values is not {Length: > 0})
+        if (values is not { Length: > 0 })
         {
             throw new ArgumentException($"{nameof(values)} array can't be empty", nameof(values));
         }
@@ -65,12 +65,12 @@ public sealed class SparseVector : VectorBase, IEquatable<VectorBase>, IEquatabl
     /// <param name="values">The non-zero vector elements.</param>
     public SparseVector(uint[] indices, float[] values)
     {
-        if (indices is not {Length: > 0})
+        if (indices is not { Length: > 0 })
         {
             throw new ArgumentException($"{nameof(indices)} array can't be empty", nameof(indices));
         }
 
-        if (values is not {Length: > 0})
+        if (values is not { Length: > 0 })
         {
             throw new ArgumentException($"{nameof(values)} array can't be empty", nameof(values));
         }
@@ -80,7 +80,7 @@ public sealed class SparseVector : VectorBase, IEquatable<VectorBase>, IEquatabl
             throw new ArgumentException($"{nameof(indices)} and {nameof(values)} arrays must be the same length");
         }
 
-        Indices = indices.ToHashSet();
+        Indices = [.. indices];
         Values = values;
     }
 
@@ -94,20 +94,17 @@ public sealed class SparseVector : VectorBase, IEquatable<VectorBase>, IEquatabl
     }
 
     /// <inheritdoc/>
-    public override VectorBase this[string vectorName]
-        =>
-            throw new NotSupportedException($"Vector names are not supported for sparse vector values {GetType()}");
+    public override VectorBase this[string vectorName] =>
+        throw new NotSupportedException($"Vector names are not supported for sparse vector values {GetType()}");
 
     /// <inheritdoc/>
-    public override VectorBase FirstOrDefault()
-        =>
-            throw new NotSupportedException(
-                $"Getting default vector from sparse vector {GetType()} is not supported since sparse vector is a two-component value");
+    public override VectorBase FirstOrDefault() =>
+        throw new NotSupportedException(
+            $"Getting default vector from sparse vector {GetType()} is not supported since sparse vector is a two-component value");
 
     /// <inheritdoc/>
-    public override bool ContainsVector(string vectorName)
-        =>
-            throw new NotSupportedException($"Vector names are not supported for sparse vector values {GetType()}");
+    public override bool ContainsVector(string vectorName) =>
+        throw new NotSupportedException($"Vector names are not supported for sparse vector values {GetType()}");
 
     /// <inheritdoc/>
     public override string ToString() =>
@@ -307,24 +304,24 @@ public sealed class SparseVector : VectorBase, IEquatable<VectorBase>, IEquatabl
     /// <inheritdoc/>
     public override int GetHashCode()
     {
-        if((Indices == null && Values == null)
+        if ((Indices == null && Values == null)
            || (Indices!.Count == 0 && Values.Length == 0))
         {
             return 0;
-        }               
-        
-        HashCode hashCode = new HashCode();
-        
+        }
+
+        HashCode hashCode = new();
+
         foreach (var index in Indices)
         {
             hashCode.Add(index);
         }
-        
+
         foreach (var value in Values)
         {
             hashCode.Add(value);
         }
-        
+
         return hashCode.ToHashCode();
     }
 }

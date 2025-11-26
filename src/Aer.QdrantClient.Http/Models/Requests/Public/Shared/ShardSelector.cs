@@ -1,4 +1,4 @@
-﻿namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
+namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 /// <summary>
 /// The shard selector. Can select shards by string or integer shard key values.
@@ -8,41 +8,31 @@ public abstract class ShardSelector
     /// <summary>
     /// Represents a shard selector using string shard keys.
     /// </summary>
-    internal sealed class StringShardKeyShardSelector : ShardSelector
+    /// <remarks>
+    /// Initializes new instance of <see cref="ShardSelector"/> using string shard key.
+    /// </remarks>
+    /// <param name="shardKeyValues">The shard key values.</param>
+    internal sealed class StringShardKeyShardSelector(string[] shardKeyValues) : ShardSelector
     {
         /// <summary>
         /// Shard key value.
         /// </summary>
-        public string[] ShardKeyValues { get; }
-
-        /// <summary>
-        /// Initializes new istance of <see cref="ShardSelector"/> using string shard key.
-        /// </summary>
-        /// <param name="shardKeyValues">The shard key values.</param>
-        public StringShardKeyShardSelector(string[] shardKeyValues)
-        {
-            ShardKeyValues = shardKeyValues;
-        }
+        public string[] ShardKeyValues { get; } = shardKeyValues;
     }
 
     /// <summary>
     /// Represents a shard selector using integer shard keys.
     /// </summary>
-    internal sealed class IntegerShardKeyShardSelector : ShardSelector
+    /// <remarks>
+    /// Initializes new instance of <see cref="ShardSelector"/> using integer shard key.
+    /// </remarks>
+    /// <param name="shardKeyValues">The shard key value.</param>
+    internal sealed class IntegerShardKeyShardSelector(params ulong[] shardKeyValues) : ShardSelector
     {
         /// <summary>
         /// Shard key value.
         /// </summary>
-        public ulong[] ShardKeyValues { get; }
-
-        /// <summary>
-        /// Initializes new istance of <see cref="ShardSelector"/> using integer shard key.
-        /// </summary>
-        /// <param name="shardKeyValues">The shard key value.</param>
-        public IntegerShardKeyShardSelector(params ulong[] shardKeyValues)
-        {
-            ShardKeyValues = shardKeyValues;
-        }
+        public ulong[] ShardKeyValues { get; } = shardKeyValues;
     }
 
     #region Factory methods
@@ -51,15 +41,15 @@ public abstract class ShardSelector
     /// Creates a shard key selector using string shard key values.
     /// </summary>
     /// <param name="shardKeyValues">The shard key values.</param>
-    public static ShardSelector String(params string[] shardKeyValues)
-        => new StringShardKeyShardSelector(shardKeyValues);
+    public static ShardSelector String(params string[] shardKeyValues) =>
+        new StringShardKeyShardSelector(shardKeyValues);
 
     /// <summary>
     /// Creates a shard key selector using integer shard key values.
     /// </summary>
     /// <param name="shardKeyValues">The shard key values.</param>
-    public static ShardSelector Integer(params ulong[] shardKeyValues)
-        => new IntegerShardKeyShardSelector(shardKeyValues);
+    public static ShardSelector Integer(params ulong[] shardKeyValues) =>
+        new IntegerShardKeyShardSelector(shardKeyValues);
 
     #endregion
 
@@ -69,10 +59,7 @@ public abstract class ShardSelector
     /// Performs an implicit conversion from <see cref="ulong"/> to <see cref="ShardSelector"/>.
     /// </summary>
     /// <param name="shardKeyValue">The shard key value.</param>
-    public static implicit operator ShardSelector(ulong shardKeyValue)
-    {
-        return Integer(shardKeyValue);
-    }
+    public static implicit operator ShardSelector(ulong shardKeyValue) => Integer(shardKeyValue);
 
     /// <summary>
     /// Performs an implicit conversion from <see cref="ulong"/> array to <see cref="ShardSelector"/>.
@@ -80,7 +67,7 @@ public abstract class ShardSelector
     /// <param name="shardKeyValues">The shard key values.</param>
     public static implicit operator ShardSelector(ulong[] shardKeyValues)
     {
-        if (shardKeyValues is null or {Length: 0})
+        if (shardKeyValues is null or { Length: 0 })
         {
             throw new ArgumentNullException(nameof(shardKeyValues));
         }
@@ -99,7 +86,7 @@ public abstract class ShardSelector
             throw new InvalidOperationException($"Can't use negative integer {shardKeyValue} as shard key selector value");
         }
 
-        return Integer(checked((ulong) shardKeyValue));
+        return Integer(checked((ulong)shardKeyValue));
     }
 
     /// <summary>
@@ -122,7 +109,7 @@ public abstract class ShardSelector
     /// <param name="shardKeyValues">The shard key values.</param>
     public static implicit operator ShardSelector(string[] shardKeyValues)
     {
-        if (shardKeyValues is null or {Length: 0})
+        if (shardKeyValues is null or { Length: 0 })
         {
             throw new ArgumentNullException(nameof(shardKeyValues));
         }

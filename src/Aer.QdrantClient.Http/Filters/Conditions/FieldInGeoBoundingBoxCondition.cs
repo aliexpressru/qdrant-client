@@ -4,27 +4,14 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal sealed class FieldInGeoBoundingBoxCondition : FilterConditionBase
+internal sealed class FieldInGeoBoundingBoxCondition(
+    string payloadFieldName,
+    double topLeftLongitude,
+    double topLeftLatitude,
+    double bottomRightLongitude,
+    double bottomRightLatitude) : FilterConditionBase(payloadFieldName)
 {
-    private readonly double _topLeftLongitude;
-    private readonly double _topLeftLatitude;
-    private readonly double _bottomRightLongitude;
-    private readonly double _bottomRightLatitude;
-
     protected internal override PayloadIndexedFieldType? PayloadFieldType => PayloadIndexedFieldType.Geo;
-
-    public FieldInGeoBoundingBoxCondition(
-        string payloadFieldName,
-        double topLeftLongitude,
-        double topLeftLatitude,
-        double bottomRightLongitude,
-        double bottomRightLatitude) : base(payloadFieldName)
-    {
-        _topLeftLongitude = topLeftLongitude;
-        _topLeftLatitude = topLeftLatitude;
-        _bottomRightLongitude = bottomRightLongitude;
-        _bottomRightLatitude = bottomRightLatitude;
-    }
 
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
@@ -38,8 +25,8 @@ internal sealed class FieldInGeoBoundingBoxCondition : FilterConditionBase
             jsonWriter.WriteStartObject();
 
             {
-                jsonWriter.WriteNumber("lat", _bottomRightLatitude);
-                jsonWriter.WriteNumber("lon", _bottomRightLongitude);
+                jsonWriter.WriteNumber("lat", bottomRightLatitude);
+                jsonWriter.WriteNumber("lon", bottomRightLongitude);
             }
 
             jsonWriter.WriteEndObject();
@@ -48,8 +35,8 @@ internal sealed class FieldInGeoBoundingBoxCondition : FilterConditionBase
             jsonWriter.WriteStartObject();
 
             {
-                jsonWriter.WriteNumber("lat", _topLeftLatitude);
-                jsonWriter.WriteNumber("lon", _topLeftLongitude);
+                jsonWriter.WriteNumber("lat", topLeftLatitude);
+                jsonWriter.WriteNumber("lon", topLeftLongitude);
             }
 
             jsonWriter.WriteEndObject();

@@ -132,12 +132,12 @@ public static class Q
         string payloadFieldName,
         string substringValue,
         bool isPhraseMatch = false)
-        => 
+        =>
             new FieldMatchCondition<string>(
-            payloadFieldName,
-            substringValue,
-            isSubstringMatch: true,
-            isPhraseMatch: isPhraseMatch);
+                payloadFieldName,
+                substringValue,
+                isSubstringMatch: true,
+                isPhraseMatch: isPhraseMatch);
 
     /// <summary>
     /// Check if payload field value lies in a given range.

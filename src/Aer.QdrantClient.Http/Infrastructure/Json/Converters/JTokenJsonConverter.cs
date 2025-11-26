@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json.Linq;
 
@@ -19,9 +19,7 @@ internal sealed class JTokenJsonConverter : JsonConverter<JToken>
         return JToken.Parse(document.RootElement.GetRawText());
     }
 
-    public override void Write(Utf8JsonWriter writer, JToken value, JsonSerializerOptions options)
-    {
+    public override void Write(Utf8JsonWriter writer, JToken value, JsonSerializerOptions options) =>
         // Write the raw JSON from the JToken to the writer
         writer.WriteRawValue(value.ToString());
-    }
 }

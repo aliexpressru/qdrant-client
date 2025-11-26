@@ -1,23 +1,18 @@
-﻿namespace Aer.QdrantClient.Http.Models.Primitives;
+namespace Aer.QdrantClient.Http.Models.Primitives;
 
 /// <summary>
 /// Represents an integer shard key value.
 /// </summary>
-internal sealed class IntegerShardKey : ShardKey
+/// <remarks>
+/// Initializes new instance of <see cref="ShardKey"/> using integer shard key.
+/// </remarks>
+/// <param name="shardKeyValue">The shard key value.</param>
+internal sealed class IntegerShardKey(ulong shardKeyValue) : ShardKey
 {
     /// <summary>
     /// The shard key value.
     /// </summary>
-    public ulong ShardKeyValue { get; }
-
-    /// <summary>
-    /// Initializes new instance of <see cref="ShardKey"/> using integer shard key.
-    /// </summary>
-    /// <param name="shardKeyValue">The shard key value.</param>
-    public IntegerShardKey(ulong shardKeyValue)
-    {
-        ShardKeyValue = shardKeyValue;
-    }
+    public ulong ShardKeyValue { get; } = shardKeyValue;
 
     /// <inheritdoc/>
     public override bool IsInteger() => true;
@@ -29,6 +24,6 @@ internal sealed class IntegerShardKey : ShardKey
     public override ulong GetInteger() => ShardKeyValue;
 
     /// <inheritdoc/>
-    public override string GetString()
-        => throw new InvalidCastException($"Can't cast integer shard key value {ShardKeyValue} to string");
+    public override string GetString() =>
+        throw new InvalidCastException($"Can't cast integer shard key value {ShardKeyValue} to string");
 }

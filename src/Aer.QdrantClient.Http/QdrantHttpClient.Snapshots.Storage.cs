@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 #if  NETSTANDARD2_0
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
@@ -22,7 +22,7 @@ public partial class QdrantHttpClient
             HttpMethod.Get,
             cancellationToken,
             retryCount: 0);
-        
+
         if (response.Result is { Count: > 0 })
         {
             foreach (var snapshot in response.Result)
@@ -48,10 +48,7 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
-        if (response.Result is not null)
-        {
-            response.Result.SnapshotType = SnapshotType.Storage;
-        }
+        response.Result?.SnapshotType = SnapshotType.Storage;
 
         return response;
     }
@@ -69,11 +66,8 @@ public partial class QdrantHttpClient
             snapshotName,
             message,
             cancellationToken);
-        
-        if (result.Result is not null)
-        {
-            result.Result.SnapshotType = SnapshotType.Storage;
-        }
+
+        result.Result?.SnapshotType = SnapshotType.Storage;
 
         return result;
     }

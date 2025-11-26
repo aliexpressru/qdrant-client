@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json.Serialization;
 
@@ -24,19 +24,15 @@ public sealed class DenseVector : VectorBase, IEquatable<VectorBase>, IEquatable
     public override VectorBase Default => this;
 
     /// <inheritdoc/>
-    public override VectorBase this[string vectorName]
-        =>
-            throw new NotSupportedException(
-                $"Vector names are not supported for single vector values {GetType()}");
+    public override VectorBase this[string vectorName] =>
+        throw new NotSupportedException($"Vector names are not supported for single vector values {GetType()}");
 
     /// <inheritdoc/>
     public override VectorBase FirstOrDefault() => Default;
 
     /// <inheritdoc/>
-    public override bool ContainsVector(string vectorName)
-        =>
-            throw new NotSupportedException(
-                $"Vector names are not supported for single vector values {GetType()}");
+    public override bool ContainsVector(string vectorName) =>
+        throw new NotSupportedException($"Vector names are not supported for single vector values {GetType()}");
 
     /// <inheritdoc/>
     public override string ToString() =>
@@ -74,7 +70,7 @@ public sealed class DenseVector : VectorBase, IEquatable<VectorBase>, IEquatable
         }
 
         writer.Write("[");
-        
+
         writer.Write(VectorValues.Length);
 
         for (int i = 0; i < VectorValues.Length; i++)
@@ -86,7 +82,7 @@ public sealed class DenseVector : VectorBase, IEquatable<VectorBase>, IEquatable
 
             writer.Write(VectorValues[i]);
         }
-        
+
         writer.Write("]");
     }
 
@@ -103,10 +99,10 @@ public sealed class DenseVector : VectorBase, IEquatable<VectorBase>, IEquatable
 
         // "["
         reader.ReadString();
-        
+
         int length = reader.ReadInt32();
         var values = new float[length];
-        
+
         for (int i = 0; i < length; i++)
         {
             // ","
@@ -114,14 +110,14 @@ public sealed class DenseVector : VectorBase, IEquatable<VectorBase>, IEquatable
             {
                 reader.ReadChar();
             }
-            
+
             values[i] = reader.ReadSingle();
         }
-        
+
         // "]"
         reader.ReadString();
 
-        return new DenseVector() {VectorValues = values};
+        return new DenseVector() { VectorValues = values };
     }
 
     /// <inheritdoc/>
@@ -136,7 +132,7 @@ public sealed class DenseVector : VectorBase, IEquatable<VectorBase>, IEquatable
         {
             return true;
         }
-        
+
         return other is DenseVector denseVector && Equals(denseVector);
     }
 
@@ -147,8 +143,8 @@ public sealed class DenseVector : VectorBase, IEquatable<VectorBase>, IEquatable
         {
             return false;
         }
-        
-        return ReferenceEquals(this, obj) 
+
+        return ReferenceEquals(this, obj)
             || (obj is DenseVector denseVector && Equals(denseVector));
     }
 
@@ -167,18 +163,18 @@ public sealed class DenseVector : VectorBase, IEquatable<VectorBase>, IEquatable
     /// <inheritdoc/>
     public override int GetHashCode()
     {
-        if (VectorValues is null or {Length: 0})
+        if (VectorValues is null or { Length: 0 })
         {
             return 0;
         }
-        
-        HashCode hashCode = new HashCode();
-        
+
+        HashCode hashCode = new();
+
         foreach (var value in VectorValues)
         {
             hashCode.Add(value);
         }
-        
+
         return hashCode.ToHashCode();
     }
 }

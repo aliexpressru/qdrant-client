@@ -29,10 +29,7 @@ internal sealed class FieldMatchAnyConditionFast<T> : FilterConditionBase
         );
     }
 
-    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
-    {
-        _optimizedShouldCondition.WriteConditionJson(jsonWriter);
-    }
+    internal override void WriteConditionJson(Utf8JsonWriter jsonWriter) => _optimizedShouldCondition.WriteConditionJson(jsonWriter);
 
     internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldMatchAnyConditionFast(this);
 }

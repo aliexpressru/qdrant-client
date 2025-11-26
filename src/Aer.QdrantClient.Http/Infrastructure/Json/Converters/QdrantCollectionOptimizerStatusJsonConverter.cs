@@ -63,8 +63,6 @@ internal sealed class QdrantCollectionOptimizerStatusJsonConverter : JsonConvert
         }
     }
 
-    public override void Write(Utf8JsonWriter writer, GetCollectionInfoResponse.QdrantOptimizerStatusUint value, JsonSerializerOptions options)
-    {
+    public override void Write(Utf8JsonWriter writer, GetCollectionInfoResponse.QdrantOptimizerStatusUint value, JsonSerializerOptions options) =>
         JsonSerializer.Serialize(writer, value, JsonSerializerConstants.DefaultSerializerOptions);
-    }
 }

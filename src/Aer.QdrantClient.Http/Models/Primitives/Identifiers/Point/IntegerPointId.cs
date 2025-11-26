@@ -6,38 +6,32 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 /// <summary>
 /// Integer point identifier.
 /// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="IntegerPointId"/> class.
+/// </remarks>
+/// <param name="id">The identifier value.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public sealed class IntegerPointId : PointId
+public sealed class IntegerPointId(ulong id) : PointId
 {
-    internal override object ObjectId { get; }
+    internal override object ObjectId { get; } = id;
 
     /// <summary>
     /// The identifier value.
     /// </summary>
-    public ulong Id { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="IntegerPointId"/> class.
-    /// </summary>
-    /// <param name="id">The identifier value.</param>
-    public IntegerPointId(ulong id)
-    {
-        Id = id;
-        ObjectId = id;
-    }
+    public ulong Id { get; } = id;
 
     /// <inheritdoc/>
     public override ulong AsInteger() => Id;
 
     /// <inheritdoc/>
     public override Guid AsGuid()
-        => 
+        =>
             throw new QdrantPointIdConversionException(GetType().FullName, typeof(Guid).FullName);
 
     /// <inheritdoc/>
     protected override bool EqualsCore(PointId other)
     {
-        if (ReferenceEquals(null, other))
+        if (other is null)
         {
             return false;
         }
@@ -72,7 +66,7 @@ public sealed class IntegerPointId : PointId
     /// Performs an implicit conversion from <see cref="ulong"/> to <see cref="IntegerPointId"/>.
     /// </summary>
     /// <param name="id">The identifier value.</param>
-    public static implicit operator IntegerPointId(ulong id) => new (id);
+    public static implicit operator IntegerPointId(ulong id) => new(id);
 
     /// <summary>
     /// Performs an implicit conversion from <see cref="long"/> to <see cref="IntegerPointId"/>.
@@ -81,7 +75,7 @@ public sealed class IntegerPointId : PointId
     public static implicit operator IntegerPointId(long id) =>
         id < 0
             ? throw new QdrantInvalidPointIdException(id)
-            : new IntegerPointId((ulong) id);
+            : new IntegerPointId((ulong)id);
 
     /// <summary>
     /// Performs an implicit conversion from <see cref="ulong"/> to <see cref="IntegerPointId"/>.
@@ -96,5 +90,5 @@ public sealed class IntegerPointId : PointId
     public static implicit operator IntegerPointId(int id) =>
         id < 0
             ? throw new QdrantInvalidPointIdException(id)
-            : new IntegerPointId((ulong) id);
+            : new IntegerPointId((ulong)id);
 }

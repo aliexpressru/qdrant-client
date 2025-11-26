@@ -17,10 +17,7 @@ internal static class HttpResponseMessageExtensions
             return false;
         }
 
-        public HttpStatusCode? GetStatusCode()
-        {
-            return (HttpStatusCode?)httpRequestException.Data[STATUS_CODE_KEY_NAME];
-        }
+        public HttpStatusCode? GetStatusCode() => (HttpStatusCode?)httpRequestException.Data[STATUS_CODE_KEY_NAME];
     }
 
     extension(HttpResponseMessage httpResponseMessage)
@@ -42,21 +39,17 @@ internal static class HttpResponseMessageExtensions
 
     extension(HttpContent httpContent)
     {
-        public async Task<Stream> ReadAsStreamAsync(CancellationToken cancellationToken)
-        {
-            return await httpContent.ReadAsStreamAsync().WaitAsync(
+        public async Task<Stream> ReadAsStreamAsync(CancellationToken cancellationToken) =>
+            await httpContent.ReadAsStreamAsync().WaitAsync(
                 timeout: Timeout.InfiniteTimeSpan,
                 TimeProvider.System,
                 cancellationToken: cancellationToken);
-        }
 
-        public async Task<string> ReadAsStringAsync(CancellationToken cancellationToken)
-        {
-            return await httpContent.ReadAsStringAsync().WaitAsync(
+        public async Task<string> ReadAsStringAsync(CancellationToken cancellationToken) =>
+            await httpContent.ReadAsStringAsync().WaitAsync(
                 timeout: Timeout.InfiniteTimeSpan,
                 TimeProvider.System,
                 cancellationToken: cancellationToken);
-        }
     }
 }
 
@@ -98,10 +91,7 @@ internal static class Netstandard20Extensions
 
     extension(string target)
     {
-        public bool Contains(string value, StringComparison comparisonType)
-        {
-            return target.IndexOf(value, comparisonType) >= 0;
-        }
+        public bool Contains(string value, StringComparison comparisonType) => target.IndexOf(value, comparisonType) >= 0;
     }
 }
 

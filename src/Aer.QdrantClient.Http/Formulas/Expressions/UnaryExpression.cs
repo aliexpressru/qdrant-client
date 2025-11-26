@@ -1,29 +1,20 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Formulas.Expressions;
 
 /// <summary>
 /// Represents a unary expression in Qdrant formulas.
 /// </summary>
-internal sealed class UnaryExpression : ExpressionBase
+internal sealed class UnaryExpression(string unaryOperator, ExpressionBase operand) : ExpressionBase
 {
-	private readonly string _operator;
-	private readonly ExpressionBase _operand;
+    public override void WriteExpressionJson(Utf8JsonWriter jsonWriter)
+    {
+        jsonWriter.WriteStartObject();
+        {
+            jsonWriter.WritePropertyName(unaryOperator);
 
-	public UnaryExpression(string unaryOperator, ExpressionBase operand)
-	{
-		_operator = unaryOperator;
-		_operand = operand;
-	}
-	
-	public override void WriteExpressionJson(Utf8JsonWriter jsonWriter)
-	{
-		jsonWriter.WriteStartObject();
-		{
-			jsonWriter.WritePropertyName(_operator);
-
-			_operand.WriteExpressionJson(jsonWriter);
-		}
-		jsonWriter.WriteEndObject();
-	}
+            operand.WriteExpressionJson(jsonWriter);
+        }
+        jsonWriter.WriteEndObject();
+    }
 }

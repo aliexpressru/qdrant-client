@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
@@ -9,10 +9,7 @@ internal sealed class OrderByStartFromJsonConverter : JsonConverter<OrderByStart
     public override OrderByStartFrom Read(
         ref Utf8JsonReader reader,
         Type typeToConvert,
-        JsonSerializerOptions options)
-    {
-        throw new NotSupportedException($"Reading {nameof(OrderByStartFrom)} instances is not supported");
-    }
+        JsonSerializerOptions options) => throw new NotSupportedException($"Reading {nameof(OrderByStartFrom)} instances is not supported");
 
     public override void Write(
         Utf8JsonWriter writer,

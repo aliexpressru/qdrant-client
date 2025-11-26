@@ -14,7 +14,7 @@ public sealed class Payload
 {
     // To reduce memory footprint caused by storing JsonObject when it is not needed we don't populate this right away
     private JsonObject _parsedPayloadJson;
-    
+
     /// <summary>
     /// Represents the raw JSON string for an empty payload.
     /// </summary>
@@ -37,7 +37,7 @@ public sealed class Payload
     /// Not populated until accessed for the first time.
     /// </remarks>
     public JsonObject RawPayload => GetParsedPayloadJson().AsObject();
-    
+
     /// <summary>
     /// If <c>true</c> indicates that the payload is empty.
     /// </summary>
@@ -66,28 +66,27 @@ public sealed class Payload
     /// <exception cref="KeyNotFoundException">
     /// Occurs when specified field is not found in payload json.
     /// </exception>
-    public JsonNode this[string fieldName] 
+    public JsonNode this[string fieldName]
     {
-        get
-        {
+        get {
             if (fieldName.Contains('.'))
             {
                 // Means we are trying to access a nested property. This is not supported yet
-                
+
                 throw new NotSupportedException($"Getting nested payload property is not supported. Requested property '{fieldName}'");
             }
 
             if (!RawPayload.ContainsKey(fieldName))
-            { 
+            {
                 throw new KeyNotFoundException($"Payload property not found: {fieldName}");
             }
 
             var payloadProperty = RawPayload[fieldName];
-            
+
             return payloadProperty;
         }
     }
-    
+
     /// <summary>
     /// Determines whether the payload contains the specified field.
     /// </summary>
@@ -95,9 +94,9 @@ public sealed class Payload
     public bool ContainsField(string fieldName)
     {
         if (fieldName.Contains('.'))
-        { 
+        {
             // Means we are trying to access a nested property. This is not supported yet
-            
+
             return false;
         }
 
@@ -120,14 +119,14 @@ public sealed class Payload
         value = defaultValue;
 
         if (fieldName.Contains('.'))
-        { 
+        {
             // Means we are trying to access a nested property. This is not supported yet
-            
+
             return false;
         }
 
         if (!RawPayload.ContainsKey(fieldName))
-        { 
+        {
             return false;
         }
 
@@ -197,15 +196,15 @@ public sealed class Payload
             : isFormatPayloadJson
                 ? GetParsedPayloadJson().ToJsonString(JsonSerializerConstants.DefaultIndentedSerializerOptions)
                 : RawPayloadString;
-            
+
     /// <inheritdoc/>
     public override string ToString() => ToString(false);
-    
-    private JsonNode GetParsedPayloadJson()
+
+    private JsonObject GetParsedPayloadJson()
     {
         if (IsEmpty)
         {
-            return new JsonObject();
+            return new();
         }
 
         _parsedPayloadJson ??= JsonNode.Parse(RawPayloadString)!.AsObject();

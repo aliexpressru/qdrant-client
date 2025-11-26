@@ -40,75 +40,66 @@ public abstract class QdrantResponseBase
         /// </summary>
         public HardwareUsageReport Hardware { get; set; }
 
-        private long _cpu;
-
         /// <summary>
-        /// Cpu usage to execute request.
+        /// CPU usage to execute request.
         /// </summary>
         public long Cpu
         {
-            get => _cpu == 0 && Hardware is not null
+            get => field == 0 && Hardware is not null
                 ? Hardware.Cpu
-                : _cpu;
+                : field;
 
-            set => _cpu = value;
+            set;
         }
-
-        private long _payloadIoRead;
 
         /// <summary>
         /// Payload IO read operations.
         /// </summary>
         public long PayloadIoRead
         {
-            get => _payloadIoRead == 0 && Hardware is not null
+            get => field == 0 && Hardware is not null
                 ? Hardware.PayloadIoRead
-                : _payloadIoRead;
+                : field;
 
-            set => _payloadIoRead = value;
+            set;
         }
-
-        private long _payloadIoWrite;
 
         /// <summary>
         /// Payload IO write operations.
         /// </summary>
         public long PayloadIoWrite
         {
-            get => _payloadIoWrite == 0 && Hardware is not null
+            get => field == 0 && Hardware is not null
                 ? Hardware.PayloadIoWrite
-                : _payloadIoWrite;
+                : field;
 
-            set => _payloadIoWrite = value;
+            set;
         }
-
-        private long _vectorIoRead;
 
         /// <summary>
         /// Vector IO read operations.
         /// </summary>
         public long VectorIoRead
         {
-            get => _vectorIoRead == 0 && Hardware is not null
+            get => field == 0 && Hardware is not null
                 ? Hardware.VectorIoRead
-                : _vectorIoRead;
+                : field;
 
-            set => _vectorIoRead = value;
+            set;
         }
 
-        private long _vectorIoWrite;
         /// <summary>
         /// Vector IO write operations.
         /// </summary>
         public long VectorIoWrite
         {
-            get => _vectorIoWrite == 0 && Hardware is not null
+            get => field == 0 && Hardware is not null
                 ? Hardware.VectorIoWrite
-                : _vectorIoWrite;
+                : field;
 
-            set => _vectorIoWrite = value;
+            set;
         }
-        
+
         /// <summary>
         /// Represents an empty usage report.
         /// </summary>
@@ -120,7 +111,7 @@ public abstract class QdrantResponseBase
         public class HardwareUsageReport
         {
             /// <summary>
-            /// Cpu usage to execute request.
+            /// CPU usage to execute request.
             /// </summary>
             public long Cpu { get; set; }
 

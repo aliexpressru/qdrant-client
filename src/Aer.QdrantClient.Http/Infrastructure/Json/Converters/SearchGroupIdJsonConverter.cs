@@ -24,8 +24,6 @@ internal sealed class SearchGroupIdJsonConverter : JsonConverter<SearchGroupId>
         }
     }
 
-    public override void Write(Utf8JsonWriter writer, SearchGroupId value, JsonSerializerOptions options)
-    {
+    public override void Write(Utf8JsonWriter writer, SearchGroupId value, JsonSerializerOptions options) =>
         JsonSerializer.Serialize(writer, value.ObjectId, JsonSerializerConstants.DefaultSerializerOptions);
-    }
 }

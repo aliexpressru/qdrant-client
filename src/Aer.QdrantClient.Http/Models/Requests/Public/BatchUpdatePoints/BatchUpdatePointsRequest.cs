@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Models.Primitives;
@@ -34,10 +34,7 @@ public sealed class BatchUpdatePointsRequest
     /// <summary>
     /// Factory method for fluent interface support.
     /// </summary>
-    public static BatchUpdatePointsRequest Create()
-    {
-        return new BatchUpdatePointsRequest();
-    }
+    public static BatchUpdatePointsRequest Create() => new();
 
     /// <summary>
     /// Append an "upsert points" operation to batch.

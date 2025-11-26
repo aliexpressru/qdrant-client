@@ -5,17 +5,11 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal sealed class FieldMatchAnyCondition<T> : FilterConditionBase
+internal sealed class FieldMatchAnyCondition<T>(string payloadFieldName, IEnumerable<T> matchAnyValuesToMatchValues) : FilterConditionBase(payloadFieldName)
 {
-    internal readonly IEnumerable<T> _anyValuesToMatch;
+    internal readonly IEnumerable<T> _anyValuesToMatch = matchAnyValuesToMatchValues;
 
     protected internal override PayloadIndexedFieldType? PayloadFieldType { get; } = GetPayloadFieldType<T>();
-
-    public FieldMatchAnyCondition(string payloadFieldName, IEnumerable<T> matchAnyValuesToMatchValues)
-        : base(payloadFieldName)
-    {
-        _anyValuesToMatch = matchAnyValuesToMatchValues;
-    }
 
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {

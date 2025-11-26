@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
@@ -43,7 +43,7 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
         /// All peer ids.
         /// </summary>
         public List<ulong> AllPeerIds =>
-            Peers.Select(x => ulong.Parse(x.Key)).ToList();
+            [.. Peers.Select(x => ulong.Parse(x.Key))];
 
         /// <summary>
         /// The nodes consensus status.

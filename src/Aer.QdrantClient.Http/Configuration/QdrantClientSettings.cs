@@ -1,12 +1,10 @@
-﻿namespace Aer.QdrantClient.Http.Configuration;
+namespace Aer.QdrantClient.Http.Configuration;
 
 /// <summary>
 /// Represents a Qdrant client configuration.
 /// </summary>
 public sealed class QdrantClientSettings
 {
-    private Uri _httpAddressUri;
-    
     /// <summary>
     /// The default value of http client timeout.
     /// </summary>
@@ -20,7 +18,7 @@ public sealed class QdrantClientSettings
     /// <summary>
     /// The http address as an <see cref="Uri"/> object.
     /// </summary>
-    public Uri HttpAddressUri => _httpAddressUri ??= new(HttpAddress);
+    public Uri HttpAddressUri { get => field ??= new(HttpAddress); private set; }
 
     /// <summary>
     /// The authorization key for Qdrant db requests authorization.
@@ -30,7 +28,7 @@ public sealed class QdrantClientSettings
     public string ApiKey { set; get; }
 
     /// <summary>
-    /// The default timeout for http client which ios used to call Qdrant HTTP API.
+    /// The default timeout for http client which is used to call Qdrant HTTP API.
     /// </summary>
     public TimeSpan HttpClientTimeout { set; get; } = DefaultHttpClientTimeout;
 
@@ -38,7 +36,7 @@ public sealed class QdrantClientSettings
     /// If set to <c>true</c>, http client activity tracing is disabled. Default is <c>false</c>.
     /// </summary>
     public bool DisableTracing { set; get; }
-    
+
     /// <summary>
     /// If set to <c>true</c> enables request \ response compression. Default is <c>false</c>.
     /// </summary>

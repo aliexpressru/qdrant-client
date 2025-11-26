@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
@@ -7,10 +7,8 @@ namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 internal sealed class PayloadPropertiesSelectorJsonConverter : JsonConverter<PayloadPropertiesSelector>
 {
-    public override PayloadPropertiesSelector Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
+    public override PayloadPropertiesSelector Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
         throw new NotSupportedException($"Reading {nameof(PayloadPropertiesSelector)} instances is not supported");
-    }
 
     public override void Write(Utf8JsonWriter writer, PayloadPropertiesSelector value, JsonSerializerOptions options)
     {

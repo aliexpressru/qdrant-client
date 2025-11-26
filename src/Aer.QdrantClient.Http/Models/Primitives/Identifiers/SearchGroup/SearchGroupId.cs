@@ -34,8 +34,8 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
         }
 
         /// <inheritdoc/>
-        public override ulong AsInteger()
-            => throw new QdrantSearchGroupIdConversionException(GetType().FullName, typeof(int).FullName);
+        public override ulong AsInteger() =>
+            throw new QdrantSearchGroupIdConversionException(GetType().FullName, typeof(int).FullName);
 
         /// <inheritdoc/>
         public override string AsString() => _id.ToString();
@@ -43,7 +43,7 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
         /// <inheritdoc/>
         protected override bool EqualsCore(SearchGroupId other)
         {
-            if (ReferenceEquals(null, other))
+            if (other is null)
             {
                 return false;
             }
@@ -58,7 +58,7 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
                 return false;
             }
 
-            return _id == ((IntegerSearchGroupId) other)._id;
+            return _id == ((IntegerSearchGroupId)other)._id;
         }
 
         /// <inheritdoc/>
@@ -91,8 +91,8 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
         }
 
         /// <inheritdoc/>
-        public override ulong AsInteger()
-            => throw new QdrantSearchGroupIdConversionException(GetType().FullName, typeof(int).FullName);
+        public override ulong AsInteger() =>
+            throw new QdrantSearchGroupIdConversionException(GetType().FullName, typeof(int).FullName);
 
         /// <inheritdoc/>
         public override string AsString() => _id;
@@ -100,7 +100,7 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
         /// <inheritdoc/>
         protected override bool EqualsCore(SearchGroupId other)
         {
-            if (ReferenceEquals(null, other))
+            if (other is null)
             {
                 return false;
             }
@@ -115,7 +115,7 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
                 return false;
             }
 
-            return _id == ((StringSearchGroupId) other)._id;
+            return _id == ((StringSearchGroupId)other)._id;
         }
 
         /// <inheritdoc/>
@@ -143,30 +143,22 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
     /// </summary>
     public abstract string AsString();
 
-    #region Opeartors
+    #region Operators
 
     /// <summary>
     /// Performs an implicit conversion from <see cref="int"/> to <see cref="SearchGroupId"/>.
     /// </summary>
     /// <param name="id">The integer group identifier value.</param>
-    public static implicit operator SearchGroupId(int id)
-    {
-        return Integer(id);
-    }
+    public static implicit operator SearchGroupId(int id) => Integer(id);
 
     /// <summary>
-    /// Performs an implicit conversion from <see cref="System.String"/> to <see cref="SearchGroupId"/>.
+    /// Performs an implicit conversion from <see cref="string"/> to <see cref="SearchGroupId"/>.
     /// </summary>
     /// <param name="id">The string group identifier value.</param>
-    public static implicit operator SearchGroupId(string id)
-    {
-        if (string.IsNullOrEmpty(id))
-        {
-            throw new ArgumentNullException(nameof(id));
-        }
-
-        return String(id);
-    }
+    public static implicit operator SearchGroupId(string id) =>
+        string.IsNullOrEmpty(id)
+            ? throw new ArgumentNullException(nameof(id))
+            : String(id);
 
     #endregion
 
@@ -176,8 +168,8 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
     /// Create instance of integer group identifier.
     /// </summary>
     /// <param name="groupId">The group identifier.</param>
-    public static SearchGroupId Integer(long groupId)
-        => groupId < 0
+    public static SearchGroupId Integer(long groupId) =>
+        groupId < 0
             ? throw new QdrantInvalidNumericSearchGroupIdException(groupId)
             : new IntegerSearchGroupId(groupId);
 
@@ -204,13 +196,12 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
     protected abstract int GetHashCodeCore();
 
     /// <inheritdoc/>
-    public virtual bool Equals(SearchGroupId other)
-        => EqualsCore(other);
+    public virtual bool Equals(SearchGroupId other) => EqualsCore(other);
 
     /// <inheritdoc/>
     public override bool Equals(object obj)
     {
-        if (ReferenceEquals(null, obj))
+        if (obj is null)
         {
             return false;
         }

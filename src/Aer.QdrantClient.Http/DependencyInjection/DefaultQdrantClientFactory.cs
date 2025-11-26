@@ -8,7 +8,7 @@ namespace Aer.QdrantClient.Http.DependencyInjection;
 /// </summary>
 internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) : IQdrantClientFactory
 {
-    readonly HashSet<string> _unregisteredClientNames = new();
+    readonly HashSet<string> _unregisteredClientNames = [];
 
     /// <summary>
     /// Creates a new instance of <see cref="IQdrantHttpClient"/> with the specified client name.
@@ -27,7 +27,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) 
         if (httpClient.BaseAddress == null)
         {
             // Means that no HttpClient was registered with such name
-            _unregisteredClientNames.Add(clientName);
+            _ = _unregisteredClientNames.Add(clientName);
             throw new QdrantNamedQdrantClientNotFound(clientName);
         }
 

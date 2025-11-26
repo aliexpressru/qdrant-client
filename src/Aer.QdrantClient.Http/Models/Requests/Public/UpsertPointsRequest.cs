@@ -12,7 +12,6 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-
 public sealed class UpsertPointsRequest
 {
     /// <summary>

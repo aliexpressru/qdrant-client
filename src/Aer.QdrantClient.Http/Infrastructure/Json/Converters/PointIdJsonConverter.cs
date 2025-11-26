@@ -24,8 +24,6 @@ internal sealed class PointIdJsonConverter : JsonConverter<PointId>
         }
     }
 
-    public override void Write(Utf8JsonWriter writer, PointId value, JsonSerializerOptions options)
-    {
+    public override void Write(Utf8JsonWriter writer, PointId value, JsonSerializerOptions options) =>
         JsonSerializer.Serialize(writer, value.ObjectId, JsonSerializerConstants.DefaultSerializerOptions);
-    }
 }

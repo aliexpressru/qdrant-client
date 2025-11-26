@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
@@ -15,7 +15,7 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
     /// <summary>
     /// The name to vector mapping.
     /// </summary>
-    public required Dictionary<string, VectorBase> Vectors { init; get; } = new();
+    public required Dictionary<string, VectorBase> Vectors { init; get; } = [];
 
     /// <inheritdoc/>
     [JsonIgnore]
@@ -25,8 +25,7 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
     [JsonIgnore]
     public override VectorBase Default
     {
-        get
-        {
+        get {
             EnsureNotEmpty();
 
             if (Vectors.TryGetValue(DefaultVectorName, out VectorBase defaultVector))
@@ -57,7 +56,7 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
     /// <inheritdoc/>
     public override string ToString()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new();
 
         sb.AppendLine("{");
 
@@ -122,7 +121,7 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
         }
 
         writer.Write('{');
-        
+
         writer.Write(Vectors.Count);
 
         int vectorNumber = 0;
@@ -136,7 +135,7 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
             writer.Write($"\"{name}\":");
 
             writer.Write(vector.VectorKind.ToString());
-            
+
             vector.WriteToStream(writer);
 
             vectorNumber++;
@@ -158,7 +157,7 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
 
         // "{"
         reader.ReadChar();
-        
+
         int vectorCount = reader.ReadInt32();
 
         var vectors = new Dictionary<string, VectorBase>(vectorCount);
@@ -173,11 +172,11 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
 
             // "\"name\":"
             var namePart = reader.ReadString();
-            
-            var name = namePart.Substring(1, namePart.Length - 3); // Remove quotes and colon
+
+            var name = namePart[1..^2]; // Remove quotes and colon
 
             var vectorKindString = reader.ReadString();
-            
+
             if (!Enum.TryParse<VectorKind>(vectorKindString, out var vectorKind))
             {
                 throw new InvalidOperationException($"Vector kind '{vectorKindString}' is not supported");
@@ -207,8 +206,7 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
     /// <inheritdoc/>
     public override VectorBase this[string vectorName]
     {
-        get
-        {
+        get {
             EnsureNotEmpty();
 
             if (Vectors.TryGetValue(vectorName, out var vector))
@@ -240,7 +238,7 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
         {
             return true;
         }
-        
+
         return other is NamedVectors otherNamedVectors && Equals(otherNamedVectors);
     }
 
@@ -268,7 +266,7 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
         {
             return true;
         }
-        
+
         if (Vectors.Count != other.Vectors.Count)
         {
             return false;
@@ -277,35 +275,35 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
         foreach (var (vectorName, vector) in Vectors)
         {
             if (!other.Vectors.TryGetValue(vectorName, out VectorBase otherVector))
-            { 
+            {
                 return false;
             }
-            
+
             if (!vector.Equals(otherVector))
             {
                 return false;
             }
         }
-        
+
         return true;
     }
 
     /// <inheritdoc/>
     public override int GetHashCode()
     {
-        if(Vectors is null or {Count:0})
+        if (Vectors is null or { Count: 0 })
         {
             return 0;
         }
-        
-        HashCode hashCode = new HashCode();
+
+        HashCode hashCode = new();
 
         foreach (var (vectorName, vector) in Vectors)
-        { 
+        {
             hashCode.Add(vectorName);
             hashCode.Add(vector);
         }
-        
+
         return hashCode.ToHashCode();
     }
 }

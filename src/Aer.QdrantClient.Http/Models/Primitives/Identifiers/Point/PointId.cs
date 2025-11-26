@@ -24,7 +24,7 @@ public abstract class PointId : IEquatable<PointId>
     /// </summary>
     public abstract Guid AsGuid();
 
-    #region Opeartors
+    #region Operators
 
     /// <summary>
     /// Performs an implicit conversion from <see cref="long"/> to <see cref="PointId"/>.
@@ -102,8 +102,8 @@ public abstract class PointId : IEquatable<PointId>
     public static PointId Integer(int pointId)
         => pointId < 0
             ? throw new QdrantInvalidPointIdException(pointId)
-            : new IntegerPointId((ulong) pointId);
-    
+            : new IntegerPointId((ulong)pointId);
+
     /// <summary>
     /// Create instance of integer point identifier.
     /// </summary>
@@ -111,7 +111,7 @@ public abstract class PointId : IEquatable<PointId>
     public static PointId Integer(long pointId)
         => pointId < 0
             ? throw new QdrantInvalidPointIdException(pointId)
-            : new IntegerPointId((ulong) pointId);
+            : new IntegerPointId((ulong)pointId);
 
     /// <summary>
     /// Create instance of GUID point identifier.
@@ -121,24 +121,21 @@ public abstract class PointId : IEquatable<PointId>
 
     /// <summary>
     /// Create instance of GUID point identifier from string GUID representation.
-    /// Throws if the provided string is not parseable as GUID.
+    /// Throws if the provided string is not parsable as GUID.
     /// </summary>
     /// <param name="pointId">The point identifier.</param>
     public static PointId Guid(string pointId)
     {
-        
+
 #if NETSTANDARD2_0
         bool isConversionSuccessful = System.Guid.TryParse(pointId, out var guid);
 #else
         bool isConversionSuccessful = System.Guid.TryParse((ReadOnlySpan<char>) pointId, out var guid);
 #endif
-        
-        if (isConversionSuccessful)
-        { 
-            return new GuidPointId(guid);
-        }
-        
-        throw new QdrantInvalidPointIdException(pointId);
+
+        return isConversionSuccessful
+            ? (PointId)new GuidPointId(guid)
+            : throw new QdrantInvalidPointIdException(pointId);
     }
 
     /// <summary>
@@ -214,7 +211,7 @@ public abstract class PointId : IEquatable<PointId>
     /// <inheritdoc/>
     public override bool Equals(object obj)
     {
-        if (ReferenceEquals(null, obj))
+        if (obj is null)
         {
             return false;
         }
@@ -244,7 +241,7 @@ public abstract class PointId : IEquatable<PointId>
     /// <returns>String representing this point identifier.</returns>
     /// <exception cref="InvalidOperationException">Occurs when point id is of an unknown type.</exception>
     public abstract string ToString(bool includeTypeInfo);
-    
+
     /// <summary>
     /// Gets the string representation of the current PointId identifier value.
     /// </summary>

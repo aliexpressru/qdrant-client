@@ -4,27 +4,14 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal sealed class FieldRangeDateTimeCondition : FilterConditionBase
+internal sealed class FieldRangeDateTimeCondition(
+    string payloadFieldName,
+    DateTimeOffset? lessThan = null,
+    DateTimeOffset? lessThanOrEqual = null,
+    DateTimeOffset? greaterThan = null,
+    DateTimeOffset? greaterThanOrEqual = null) : FilterConditionBase(payloadFieldName)
 {
-    private readonly DateTimeOffset? _lessThan;
-    private readonly DateTimeOffset? _lessThanOrEqual;
-    private readonly DateTimeOffset? _greaterThan;
-    private readonly DateTimeOffset? _greaterThanOrEqual;
-
     protected internal override PayloadIndexedFieldType? PayloadFieldType => PayloadIndexedFieldType.Datetime;
-
-    public FieldRangeDateTimeCondition(
-        string payloadFieldName,
-        DateTimeOffset? lessThan = null,
-        DateTimeOffset? lessThanOrEqual = null,
-        DateTimeOffset? greaterThan = null,
-        DateTimeOffset? greaterThanOrEqual = null) : base(payloadFieldName)
-    {
-        _lessThan = lessThan;
-        _lessThanOrEqual = lessThanOrEqual;
-        _greaterThan = greaterThan;
-        _greaterThanOrEqual = greaterThanOrEqual;
-    }
 
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
@@ -32,24 +19,24 @@ internal sealed class FieldRangeDateTimeCondition : FilterConditionBase
         jsonWriter.WritePropertyName("range");
         jsonWriter.WriteStartObject();
 
-        if (_lessThan is not null)
+        if (lessThan is not null)
         {
-            jsonWriter.WriteString("lt", _lessThan.Value.ToString("u"));
+            jsonWriter.WriteString("lt", lessThan.Value.ToString("u"));
         }
 
-        if (_lessThanOrEqual is not null)
+        if (lessThanOrEqual is not null)
         {
-            jsonWriter.WriteString("lte", _lessThanOrEqual.Value.ToString("u"));
+            jsonWriter.WriteString("lte", lessThanOrEqual.Value.ToString("u"));
         }
 
-        if (_greaterThan is not null)
+        if (greaterThan is not null)
         {
-            jsonWriter.WriteString("gt", _greaterThan.Value.ToString("u"));
+            jsonWriter.WriteString("gt", greaterThan.Value.ToString("u"));
         }
 
-        if (_greaterThanOrEqual is not null)
+        if (greaterThanOrEqual is not null)
         {
-            jsonWriter.WriteString("gte", _greaterThanOrEqual.Value.ToString("u"));
+            jsonWriter.WriteString("gte", greaterThanOrEqual.Value.ToString("u"));
         }
 
         jsonWriter.WriteEndObject();

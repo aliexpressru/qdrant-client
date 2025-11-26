@@ -28,13 +28,11 @@ public sealed class CreateCollectionRequest
         /// Creates a new instance of <see cref="InitFromCollection"/> with specified collection name.
         /// </summary>
         /// <param name="sourceCollectionName">The name of the collection to copy data from.</param>
-        public static InitFromCollection ByName(string sourceCollectionName)
-        {
-            return new InitFromCollection()
+        public static InitFromCollection ByName(string sourceCollectionName) =>
+            new()
             {
                 Collection = sourceCollectionName
             };
-        }
     }
 
     #endregion
@@ -107,7 +105,7 @@ public sealed class CreateCollectionRequest
     /// The sparse vector configuration.
     /// </summary>
     public Dictionary<string, SparseVectorConfiguration> SparseVectors { get; set; }
-    
+
     /// <summary>
     /// The strict-mode configuration.
     /// </summary>

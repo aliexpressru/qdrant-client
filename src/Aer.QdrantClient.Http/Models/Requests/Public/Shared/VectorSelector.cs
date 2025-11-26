@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
@@ -8,24 +8,14 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public abstract class VectorSelector
 {
-    internal sealed class AllVectorsSelector : VectorSelector
+    internal sealed class AllVectorsSelector(bool areAllVectorsSelected) : VectorSelector
     {
-        public bool AreAllVectorsSelected { get; }
-
-        public AllVectorsSelector(bool areAllVectorsSelected)
-        {
-            AreAllVectorsSelected = areAllVectorsSelected;
-        }
+        public bool AreAllVectorsSelected { get; } = areAllVectorsSelected;
     }
 
-    internal sealed class IncludeNamedVectorsSelector : VectorSelector
+    internal sealed class IncludeNamedVectorsSelector(IEnumerable<string> includedVectorNames) : VectorSelector
     {
-        public string[] IncludedVectorNames { get; }
-
-        public IncludeNamedVectorsSelector(IEnumerable<string> includedVectorNames)
-        {
-            IncludedVectorNames = includedVectorNames.ToArray();
-        }
+        public string[] IncludedVectorNames { get; } = [.. includedVectorNames];
     }
 
     /// <summary>
@@ -57,10 +47,7 @@ public abstract class VectorSelector
     /// </summary>
     /// <param name="value">If <c>true</c> - includes all vectors to the result.
     /// If <c>false</c> excludes all vectors.</param>
-    public static implicit operator VectorSelector(bool value)
-    {
-        return new AllVectorsSelector(value);
-    }
+    public static implicit operator VectorSelector(bool value) => new AllVectorsSelector(value);
 
     #endregion
 }

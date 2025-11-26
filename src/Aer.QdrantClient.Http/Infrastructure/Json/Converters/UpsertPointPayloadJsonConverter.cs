@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 
@@ -6,10 +6,8 @@ namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 internal sealed class ObjectPayloadJsonConverter : JsonConverter<object>
 {
-    public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
+    public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
         throw new NotSupportedException("Reading upsert point payload object instances is not supported");
-    }
 
     public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
     {
@@ -21,7 +19,7 @@ internal sealed class ObjectPayloadJsonConverter : JsonConverter<object>
             case null:
                 writer.WriteNullValue();
                 return;
-            
+
             case string str:
                 try
                 {

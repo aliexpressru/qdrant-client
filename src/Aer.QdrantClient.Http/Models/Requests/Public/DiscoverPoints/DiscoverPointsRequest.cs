@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
@@ -17,7 +17,7 @@ public sealed class DiscoverPointsRequest
     /// Pairs of positive - negative examples to constrain the search.
     /// </summary>
     [JsonConverter(typeof(PointsDiscoveryContextCollectionJsonConverter))]
-    public ICollection<PointsDiscoveryContext> Context { get; } = new List<PointsDiscoveryContext>();
+    public ICollection<PointsDiscoveryContext> Context { get; } = [];
 
     /// <summary>
     /// Look for vectors closest to this.

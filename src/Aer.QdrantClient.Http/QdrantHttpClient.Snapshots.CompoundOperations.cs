@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 #if  NETSTANDARD2_0
@@ -15,10 +15,10 @@ public partial class QdrantHttpClient
 {
     /// <inheritdoc/>
     public async Task<ListSnapshotsResponse> ListAllSnapshots(
-        CancellationToken cancellationToken, 
+        CancellationToken cancellationToken,
         bool includeStorageSnapshots = false)
     {
-        List<SnapshotInfo> allSnapshots = new();
+        List<SnapshotInfo> allSnapshots = [];
 
         Stopwatch sw = Stopwatch.StartNew();
 
@@ -51,14 +51,14 @@ public partial class QdrantHttpClient
             }
 
             // Local shard snapshots
-            
+
 #if NETSTANDARD2_0
-            HashSet<uint> localShardIds = new();
+            HashSet<uint> localShardIds = [];
 #else
             HashSet<uint> localShardIds = new(collectionClusteringInfo.Result.LocalShards.Length);
 #endif
             // Listing remote shards snapshots is forbidden in Qdrant API
-            if (collectionClusteringInfo.Result.LocalShards is {Length: > 0} localShards)
+            if (collectionClusteringInfo.Result.LocalShards is { Length: > 0 } localShards)
             {
                 foreach (var shardInfo in localShards)
                 {
@@ -188,7 +188,7 @@ public partial class QdrantHttpClient
             Status = new QdrantStatus(QdrantOperationStatusType.Ok)
         };
     }
-    
+
     /// <inheritdoc/>
     public async Task<DefaultOperationResponse> DeleteAllCollectionShardSnapshots(
         CancellationToken cancellationToken,
@@ -210,23 +210,23 @@ public partial class QdrantHttpClient
                     Result = false
                 };
             }
-            
+
 #if NETSTANDARD2_0
-            HashSet<uint> localSardIds = new();
+            HashSet<uint> localSardIds = [];
 #else
             HashSet<uint> localSardIds = new(collectionClusteringInfo.Result.LocalShards.Length);
 #endif
             // Listing remote shards snapshots is forbidden in Qdrant API
-            
-            if (collectionClusteringInfo.Result.LocalShards is {Length: > 0} localShards)
+
+            if (collectionClusteringInfo.Result.LocalShards is { Length: > 0 } localShards)
             {
                 foreach (var shardInfo in localShards)
                 {
                     localSardIds.Add(shardInfo.ShardId);
                 }
             }
-            
-            foreach(var localShardId in localSardIds)
+
+            foreach (var localShardId in localSardIds)
             {
                 var listCollectionSnapshotsResponse = await ListShardSnapshots(collectionName, localShardId, cancellationToken);
 
@@ -238,8 +238,8 @@ public partial class QdrantHttpClient
                         Status = listCollectionSnapshotsResponse.Status
                     };
                 }
-                
-                foreach(var localShardSnapshot in listCollectionSnapshotsResponse.Result)
+
+                foreach (var localShardSnapshot in listCollectionSnapshotsResponse.Result)
                 {
                     var deleteCollectionShardSnapshotResponse =
                         await DeleteShardSnapshot(

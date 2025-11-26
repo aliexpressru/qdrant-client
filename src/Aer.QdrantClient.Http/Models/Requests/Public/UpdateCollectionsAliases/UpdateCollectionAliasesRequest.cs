@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public;
@@ -31,10 +31,7 @@ public sealed class UpdateCollectionAliasesRequest
     /// <summary>
     /// Factory method for fluent interface support.
     /// </summary>
-    public static UpdateCollectionAliasesRequest Create()
-    {
-        return new UpdateCollectionAliasesRequest();
-    }
+    public static UpdateCollectionAliasesRequest Create() => new();
 
     /// <summary>
     /// Append a "create collection alternative name (alias)" operation to batch.

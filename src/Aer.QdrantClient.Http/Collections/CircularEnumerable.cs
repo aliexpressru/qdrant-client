@@ -1,24 +1,14 @@
-﻿using System.Collections;
+using System.Collections;
 
 namespace Aer.QdrantClient.Http.Collections;
 
 internal sealed class CircularEnumerable<T> : IEnumerable<T>
 {
-    private sealed class CircleDetector : IDisposable
+    private sealed class CircleDetector(CircularEnumerable<T> enumerable,
+        int circleStartElementPointer,
+        bool isSkipInitialCircleStart) : IDisposable
     {
-        private readonly int _circleStartElementPointer;
-        private readonly CircularEnumerable<T> _enumerable;
-        private bool _isSkipInitialCircleStart;
         private bool _isDisposed;
-
-        public CircleDetector(CircularEnumerable<T> enumerable,
-            int circleStartElementPointer,
-            bool isSkipInitialCircleStart)
-        {
-            _enumerable = enumerable;
-            _circleStartElementPointer = circleStartElementPointer;
-            _isSkipInitialCircleStart = isSkipInitialCircleStart;
-        }
 
         public bool DetectCircle()
         {
@@ -27,29 +17,26 @@ internal sealed class CircularEnumerable<T> : IEnumerable<T>
                 return false;
             }
 
-            if (_enumerable._currentItemPointer != _circleStartElementPointer)
+            if (enumerable._currentItemPointer != circleStartElementPointer)
             {
                 return false;
             }
 
             // means we encountered the initial of a new circle start
 
-            if (!_isSkipInitialCircleStart)
+            if (!isSkipInitialCircleStart)
             {
                 return true;
             }
 
-            _isSkipInitialCircleStart = false;
+            isSkipInitialCircleStart = false;
             return false;
         }
 
-        public void Dispose()
-        {
-            _isDisposed = true;
-        }
+        public void Dispose() => _isDisposed = true;
     }
 
-    private readonly List<T> _items = new();
+    private readonly List<T> _items = [];
     private int _currentItemPointer;
 
     private CircleDetector _circleDetector;
@@ -110,23 +97,11 @@ internal sealed class CircularEnumerable<T> : IEnumerable<T>
         return _circleDetector;
     }
 
-    public bool ContainsElement(T elementToCheck, IEqualityComparer<T> comparer = null)
-    {
-        return _items.Contains(elementToCheck, comparer);
-    }
+    public bool ContainsElement(T elementToCheck, IEqualityComparer<T> comparer = null) => _items.Contains(elementToCheck, comparer);
 
-    public void Reset()
-    {
-        _currentItemPointer = 0;
-    }
+    public void Reset() => _currentItemPointer = 0;
 
-    public IEnumerator<T> GetEnumerator()
-    {
-        return _items.GetEnumerator();
-    }
+    public IEnumerator<T> GetEnumerator() => _items.GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return ((IEnumerable) _items).GetEnumerator();
-    }
+    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_items).GetEnumerator();
 }

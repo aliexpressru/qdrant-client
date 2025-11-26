@@ -5,21 +5,12 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal sealed class FieldInGeoPolygonCondition : FilterConditionBase
+internal sealed class FieldInGeoPolygonCondition(
+    string payloadFieldName,
+    IEnumerable<GeoPoint> exteriorPolygonPoints,
+    IEnumerable<GeoPoint>[] interiorPolygonsPoints) : FilterConditionBase(payloadFieldName)
 {
-    private readonly IEnumerable<GeoPoint> _exteriorPolygonPoints;
-    private readonly IEnumerable<GeoPoint>[] _interiorPolygonsPoints;
-
     protected internal override PayloadIndexedFieldType? PayloadFieldType => PayloadIndexedFieldType.Geo;
-
-    public FieldInGeoPolygonCondition(
-        string payloadFieldName,
-        IEnumerable<GeoPoint> exteriorPolygonPoints,
-        IEnumerable<GeoPoint>[] interiorPolygonsPoints) : base(payloadFieldName)
-    {
-        _exteriorPolygonPoints = exteriorPolygonPoints;
-        _interiorPolygonsPoints = interiorPolygonsPoints;
-    }
 
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
@@ -34,7 +25,7 @@ internal sealed class FieldInGeoPolygonCondition : FilterConditionBase
                 jsonWriter.WritePropertyName("points");
                 jsonWriter.WriteStartArray();
                 {
-                    foreach (var exteriorPolygonPoint in _exteriorPolygonPoints)
+                    foreach (var exteriorPolygonPoint in exteriorPolygonPoints)
                     {
                         jsonWriter.WriteStartObject();
                         {
@@ -52,10 +43,10 @@ internal sealed class FieldInGeoPolygonCondition : FilterConditionBase
 
             jsonWriter.WriteStartArray();
 
-            if (_interiorPolygonsPoints is { Length: > 0 })
+            if (interiorPolygonsPoints is { Length: > 0 })
             {
 
-                foreach (var interiorPolygonPoints in _interiorPolygonsPoints)
+                foreach (var interiorPolygonPoints in interiorPolygonsPoints)
                 {
                     jsonWriter.WriteStartObject();
                     {
