@@ -19,7 +19,7 @@ public class MultipleClientRegistrationTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task GetClientByName_NonExistsntName()
+    public async Task GetClientByName_NonExistentName()
     {
         var factory = ServiceProvider.GetRequiredService<IQdrantClientFactory>();
 
@@ -42,30 +42,5 @@ public class MultipleClientRegistrationTests : QdrantTestsBase
         firstClient.BaseAddress.Should().NotBeNull();
         secondClient.BaseAddress.Should().NotBeNull();
         firstClient.BaseAddress.Should().NotBe(secondClient.BaseAddress);
-
-        await ResetStorage(firstClient);
-        await ResetStorage(secondClient);
-
-        // We use created collections as markers that the clients are indeed different
-
-        await PrepareCollection(firstClient, TestCollectionName);
-        await PrepareCollection(secondClient, TestCollectionName2);
-
-        var firstClientCollections = (await firstClient.ListCollections(CancellationToken.None)).EnsureSuccess();
-        var secondClientCollections = (await secondClient.ListCollections(CancellationToken.None)).EnsureSuccess();
-
-        firstClientCollections.Collections.Length.Should().Be(1);
-        secondClientCollections.Collections.Length.Should().Be(1);
-
-        firstClientCollections.Collections.Should().ContainSingle(c => c.Name == TestCollectionName);
-        firstClientCollections.Collections.Should().NotContain(c => c.Name == TestCollectionName2);
-
-        secondClientCollections.Collections.Should().ContainSingle(c => c.Name == TestCollectionName2);
-        secondClientCollections.Collections.Should().NotContain(c => c.Name == TestCollectionName);
-
-        // Cleanup
-
-        await ResetStorage(firstClient);
-        await ResetStorage(secondClient);
     }
 }

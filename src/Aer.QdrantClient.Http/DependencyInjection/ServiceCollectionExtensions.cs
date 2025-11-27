@@ -115,6 +115,17 @@ public static class ServiceCollectionExtensions
 
             return services;
         }
+
+        /// <summary>
+        /// Adds a default implementation of the <see cref="IQdrantClientFactory"/> to the service collection.
+        /// </summary>
+        public IServiceCollection AddQdrantClientFactory()
+        {
+            services.AddHttpClient();
+            services.TryAddSingleton<IQdrantClientFactory, DefaultQdrantClientFactory>();
+
+            return services;
+        }
     }
 
     private static void AddQdrantHttpClientInternal(

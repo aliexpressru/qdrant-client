@@ -132,6 +132,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) 
             throw new QdrantNamedQdrantClientNotFound(clientName);
         }
 
+        // Check if we have stored settings for this client name
         if (_clientSettings.TryGetValue(clientName, out StoredQdrantClientSettings settings))
         {
             return new QdrantHttpClient(

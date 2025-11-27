@@ -81,6 +81,8 @@ public class QdrantTestsBase
 
         services.AddSingleton(Configuration);
 
+        services.AddQdrantClientFactory();
+
         AddTestLogger(services);
 
         // Add qdrant client
