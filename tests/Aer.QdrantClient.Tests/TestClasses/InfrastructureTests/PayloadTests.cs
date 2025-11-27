@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Tests.Helpers;
 
 namespace Aer.QdrantClient.Tests.TestClasses.InfrastructureTests;
@@ -22,7 +22,7 @@ internal class PayloadTests
         );
 
         emptyPayloadDeserializationAct.Should().Throw<InvalidOperationException>();
-        
+
         var emptyObject = GetPayloadObject(
             emptyPayload,
             () => new
@@ -33,7 +33,7 @@ internal class PayloadTests
             },
             shouldThrowIfEmpty: false
         );
-        
+
         emptyObject.Should().BeNull();
     }
 
@@ -126,7 +126,9 @@ internal class PayloadTests
         payload["age"]!.ToString().Should().Be("30");
     }
 
+#pragma warning disable IDE0060 // Remove unused parameter | Justification : The parameter is used to help with type inference
     private static T GetPayloadObject<T>(Payload payload, Func<T> typeBuilder, bool shouldThrowIfEmpty = true)
+#pragma warning restore IDE0060 // Remove unused parameter
         where T : class
         =>
             payload.As<T>(shouldThrowIfEmpty);

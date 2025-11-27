@@ -383,41 +383,41 @@ internal class VectorTests : QdrantTestsBase
     [Test]
     public void VectorEqualityMembers()
     {
-        DenseVector denseVector = new DenseVector()
+        DenseVector denseVector = new()
         {
             VectorValues = [1, 2, 3]
         };
 
-        DenseVector denseVectorEqual = new DenseVector()
+        DenseVector denseVectorEqual = new()
         {
             VectorValues = [1, 2, 3]
         };
 
-        DenseVector denseVectorNotEqual = new DenseVector()
+        DenseVector denseVectorNotEqual = new()
         {
             VectorValues = [3, 4, 5]
         };
 
-        SparseVector sparseVector = new SparseVector(new[] { 1U, 2U, 3U }, [1, 2, 3]);
-        SparseVector sparseVectorEqual = new SparseVector(new[] { 1U, 2U, 3U }, [1, 2, 3]);
-        SparseVector sparseVectorNotEqual = new SparseVector(new[] { 1U, 2U, 3U }, [3, 4, 5]);
+        SparseVector sparseVector = new(new[] { 1U, 2U, 3U }, [1, 2, 3]);
+        SparseVector sparseVectorEqual = new(new[] { 1U, 2U, 3U }, [1, 2, 3]);
+        SparseVector sparseVectorNotEqual = new(new[] { 1U, 2U, 3U }, [3, 4, 5]);
 
-        MultiVector multivector = new MultiVector()
+        MultiVector multivector = new()
         {
             Vectors = [[1, 2, 3], [4, 5, 6]]
         };
 
-        MultiVector multivectorEqual = new MultiVector()
+        MultiVector multivectorEqual = new()
         {
             Vectors = [[1, 2, 3], [4, 5, 6]]
         };
 
-        MultiVector multivectorNotEqual = new MultiVector()
+        MultiVector multivectorNotEqual = new()
         {
             Vectors = [[1, 2, 3], [7, 8, 9]]
         };
 
-        NamedVectors namedVectors = new NamedVectors()
+        NamedVectors namedVectors = new()
         {
             Vectors = new Dictionary<string, VectorBase>()
             {
@@ -427,7 +427,7 @@ internal class VectorTests : QdrantTestsBase
             }
         };
 
-        NamedVectors namedVectorsEqual = new NamedVectors()
+        NamedVectors namedVectorsEqual = new()
         {
             Vectors = new Dictionary<string, VectorBase>()
             {
@@ -437,7 +437,7 @@ internal class VectorTests : QdrantTestsBase
             }
         };
 
-        NamedVectors namedVectorsNotEqual = new NamedVectors()
+        NamedVectors namedVectorsNotEqual = new()
         {
             Vectors = new Dictionary<string, VectorBase>()
             {
@@ -488,7 +488,7 @@ internal class VectorTests : QdrantTestsBase
         namedVectors.GetHashCode().Should().Be(namedVectorsEqual.GetHashCode());
     }
 
-    private void AssertVectorStreamsContainsString(VectorBase vector, string expectedString)
+    private static void AssertVectorStreamsContainsString(VectorBase vector, string expectedString)
     {
         // String stream representation
         using MemoryStream ms = new();

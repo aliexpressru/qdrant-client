@@ -132,11 +132,8 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) 
             throw new QdrantNamedQdrantClientNotFound(clientName);
         }
 
-        if (_clientSettings.ContainsKey(clientName))
+        if (_clientSettings.TryGetValue(clientName, out StoredQdrantClientSettings settings))
         {
-            // Means we are trying to created a client that has not been registered manually with this factory
-            var settings = _clientSettings[clientName];
-
             return new QdrantHttpClient(
                 settings.QdrantAddress,
                 settings.ApiKey,

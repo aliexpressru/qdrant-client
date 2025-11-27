@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Primitives;
 
 namespace Aer.QdrantClient.Tests.TestClasses.InfrastructureTests;
@@ -30,10 +30,10 @@ internal class PointIdTests
         new object[] {-1, null, true},
 
         new object[] {null, PointId.NewGuid(), false},
-        
+
         new object[] {"08ced0de-5a51-4162-b839-8fd8ab3c6b6c", PointId.Guid("08ced0de-5a51-4162-b839-8fd8ab3c6b6c"), false},
         new object[] {1, PointId.Integer(1), false},
-        
+
         new object[] {10U, PointId.Integer(10U), false},
         new object[] {100L, PointId.Integer(100L), false},
     ];
@@ -53,7 +53,7 @@ internal class PointIdTests
 
     [Test]
     public void ImplicitConversions()
-    { 
+    {
         PointId pointIdFromInt = 42;
         PointId pointIdFromLong = 42L;
         PointId pointIdFromUlong = 42UL;
@@ -63,27 +63,27 @@ internal class PointIdTests
         IntegerPointId intPointIdFromLong = 42L;
         IntegerPointId intPointIdFromUlong = 42UL;
         IntegerPointId intPointIdFromUint = 42U;
-        
+
         var expectedGuid = Guid.NewGuid();
         PointId pointIdFromGuid = expectedGuid;
-        
+
         pointIdFromInt.Should().BeOfType<IntegerPointId>();
         ((IntegerPointId)pointIdFromInt).Id.Should().Be(42UL);
 
         pointIdFromLong.Should().BeOfType<IntegerPointId>();
-        ((IntegerPointId) pointIdFromLong).Id.Should().Be(42UL);
+        ((IntegerPointId)pointIdFromLong).Id.Should().Be(42UL);
 
         pointIdFromUlong.Should().BeOfType<IntegerPointId>();
-        ((IntegerPointId) pointIdFromUlong).Id.Should().Be(42UL);
+        ((IntegerPointId)pointIdFromUlong).Id.Should().Be(42UL);
 
         pointIdFromUint.Should().BeOfType<IntegerPointId>();
-        ((IntegerPointId) pointIdFromUint).Id.Should().Be(42UL);
-        
+        ((IntegerPointId)pointIdFromUint).Id.Should().Be(42UL);
+
         intPointIdFromInt.Id.Should().Be(42UL);
         intPointIdFromLong.Id.Should().Be(42UL);
         intPointIdFromUlong.Id.Should().Be(42UL);
         intPointIdFromUint.Id.Should().Be(42UL);
-        
+
         pointIdFromGuid.Should().BeOfType<GuidPointId>();
         ((GuidPointId)pointIdFromGuid).Id.Should().Be(expectedGuid);
     }
@@ -104,10 +104,10 @@ internal class PointIdTests
 
             pointIdCreateAct.Should().NotThrow();
             var createdPointId = pointIdCreateAct();
-            
+
             if (pointIdRawSource is null
                 && expected is GuidPointId)
-            { 
+            {
                 createdPointId.Should().BeOfType<GuidPointId>();
             }
             else
@@ -122,17 +122,17 @@ internal class PointIdTests
     {
         PointId intPointId = 42;
         IntegerPointId intPointId2 = 42;
-        
+
         var expectedIntPointIdString = "Int: 42";
-        
+
         PointId guidPointId = _firstGuid;
         GuidPointId guidPointId2 = _firstGuid;
-        
+
         var expectedGuidPointIdString = $"Guid: {_firstGuid}";
-        
+
         intPointId.ToString(includeTypeInfo: true).Should().Be(expectedIntPointIdString);
         intPointId2.ToString(includeTypeInfo: true).Should().Be(expectedIntPointIdString);
-        
+
         guidPointId.ToString(includeTypeInfo: true).Should().Be(expectedGuidPointIdString);
         guidPointId2.ToString(includeTypeInfo: true).Should().Be(expectedGuidPointIdString);
     }

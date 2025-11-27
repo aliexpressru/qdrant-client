@@ -51,10 +51,10 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest.UpsertPoint>()
-                    {
+                    Points =
+                    [
                         new(testPointId, testVector, testPayload)
-                    }
+                    ]
                 },
                 CancellationToken.None);
 
@@ -120,10 +120,10 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest.UpsertPoint>()
-                    {
+                    Points =
+                    [
                         new(testPointId, testVector, testPayload)
-                    }
+                    ]
                 },
                 CancellationToken.None);
 
@@ -238,10 +238,10 @@ internal partial class PointsCrudTests
                     TestCollectionName,
                     new UpsertPointsRequest()
                     {
-                        Points = new List<UpsertPointsRequest.UpsertPoint>()
-                        {
+                        Points =
+                        [
                             new(testPointId, testVector, payload)
-                        }
+                        ]
                     },
                     CancellationToken.None);
 
@@ -299,10 +299,10 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest.UpsertPoint>()
-                    {
+                    Points =
+                    [
                         new(testPointId, testVector, null)
-                    }
+                    ]
                 },
                 CancellationToken.None);
 
@@ -353,10 +353,10 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest.UpsertPoint>()
-                    {
+                    Points =
+                    [
                         new(testPointId, testVector, testPayload)
-                    }
+                    ]
                 },
                 CancellationToken.None);
 
@@ -405,10 +405,10 @@ internal partial class PointsCrudTests
             TestCollectionName,
             new UpsertPointsRequest()
             {
-                Points = new List<UpsertPointsRequest.UpsertPoint>()
-                {
+                Points =
+                [
                     new(testPointId, testVector, testPayload)
-                }
+                ]
             },
             CancellationToken.None);
 
@@ -537,10 +537,10 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest.UpsertPoint>()
-                    {
+                    Points =
+                    [
                         new(PointId.NewGuid(), CreateTestVector(vectorSize), (TestPayload) "test")
-                    }
+                    ]
                 },
                 CancellationToken.None,
                 isWaitForResult: false);

@@ -1491,7 +1491,7 @@ public partial class QdrantHttpClient
             string clusterNodeUriSubstring,
             CancellationToken cancellationToken) => GetPeerInfo(clusterNodeUriSubstring, cancellationToken);
 
-    private (Dictionary<ulong, HashSet<uint>> ShardsPerPeers, Dictionary<uint, uint> ShardReplicationFactors)
+    private static (Dictionary<ulong, HashSet<uint>> ShardsPerPeers, Dictionary<uint, uint> ShardReplicationFactors)
         GetShardIdsPerPeerIdsAndReplicationFactors(
             string collectionName,
             GetCollectionClusteringInfoResponse.CollectionClusteringInfo collectionShardingInfo,
@@ -1555,10 +1555,7 @@ public partial class QdrantHttpClient
                 continue;
             }
 
-            if (!collectionShardsPerPeers.ContainsKey(remoteShard.PeerId))
-            {
-                collectionShardsPerPeers.Add(remoteShard.PeerId, []);
-            }
+            collectionShardsPerPeers.TryAdd(remoteShard.PeerId, []);
 
 #if NETSTANDARD2_0
             if (!shardReplicationFactors.TryAdd(remoteShard.ShardId, (uint)1))

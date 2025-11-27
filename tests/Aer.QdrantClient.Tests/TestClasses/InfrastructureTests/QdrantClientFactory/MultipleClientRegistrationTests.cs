@@ -3,7 +3,7 @@ using Aer.QdrantClient.Http.DependencyInjection;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Tests.Base;
 
-namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
+namespace Aer.QdrantClient.Tests.TestClasses.InfrastructureTests.QdrantClientFactory;
 
 public class MultipleClientRegistrationTests : QdrantTestsBase
 {
@@ -16,7 +16,6 @@ public class MultipleClientRegistrationTests : QdrantTestsBase
     [SetUp]
     public async Task BeforeEachTest()
     {
-        //await ResetStorage();
     }
 
     [Test]
@@ -39,6 +38,10 @@ public class MultipleClientRegistrationTests : QdrantTestsBase
 
         var firstClient = factory.CreateClient(FirstClientName);
         var secondClient = factory.CreateClient(SecondClientName);
+
+        firstClient.BaseAddress.Should().NotBeNull();
+        secondClient.BaseAddress.Should().NotBeNull();
+        firstClient.BaseAddress.Should().NotBe(secondClient.BaseAddress);
 
         await ResetStorage(firstClient);
         await ResetStorage(secondClient);
