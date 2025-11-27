@@ -46,7 +46,7 @@ internal class QdrantClientFactoryTests : QdrantTestsBase
         thirdClient.BaseAddress.Should().NotBeNull();
 
         firstClient.BaseAddress.Should().NotBe(secondClient.BaseAddress);
-        secondClient.BaseAddress.Should().Be(secondClientUpdated.BaseAddress);
+        secondClient.BaseAddress.Should().NotBe(secondClientUpdated.BaseAddress);
         firstClient.BaseAddress.Should().NotBe(thirdClient.BaseAddress);
     }
 }
