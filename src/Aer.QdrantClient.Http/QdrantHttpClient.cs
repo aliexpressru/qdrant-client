@@ -82,6 +82,9 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     /// <remarks>Protected internal for testing purposes.</remarks>
     protected internal HttpClient ApiClient;
 
+    /// <inheritdoc/>
+    public Uri BaseAddress => ApiClient.BaseAddress;
+
     /// <summary>
     /// Initializes a new Qdrant HTTP client instance.
     /// </summary>

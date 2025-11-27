@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http.Filters.Builders;
+using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Formulas;
 using Aer.QdrantClient.Http.Formulas.Builders;
 using Aer.QdrantClient.Tests.Helpers;
@@ -130,7 +130,6 @@ internal class QdrantFormulaTests
 
         formulaString.AssertSameString(expectedFormula);
     }
-
 
     [Test]
     public void Divide()

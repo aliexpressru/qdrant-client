@@ -30,7 +30,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     public async Task CreateCollection_InvalidCollectionName()
     {
         var createCollectionAct = async () => await _qdrantHttpClient.CreateCollection(
-            TestCollectionName + "/" + "aaa", // invalid collection name
+            TestCollectionName + "/" + "invalid_collection_name", // invalid collection name - contains restricted character
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
             {
                 OnDiskPayload = true
@@ -38,7 +38,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
             CancellationToken.None);
 
         var createCollectionAct2 = async () => await _qdrantHttpClient.CreateCollection(
-            null, // invalid collection name
+            null, // invalid collection name - empty
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
             {
                 OnDiskPayload = true
@@ -120,7 +120,7 @@ internal class CollectionLifetimeTests : QdrantTestsBase
     public async Task CreateCollection_InitFrom()
     {
         OnlyIfVersionBefore("1.16.0", "init_from parameter is removed in 1.16.0");
-        
+
         var vectorSize = 10U;
 
         var createCollectionResult = await _qdrantHttpClient.CreateCollection(
@@ -142,10 +142,10 @@ internal class CollectionLifetimeTests : QdrantTestsBase
             TestCollectionName,
             new UpsertPointsRequest()
             {
-                Points = new List<UpsertPointsRequest.UpsertPoint>()
-                {
+                Points =
+                [
                     new(testPointId, testVector, testPayload)
-                }
+                ]
             },
             CancellationToken.None);
 

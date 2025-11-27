@@ -3,7 +3,7 @@ namespace Aer.QdrantClient.Http.Configuration;
 /// <summary>
 /// Represents a Qdrant client configuration.
 /// </summary>
-public class QdrantClientSettings
+public sealed class QdrantClientSettings
 {
     /// <summary>
     /// The default value of http client timeout.

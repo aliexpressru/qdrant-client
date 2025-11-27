@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
@@ -129,9 +129,9 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
         createSnapshotResult.Result.SizeMegabytes.Should().BeGreaterThan(0);
         createSnapshotResult.Result.Checksum.Should().NotBeNullOrEmpty();
         createSnapshotResult.Result.SnapshotType.Should().Be(SnapshotType.Collection);
-        
+
         // Clean up
-        
+
         await _qdrantHttpClientSingleNode.DeleteCollectionSnapshot(
             TestCollectionName,
             createSnapshotResult.Result.Name,
@@ -160,7 +160,7 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
         snapshotInfo.Name.Should().Be(createFirstSnapshotResult.Name);
         snapshotInfo.Size.Should().Be(createFirstSnapshotResult.Size);
         snapshotInfo.SizeMegabytes.Should().Be(createFirstSnapshotResult.SizeMegabytes);
-        
+
         snapshotInfo.CreationTime.Should().Be(createFirstSnapshotResult.CreationTime);
         snapshotInfo.Checksum.Should().Be(createFirstSnapshotResult.Checksum);
         snapshotInfo.SnapshotType.Should().Be(SnapshotType.Collection);
@@ -273,9 +273,9 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
         listLastRemainingSnapshotResult.Count.Should().Be(1);
 
         listLastRemainingSnapshotResult.Single().Name.Should().Be(createSecondSnapshotResult.Name);
-        
+
         // Clean up
-        
+
         await _qdrantHttpClientSingleNode.DeleteCollectionSnapshot(
             TestCollectionName,
             createSecondSnapshotResult.Name,
@@ -310,9 +310,9 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
         downloadSnapshotResponse.Result.SnapshotType.Should().Be(SnapshotType.Collection);
 
         await AssertSnapshotActualSize(downloadSnapshotResponse.Result.SnapshotDataStream, createSnapshotResult.Size);
-        
+
         // Clean up
-        
+
         await _qdrantHttpClientSingleNode.DeleteCollectionSnapshot(
             TestCollectionName,
             createSnapshotResult.Name,
@@ -364,14 +364,14 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
                 ? createSnapshotResult.Size
                 : 0
         );
-        
+
         downloadSnapshotResponse.Result.SnapshotName.Should().Be(createSnapshotResult.Name);
         downloadSnapshotResponse.Result.SnapshotDataStream.Should().NotBeNull();
 
         await AssertSnapshotActualSize(downloadSnapshotResponse.Result.SnapshotDataStream, createSnapshotResult.Size);
-        
+
         // Clean up
-        
+
         await _qdrantHttpClientSingleNode.DeleteCollectionSnapshot(
             TestCollectionName,
             createSnapshotResult.Name,
@@ -415,7 +415,7 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
     public async Task RecoverFromSnapshot()
     {
         var expectedVectorCount = 50;
-        
+
         await PrepareCollection(
                 _qdrantHttpClientSingleNode,
                 TestCollectionName,
@@ -445,7 +445,7 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
         recoverCollectionResult.Status.IsSuccess.Should().BeTrue();
         recoverCollectionResult.Result.Should().BeTrue();
         recoverCollectionResult.Time.Should().BeGreaterThan(0);
-        
+
         // check collection recovered
 
         listCollectionsResult = (await _qdrantHttpClientSingleNode.ListCollections(CancellationToken.None)).EnsureSuccess();
@@ -461,9 +461,9 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
             CancellationToken.None)).EnsureSuccess();
 
         countPointsResult.Count.Should().Be((ulong)expectedVectorCount);
-        
+
         // Clean up
-        
+
         await _qdrantHttpClientSingleNode.DeleteCollectionSnapshot(
             TestCollectionName,
             createSnapshotResult.Name,
@@ -489,7 +489,7 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
 
         // Copy snapshot to memory
 
-        MemoryStream downloadedSnapshotStream = new MemoryStream();
+        MemoryStream downloadedSnapshotStream = new();
         await downloadedSnapshotResult.SnapshotDataStream.CopyToAsync(downloadedSnapshotStream);
         downloadedSnapshotStream.Position = 0;
 
@@ -528,9 +528,9 @@ public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
             CancellationToken.None)).EnsureSuccess();
 
         countPointsResult.Count.Should().Be(10);
-        
+
         // Clean up
-        
+
         await _qdrantHttpClientSingleNode.DeleteCollectionSnapshot(
             TestCollectionName,
             createSnapshotResult.Name,

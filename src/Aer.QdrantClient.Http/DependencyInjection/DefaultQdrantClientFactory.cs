@@ -10,9 +10,19 @@ namespace Aer.QdrantClient.Http.DependencyInjection;
 /// </summary>
 internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) : IQdrantClientFactory
 {
-    private class StoredQdrantClientSettings : QdrantClientSettings
+    private class StoredQdrantClientSettings()
     {
-        public ILogger Logger { get; set; }
+        public required Uri QdrantAddress { init; get; }
+
+        public string ApiKey { init; get; }
+
+        public TimeSpan HttpClientTimeout { init; get; } = QdrantClientSettings.DefaultHttpClientTimeout;
+
+        public bool DisableTracing { init; get; }
+
+        public bool EnableCompression { init; get; }
+
+        public ILogger Logger { init; get; }
     }
 
     readonly HashSet<string> _unregisteredClientNames = [];
@@ -27,12 +37,11 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) 
     {
         _clientSettings[clientName] = new()
         {
-            HttpAddress = settings.HttpAddress,
+            QdrantAddress = new Uri(settings.HttpAddress),
             ApiKey = settings.ApiKey,
             HttpClientTimeout = settings.HttpClientTimeout,
             DisableTracing = settings.DisableTracing,
             EnableCompression = settings.EnableCompression,
-
             Logger = logger
         };
     }
@@ -49,7 +58,31 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) 
     {
         var settings = new StoredQdrantClientSettings()
         {
-            HttpAddress = httpAddress,
+            QdrantAddress = new Uri(httpAddress),
+            ApiKey = apiKey,
+            HttpClientTimeout = httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout,
+            DisableTracing = disableTracing,
+            EnableCompression = enableCompression,
+
+            Logger = logger
+        };
+
+        _clientSettings[clientName] = settings;
+    }
+
+    /// <inheritdoc/>
+    public void AddClientConfiguration(
+        string clientName,
+        Uri httpAddress,
+        string apiKey = null,
+        TimeSpan? httpClientTimeout = null,
+        ILogger logger = null,
+        bool disableTracing = false,
+        bool enableCompression = false)
+    {
+        var settings = new StoredQdrantClientSettings()
+        {
+            QdrantAddress = httpAddress,
             ApiKey = apiKey,
             HttpClientTimeout = httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout,
             DisableTracing = disableTracing,
@@ -78,7 +111,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) 
                 ? "https"
                 : "http",
             host,
-            port).Uri.ToString();
+            port).Uri;
 
         AddClientConfiguration(
             clientName,
@@ -105,7 +138,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) 
             var settings = _clientSettings[clientName];
 
             return new QdrantHttpClient(
-                new Uri(settings.HttpAddress),
+                settings.QdrantAddress,
                 settings.ApiKey,
                 settings.HttpClientTimeout,
                 settings.Logger,

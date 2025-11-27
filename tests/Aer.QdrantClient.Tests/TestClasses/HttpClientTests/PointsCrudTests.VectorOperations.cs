@@ -38,12 +38,12 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpdatePointsVectorsRequest()
                 {
-                    Points = pointIdsToUpdateVectorsFor.Select(
+                    Points = [.. pointIdsToUpdateVectorsFor.Select(
                         pid => new PointVector()
                         {
                             Id = pid,
                             Vector = vectorToUpdateTo
-                        }).ToArray()
+                        })]
                 },
                 CancellationToken.None
             );
@@ -109,9 +109,9 @@ internal partial class PointsCrudTests
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     CreateTestNamedVectors(vectorSize, namedVectorsCount),
-                    (TestPayload) i
+                    (TestPayload)i
                 )
             );
         }
@@ -193,9 +193,9 @@ internal partial class PointsCrudTests
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     CreateTestNamedVectors(vectorSize, namedVectorsCount),
-                    (TestPayload) i
+                    (TestPayload)i
                 )
             );
         }

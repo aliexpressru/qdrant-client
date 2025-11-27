@@ -10,3 +10,16 @@ using System.Diagnostics.CodeAnalysis;
     "IDE0058:Expression value is never used",
     Scope = "module",
     Justification = "Using FluentAssertions")]
+
+[assembly: SuppressMessage(
+    "CodeQuality",
+    "IDE0079:Remove unnecessary suppression",
+    Justification = "Using ReSharper suppressions",
+    Scope = "module")]
+
+[assembly: SuppressMessage(
+    "Style",
+    "IDE0130:Namespace does not match folder structure",
+    Justification = "Using folders to group types",
+    Scope = "namespace",
+    Target = "~N:Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots")]

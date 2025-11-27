@@ -589,7 +589,7 @@ public class PointsQueryTests : QdrantTestsBase
             TestCollectionName,
             new QueryPointsRequest(
                 PointsQuery.CreateFindNearestPointsQuery(
-                    upsertPoints.First().Vector,
+                    upsertPoints[0].Vector,
                     mmrDiversity: 0.3,
                     mmrCandidatesLimit: 3
                 )

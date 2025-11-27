@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http.Models.Primitives.Vectors;
+using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Helpers;
@@ -12,45 +12,45 @@ internal class VectorTests : QdrantTestsBase
     {
         int vectorLength = 10;
 
-        VectorBase denseVector = CreateTestVector((uint) vectorLength);
-        VectorBase sparseVector = CreateTestSparseVector((uint) vectorLength, 5);
+        VectorBase denseVector = CreateTestVector((uint)vectorLength);
+        VectorBase sparseVector = CreateTestSparseVector((uint)vectorLength, 5);
 
         Dictionary<string, float[]> namedVectorsRaw = new(2);
 
         foreach (var vectorName in CreateVectorNames(2, addDefaultVector: true))
         {
-            var vector = CreateTestVector((uint) vectorLength);
+            var vector = CreateTestVector((uint)vectorLength);
 
             namedVectorsRaw.Add(vectorName, vector);
         }
 
         VectorBase namedVectors = namedVectorsRaw;
 
-        VectorBase multivector = CreateTestMultivector((uint) vectorLength, 2, VectorDataType.Float32);
+        VectorBase multivector = CreateTestMultivector((uint)vectorLength, 2, VectorDataType.Float32);
 
         VectorBase nullVector = null;
 
         denseVector.VectorKind.Should().Be(VectorKind.Dense);
-        float[] denseVectorRaw = (float[]) denseVector;
+        float[] denseVectorRaw = (float[])denseVector;
         denseVectorRaw.Length.Should().Be(vectorLength);
 
         sparseVector.VectorKind.Should().Be(VectorKind.Sparse);
-        var convertSparseToFloatAct = () => (float[]) sparseVector;
+        var convertSparseToFloatAct = () => (float[])sparseVector;
         convertSparseToFloatAct.Should().Throw<NotSupportedException>();
 
         namedVectors.VectorKind.Should().Be(VectorKind.Named);
         namedVectors.AsNamedVectors().Vectors.Count.Should().Be(2);
         namedVectors.Default.VectorKind.Should().Be(VectorKind.Dense);
-        float[] namedDenseVectorRaw = (float[]) namedVectors.Default;
+        float[] namedDenseVectorRaw = (float[])namedVectors.Default;
         namedDenseVectorRaw.Length.Should().Be(vectorLength);
 
         multivector.VectorKind.Should().Be(VectorKind.Multi);
         multivector.Default.VectorKind.Should().Be(VectorKind.Dense);
-        float[] multivectorRaw = (float[]) multivector.Default;
+        float[] multivectorRaw = (float[])multivector.Default;
         multivectorRaw.Length.Should().Be(vectorLength);
 
         // ReSharper disable once ExpressionIsAlwaysNull
-        float[] nullVectorRaw = (float[]) nullVector;
+        float[] nullVectorRaw = (float[])nullVector;
         nullVectorRaw.Should().BeNull();
     }
 
@@ -71,7 +71,7 @@ internal class VectorTests : QdrantTestsBase
         denseVectorString.AssertSameString("[0.3667106,0.6042991,0.08220377]");
 
         VectorBase sparseVector = (
-            Indices: new[] {1U, 5U, 7U},
+            Indices: new[] { 1U, 5U, 7U },
             Values: [0.4f, 0.345f, 0.99f]
         );
 
@@ -88,10 +88,10 @@ internal class VectorTests : QdrantTestsBase
             """
         );
 
-        VectorBase sparseVectorSingleComponent = (Indices: new[] {5U}, Values: [0.345f]);
-        
+        VectorBase sparseVectorSingleComponent = (Indices: new[] { 5U }, Values: [0.345f]);
+
         sparseVectorSingleComponent.VectorKind.Should().Be(VectorKind.Sparse);
-            
+
         var sparseVectorSingleComponentString = sparseVectorSingleComponent.ToString();
 
         sparseVectorSingleComponentString.AssertSameString(
@@ -204,11 +204,11 @@ internal class VectorTests : QdrantTestsBase
         {
             ["Named"] = namedVectors
         };
-        
+
         namedVectorsNestedNamed.VectorKind.Should().Be(VectorKind.Named);
-        
+
         var namedVectorsNestedNamedString = namedVectorsNestedNamed.ToString();
-        
+
         namedVectorsNestedNamedString.AssertSameString(
             """
             {
@@ -231,7 +231,7 @@ internal class VectorTests : QdrantTestsBase
 
     [Test]
     public void GetVectorStringRepresentationToStream()
-    { 
+    {
         VectorBase denseVector = new[]
         {
             0.3667106f,
@@ -242,7 +242,7 @@ internal class VectorTests : QdrantTestsBase
         AssertVectorStreamsContainsString(denseVector, "[0.3667106,0.6042991,0.08220377]");
 
         VectorBase sparseVector = (
-            Indices: new[] {1U, 5U, 7U},
+            Indices: new[] { 1U, 5U, 7U },
             Values: [0.4f, 0.345f, 0.99f]
         );
 
@@ -255,7 +255,7 @@ internal class VectorTests : QdrantTestsBase
             }
             """);
 
-        VectorBase sparseVectorSingleComponent = (Indices: new[] {5U}, Values: [0.345f]);
+        VectorBase sparseVectorSingleComponent = (Indices: new[] { 5U }, Values: [0.345f]);
 
         AssertVectorStreamsContainsString(
             sparseVectorSingleComponent,
@@ -284,7 +284,7 @@ internal class VectorTests : QdrantTestsBase
                 [0.3667106,0.6042991,0.08220377] 
             ]
             """);
-        
+
         float[][] multivectorRaw =
         [
             [
@@ -303,7 +303,7 @@ internal class VectorTests : QdrantTestsBase
                 0.7f
             ]
         ];
-        
+
         VectorBase multivector = multivectorRaw;
         AssertVectorStreamsContainsString(
             multivector,
@@ -326,7 +326,7 @@ internal class VectorTests : QdrantTestsBase
                 ]
             ]
             """);
-        
+
         VectorBase namedVectors = new Dictionary<string, VectorBase>()
         {
             ["Dense"] = denseVector,
@@ -353,7 +353,7 @@ internal class VectorTests : QdrantTestsBase
               "Multivector" : [ [ 0.3667106, 0.6042991, 0.08220377 ], [ 0.1, 0.2, 0.3 ], [ 0.9, 0.8, 0.7 ] ]
             }
             """);
-        
+
         VectorBase namedVectorsNestedNamed = new Dictionary<string, VectorBase>()
         {
             ["Named"] = namedVectors
@@ -398,9 +398,9 @@ internal class VectorTests : QdrantTestsBase
             VectorValues = [3, 4, 5]
         };
 
-        SparseVector sparseVector = new SparseVector(new[] {1U, 2U, 3U}, [1, 2, 3]);
-        SparseVector sparseVectorEqual = new SparseVector(new[] {1U, 2U, 3U}, [1, 2, 3]);
-        SparseVector sparseVectorNotEqual = new SparseVector(new[] {1U, 2U, 3U}, [3, 4, 5]);
+        SparseVector sparseVector = new SparseVector(new[] { 1U, 2U, 3U }, [1, 2, 3]);
+        SparseVector sparseVectorEqual = new SparseVector(new[] { 1U, 2U, 3U }, [1, 2, 3]);
+        SparseVector sparseVectorNotEqual = new SparseVector(new[] { 1U, 2U, 3U }, [3, 4, 5]);
 
         MultiVector multivector = new MultiVector()
         {
@@ -450,40 +450,40 @@ internal class VectorTests : QdrantTestsBase
         denseVector.Equals(denseVector).Should().BeTrue();
         denseVector.Equals(denseVectorEqual).Should().BeTrue();
         denseVector.Equals(denseVectorNotEqual).Should().BeFalse();
-        denseVector.Equals((VectorBase) denseVectorEqual).Should().BeTrue();
-        denseVector.Equals((VectorBase) denseVectorNotEqual).Should().BeFalse();
-        denseVector.Equals((object) denseVectorEqual).Should().BeTrue();
-        denseVector.Equals((object) denseVectorNotEqual).Should().BeFalse();
+        denseVector.Equals((VectorBase)denseVectorEqual).Should().BeTrue();
+        denseVector.Equals((VectorBase)denseVectorNotEqual).Should().BeFalse();
+        denseVector.Equals((object)denseVectorEqual).Should().BeTrue();
+        denseVector.Equals((object)denseVectorNotEqual).Should().BeFalse();
 
         denseVector.GetHashCode().Should().Be(denseVectorEqual.GetHashCode());
 
         sparseVector.Equals(sparseVector).Should().BeTrue();
         sparseVector.Equals(sparseVectorEqual).Should().BeTrue();
         sparseVector.Equals(sparseVectorNotEqual).Should().BeFalse();
-        sparseVector.Equals((VectorBase) sparseVectorEqual).Should().BeTrue();
-        sparseVector.Equals((VectorBase) sparseVectorNotEqual).Should().BeFalse();
-        sparseVector.Equals((object) sparseVectorEqual).Should().BeTrue();
-        sparseVector.Equals((object) sparseVectorNotEqual).Should().BeFalse();
+        sparseVector.Equals((VectorBase)sparseVectorEqual).Should().BeTrue();
+        sparseVector.Equals((VectorBase)sparseVectorNotEqual).Should().BeFalse();
+        sparseVector.Equals((object)sparseVectorEqual).Should().BeTrue();
+        sparseVector.Equals((object)sparseVectorNotEqual).Should().BeFalse();
 
         sparseVector.GetHashCode().Should().Be(sparseVectorEqual.GetHashCode());
 
         multivector.Equals(multivector).Should().BeTrue();
         multivector.Equals(multivectorEqual).Should().BeTrue();
         multivector.Equals(multivectorNotEqual).Should().BeFalse();
-        multivector.Equals((VectorBase) multivectorEqual).Should().BeTrue();
-        multivector.Equals((VectorBase) multivectorNotEqual).Should().BeFalse();
-        multivector.Equals((object) multivectorEqual).Should().BeTrue();
-        multivector.Equals((object) multivectorNotEqual).Should().BeFalse();
+        multivector.Equals((VectorBase)multivectorEqual).Should().BeTrue();
+        multivector.Equals((VectorBase)multivectorNotEqual).Should().BeFalse();
+        multivector.Equals((object)multivectorEqual).Should().BeTrue();
+        multivector.Equals((object)multivectorNotEqual).Should().BeFalse();
 
         multivector.GetHashCode().Should().Be(multivectorEqual.GetHashCode());
 
         namedVectors.Equals(namedVectors).Should().BeTrue();
         namedVectors.Equals(namedVectorsEqual).Should().BeTrue();
         namedVectors.Equals(namedVectorsNotEqual).Should().BeFalse();
-        namedVectors.Equals((VectorBase) namedVectorsEqual).Should().BeTrue();
-        namedVectors.Equals((VectorBase) namedVectorsNotEqual).Should().BeFalse();
-        namedVectors.Equals((object) namedVectorsEqual).Should().BeTrue();
-        namedVectors.Equals((object) namedVectorsNotEqual).Should().BeFalse();
+        namedVectors.Equals((VectorBase)namedVectorsEqual).Should().BeTrue();
+        namedVectors.Equals((VectorBase)namedVectorsNotEqual).Should().BeFalse();
+        namedVectors.Equals((object)namedVectorsEqual).Should().BeTrue();
+        namedVectors.Equals((object)namedVectorsNotEqual).Should().BeFalse();
 
         namedVectors.GetHashCode().Should().Be(namedVectorsEqual.GetHashCode());
     }

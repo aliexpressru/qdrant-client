@@ -333,7 +333,7 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
         AssertSnapshot(recoverFirstNodeCollectionResult);
         AssertSnapshot(recoverSecondNodeCollectionResult);
 
-        void AssertSnapshot(DefaultOperationResponse recoverCollectionResult)
+        static void AssertSnapshot(DefaultOperationResponse recoverCollectionResult)
         {
             recoverCollectionResult.Status.IsSuccess.Should().BeTrue();
             recoverCollectionResult.Result.Should().BeTrue();
@@ -408,7 +408,7 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
             createFirstNodeSnapshotResult.Name,
             CancellationToken.None)).EnsureSuccess();
 
-        MemoryStream downloadedFirstNodeSnapshotStream = new MemoryStream();
+        MemoryStream downloadedFirstNodeSnapshotStream = new();
         await downloadedFirstNodeSnapshotResult.SnapshotDataStream.CopyToAsync(downloadedFirstNodeSnapshotStream);
         downloadedFirstNodeSnapshotStream.Position = 0;
 
@@ -421,7 +421,7 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
             createSecondNodeSnapshotResult.Name,
             CancellationToken.None)).EnsureSuccess();
 
-        MemoryStream downloadedSecondNodeSnapshotStream = new MemoryStream();
+        MemoryStream downloadedSecondNodeSnapshotStream = new();
         await downloadedSecondNodeSnapshotResult.SnapshotDataStream.CopyToAsync(downloadedSecondNodeSnapshotStream);
         downloadedSecondNodeSnapshotStream.Position = 0;
 

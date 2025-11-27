@@ -1,4 +1,5 @@
 using Aer.QdrantClient.Http.Configuration;
+using Aer.QdrantClient.Http.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace Aer.QdrantClient.Http.Abstractions;
@@ -59,6 +60,42 @@ public interface IQdrantClientFactory
         bool enableCompression = false);
 
     /// <summary>
+    /// Adds a client configuration for connecting to a remote service using the specified settings.
+    /// </summary>
+    /// <remarks>
+    /// If a configuration with the same client name already exists, this method may overwrite or
+    /// update the existing configuration depending on implementation. Tracing and compression options affect network
+    /// diagnostics and performance.
+    /// </remarks>
+    /// <param name="clientName">The unique name that identifies the client configuration. Cannot be null or empty.</param>
+    /// <param name="httpAddress">The HTTP address of the remote service endpoint. Must be a valid absolute URI.</param>
+    /// <param name="apiKey">
+    /// An optional API key used for authenticating requests to the remote service. If null, authentication may be
+    /// disabled or handled differently depending on the service.
+    /// </param>
+    /// <param name="httpClientTimeout">An optional timeout value for HTTP requests made by the client. If <c>null</c>, the default timeout is used.</param>
+    /// <param name="logger">
+    /// An optional logger instance for capturing diagnostic and operational logs. If null, logging is disabled for this
+    /// client configuration.
+    /// </param>
+    /// <param name="disableTracing">
+    /// Specifies whether distributed tracing is disabled for this client. Set to <c>true</c> to disable
+    /// tracing; otherwise, tracing is enabled.
+    /// </param>
+    /// <param name="enableCompression">
+    /// Specifies whether HTTP request and response compression is enabled. Set to <c>true</c> to enable
+    /// compression; otherwise, compression is disabled.
+    /// </param>
+    public void AddClientConfiguration(
+        string clientName,
+        Uri httpAddress,
+        string apiKey = null,
+        TimeSpan? httpClientTimeout = null,
+        ILogger logger = null,
+        bool disableTracing = false,
+        bool enableCompression = false);
+
+    /// <summary>
     /// Adds a client configuration for connecting to a remote service endpoint with the specified settings.
     /// </summary>
     /// <remarks>
@@ -97,9 +134,17 @@ public interface IQdrantClientFactory
 
     /// <summary>
     /// Creates a new instance of <see cref="IQdrantHttpClient"/> with the specified client name.
-    /// For client to be created, it must be previously registered in the dependency
-    /// injection container with the same name it is going to be requested.
+    /// For client to be created, it must either be previously registered in the dependency
+    /// injection container with the same name it is going to be requested by using one of the
+    /// <c>ServiceCollectionExtensions.AddQdrantHttpClient</c> overloads.
+    /// 
+    /// Or it must be registered using one of the <c>IQdrantClientFactory.AddClientConfiguration</c> overloads.
+    /// If no named configuration is found, an exception of type <see cref="QdrantNamedQdrantClientNotFound"/> is thrown.
     /// </summary>
     /// <param name="clientName">The name of the client to get.</param>
+    /// <exception cref="QdrantNamedQdrantClientNotFound">
+    /// Thrown when the client configuration was not registered either by directly calling to
+    /// factory or via <c>ServiceCollectionExtensions.AddQdrantHttpClient</c> overloads.
+    /// </exception>
     IQdrantHttpClient CreateClient(string clientName);
 }

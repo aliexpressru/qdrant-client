@@ -156,14 +156,14 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest.UpsertPoint>()
-                    {
+                    Points =
+                    [
                         new(
                             PointId.Integer(1),
                             CreateTestVector(1),
                             (TestPayload) "test"
                         )
-                    }
+                    ]
                 },
                 CancellationToken.None);
 
@@ -181,14 +181,14 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest.UpsertPoint>()
-                    {
+                    Points =
+                    [
                         new(
                             PointId.Integer(1),
                             CreateTestVector(1),
                             "this is an invalid string payload" // Deliberately not casting to TestPayload 
                         )
-                    }
+                    ]
                 },
                 CancellationToken.None);
 
