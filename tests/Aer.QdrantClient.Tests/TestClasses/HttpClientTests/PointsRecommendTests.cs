@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Models.Primitives;
@@ -205,10 +205,11 @@ public class PointsRecommendTests : QdrantTestsBase
             2,
             negativeVectorExamples: [vectorToAvoid],
             withVector: true,
-            withPayload: true);
-
-        // this is set only in this test since we want to ensure that serialization works ok
-        request.Strategy = RecommendStrategy.AverageVector;
+            withPayload: true)
+        {
+            // this is set only in this test since we want to ensure that serialization works ok
+            Strategy = RecommendStrategy.AverageVector
+        };
 
         var recommendedPoints = await _qdrantHttpClient.RecommendPoints(
             TestCollectionName,
@@ -250,7 +251,7 @@ public class PointsRecommendTests : QdrantTestsBase
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     singleVector,
                     new TestPayload()
                     {
@@ -278,7 +279,7 @@ public class PointsRecommendTests : QdrantTestsBase
             TestCollectionName,
             new RecommendPointsRequest(
                 [positiveExamplePointId1, positiveExamplePointId2],
-                (uint) vectorCount,
+                (uint)vectorCount,
                 withVector: true,
                 withPayload: true),
             CancellationToken.None);
@@ -322,7 +323,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     vector,
                     new TestPayload()
                     {
@@ -347,7 +348,7 @@ public class PointsRecommendTests : QdrantTestsBase
             TestCollectionName,
             new RecommendPointsRequest(
                 [singleVector1, singleVector2],
-                (uint) vectorCount,
+                (uint)vectorCount,
                 withVector: true,
                 withPayload: true),
             CancellationToken.None);
@@ -381,7 +382,7 @@ public class PointsRecommendTests : QdrantTestsBase
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     singleVector,
                     new TestPayload()
                     {
@@ -408,7 +409,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         var request = new RecommendPointsRequest(
             [positiveExamplePointId1, positiveExamplePointId2],
-            (uint) vectorCount,
+            (uint)vectorCount,
             withVector: true,
             withPayload: true);
 
@@ -464,7 +465,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     vector,
                     new TestPayload()
                     {
@@ -487,7 +488,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         var request = new RecommendPointsRequest(
             [singleVector1, singleVector2],
-            (uint) vectorCount,
+            (uint)vectorCount,
             withVector: true,
             withPayload: true);
 
@@ -542,7 +543,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     vector,
                     new TestPayload()
                     {
@@ -567,7 +568,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         var request1 = new RecommendPointsRequest(
             [singleVector1],
-            (uint) vectorCount,
+            (uint)vectorCount,
             withVector: true,
             withPayload: true)
         {
@@ -580,7 +581,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
         var request2 = new RecommendPointsRequest(
             [singleVector2],
-            (uint) vectorCount,
+            (uint)vectorCount,
             withVector: true,
             withPayload: true)
         {
@@ -640,7 +641,7 @@ public class PointsRecommendTests : QdrantTestsBase
 
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     vector,
                     new TestPayload()
                     {

@@ -128,7 +128,7 @@ internal class PointsSearchTests : QdrantTestsBase
         foreach (var readPoint in searchResult.Result)
         {
             readPoint.Score.Should().BeGreaterThan(0);
-            
+
             var readPointId = readPoint.Id.AsInteger();
 
             var expectedPoint = upsertPointsByPointIds[readPointId];
@@ -172,15 +172,15 @@ internal class PointsSearchTests : QdrantTestsBase
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     CreateTestNamedVectors(vectorSize, namedVectorsCount),
-                    (TestPayload) i
+                    (TestPayload)i
                 )
             );
         }
 
         Dictionary<ulong, UpsertPointsRequest.UpsertPoint> upsertPointsByPointIds =
-            upsertPoints.ToDictionary(p => ((IntegerPointId) p.Id).Id);
+            upsertPoints.ToDictionary(p => ((IntegerPointId)p.Id).Id);
 
         var upsertPointsResult
             = await _qdrantHttpClient.UpsertPoints(
@@ -212,7 +212,7 @@ internal class PointsSearchTests : QdrantTestsBase
         foreach (var readPoint in searchResult.Result)
         {
             readPoint.Score.Should().BeGreaterThan(0);
-            
+
             var readPointId = readPoint.Id.AsInteger();
 
             var expectedPoint = upsertPointsByPointIds[readPointId];
@@ -304,7 +304,7 @@ internal class PointsSearchTests : QdrantTestsBase
         foreach (var readPoint in searchResult.Result)
         {
             readPoint.Score.Should().BeGreaterThan(0);
-            
+
             var readPointId = readPoint.Id.AsInteger();
 
             var expectedPoint = upsertPointsByPointIds[readPointId];
@@ -404,7 +404,7 @@ internal class PointsSearchTests : QdrantTestsBase
         foreach (var readPoint in searchResult.Result)
         {
             readPoint.Score.Should().BeGreaterThan(0);
-            
+
             var readPointId = readPoint.Id.AsInteger();
 
             var expectedPoint = upsertPointsByPointIds[readPointId];
@@ -510,7 +510,7 @@ internal class PointsSearchTests : QdrantTestsBase
         foreach (var readPoint in searchResult.Result)
         {
             readPoint.Score.Should().BeGreaterThan(0);
-            
+
             var readPointId = readPoint.Id.AsInteger();
 
             var expectedPoint = upsertPointsByPointIds[readPointId];
@@ -550,9 +550,9 @@ internal class PointsSearchTests : QdrantTestsBase
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     singleVector,
-                    (TestPayload) i
+                    (TestPayload)i
                 )
             );
         }
@@ -597,11 +597,10 @@ internal class PointsSearchTests : QdrantTestsBase
                     WithPayload = PayloadPropertiesSelector.All,
                     Filter =
                         Q.Should(
-                            filterValuesToMatch.Select(
+                            [.. filterValuesToMatch.Select(
                                     filterValue =>
                                         Q<TestPayload>.MatchValue(p => p.Integer, filterValue)
-                                )
-                                .ToArray()
+                                )]
                         )
                 },
                 CancellationToken.None
@@ -649,9 +648,9 @@ internal class PointsSearchTests : QdrantTestsBase
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     singleVector,
-                    (TestPayload) i
+                    (TestPayload)i
                 )
             );
         }
@@ -764,7 +763,7 @@ internal class PointsSearchTests : QdrantTestsBase
             foreach (var readPoint in readPointsForOneRequestInBatch)
             {
                 readPoint.Score.Should().BeGreaterThan(0);
-                
+
                 var readPointId = readPoint.Id.AsInteger();
 
                 var expectedPoint = upsertPointsByPointIds[readPointId];
@@ -819,10 +818,10 @@ internal class PointsSearchTests : QdrantTestsBase
         searchResult.Result.Groups.Should()
             .AllSatisfy(g => g.Hits.Length.Should().Be(vectorCount / 2))
             .And.AllSatisfy(
-                g=> g.Hits.Should()
-                    .AllSatisfy(h=>h.Payload.Should().NotBeNull())
-                    .And.AllSatisfy(h=>h.Vector.Should().NotBeNull())
-                    .And.AllSatisfy(h=>h.Score.Should().BeGreaterThan(0))
+                g => g.Hits.Should()
+                    .AllSatisfy(h => h.Payload.Should().NotBeNull())
+                    .And.AllSatisfy(h => h.Vector.Should().NotBeNull())
+                    .And.AllSatisfy(h => h.Score.Should().BeGreaterThan(0))
             );
     }
 
@@ -846,7 +845,7 @@ internal class PointsSearchTests : QdrantTestsBase
                 TestCollectionName,
                 new SearchPointsDistanceMatrixRequest()
                 {
-                    Filter = Q<TestPayload>.BeInRange(p=>p.Integer, greaterThanOrEqual: 2), // total points 10 - 2 = 8
+                    Filter = Q<TestPayload>.BeInRange(p => p.Integer, greaterThanOrEqual: 2), // total points 10 - 2 = 8
                     Sample = 10,
                     Limit = (uint)nearestPointsToConsider
                 },
@@ -905,7 +904,7 @@ internal class PointsSearchTests : QdrantTestsBase
 
         searchResult.Result.Scores.Length.Should().Be(expectedResultsCount);
 
-        searchResult.Result.Ids.Should().AllSatisfy(pid=>pid.AsInteger().Should().BeGreaterThan(1));
-        searchResult.Result.Scores.Should().AllSatisfy(s=>s.Should().BeGreaterThan(1));
+        searchResult.Result.Ids.Should().AllSatisfy(pid => pid.AsInteger().Should().BeGreaterThan(1));
+        searchResult.Result.Scores.Should().AllSatisfy(s => s.Should().BeGreaterThan(1));
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
@@ -24,8 +24,8 @@ public class ServiceMethodsTests : QdrantTestsBase
     public async Task BeforeEachTest()
     {
         await ResetStorage(_qdrantHttpClient);
-        
-        if(IsVersionBefore("1.16.0"))
+
+        if (IsVersionBefore("1.16.0"))
         {
 #pragma warning disable CS0618 // Type or member is obsolete
             await _qdrantHttpClient.SetLockOptions(areWritesDisabled: false, "Init tests", CancellationToken.None);
@@ -47,7 +47,7 @@ public class ServiceMethodsTests : QdrantTestsBase
         instanceDetails.ParsedVersion.Major.Should().BeGreaterThanOrEqualTo(1);
         instanceDetails.ParsedVersion.Minor.Should().BeGreaterThan(0);
     }
-    
+
     [TestCase(true)]
     [TestCase(false)]
     public async Task GetTelemetryData(bool isAnonymized)
@@ -175,7 +175,7 @@ public class ServiceMethodsTests : QdrantTestsBase
     public async Task StorageLock()
     {
         OnlyIfVersionBefore("1.16.0", "lock API is removed in 1.16.0");
-        
+
         await PrepareCollection(_qdrantHttpClient, TestCollectionName);
 
         var lockReason = "Writes disabled";
@@ -188,7 +188,7 @@ public class ServiceMethodsTests : QdrantTestsBase
         setLockOptionsResult.Status.IsSuccess.Should().BeTrue();
         setLockOptionsResult.Result.Write.Should().BeFalse();
 
-        var upsertPointsAct = async ()=> await _qdrantHttpClient.UpsertPoints(
+        var upsertPointsAct = async () => await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
             new UpsertPointsRequest()
             {

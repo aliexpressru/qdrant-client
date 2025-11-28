@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -24,25 +24,22 @@ internal sealed class QuantizationConfigurationJsonConverter : JsonConverter<Qua
 
         var quantizationConfigurationObject = JsonElement.ParseValue(ref reader);
 
-        QuantizationConfiguration ret;
-
-        switch (quantizationMethodName)
+        QuantizationConfiguration ret = quantizationMethodName switch
         {
-            case QuantizationConfiguration.ScalarQuantizationConfiguration.QuantizationMethodName:
-                ret = quantizationConfigurationObject.Deserialize<QuantizationConfiguration.ScalarQuantizationConfiguration>(
-                    JsonSerializerConstants.DefaultSerializerOptions);
-                break;
-            case QuantizationConfiguration.ProductQuantizationConfiguration.QuantizationMethodName:
-                ret = quantizationConfigurationObject.Deserialize<QuantizationConfiguration.ProductQuantizationConfiguration>(
-                    JsonSerializerConstants.DefaultSerializerOptions);
-                break;
-            case QuantizationConfiguration.BinaryQuantizationConfiguration.QuantizationMethodName:
-                ret = quantizationConfigurationObject.Deserialize<QuantizationConfiguration.BinaryQuantizationConfiguration>(
-                    JsonSerializerConstants.DefaultSerializerOptions);
-                break;
-            default:
-                throw new InvalidOperationException($"Unknown quantization method name {quantizationMethodName}");
-        }
+            QuantizationConfiguration.ScalarQuantizationConfiguration.QuantizationMethodName =>
+                quantizationConfigurationObject.Deserialize<QuantizationConfiguration.ScalarQuantizationConfiguration>(
+                    JsonSerializerConstants.DefaultSerializerOptions),
+
+            QuantizationConfiguration.ProductQuantizationConfiguration.QuantizationMethodName =>
+                quantizationConfigurationObject.Deserialize<QuantizationConfiguration.ProductQuantizationConfiguration>(
+                    JsonSerializerConstants.DefaultSerializerOptions),
+
+            QuantizationConfiguration.BinaryQuantizationConfiguration.QuantizationMethodName =>
+                quantizationConfigurationObject.Deserialize<QuantizationConfiguration.BinaryQuantizationConfiguration>(
+                    JsonSerializerConstants.DefaultSerializerOptions),
+
+            _ => throw new InvalidOperationException($"Unknown quantization method name {quantizationMethodName}"),
+        };
 
         // move out of quantization configuration to not leave partially read object
         reader.Read();

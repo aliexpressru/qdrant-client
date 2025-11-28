@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
@@ -99,7 +99,7 @@ public class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
         var listAllSnapshotsResult1 = await _qdrantHttpClientClusterNode1.ListAllSnapshots(
             CancellationToken.None,
             includeStorageSnapshots: false);
-        
+
         var listAllSnapshotsResult2 = await _qdrantHttpClientClusterNode2.ListAllSnapshots(
             CancellationToken.None,
             includeStorageSnapshots: false);
@@ -117,7 +117,6 @@ public class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
             createShardSnapshotResult22,
             createCollectionSnapshotResult21,
             createCollectionSnapshotResult22);
-
 
         static void AssertSnapshots(
             ListSnapshotsResponse listAllSnapshotsResult,
@@ -168,7 +167,7 @@ public class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
 
         (await _qdrantHttpClientClusterNode2.DeleteAllCollectionShardSnapshots(
                 CancellationToken.None)).EnsureSuccess();
-        
+
         (await _qdrantHttpClientClusterNode1.DeleteAllCollectionSnapshots(CancellationToken.None)).EnsureSuccess();
         (await _qdrantHttpClientClusterNode2.DeleteAllCollectionSnapshots(CancellationToken.None)).EnsureSuccess();
     }
@@ -178,7 +177,7 @@ public class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
     {
         await PrepareCollection(_qdrantHttpClientClusterNode1, TestCollectionName);
         await PrepareCollection(_qdrantHttpClientClusterNode1, TestCollectionName2);
-        
+
         var collection1Node1Clustering = (await _qdrantHttpClientClusterNode1.GetCollectionClusteringInfo(
             TestCollectionName,
             CancellationToken.None)).EnsureSuccess();
@@ -248,7 +247,7 @@ public class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
         deleteSecondNodeShardSnapshotsResult.Result.Should().BeTrue();
 
         await Task.Delay(TimeSpan.FromMilliseconds(500)); // wait for deletion to propagate
-        
+
         var listFirstNodeAllSnapshotsResult =
             (await _qdrantHttpClientClusterNode1.ListAllSnapshots(CancellationToken.None)).EnsureSuccess();
 
@@ -270,7 +269,7 @@ public class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
 
         // delete collection snapshots
 
-        var deleteFirstNodeCollectionSnapshotsResult = 
+        var deleteFirstNodeCollectionSnapshotsResult =
             await _qdrantHttpClientClusterNode1.DeleteAllCollectionSnapshots(
             CancellationToken.None);
 
@@ -287,7 +286,7 @@ public class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
         await Task.Delay(TimeSpan.FromMilliseconds(500)); // wait for deletion to propagate
 
         // Check no snapshots left
-        
+
         listFirstNodeAllSnapshotsResult =
             (await _qdrantHttpClientClusterNode1.ListAllSnapshots(CancellationToken.None)).EnsureSuccess();
 

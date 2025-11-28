@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
@@ -93,13 +93,13 @@ public class CollectionCreateTests : QdrantTestsBase
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest.UpsertPoint>()
-                    {
+                    Points =
+                    [
                         new(
                             PointId.NewGuid(),
                             CreateTestVector(vectorSize, vectorDataType),
                             (TestPayload) "test")
-                    }
+                    ]
                 },
                 CancellationToken.None);
 
@@ -114,7 +114,7 @@ public class CollectionCreateTests : QdrantTestsBase
 
         var collectionInfo = createdCollectionInfoResponse.Result;
 
-        // todo: check other collection parameters
+        // TODO: check other collection parameters
 
         var singleVectorConfig = collectionInfo.Config.Params.Vectors.AsSingleVectorConfiguration();
 
@@ -208,9 +208,11 @@ public class CollectionCreateTests : QdrantTestsBase
 
         var sparseVectorsConfiguration = new Dictionary<string, SparseVectorConfiguration>()
         {
-            [sparseVectorName] = new(){
+            [sparseVectorName] = new()
+            {
                 Modifier = SparseVectorModifier.Idf,
-                Index = new(){
+                Index = new()
+                {
                     OnDisk = true,
                     FullScanThreshold = 5000,
                     Datatype = VectorDataType.Float16
@@ -220,7 +222,8 @@ public class CollectionCreateTests : QdrantTestsBase
 
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
-            new CreateCollectionRequest(sparseVectorsConfiguration: sparseVectorsConfiguration){
+            new CreateCollectionRequest(sparseVectorsConfiguration: sparseVectorsConfiguration)
+            {
                 OnDiskPayload = true
             },
             CancellationToken.None);
@@ -242,7 +245,7 @@ public class CollectionCreateTests : QdrantTestsBase
 
         sparseVectorConfig.Modifier.Should().Be(SparseVectorModifier.Idf);
         sparseVectorConfig.Index.Should().NotBeNull();
-        
+
         sparseVectorConfig.Index.OnDisk.Should().BeTrue();
         sparseVectorConfig.Index.FullScanThreshold.Should().Be(5000);
         sparseVectorConfig.Index.Datatype.Should().Be(VectorDataType.Float16);
@@ -332,8 +335,8 @@ public class CollectionCreateTests : QdrantTestsBase
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest.UpsertPoint>()
-                    {
+                    Points =
+                    [
                         new(
                             PointId.NewGuid(),
                             new NamedVectors()
@@ -345,7 +348,7 @@ public class CollectionCreateTests : QdrantTestsBase
                                 }
                             },
                             (TestPayload) "test")
-                    }
+                    ]
                 },
                 CancellationToken.None);
 
@@ -667,7 +670,7 @@ public class CollectionCreateTests : QdrantTestsBase
                 isQuantizedVectorAlwaysInRam: true),
         };
 
-        var vectorsConfiguration = (VectorConfigurationBase.SingleVectorConfiguration) createCollectionRequest.Vectors;
+        var vectorsConfiguration = (VectorConfigurationBase.SingleVectorConfiguration)createCollectionRequest.Vectors;
         vectorsConfiguration.QuantizationConfig = QuantizationConfiguration.Scalar(
             quantile: 0.9f,
             isQuantizedVectorAlwaysInRam: true);
@@ -730,13 +733,17 @@ public class CollectionCreateTests : QdrantTestsBase
             FilterMaxConditions = 3,
             ConditionMaxSize = 2, // This setting will cause an error upon query
             MaxPayloadIndexCount = 10,
-            MultivectorConfig = new(){
-                ["Vector1"] = new(){
+            MultivectorConfig = new()
+            {
+                ["Vector1"] = new()
+                {
                     MaxVectors = 10
                 }
             },
-            SparseConfig =new(){
-                ["Vector2"] = new(){
+            SparseConfig =new()
+            {
+                ["Vector2"] = new()
+                {
                     MaxLength = 1000
                 }
             }
@@ -769,8 +776,8 @@ public class CollectionCreateTests : QdrantTestsBase
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Points = new List<UpsertPointsRequest.UpsertPoint>()
-                    {
+                    Points =
+                    [
                         new(
                             PointId.Integer(1),
                             CreateTestVector(10),
@@ -788,7 +795,7 @@ public class CollectionCreateTests : QdrantTestsBase
                             CreateTestVector(10),
                             (TestPayload) "test3"
                         )
-                    }
+                    ]
                 },
                 CancellationToken.None);
 

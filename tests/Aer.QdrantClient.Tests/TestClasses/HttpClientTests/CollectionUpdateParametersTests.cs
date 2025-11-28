@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
@@ -109,7 +109,8 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
                     MaxOptimizationThreads = 1,
                     IndexingThreshold = 1
                 },
-                HnswConfig = new HnswConfiguration(){
+                HnswConfig = new HnswConfiguration()
+                {
                     MaxIndexingThreads = 1
                 }
             },
@@ -123,7 +124,8 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
             TestCollectionName,
             new UpdateCollectionParametersRequest()
             {
-                Params = new(){
+                Params = new()
+                {
                     OnDiskPayload = true
                 },
                 OptimizersConfig = new()
@@ -131,7 +133,8 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
                     MemmapThreshold = newMemmapThreshold,
                     MaxOptimizationThreads = newMaxOptimizationThreads
                 },
-                HnswConfig = new HnswConfiguration(){
+                HnswConfig = new HnswConfiguration()
+                {
                     MaxIndexingThreads = newMaxIndexingThreads
                 }
             },
@@ -170,7 +173,8 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
                     MaxOptimizationThreads = 1,
                     IndexingThreshold = 1
                 },
-                HnswConfig = new HnswConfiguration(){
+                HnswConfig = new HnswConfiguration()
+                {
                     MaxIndexingThreads = 1
                 }
             },
@@ -183,17 +187,20 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
             TestCollectionName,
             new UpdateCollectionParametersRequest()
             {
-                Params = new(){
+                Params = new()
+                {
                     OnDiskPayload = true
                 },
                 OptimizersConfig = new()
                 {
                     MaxOptimizationThreads = newMaxOptimizationThreads
                 },
-                HnswConfig = new HnswConfiguration(){
+                HnswConfig = new HnswConfiguration()
+                {
                     MaxIndexingThreads = newMaxIndexingThreads
                 },
-                StrictModeConfig = new StrictModeConfiguration(){
+                StrictModeConfig = new StrictModeConfiguration()
+                {
                     Enabled = true,
                     MaxPointsCount = 1000
                 }
@@ -229,8 +236,10 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
 
         var sparseVectorsConfiguration = new Dictionary<string, SparseVectorConfiguration>()
         {
-            [sparseVectorName] = new(){
-                Index = new(){
+            [sparseVectorName] = new()
+            {
+                Index = new()
+                {
                     OnDisk = false,
                     FullScanThreshold = 5000,
                     Datatype = VectorDataType.Float32
@@ -249,7 +258,7 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
         collectionCreationResult.EnsureSuccess();
 
         // Change parameters of the sparse vector index
-        
+
         sparseVectorsConfiguration[sparseVectorName].Index.OnDisk = true;
         sparseVectorsConfiguration[sparseVectorName].Index.FullScanThreshold = 10;
         sparseVectorsConfiguration[sparseVectorName].Index.Datatype = VectorDataType.Float16;
@@ -262,19 +271,19 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
                 SparseVectors = sparseVectorsConfiguration
             },
             CancellationToken.None);
-        
+
         updateCollectionParametersResult.Status.IsSuccess.Should().BeTrue();
-        
+
         await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
-        
+
         var updatedCollectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
-        
-        var indexParameters = updatedCollectionInfo.Result.Config.Params.SparseVectors[sparseVectorName].Index; 
-        
+
+        var indexParameters = updatedCollectionInfo.Result.Config.Params.SparseVectors[sparseVectorName].Index;
+
         indexParameters.OnDisk.Should().BeTrue();
         indexParameters.FullScanThreshold.Should().Be(10);
         indexParameters.Datatype.Should().Be(VectorDataType.Float16);
-        
+
         updatedCollectionInfo.Result.Config.Params.SparseVectors[sparseVectorName].Modifier.Should().Be(SparseVectorModifier.Idf);
     }
 
@@ -306,7 +315,7 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
         throwingQdrantHttpClient.BadRequestOnce();
 
         int retryCount = 0;
-        ConcurrentBag<Exception> exceptions = new();
+        ConcurrentBag<Exception> exceptions = [];
 
         var updateCollectionParametersResult = await throwingQdrantHttpClient.UpdateCollectionParameters(
             TestCollectionName,
@@ -320,7 +329,8 @@ public class CollectionUpdateParametersTests : QdrantTestsBase
             CancellationToken.None,
             retryCount: 3,
             retryDelay: TimeSpan.FromMilliseconds(10),
-            onRetry: (ex, _, _, _) => {
+            onRetry: (ex, _, _, _) =>
+            {
                 Interlocked.Increment(ref retryCount);
                 exceptions.Add(ex);
             }

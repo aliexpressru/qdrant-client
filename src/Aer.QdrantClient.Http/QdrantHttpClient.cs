@@ -33,6 +33,8 @@ public partial class QdrantHttpClient : IQdrantHttpClient
 
     private const int DEFAULT_OPERATION_TIMEOUT_SECONDS = 30;
     private const uint DEFAULT_RETRY_COUNT = 3;
+    // This exists for cases when the client is created directly and cached
+    private const int QDRANT_HTTP_CLIENT_POOLED_CONNECTION_LIFETIME_MINUTES = 1;
 
     private static readonly TimeSpan _defaultPointsReadRetryDelay = TimeSpan.FromMilliseconds(100);
 
@@ -81,6 +83,9 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     /// </summary>
     /// <remarks>Protected internal for testing purposes.</remarks>
     protected internal HttpClient ApiClient;
+
+    /// <inheritdoc/>
+    public Uri BaseAddress => ApiClient.BaseAddress;
 
     /// <summary>
     /// Initializes a new Qdrant HTTP client instance.
@@ -166,6 +171,18 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         bool isDisableTracing,
         string apiKey = null)
     {
+
+#if NET8_0_OR_GREATER
+        // Core handler with DNS refresh and socket exhaustion issues fixes
+        // As well as decompression support
+        HttpMessageHandler handler = new SocketsHttpHandler()
+        {
+            PooledConnectionLifetime = TimeSpan.FromMinutes(QDRANT_HTTP_CLIENT_POOLED_CONNECTION_LIFETIME_MINUTES),
+            AutomaticDecompression = isCompressionEnabled
+                ? SUPPORTED_DECOMPRESSION_METHODS
+                : DecompressionMethods.None
+        };
+#else
         // Core handler with decompression support
         HttpMessageHandler handler = new HttpClientHandler()
         {
@@ -173,7 +190,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
                 ? SUPPORTED_DECOMPRESSION_METHODS
                 : DecompressionMethods.None
         };
-
+#endif
         // Wrap with API key handler if api key is provided
         if (apiKey is { Length: > 0 })
         {

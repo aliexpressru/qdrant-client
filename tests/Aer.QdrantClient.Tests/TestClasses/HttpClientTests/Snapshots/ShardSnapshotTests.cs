@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
@@ -21,7 +21,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
     public void Setup()
     {
         Initialize();
-        
+
         _clientSettings = GetQdrantClientSettings();
         _qdrantHttpClient = ServiceProvider.GetRequiredService<QdrantHttpClient>();
     }
@@ -388,7 +388,7 @@ public class ShardSnapshotTests : SnapshotTestsBase
             createSnapshotResult.Name,
             CancellationToken.None)).EnsureSuccess();
 
-        MemoryStream downloadedSnapshotStream = new MemoryStream();
+        MemoryStream downloadedSnapshotStream = new();
         await downloadedSnapshotResult.SnapshotDataStream.CopyToAsync(downloadedSnapshotStream);
         downloadedSnapshotStream.Position = 0;
 

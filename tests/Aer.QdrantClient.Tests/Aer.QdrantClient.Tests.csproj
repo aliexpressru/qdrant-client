@@ -23,10 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <RuntimeHostConfigurationOption
-      Include="Aer.QdrantClient.OptimizeFilterConditions"
-      Value="true"
-      Trim="true" />
+    <RuntimeHostConfigurationOption Include="Aer.QdrantClient.OptimizeFilterConditions" Value="true" Trim="true" />
   </ItemGroup>
 
   <ItemGroup>

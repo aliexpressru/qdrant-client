@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/common/">
+    <File Path=".env" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/Aer.QdrantClient.Http/Aer.QdrantClient.Http.csproj" />
   </Folder>

@@ -248,11 +248,11 @@ internal class PointsBatchCrudTests : QdrantTestsBase
             )
             .ClearPointsPayload(pointToClearPayloadFor.YieldSingle())
             .UpdatePointsVectors(
-                new PointVector()
+                [new PointVector()
                 {
                     Id = pointToUpdateVectorFor,
                     Vector = vectorToUpdateTo
-                }.YieldSingle().ToArray()
+                }]
             );
 
         var batchUpdateResponse = await _qdrantHttpClient.BatchUpdate(
