@@ -76,6 +76,11 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
         /// The latest message send error.
         /// </summary>
         public string LatestError { set; get; }
+
+        /// <summary>
+        /// The latest error timestamp.
+        /// </summary>
+        public DateTime LatestErrorTimestamp { set; get; }
     }
 
     /// <summary>
