@@ -49,30 +49,6 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) 
     /// <inheritdoc/>
     public void AddClientConfiguration(
         string clientName,
-        string httpAddress,
-        string apiKey = null,
-        TimeSpan? httpClientTimeout = null,
-        ILogger logger = null,
-        bool disableTracing = false,
-        bool enableCompression = false)
-    {
-        var settings = new StoredQdrantClientSettings()
-        {
-            QdrantAddress = new Uri(httpAddress),
-            ApiKey = apiKey,
-            HttpClientTimeout = httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout,
-            DisableTracing = disableTracing,
-            EnableCompression = enableCompression,
-
-            Logger = logger
-        };
-
-        _clientSettings[clientName] = settings;
-    }
-
-    /// <inheritdoc/>
-    public void AddClientConfiguration(
-        string clientName,
         Uri httpAddress,
         string apiKey = null,
         TimeSpan? httpClientTimeout = null,
@@ -97,6 +73,25 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) 
     /// <inheritdoc/>
     public void AddClientConfiguration(
         string clientName,
+        string httpAddress,
+        string apiKey = null,
+        TimeSpan? httpClientTimeout = null,
+        ILogger logger = null,
+        bool disableTracing = false,
+        bool enableCompression = false) =>
+        AddClientConfiguration(
+            clientName,
+            new Uri(httpAddress),
+            apiKey,
+            httpClientTimeout,
+            logger,
+            disableTracing,
+            enableCompression
+        );
+
+    /// <inheritdoc/>
+    public void AddClientConfiguration(
+        string clientName,
         string host,
         int port = 6334,
         bool useHttps = false,
@@ -104,24 +99,22 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) 
         TimeSpan? httpClientTimeout = null,
         ILogger logger = null,
         bool disableTracing = false,
-        bool enableCompression = false)
-    {
-        var httpAddress = new UriBuilder(
-            useHttps
-                ? "https"
-                : "http",
-            host,
-            port).Uri;
-
+        bool enableCompression = false) =>
         AddClientConfiguration(
             clientName,
-            httpAddress,
+            new UriBuilder(
+                useHttps
+                    ? "https"
+                    : "http",
+                host,
+                port
+            ).Uri,
             apiKey,
             httpClientTimeout,
             logger,
             disableTracing,
-            enableCompression);
-    }
+            enableCompression
+        );
 
     /// <inheritdoc/>
     public IQdrantHttpClient CreateClient(string clientName)
@@ -158,4 +151,74 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) 
             return new QdrantHttpClient(httpClient);
         }
     }
+
+    /// <inheritdoc/>
+    public IQdrantHttpClient CreateClient(
+        QdrantClientSettings settings,
+        ILogger logger = null) =>
+        new QdrantHttpClient(
+            new Uri(settings.HttpAddress),
+            settings.ApiKey,
+            settings.HttpClientTimeout,
+            logger,
+            settings.DisableTracing,
+            settings.EnableCompression
+        );
+
+    /// <inheritdoc/>
+    public IQdrantHttpClient CreateClient(
+        Uri httpAddress,
+        string apiKey = null,
+        TimeSpan? httpClientTimeout = null,
+        ILogger logger = null,
+        bool disableTracing = false,
+        bool enableCompression = false) =>
+        new QdrantHttpClient(
+            httpAddress,
+            apiKey,
+            httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout,
+            logger,
+            disableTracing,
+            enableCompression
+        );
+
+    /// <inheritdoc/>
+    public IQdrantHttpClient CreateClient(
+        string host,
+        int port = 6334,
+        bool useHttps = false,
+        string apiKey = null,
+        TimeSpan? httpClientTimeout = null,
+        ILogger logger = null,
+        bool disableTracing = false,
+        bool enableCompression = false) =>
+        CreateClient(new UriBuilder(
+            useHttps
+                ? "https"
+                : "http",
+            host,
+            port).Uri,
+            apiKey,
+            httpClientTimeout,
+            logger,
+            disableTracing,
+            enableCompression
+        );
+
+    /// <inheritdoc/>
+    public IQdrantHttpClient CreateClient(
+        string httpAddress,
+        string apiKey = null,
+        TimeSpan? httpClientTimeout = null,
+        ILogger logger = null,
+        bool disableTracing = false,
+        bool enableCompression = false) =>
+        CreateClient(
+            new Uri(httpAddress),
+            apiKey,
+            httpClientTimeout,
+            logger,
+            disableTracing,
+            enableCompression
+        );
 }
