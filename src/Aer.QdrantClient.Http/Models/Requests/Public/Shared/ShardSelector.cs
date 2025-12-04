@@ -1,3 +1,5 @@
+using Aer.QdrantClient.Http.Models.Primitives;
+
 namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 /// <summary>
@@ -11,13 +13,23 @@ public abstract class ShardSelector
     /// <remarks>
     /// Initializes new instance of <see cref="ShardSelector"/> using string shard key.
     /// </remarks>
-    /// <param name="shardKeyValues">The shard key values.</param>
-    internal sealed class StringShardKeyShardSelector(string[] shardKeyValues) : ShardSelector
+    internal sealed class StringShardKeyShardSelector : ShardSelector
     {
         /// <summary>
-        /// Shard key value.
+        /// Shard key values.
         /// </summary>
-        public string[] ShardKeyValues { get; } = shardKeyValues;
+        public string[] ShardKeyValues { get; internal init; }
+
+        /// <summary>
+        /// Shard key value when only one shard key selected.
+        /// </summary>
+        public string ShardKeyValue { get; internal init; }
+
+        /// <summary>
+        /// Fallback shard key value. If the shard with <see cref="ShardKeyValue"/>
+        /// is not found, the request is routed to the fallback shard.
+        /// </summary>
+        public ShardKey FallbackShardKeyValue { get; internal init; }
     }
 
     /// <summary>
@@ -26,30 +38,72 @@ public abstract class ShardSelector
     /// <remarks>
     /// Initializes new instance of <see cref="ShardSelector"/> using integer shard key.
     /// </remarks>
-    /// <param name="shardKeyValues">The shard key value.</param>
-    internal sealed class IntegerShardKeyShardSelector(params ulong[] shardKeyValues) : ShardSelector
+    internal sealed class IntegerShardKeyShardSelector : ShardSelector
     {
         /// <summary>
-        /// Shard key value.
+        /// Shard key values.
         /// </summary>
-        public ulong[] ShardKeyValues { get; } = shardKeyValues;
+        public ulong[] ShardKeyValues { get; internal init; }
+
+        /// <summary>
+        /// Shard key value when only one shard key selected.
+        /// </summary>
+        public ulong? ShardKeyValue { get; internal init; }
+
+        /// <summary>
+        /// Fallback shard key value. If the shard with <see cref="ShardKeyValue"/>
+        /// is not found, the request is routed to the fallback shard.
+        /// </summary>
+        public ShardKey FallbackShardKeyValue { get; internal init; }
     }
 
     #region Factory methods
+
+    /// <summary>
+    /// Creates a shard key selector using a single string shard key value.
+    /// </summary>
+    /// <param name="shardKeyValue">The shard key value.</param>
+    /// <param name="fallbackShardKeyValue">Fallback shard key value. If the shard with <paramref name="shardKeyValue"/>
+    /// is not found, the request is routed to the fallback shard.</param>
+    public static ShardSelector String(string shardKeyValue, ShardKey fallbackShardKeyValue = null) =>
+        new StringShardKeyShardSelector()
+        {
+            ShardKeyValue = shardKeyValue,
+            FallbackShardKeyValue = fallbackShardKeyValue
+        };
 
     /// <summary>
     /// Creates a shard key selector using string shard key values.
     /// </summary>
     /// <param name="shardKeyValues">The shard key values.</param>
     public static ShardSelector String(params string[] shardKeyValues) =>
-        new StringShardKeyShardSelector(shardKeyValues);
+        new StringShardKeyShardSelector()
+        {
+            ShardKeyValues = shardKeyValues
+        };
+
+    /// <summary>
+    /// Creates a shard key selector using integer shard key value.
+    /// </summary>
+    /// <param name="shardKeyValue">The shard key value.</param>
+    /// <param name="fallbackShardKeyValue">Fallback shard key value. If the shard with <paramref name="shardKeyValue"/>
+    /// is not found, the request is routed to the fallback shard.</param>
+    public static ShardSelector Integer(ulong shardKeyValue, ShardKey fallbackShardKeyValue = null) =>
+        new IntegerShardKeyShardSelector()
+        {
+            ShardKeyValue = shardKeyValue,
+            FallbackShardKeyValue = fallbackShardKeyValue
+        };
 
     /// <summary>
     /// Creates a shard key selector using integer shard key values.
     /// </summary>
     /// <param name="shardKeyValues">The shard key values.</param>
     public static ShardSelector Integer(params ulong[] shardKeyValues) =>
-        new IntegerShardKeyShardSelector(shardKeyValues);
+        new IntegerShardKeyShardSelector()
+        {
+            ShardKeyValues = shardKeyValues
+        };
 
     #endregion
 
@@ -90,7 +144,7 @@ public abstract class ShardSelector
     }
 
     /// <summary>
-    /// Performs an implicit conversion from <see cref="String"/> to <see cref="ShardSelector"/>.
+    /// Performs an implicit conversion from <see cref="string"/> to <see cref="ShardSelector"/>.
     /// </summary>
     /// <param name="shardKeyValue">The shard key value.</param>
     public static implicit operator ShardSelector(string shardKeyValue)
@@ -104,7 +158,7 @@ public abstract class ShardSelector
     }
 
     /// <summary>
-    /// Performs an implicit conversion from <see cref="String"/> array to <see cref="ShardSelector"/>.
+    /// Performs an implicit conversion from <see cref="string"/> array to <see cref="ShardSelector"/>.
     /// </summary>
     /// <param name="shardKeyValues">The shard key values.</param>
     public static implicit operator ShardSelector(string[] shardKeyValues)

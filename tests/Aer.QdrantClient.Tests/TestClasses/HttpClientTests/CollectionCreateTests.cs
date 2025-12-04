@@ -545,6 +545,44 @@ public class CollectionCreateTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task ScalarQuantization_InlineStorage()
+    {
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                QuantizationConfig = QuantizationConfiguration.Scalar(
+                    quantile: 0.9f,
+                    isQuantizedVectorAlwaysInRam: true),
+                HnswConfig = new HnswConfiguration
+                {
+                    InlineStorage = true
+                }
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        // check quantization parameters
+
+        var createdCollectionInfo =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        createdCollectionInfo.Result.Config.QuantizationConfig.Should()
+            .BeOfType<QuantizationConfiguration.ScalarQuantizationConfiguration>();
+
+        var quantizationConfig = createdCollectionInfo.Result.Config.QuantizationConfig
+            .As<QuantizationConfiguration.ScalarQuantizationConfiguration>();
+
+        quantizationConfig.Method.Should().Be(QuantizationConfiguration.ScalarQuantizationConfiguration.QuantizationMethodName);
+        quantizationConfig.Quantile.Should().Be(0.9f);
+        quantizationConfig.AlwaysRam.Should().BeTrue();
+
+        createdCollectionInfo.Result.Config.HnswConfig.InlineStorage.Should().BeTrue();
+    }
+
+    [Test]
     public async Task BinaryQuantization_Before_1_15()
     {
         OnlyIfVersionBefore("1.15.0", "Binary encoding and query encoding is not supported before 1.15.0");

@@ -1,6 +1,7 @@
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Abstractions;
 
@@ -70,6 +71,11 @@ public partial interface IQdrantHttpClient
     /// If not specified, will be randomly placed among all peers.
     /// </param>
     /// <param name="timeout">The operation timeout. If not set the default value of 30 seconds used.</param>
+    /// <param name="initialState">
+    /// Initial state of the shards for this key.
+    /// If not specified, will be <see cref="ShardState.Initializing"/> first and then <see cref="ShardState.Active"/>.
+    /// Warning: do not change this unless you know what you are doing
+    /// </param>
     Task<DefaultOperationResponse> CreateShardKey(
         string collectionName,
         ShardKey shardKey,
@@ -77,7 +83,8 @@ public partial interface IQdrantHttpClient
         uint? shardsNumber = null,
         uint? replicationFactor = null,
         ulong[] placement = null,
-        TimeSpan? timeout = null);
+        TimeSpan? timeout = null,
+        ShardState? initialState = null);
 
     /// <summary>
     /// Deletes collection shards with specified shard key.
