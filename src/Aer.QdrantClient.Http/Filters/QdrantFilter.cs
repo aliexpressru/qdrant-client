@@ -19,8 +19,7 @@ public sealed class QdrantFilter
     [FeatureSwitchDefinition("Aer.QdrantClient.OptimizeFilterConditions")]
     internal static bool IsFilterOptimizationEnabled =>
         AppContext.TryGetSwitch("Aer.QdrantClient.OptimizeFilterConditions", out bool isEnabled)
-            ? isEnabled
-            : false;
+        && isEnabled;
 #endif
 
     private readonly List<FilterConditionBase> _conditions = [];
@@ -301,7 +300,9 @@ public sealed class QdrantFilter
             return;
         }
 
-        Optimize();
+#if NET9_0_OR_GREATER
+        Optimize(_conditions);
+#endif
 
         jsonWriter.WriteStartObject();
 
@@ -316,12 +317,12 @@ public sealed class QdrantFilter
     /// <summary>
     /// Analyzes the existing filter conditions and attempts to rewrite them in more optimal way.
     /// </summary>
-    internal void Optimize()
+    internal static void Optimize(List<FilterConditionBase> conditionsToOptimize)
     {
 #if NET9_0_OR_GREATER
         if (IsFilterOptimizationEnabled)
         {
-            foreach (var condition in _conditions)
+            foreach (var condition in conditionsToOptimize)
             {
                 condition.Accept(ConditionOptimizerVisitor.Instance);
             }

@@ -106,7 +106,7 @@ internal partial class PointsCrudTests
             TypeCode.UInt32 => uint.MaxValue - 10,
             TypeCode.Int64 => long.MaxValue - 10,
             TypeCode.UInt64 => ulong.MaxValue - 10,
-            _ => throw new ArgumentOutOfRangeException()
+            TypeCode anyOther => throw new InvalidOperationException($"Unsupported point ID type code: {anyOther}")
         };
 
         var testPointId = PointId.Integer(integerPointId);

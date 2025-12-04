@@ -22,10 +22,11 @@ internal class RealWorldTests : QdrantTestsBase
     //[SetUp]
     public async Task BeforeEachTest()
     {
-        await ResetStorage();
+        await ResetStorage(_qdrantHttpClient);
     }
 
     //[Test]
+
     public async Task Insert_PotentialDuplicates()
     {
         double[] vectorValues =
@@ -94,7 +95,7 @@ internal class RealWorldTests : QdrantTestsBase
             0.12743402, 0.88344306, -1.3145031, -0.66918176, -1.2367066, 0.108011596
         ];
 
-        var vector = vectorValues.Select(v => (float) v).ToArray();
+        var vector = vectorValues.Select(v => (float)v).ToArray();
 
         var payload = new
         {
@@ -151,7 +152,7 @@ internal class RealWorldTests : QdrantTestsBase
             0.095976, 0.037526, 0.024904, -0.080511, 0.02081, 0.06823, -0.071869, -0.070504, 0.056631, 0.00361, 0.00064, -0.039801
         ];
 
-        var vector = vectorRaw.Select(v=>(float) v).ToArray();
+        var vector = vectorRaw.Select(v => (float)v).ToArray();
 
         var searchResult = await _qdrantHttpClient.SearchPoints(
             "test_collection_dim_100",

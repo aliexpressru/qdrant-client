@@ -1,5 +1,6 @@
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.InfrastructureTests;
 
@@ -8,7 +9,10 @@ internal class PointIdTests
     private static readonly Guid _firstGuid = Guid.NewGuid();
     private static readonly Guid _secondGuid = Guid.NewGuid();
 
-    public static object[] PointIdCases =
+    private static readonly Guid _lesserGuid = Guid.Parse("52d07afe-9e48-4092-9651-260a7688ba60");
+    private static readonly Guid _greaterGuid = Guid.Parse("9b9fbdca-de9a-485c-8ad0-13747a502ff5");
+
+    public static object[] PointIdEqualityCases =
     [
         new object[] {PointId.Integer(1), PointId.Integer(1), true},
         new object[] {PointId.Integer(1), PointId.Integer(2), false},
@@ -21,6 +25,25 @@ internal class PointIdTests
         new object[] {PointId.Guid(_firstGuid), null, false},
 
         new object[] {null, null, true}
+    ];
+
+    public static object[] PointIdComparisonCases =
+    [
+        new object[] {PointId.Integer(1), PointId.Integer(1), ComparisonResult.Equal},
+        new object[] {PointId.Integer(1), PointId.Integer(2), ComparisonResult.LessThan},
+        new object[] {PointId.Integer(2), PointId.Integer(1), ComparisonResult.GreaterThan},
+
+        new object[] {PointId.Integer(1), null, ComparisonResult.GreaterThan},
+        new object[] {PointId.Integer(1), PointId.Guid(_firstGuid), ComparisonResult.NotComparable},
+
+        // Guid comparisons
+
+        new object[] {PointId.Guid(_lesserGuid), PointId.Guid(_lesserGuid), ComparisonResult.Equal},
+        new object[] {PointId.Guid(_lesserGuid), PointId.Guid(_greaterGuid), ComparisonResult.LessThan},
+        new object[] {PointId.Guid(_greaterGuid), PointId.Guid(_lesserGuid), ComparisonResult.GreaterThan},
+
+        new object[] {PointId.Guid(_lesserGuid), null, ComparisonResult.GreaterThan},
+        new object[] {PointId.Guid(_lesserGuid), PointId.Integer(1), ComparisonResult.NotComparable},
     ];
 
     public static object[] PointIdRawSources =
@@ -39,16 +62,38 @@ internal class PointIdTests
     ];
 
     [Test]
-    [TestCaseSource(nameof(PointIdCases))]
+    [TestCaseSource(nameof(PointIdEqualityCases))]
     public void Equality(PointId x, PointId y, bool shouldBeEqual)
     {
+#pragma warning disable IDE0031 // Use null propagation | Justification: clearer this way
         if (x is not null)
         {
             x.Equals(y).Should().Be(shouldBeEqual);
         }
+#pragma warning restore IDE0031 // Use null propagation
 
         (x == y).Should().Be(shouldBeEqual);
         (x != y).Should().Be(!shouldBeEqual);
+    }
+
+    [Test]
+    [TestCaseSource(nameof(PointIdComparisonCases))]
+    public void Comparisons(PointId left, PointId right, ComparisonResult expectedResult)
+    {
+        try
+        {
+            left.CompareTo(right).Should().Be((int)expectedResult);
+        }
+        catch (QdrantPointIdComparisonException ex)
+        {
+            // For ComparisonResult.NotComparable this exception is expected
+            if (expectedResult != ComparisonResult.NotComparable)
+            {
+                Assert.Fail(
+                    $"Unexpected comparison exception: {ex} while comparing points {left.ToString(true)} and {right.ToString(true)}"
+                );
+            }
+        }
     }
 
     [Test]

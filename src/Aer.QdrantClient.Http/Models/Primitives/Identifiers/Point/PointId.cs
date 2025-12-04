@@ -7,7 +7,7 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 /// Represents integer or string point identifier.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public abstract class PointId : IEquatable<PointId>
+public abstract class PointId : IEquatable<PointId>, IComparable<PointId>
 {
     /// <summary>
     /// Gets this point id as <see cref="System.Object"/>.
@@ -99,8 +99,8 @@ public abstract class PointId : IEquatable<PointId>
     /// Create instance of integer point identifier.
     /// </summary>
     /// <param name="pointId">The point identifier.</param>
-    public static PointId Integer(int pointId)
-        => pointId < 0
+    public static PointId Integer(int pointId) =>
+        pointId < 0
             ? throw new QdrantInvalidPointIdException(pointId)
             : new IntegerPointId((ulong)pointId);
 
@@ -108,8 +108,8 @@ public abstract class PointId : IEquatable<PointId>
     /// Create instance of integer point identifier.
     /// </summary>
     /// <param name="pointId">The point identifier.</param>
-    public static PointId Integer(long pointId)
-        => pointId < 0
+    public static PointId Integer(long pointId) =>
+        pointId < 0
             ? throw new QdrantInvalidPointIdException(pointId)
             : new IntegerPointId((ulong)pointId);
 
@@ -130,7 +130,7 @@ public abstract class PointId : IEquatable<PointId>
 #if NETSTANDARD2_0
         bool isConversionSuccessful = System.Guid.TryParse(pointId, out var guid);
 #else
-        bool isConversionSuccessful = System.Guid.TryParse((ReadOnlySpan<char>) pointId, out var guid);
+        bool isConversionSuccessful = System.Guid.TryParse((ReadOnlySpan<char>)pointId, out var guid);
 #endif
 
         return isConversionSuccessful
@@ -160,8 +160,7 @@ public abstract class PointId : IEquatable<PointId>
     protected abstract int GetHashCodeCore();
 
     /// <inheritdoc/>
-    public virtual bool Equals(PointId other)
-        => EqualsCore(other);
+    public virtual bool Equals(PointId other) => EqualsCore(other);
 
     /// <summary>
     /// Determines whether point id <paramref name="x"/> equals point id <paramref name="y"/>.
@@ -248,4 +247,27 @@ public abstract class PointId : IEquatable<PointId>
     /// <returns>String representing this point identifier.</returns>
     /// <exception cref="InvalidOperationException">Occurs when point id is of an unknown type.</exception>
     public abstract override string ToString();
+
+    /// <inheritdoc/>
+    public int CompareTo(PointId other)
+    {
+        if (other is null)
+        {
+            return 1;
+        }
+
+        if (this is IntegerPointId thisIntegerPointId
+            && other is IntegerPointId otherIntegerPointId)
+        {
+            return thisIntegerPointId.AsInteger().CompareTo(otherIntegerPointId.AsInteger());
+        }
+
+        if (this is GuidPointId thisGuidPointId
+            && other is GuidPointId otherGuidPointId)
+        {
+            return thisGuidPointId.AsGuid().CompareTo(otherGuidPointId.AsGuid());
+        }
+
+        throw new QdrantPointIdComparisonException(this, other);
+    }
 }

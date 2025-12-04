@@ -67,14 +67,14 @@ internal class PointsScrollTests : QdrantTestsBase
         getNonexistentPointResult.Status.IsSuccess.Should().BeTrue();
         getNonexistentPointResult.Result.Points.Length.Should().Be(0);
     }
-    
+
     [Test]
     public async Task BlockedByStrictMode()
     {
         OnlyIfVersionAfterOrEqual("1.13.0", "Strict mode is not supported before 1.13.0");
 
         var vectorCount = 10;
-        
+
         await PrepareCollection(
             _qdrantHttpClient,
             TestCollectionName,
@@ -93,7 +93,7 @@ internal class PointsScrollTests : QdrantTestsBase
             PayloadPropertiesSelector.All,
             CancellationToken.None,
             withVector: true);
-        
+
         readPointsResult.Status.IsSuccess.Should().BeFalse();
 
         readPointsResult.Status.Error.Should().Contain(
@@ -112,7 +112,7 @@ internal class PointsScrollTests : QdrantTestsBase
                 vectorCount: vectorCount);
 
         string[] includeAllProperties = []; // Equivalent to PayloadPropertiesSelector.All
-        
+
         var readPointsResult = await _qdrantHttpClient.ScrollPoints(
             TestCollectionName,
             QdrantFilter.Empty,
@@ -130,7 +130,7 @@ internal class PointsScrollTests : QdrantTestsBase
             var expectedPoint = upsertPointsByPointIds[readPointId];
 
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
-            
+
             var readPointPayload = readPoint.Payload.As<TestPayload>();
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
 
@@ -150,7 +150,7 @@ internal class PointsScrollTests : QdrantTestsBase
                 _qdrantHttpClient,
                 TestCollectionName,
                 vectorCount: vectorCount);
-        
+
         string[] includeProperties = ["integer", "text"];
 
         var readPointsResult = await _qdrantHttpClient.ScrollPoints(
@@ -170,7 +170,7 @@ internal class PointsScrollTests : QdrantTestsBase
             var expectedPoint = upsertPointsByPointIds[readPointId];
 
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
-            
+
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
             var readPointPayload = readPoint.Payload.As<TestPayload>();
 
@@ -243,9 +243,10 @@ internal class PointsScrollTests : QdrantTestsBase
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     CreateTestVector(vectorSize),
-                    new TestPayload(){
+                    new TestPayload()
+                    {
                         Integer = i,
                         DateTimeValue = startDateTime.AddDays(i)
                     }
@@ -295,7 +296,7 @@ internal class PointsScrollTests : QdrantTestsBase
                     greaterThan: startDateTime.AddDays(2),
                     lessThanOrEqual: startDateTime.AddDays(upsertPoints.Count - 1))
             ),
-            PayloadPropertiesSelector.Exclude("text"), 
+            PayloadPropertiesSelector.Exclude("text"),
             CancellationToken.None,
             withVector: true);
 
@@ -312,11 +313,11 @@ internal class PointsScrollTests : QdrantTestsBase
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
 
             var readPointPayload = readPoint.Payload.As<TestPayload>();
-            
+
             readPoint.Payload.Should().NotBe(Payload.EmptyString);
-            
+
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
-            
+
             readPointPayload.Integer.Should().Be(expectedPointPayload.Integer);
             readPointPayload.FloatingPointNumber.Should().Be(expectedPointPayload.FloatingPointNumber);
             readPointPayload.Text.Should().BeNull(); // Excluded by request
@@ -411,8 +412,6 @@ internal class PointsScrollTests : QdrantTestsBase
     [Test]
     public async Task Paginated()
     {
-        // arrange
-
         var vectorCount = 10;
         uint pageSize = 5;
 
@@ -422,7 +421,7 @@ internal class PointsScrollTests : QdrantTestsBase
                 TestCollectionName,
                 vectorCount: vectorCount);
 
-        // act 1
+        // Get first page
 
         var readPointsFirstPageResult = await _qdrantHttpClient.ScrollPoints(
             TestCollectionName,
@@ -431,8 +430,6 @@ internal class PointsScrollTests : QdrantTestsBase
             CancellationToken.None,
             withVector: true,
             limit: pageSize);
-
-        // assert 1
 
         readPointsFirstPageResult.Status.IsSuccess.Should().BeTrue();
         readPointsFirstPageResult.Result.Points.Length.Should().Be((int)pageSize);
@@ -445,7 +442,7 @@ internal class PointsScrollTests : QdrantTestsBase
             var expectedPoint = upsertPointsByPointIds[readPointId];
 
             expectedPoint.Id.As<IntegerPointId>().Id.Should().Be(readPointId);
-            
+
             var expectedPointPayload = expectedPoint.Payload.As<TestPayload>();
             var readPointPayload = readPoint.Payload.As<TestPayload>();
 
@@ -454,7 +451,7 @@ internal class PointsScrollTests : QdrantTestsBase
             readPointPayload.Text.Should().Be(expectedPointPayload.Text);
         }
 
-        // act 2
+        // Get next page
 
         var readPointsSecondPageResult = await _qdrantHttpClient.ScrollPoints(
             TestCollectionName,
@@ -465,10 +462,8 @@ internal class PointsScrollTests : QdrantTestsBase
             limit: pageSize,
             offsetPoint: readPointsFirstPageResult.Result.NextPageOffset);
 
-        // assert 2
-
         readPointsSecondPageResult.Status.IsSuccess.Should().BeTrue();
-        readPointsSecondPageResult.Result.Points.Length.Should().Be((int) pageSize);
+        readPointsSecondPageResult.Result.Points.Length.Should().Be((int)pageSize);
         readPointsSecondPageResult.Result.NextPageOffset.Should().BeNull();
 
         foreach (var readPoint in readPointsSecondPageResult.Result.Points)
@@ -863,7 +858,7 @@ internal class PointsScrollTests : QdrantTestsBase
                         ["Vector_3"] = CreateTestVector(50U),
                     }
                 },
-                payload: (TestPayload) 1);
+                payload: (TestPayload)1);
 
         UpsertPointsRequest.UpsertPoint secondPoint = new(
             id: 2,
@@ -875,7 +870,7 @@ internal class PointsScrollTests : QdrantTestsBase
                     ["Vector_3"] = CreateTestVector(50U),
                 }
             },
-            payload: (TestPayload) 2);
+            payload: (TestPayload)2);
 
         UpsertPointsRequest.UpsertPoint thirdPoint = new(
             id: 3,
@@ -886,7 +881,7 @@ internal class PointsScrollTests : QdrantTestsBase
                     ["Vector_1"] = CreateTestVector(100U),
                 }
             },
-            payload: (TestPayload) 3);
+            payload: (TestPayload)3);
 
         var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>()
         {
@@ -894,7 +889,7 @@ internal class PointsScrollTests : QdrantTestsBase
             secondPoint,
             thirdPoint
         };
-        
+
         var upsertPointsResult = await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
             new UpsertPointsRequest()
@@ -916,9 +911,9 @@ internal class PointsScrollTests : QdrantTestsBase
 
         scrollPointsResponse.Result.Points.Length.Should().Be(2); // only two points of three have "Vector_1" named vector
 
-        var foundPointIds = 
+        var foundPointIds =
             scrollPointsResponse.Result.Points.Select(p => p.Id.AsInteger()).ToHashSet();
-        
+
         foundPointIds.Should().Contain(1);
         foundPointIds.Should().Contain(3);
     }
@@ -955,7 +950,7 @@ internal class PointsScrollTests : QdrantTestsBase
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     CreateTestVector(vectorSize),
                     new TestPayload()
                     {
@@ -964,7 +959,7 @@ internal class PointsScrollTests : QdrantTestsBase
                 )
             );
         }
-        
+
         (await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
             new UpsertPointsRequest()
@@ -984,9 +979,9 @@ internal class PointsScrollTests : QdrantTestsBase
             CancellationToken.None,
             withVector: false,
             retryCount: 0);
-        
+
         readPointsResult.Status.IsSuccess.Should().BeTrue();
-        
+
         readPointsResult.Result.Points.Length.Should().Be(vectorCount);
     }
 
@@ -1009,12 +1004,12 @@ internal class PointsScrollTests : QdrantTestsBase
         (await _qdrantHttpClient.CreateFullTextPayloadIndex(
             TestCollectionName,
             "text",
-        
+
             FullTextIndexTokenizerType.Word,
             CancellationToken.None,
             minimalTokenLength: 0,
             maximalTokenLength: 100,
-        
+
             isLowercasePayloadTokens: false,
             isWaitForResult: true,
             onDisk: true,
@@ -1026,7 +1021,7 @@ internal class PointsScrollTests : QdrantTestsBase
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     CreateTestVector(vectorSize),
                     new TestPayload()
                     {

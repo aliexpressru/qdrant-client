@@ -4,7 +4,7 @@ namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots;
 
 public abstract class SnapshotTestsBase : QdrantTestsBase
 {
-    protected async Task AssertSnapshotActualSize(Stream snapshotStream, long expectedSize)
+    protected static async Task AssertSnapshotActualSize(Stream snapshotStream, long expectedSize)
     {
         MemoryStream downloadedSnapshotStream = new();
         await snapshotStream.CopyToAsync(downloadedSnapshotStream);

@@ -385,7 +385,8 @@ public class QdrantTestsBase
             int vectorCount = 10,
             Func<int, object> payloadInitializerFunction = null,
             QuantizationConfiguration quantizationConfig = null,
-            StrictModeConfiguration strictModeConfig = null)
+            StrictModeConfiguration strictModeConfig = null,
+            List<UpsertPointsRequest.UpsertPoint> upsertPoints = null)
     {
         await qdrantHttpClient.CreateCollection(
             collectionName,
@@ -398,39 +399,54 @@ public class QdrantTestsBase
             },
             CancellationToken.None);
 
-        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
-        var upsertPointIds = new List<PointId>();
+        List<UpsertPointsRequest.UpsertPoint> pointsToUpsert;
+        List<PointId> upsertPointIds = [];
 
-        for (int i = 0; i < vectorCount; i++)
+        if (upsertPoints != null)
         {
-            var pointId = PointId.Integer((ulong)i);
+            pointsToUpsert = upsertPoints;
 
-            object payload = payloadInitializerFunction is null
-                ? new TestPayload()
-                {
-                    Integer = i
-                }
-                : payloadInitializerFunction(i);
+            foreach (var point in upsertPoints)
+            {
+                upsertPointIds.Add(point.Id);
+            }
+        }
+        else
+        {
 
-            upsertPoints.Add(
-                new(
-                    pointId,
-                    CreateTestFloat32Vector(vectorSize),
-                    payload
-                )
-            );
+            pointsToUpsert = [];
 
-            upsertPointIds.Add(pointId);
+            for (int i = 0; i < vectorCount; i++)
+            {
+                var pointId = PointId.Integer((ulong)i);
+
+                object payload = payloadInitializerFunction is null
+                    ? new TestPayload()
+                    {
+                        Integer = i
+                    }
+                    : payloadInitializerFunction(i);
+
+                pointsToUpsert.Add(
+                    new(
+                        pointId,
+                        CreateTestFloat32Vector(vectorSize),
+                        payload
+                    )
+                );
+
+                upsertPointIds.Add(pointId);
+            }
         }
 
         Dictionary<ulong, UpsertPointsRequest.UpsertPoint> upsertPointsByPointIds =
-            upsertPoints.ToDictionary(p => ((IntegerPointId)p.Id).Id);
+            pointsToUpsert.ToDictionary(p => ((IntegerPointId)p.Id).Id);
 
         var upsertPointsResult = await qdrantHttpClient.UpsertPoints(
             collectionName,
             new UpsertPointsRequest()
             {
-                Points = upsertPoints
+                Points = pointsToUpsert
             },
             CancellationToken.None);
 
@@ -438,7 +454,7 @@ public class QdrantTestsBase
 
         await qdrantHttpClient.EnsureCollectionReady(collectionName, CancellationToken.None);
 
-        return (upsertPoints, upsertPointsByPointIds, upsertPointIds);
+        return (pointsToUpsert, upsertPointsByPointIds, upsertPointIds);
     }
 
     protected static async Task CreateTestShardedCollection(

@@ -411,13 +411,14 @@ public class PointsRecommendTests : QdrantTestsBase
             [positiveExamplePointId1, positiveExamplePointId2],
             (uint)vectorCount,
             withVector: true,
-            withPayload: true);
-
-        request.Filter = QdrantFilter.Create(
-            Q.MustNot(
-                Q.HaveAnyId(filterOutPointId)
+            withPayload: true)
+        {
+            Filter = QdrantFilter.Create(
+                Q.MustNot(
+                    Q.HaveAnyId(filterOutPointId)
+                )
             )
-        );
+        };
 
         var recommendedPoints = await _qdrantHttpClient.RecommendPoints(
             TestCollectionName,

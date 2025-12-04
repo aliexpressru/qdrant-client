@@ -442,9 +442,9 @@ public partial class QdrantHttpClient
 
                         using var _ = sourcePeers.StartCircleDetection();
 
-                        if (collectionShardsPerPeers.ContainsKey(candidateSourcePeer))
+                        if (collectionShardsPerPeers.TryGetValue(candidateSourcePeer, out HashSet<uint> candidateCollectionShards))
                         {
-                            while (!collectionShardsPerPeers[candidateSourcePeer].Contains(sourceShardId))
+                            while (!candidateCollectionShards.Contains(sourceShardId))
                             {
                                 // here we should not get an infinite cycle since
                                 // at least one peer will contain a source shard replica

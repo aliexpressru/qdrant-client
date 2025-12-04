@@ -11,7 +11,7 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 /// </remarks>
 /// <param name="id">The identifier value.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public sealed class IntegerPointId(ulong id) : PointId
+public sealed class IntegerPointId(ulong id) : PointId, IEquatable<IntegerPointId>, IComparable<IntegerPointId>
 {
     internal override object ObjectId { get; } = id;
 
@@ -24,9 +24,8 @@ public sealed class IntegerPointId(ulong id) : PointId
     public override ulong AsInteger() => Id;
 
     /// <inheritdoc/>
-    public override Guid AsGuid()
-        =>
-            throw new QdrantPointIdConversionException(GetType().FullName, typeof(Guid).FullName);
+    public override Guid AsGuid() =>
+        throw new QdrantPointIdConversionException(GetType().FullName, typeof(Guid).FullName);
 
     /// <inheritdoc/>
     protected override bool EqualsCore(PointId other)
@@ -46,7 +45,7 @@ public sealed class IntegerPointId(ulong id) : PointId
             return false;
         }
 
-        return Id == ((IntegerPointId)other).Id;
+        return Equals((IntegerPointId)other);
     }
 
     /// <inheritdoc/>
@@ -61,6 +60,37 @@ public sealed class IntegerPointId(ulong id) : PointId
             includeTypeInfo
                 ? $"Int: {ToString()}"
                 : ToString();
+
+    /// <inheritdoc />
+    public bool Equals(IntegerPointId other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        return Id == other.Id;
+    }
+
+    /// <inheritdoc />
+    public int CompareTo(IntegerPointId other)
+    {
+        if (other is null)
+        {
+            return 1;
+        }
+
+        return Id.CompareTo(other.Id);
+    }
+
+    /// <inheritdoc />
+    public override bool Equals(object obj)
+    {
+        return Equals(obj as IntegerPointId);
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode() => GetHashCodeCore();
 
     /// <summary>
     /// Performs an implicit conversion from <see cref="ulong"/> to <see cref="IntegerPointId"/>.

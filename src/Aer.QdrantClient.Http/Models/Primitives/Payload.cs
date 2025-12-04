@@ -204,7 +204,9 @@ public sealed class Payload
     {
         if (IsEmpty)
         {
+#pragma warning disable IDE0028 // Simplify collection initialization | Justification: clearer this way
             return new();
+#pragma warning restore IDE0028 // Simplify collection initialization
         }
 
         _parsedPayloadJson ??= JsonNode.Parse(RawPayloadString)!.AsObject();

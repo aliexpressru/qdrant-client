@@ -11,7 +11,7 @@ namespace Aer.QdrantClient.Http.Models.Primitives;
 /// </remarks>
 /// <param name="id">The identifier value.</param>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
-public sealed class GuidPointId(Guid id) : PointId
+public sealed class GuidPointId(Guid id) : PointId, IEquatable<GuidPointId>, IComparable<GuidPointId>
 {
     internal override object ObjectId { get; } = id.ToString();
 
@@ -45,7 +45,7 @@ public sealed class GuidPointId(Guid id) : PointId
             return false;
         }
 
-        return Id == ((GuidPointId)other).Id;
+        return Equals((GuidPointId)other);
     }
 
     /// <inheritdoc/>
@@ -59,6 +59,37 @@ public sealed class GuidPointId(Guid id) : PointId
         includeTypeInfo
             ? $"Guid: {ToString()}"
             : ToString();
+
+    /// <inheritdoc />
+    public bool Equals(GuidPointId other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        return Id == other.Id;
+    }
+
+    /// <inheritdoc />
+    public int CompareTo(GuidPointId other)
+    {
+        if (other is null)
+        {
+            return 1;
+        }
+
+        return Id.CompareTo(other.Id);
+    }
+
+    /// <inheritdoc />
+    public override bool Equals(object obj)
+    {
+        return Equals(obj as GuidPointId);
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode() => GetHashCodeCore();
 
     /// <summary>
     /// Performs an implicit conversion from <see cref="ulong"/> to <see cref="GuidPointId"/>.

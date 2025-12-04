@@ -93,6 +93,7 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
 
         var listSnapshotsOnSecondNodeResult =
             await _qdrantHttpClientClusterNode2.ListCollectionSnapshots(TestCollectionName, CancellationToken.None);
+
         listSnapshotsOnSecondNodeResult.Status.IsSuccess.Should().BeTrue();
         listSnapshotsOnSecondNodeResult.Result.Count.Should().Be(0); // no snapshots on second node
 
@@ -111,14 +112,14 @@ public class CollectionSnapshotTestsMultiNode : SnapshotTestsBase
             (await _qdrantHttpClientClusterNode2.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None))
             .EnsureSuccess();
 
-        var listSnapshotsOnSecondeNodeResult =
+        listSnapshotsOnSecondNodeResult =
             await _qdrantHttpClientClusterNode2.ListCollectionSnapshots(TestCollectionName, CancellationToken.None);
 
-        listSnapshotsOnSecondeNodeResult.Status.IsSuccess.Should().BeTrue();
-        listSnapshotsOnSecondeNodeResult.Result.Count.Should()
+        listSnapshotsOnSecondNodeResult.Status.IsSuccess.Should().BeTrue();
+        listSnapshotsOnSecondNodeResult.Result.Count.Should()
             .Be(1); // one snapshot since we are created the first one on the first node
 
-        var secondNodeSnapshotInfo = listSnapshotsOnSecondeNodeResult.Result.Single();
+        var secondNodeSnapshotInfo = listSnapshotsOnSecondNodeResult.Result.Single();
 
         secondNodeSnapshotInfo.Name.Should().Be(createSecondNodeSnapshotResult.Name);
         secondNodeSnapshotInfo.Size.Should().Be(createSecondNodeSnapshotResult.Size);

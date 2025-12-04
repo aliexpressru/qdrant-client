@@ -398,9 +398,11 @@ internal class VectorTests : QdrantTestsBase
             VectorValues = [3, 4, 5]
         };
 
+#pragma warning disable CA1861 // Avoid constant arrays as arguments | Justification : Test code
         SparseVector sparseVector = new(new[] { 1U, 2U, 3U }, [1, 2, 3]);
         SparseVector sparseVectorEqual = new(new[] { 1U, 2U, 3U }, [1, 2, 3]);
         SparseVector sparseVectorNotEqual = new(new[] { 1U, 2U, 3U }, [3, 4, 5]);
+#pragma warning restore CA1861 // Avoid constant arrays as arguments
 
         MultiVector multivector = new()
         {

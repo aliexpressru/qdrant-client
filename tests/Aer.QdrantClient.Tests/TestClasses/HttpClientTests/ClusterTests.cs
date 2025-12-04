@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Requests.Public;
@@ -66,7 +66,7 @@ public class ClusterTests : QdrantTestsBase
 
         collectionClusteringInfo.Result.PeerId.Should().NotBe(0);
         collectionClusteringInfo.Result.PeerUri.Should().NotBeNullOrEmpty();
-        
+
         collectionClusteringInfo.Result.ShardCount.Should().Be(2);
         collectionClusteringInfo.Result.LocalShards.Length.Should().Be(1);
 
@@ -79,7 +79,7 @@ public class ClusterTests : QdrantTestsBase
 
         collectionClusteringInfo.Result.RemoteShards.Length.Should().Be(1);
         collectionClusteringInfo.Result.ShardTransfers.Length.Should().Be(0);
-        
+
         collectionClusteringInfo.Result.PartialShardCount.Should().Be(0);
         collectionClusteringInfo.Result.DeadShardCount.Should().Be(0);
     }
@@ -262,7 +262,7 @@ public class ClusterTests : QdrantTestsBase
         UpsertPointsRequest.UpsertPoint secondShardPoint = new(
             id: 2,
             vector: CreateTestVector(vectorSize),
-            payload: (TestPayload) 2);
+            payload: (TestPayload)2);
 
         var upsertOnFirstShardResponse = await _qdrantHttpClient.UpsertPoints(
             TestCollectionName,
@@ -364,7 +364,9 @@ public class ClusterTests : QdrantTestsBase
 
     //[Test]
     [Ignore("This test works only once since for adding peer back the whole cluster should be recreated")]
+#pragma warning disable NUnit1028 // The non-test method is public
     public async Task CollectionRemovePeer_RemotePeer()
+#pragma warning restore NUnit1028 // The non-test method is public
     {
         // NOTE: after performing this test - stop all containers, remove volumes
         // and rerun docker compose up to restore cluster to its 2-node state

@@ -20,7 +20,9 @@ internal sealed class CreateFullTextPayloadIndexRequest
         /// <summary>
         /// The type of the payload field. Since this is a full-text index the field type can only be <c>Keyword</c>.
         /// </summary>
+#pragma warning disable CA1822 // Mark members as static | Justification: backwards compatibility
         public PayloadIndexedFieldType Type => PayloadIndexedFieldType.Text;
+#pragma warning restore CA1822 // Mark members as static
 
         /// <summary>
         /// The type of the payload text tokenizer.
