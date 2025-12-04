@@ -547,6 +547,8 @@ public class CollectionCreateTests : QdrantTestsBase
     [Test]
     public async Task ScalarQuantization_InlineStorage()
     {
+        OnlyIfVersionAfterOrEqual("1.16.0", "Inline storage is only available from v1.16");
+
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
