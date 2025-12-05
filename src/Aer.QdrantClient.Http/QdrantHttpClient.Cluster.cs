@@ -1,7 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
+using Aer.QdrantClient.Http.Models.Shared;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http;
 
@@ -134,11 +135,17 @@ public partial class QdrantHttpClient
         uint? shardsNumber = null,
         uint? replicationFactor = null,
         ulong[] placement = null,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null,
+        ShardState? initialState = null)
     {
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
 
-        var createShardKeyRequest = new CreateShardKeyRequest(shardKey, shardsNumber, replicationFactor, placement);
+        var createShardKeyRequest = new CreateShardKeyRequest(
+            shardKey,
+            shardsNumber,
+            replicationFactor,
+            placement,
+            initialState);
 
         var url = $"/collections/{collectionName}/shards?timeout={timeoutValue}";
 

@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Filters.Conditions;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 using Aer.QdrantClient.Http.Models.Primitives;
+using static Aer.QdrantClient.Http.Filters.Conditions.FieldMatchTextCondition;
 
 namespace Aer.QdrantClient.Http.Filters.Builders;
 
@@ -67,7 +68,7 @@ public static class Q
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
     /// <param name="value">Payload field value.</param>
     public static FilterConditionBase MatchValue<T>(string payloadFieldName, T value)
-        => new FieldMatchCondition<T>(payloadFieldName, value, isSubstringMatch: false);
+        => new FieldMatchCondition<T>(payloadFieldName, value);
 
     /// <summary>
     /// Check if payload has a field with any of the given values.
@@ -128,16 +129,58 @@ public static class Q
     /// Exact texts that will match the condition depend on full-text index configuration. Configuration is defined during the index creation and describe at full-text index.
     /// If there is no full-text index for the field, the condition will work as exact substring match.
     /// </remarks>
-    public static FilterConditionBase MatchFulltext(
-        string payloadFieldName,
+    [Obsolete($"Use {nameof(MatchText)} or {nameof(MatchTextPhrase)} or {nameof(MatchTextAny)} instead.")]
+    public static FilterConditionBase MatchFulltext(string payloadFieldName,
         string substringValue,
-        bool isPhraseMatch = false)
-        =>
-            new FieldMatchCondition<string>(
-                payloadFieldName,
-                substringValue,
-                isSubstringMatch: true,
-                isPhraseMatch: isPhraseMatch);
+        bool isPhraseMatch = false) =>
+        isPhraseMatch
+            ? MatchTextPhrase(payloadFieldName, substringValue)
+            : MatchText(payloadFieldName, substringValue);
+
+    /// <summary>
+    /// Check if payload has a text field which contains a given substring value.
+    /// </summary>
+    /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
+    /// <param name="query">Value to substring match against.</param>
+    /// <remarks>
+    /// Exact texts that will match the condition depend on full-text index configuration. Configuration is defined during the index creation and describe at full-text index.
+    /// If there is no full-text index for the field, the condition will work as exact substring match.
+    /// </remarks>
+    public static FilterConditionBase MatchText(string payloadFieldName, string query) =>
+        new FieldMatchTextCondition(
+            payloadFieldName,
+            query,
+            TextMatchType.Default);
+
+    /// <summary>
+    /// Check if payload has a text field which contains a given substring phrase.
+    /// </summary>
+    /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
+    /// <param name="query">Value to substring match against.</param>
+    /// <remarks>
+    /// Exact texts that will match the condition depend on full-text index configuration. Configuration is defined during the index creation and describe at full-text index.
+    /// If there is no full-text index for the field, the condition will work as exact substring match.
+    /// </remarks>
+    public static FilterConditionBase MatchTextPhrase(string payloadFieldName, string query) =>
+        new FieldMatchTextCondition(
+            payloadFieldName,
+            query,
+            TextMatchType.Phrase);
+
+    /// <summary>
+    /// Check if payload has a text field which contains a given any of the substring query terms.
+    /// </summary>
+    /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
+    /// <param name="query">Value to substring match against.</param>
+    /// <remarks>
+    /// Exact texts that will match the condition depend on full-text index configuration. Configuration is defined during the index creation and describe at full-text index.
+    /// If there is no full-text index for the field, the condition will work as exact substring match.
+    /// </remarks>
+    public static FilterConditionBase MatchTextAny(string payloadFieldName, string query) =>
+        new FieldMatchTextCondition(
+            payloadFieldName,
+            query,
+            TextMatchType.Any);
 
     /// <summary>
     /// Check if payload field value lies in a given range.
@@ -352,7 +395,7 @@ public static class Q
     /// and is not inside an area defied by the given <paramref name="interiorPolygonsPoints"/> points.
     /// A match is considered any point location inside or on the boundaries of the given polygon’s exterior but not inside any interiors.
     /// If several location values are stored for a point, then any of them matching will include that
-    /// point as a candidate in the resultset.
+    /// point as a candidate in the result set.
     /// These conditions can only be applied to payloads that match the geo-data format.
     /// </summary>
     /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>

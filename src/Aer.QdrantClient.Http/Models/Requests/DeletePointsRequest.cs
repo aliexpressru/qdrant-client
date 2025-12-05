@@ -19,7 +19,7 @@ internal sealed class DeletePointsRequest
     /// </summary>
     [JsonConverter(typeof(PointIdIEnumerableJsonConverter))]
     public IEnumerable<PointId> Points { get; set; }
-    
+
     /// <summary>
     /// Delete points that satisfy the filter.
     /// </summary>

@@ -128,6 +128,8 @@ public partial class QdrantHttpClient
         FullTextIndexStemmingAlgorithm stemmer = null,
         FullTextIndexStopwords stopwords = null,
 
+        bool? isAsciiFoldingEnabled = null,
+
         bool isWaitForResult = false,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
@@ -147,7 +149,8 @@ public partial class QdrantHttpClient
                 OnDisk = onDisk,
                 PhraseMatching = enablePhraseMatching,
                 Stemmer = stemmer,
-                Stopwords = stopwords
+                Stopwords = stopwords,
+                AsciiFolding = isAsciiFoldingEnabled
             });
 
         var url = $"/collections/{collectionName}/index?wait={ToUrlQueryString(isWaitForResult)}";

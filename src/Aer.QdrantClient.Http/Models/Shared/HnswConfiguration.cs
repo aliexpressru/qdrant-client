@@ -1,4 +1,4 @@
-﻿namespace Aer.QdrantClient.Http.Models.Shared;
+namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
 /// The HNSW index configuration.
@@ -39,4 +39,11 @@ public sealed class HnswConfiguration
     /// Store HNSW index on disk. If set to false, index will be stored in RAM. Default: false
     /// </summary>
     public bool? OnDisk { set; get; }
+
+    /// <summary>
+    /// Store copies of original and quantized vectors within the HNSW index file. Default: false.
+    /// Enabling this option will trade the search speed for disk usage by reducing amount of random
+    /// seeks during the search. Requires quantized vectors to be enabled. Multi-vectors are not supported.
+    /// </summary>
+    public bool? InlineStorage { set; get; }
 }

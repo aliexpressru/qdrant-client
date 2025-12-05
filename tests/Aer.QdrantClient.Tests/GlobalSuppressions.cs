@@ -25,6 +25,13 @@ using System.Diagnostics.CodeAnalysis;
     Target = "~N:Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots")]
 
 [assembly: SuppressMessage(
+    "Style",
+    "IDE0130:Namespace does not match folder structure",
+    Justification = "Using folders to group types",
+    Scope = "namespace",
+    Target = "~N:Aer.QdrantClient.Tests.TestClasses.HttpClientTests")]
+
+[assembly: SuppressMessage(
     "Structure",
     "NUnit1028:The non-test method is public",
     Justification = "Commented out real-world scenarios",

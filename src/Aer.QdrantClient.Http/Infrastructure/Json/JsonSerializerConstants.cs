@@ -10,7 +10,7 @@ internal static class JsonSerializerConstants
     private static readonly JTokenJsonConverter _jTokenJsonConverter = new();
 
     public static JsonNamingPolicy NamingStrategy => JsonNamingPolicy.SnakeCaseLower;
-    
+
     public static JsonConverter EnumConverter { get; } = new JsonStringEnumConverter(NamingStrategy);
 
     public static JsonSerializerOptions DefaultSerializerOptions { get; } = CreateSerializerOptions();
@@ -42,7 +42,7 @@ internal static class JsonSerializerConstants
 
         configure?.Invoke(options);
 
-        if (additionalConverters is {Length: > 0} existingAdditionalConverters)
+        if (additionalConverters is { Length: > 0 } existingAdditionalConverters)
         {
             foreach (var additionalConverter in existingAdditionalConverters)
             {

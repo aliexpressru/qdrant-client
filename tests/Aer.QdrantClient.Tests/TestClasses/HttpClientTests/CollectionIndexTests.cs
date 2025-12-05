@@ -44,7 +44,7 @@ internal class CollectionIndexTests : QdrantTestsBase
             .Should().Contain(TestCollectionName)
             .And.Contain("doesn't exist");
     }
-    
+
     [Test]
     public async Task CreateIndex()
     {
@@ -88,7 +88,7 @@ internal class CollectionIndexTests : QdrantTestsBase
 
         createCollectionIndexResult2.Status.IsSuccess.Should().BeTrue();
         createCollectionIndexResult2.Result.Should().NotBeNull();
-        
+
         createCollectionIndexResult3.Status.IsSuccess.Should().BeTrue();
         createCollectionIndexResult3.Result.Should().NotBeNull();
 
@@ -106,7 +106,7 @@ internal class CollectionIndexTests : QdrantTestsBase
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Integer);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Lookup.Should().BeFalse();
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Range.Should().BeTrue();
-        
+
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].DataType.Should().Be(PayloadIndexedFieldType.Keyword);
 
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName3].DataType.Should().Be(PayloadIndexedFieldType.Integer);
@@ -206,7 +206,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     {
         var vectorCount = 100;
         var vectorSize = 10U;
-        
+
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
@@ -220,9 +220,9 @@ internal class CollectionIndexTests : QdrantTestsBase
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     CreateTestVector(vectorSize),
-                    (TestPayload) i
+                    (TestPayload)i
                 )
             );
         }
@@ -237,15 +237,16 @@ internal class CollectionIndexTests : QdrantTestsBase
                 CancellationToken.None,
                 isWaitForResult: true,
                 ordering: OrderingType.Strong);
-        
+
         upsertPointsResult.Status.IsSuccess.Should().BeTrue();
-        
+
         // Enable HNSW index
-        
+
         var enableIndexResult = await _qdrantHttpClient.UpdateCollectionParameters(TestCollectionName,
             new UpdateCollectionParametersRequest()
             {
-                OptimizersConfig = new(){
+                OptimizersConfig = new()
+                {
                     IndexingThreshold = 1
                 }
             },
@@ -254,7 +255,7 @@ internal class CollectionIndexTests : QdrantTestsBase
         enableIndexResult.Status.IsSuccess.Should().BeTrue();
 
         // Enable payload
-        
+
         var createCollectionIndexResult =
             await _qdrantHttpClient.CreatePayloadIndex(
                 TestCollectionName,
@@ -266,31 +267,31 @@ internal class CollectionIndexTests : QdrantTestsBase
         createCollectionIndexResult.Status.IsSuccess.Should().BeTrue();
 
         // Just in case wait for index to be created
-        await Task.Delay(TimeSpan.FromMilliseconds(100)); 
+        await Task.Delay(TimeSpan.FromMilliseconds(100));
 
         await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
 
         var collectionInfo = (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
         collectionInfo.IndexedVectorsCount.Should().Be((uint)vectorCount);
-        
+
         // Check that all vectors are non-zero
-        
+
         var readAllPoints = await _qdrantHttpClient.ScrollPoints(
             TestCollectionName,
-            QdrantFilter.Empty, 
+            QdrantFilter.Empty,
             PayloadPropertiesSelector.All,
             limit: (uint)vectorCount,
             withVector: true,
             cancellationToken: CancellationToken.None);
-        
+
         readAllPoints.Status.IsSuccess.Should().BeTrue();
         readAllPoints.Result.Points.Length.Should().Be(vectorCount);
-        
-        foreach(var readPoint in readAllPoints.Result.Points)
+
+        foreach (var readPoint in readAllPoints.Result.Points)
         {
             readPoint.Vector.Should().NotBeNull();
             var isWholeVectorZero = true;
-            
+
             foreach (var vectorComponent in readPoint.Vector.AsDenseVector().VectorValues)
             {
                 isWholeVectorZero &= vectorComponent == 0;
@@ -302,14 +303,14 @@ internal class CollectionIndexTests : QdrantTestsBase
 
     [Test]
     public async Task FulltextIndex()
-    { 
-    await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true
-            },
-            CancellationToken.None);
+    {
+        await _qdrantHttpClient.CreateCollection(
+                TestCollectionName,
+                new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+                {
+                    OnDiskPayload = true
+                },
+                CancellationToken.None);
 
         var createCollectionIndexResult =
             await _qdrantHttpClient.CreateFullTextPayloadIndex(
@@ -317,10 +318,10 @@ internal class CollectionIndexTests : QdrantTestsBase
                 TestPayloadFieldName,
                 FullTextIndexTokenizerType.Prefix,
                 CancellationToken.None,
-                
+
                 minimalTokenLength: 5,
                 maximalTokenLength: 10,
-                
+
                 isLowercasePayloadTokens: true,
                 isWaitForResult: true,
                 onDisk: true);
@@ -350,7 +351,7 @@ internal class CollectionIndexTests : QdrantTestsBase
         collectionInfo.Status.IsSuccess.Should().BeTrue();
 
         collectionInfo.Result.PayloadSchema.Count.Should().Be(2);
-        
+
         collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName);
         collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName2);
 
@@ -360,7 +361,7 @@ internal class CollectionIndexTests : QdrantTestsBase
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.MinTokenLen.Should().Be(5);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.MaxTokenLen.Should().Be(10);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Lowercase.Should().Be(true);
-        
+
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].DataType.Should().Be(PayloadIndexedFieldType.Text);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.OnDisk.Should().Be(true);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.Tokenizer.Should().Be(FullTextIndexTokenizerType.Word);
@@ -373,7 +374,7 @@ internal class CollectionIndexTests : QdrantTestsBase
     public async Task FulltextIndex_StemmerAndStopwords()
     {
         OnlyIfVersionAfterOrEqual("1.15.0", "Stemmer and stopwords only supported since 1.15.0");
-        
+
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
@@ -472,7 +473,7 @@ internal class CollectionIndexTests : QdrantTestsBase
             .BeOfType<FullTextIndexStopwords.CustomStopwordsSet>();
 
         var customStopwords =
-            (FullTextIndexStopwords.CustomStopwordsSet) collectionInfo.Result.PayloadSchema[TestPayloadFieldName2]
+            (FullTextIndexStopwords.CustomStopwordsSet)collectionInfo.Result.PayloadSchema[TestPayloadFieldName2]
                 .Params.Stopwords;
 
         customStopwords.Languages.Should().BeEquivalentTo(
@@ -486,6 +487,53 @@ internal class CollectionIndexTests : QdrantTestsBase
             "test",
             "schule"
         ]);
+    }
+
+    [Test]
+    public async Task FulltextIndex_AsciiFolding()
+    {
+        OnlyIfVersionAfterOrEqual("1.16.0", "Ascii folding only supported since 1.16.0");
+
+        await _qdrantHttpClient.CreateCollection(
+                TestCollectionName,
+                new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+                {
+                    OnDiskPayload = true
+                },
+                CancellationToken.None);
+
+        var createCollectionIndexResult =
+            await _qdrantHttpClient.CreateFullTextPayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                FullTextIndexTokenizerType.Prefix,
+                CancellationToken.None,
+
+                minimalTokenLength: 5,
+                maximalTokenLength: 10,
+
+                isLowercasePayloadTokens: true,
+
+                isAsciiFoldingEnabled: true,
+
+                isWaitForResult: true,
+                onDisk: true);
+
+        createCollectionIndexResult.Status.IsSuccess.Should().BeTrue();
+
+        createCollectionIndexResult.Result.Should().NotBeNull();
+
+        var collectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionInfo.Status.IsSuccess.Should().BeTrue();
+
+        collectionInfo.Result.PayloadSchema.Count.Should().Be(1);
+
+        collectionInfo.Result.PayloadSchema.Should().ContainKey(TestPayloadFieldName);
+
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Text);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.AsciiFolding.Should().Be(true);
     }
 
     [Test]
@@ -611,7 +659,7 @@ internal class CollectionIndexTests : QdrantTestsBase
             },
             CancellationToken.None);
 
-        var createCollectionIntegerIndexWithoutLookupAndRangeAct = async ()=>
+        var createCollectionIntegerIndexWithoutLookupAndRangeAct = async () =>
             await _qdrantHttpClient.CreatePayloadIndex(
                 TestCollectionName,
                 TestPayloadFieldName,
@@ -621,7 +669,7 @@ internal class CollectionIndexTests : QdrantTestsBase
                 isLookupEnabled: false,
                 isRangeEnabled: false);
 
-        var createCollectionPrincipalIndexAct = async ()=>
+        var createCollectionPrincipalIndexAct = async () =>
             await _qdrantHttpClient.CreatePayloadIndex(
                 TestCollectionName,
                 TestPayloadFieldName,
@@ -660,16 +708,16 @@ internal class CollectionIndexTests : QdrantTestsBase
         await createCollectionIntegerIndexWithoutLookupAndRangeAct.Should().ThrowAsync<QdrantCommunicationException>()
             .Where(e => e.Message.Contains(
                 "Validation error: the 'lookup' and 'range' capabilities can't be both disabled"));
-        
+
         await createCollectionPrincipalIndexAct.Should().ThrowAsync<QdrantUnsupportedFieldSchemaForIndexConfiguration>()
             .Where(e => e.Message.Contains("Principal"));
 
         await createCollectionTenantIndexAct.Should().ThrowAsync<QdrantUnsupportedFieldSchemaForIndexConfiguration>()
             .Where(e => e.Message.Contains("Tenant"));
-        
+
         await createCollectionRangeIndexAct.Should().ThrowAsync<QdrantUnsupportedFieldSchemaForIndexConfiguration>()
             .Where(e => e.Message.Contains("Range"));
-        
+
         await createCollectionLookupIndexAct.Should().ThrowAsync<QdrantUnsupportedFieldSchemaForIndexConfiguration>()
             .Where(e => e.Message.Contains("Lookup"));
     }

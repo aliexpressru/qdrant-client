@@ -1,8 +1,9 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Requests;
 
@@ -11,6 +12,7 @@ namespace Aer.QdrantClient.Http.Models.Requests;
 /// </summary>
 [JsonDerivedType(typeof(MoveShardRequest))]
 [JsonDerivedType(typeof(ReplicateShardRequest))]
+[JsonDerivedType(typeof(ReplicatePointsRequest))]
 [JsonDerivedType(typeof(AbortShardTransferRequest))]
 [JsonDerivedType(typeof(DropShardReplicaRequest))]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
@@ -39,6 +41,17 @@ public abstract class UpdateCollectionClusteringSetupRequest
         /// The replicate shard operation description.
         /// </summary>
         public required ShardOperationDescription ReplicateShard { set; get; }
+    }
+
+    /// <summary>
+    /// Represents a request to replicate shard form peer to peer.
+    /// </summary>
+    internal sealed class ReplicatePointsRequest : UpdateCollectionClusteringSetupRequest
+    {
+        /// <summary>
+        /// The replicate points from shard to shard operation description.
+        /// </summary>
+        public required ReplicatePointsOperationDescription ReplicatePoints { set; get; }
     }
 
     /// <summary>
@@ -152,7 +165,7 @@ public abstract class UpdateCollectionClusteringSetupRequest
     }
 
     /// <summary>
-    /// Represents a request to drop an exising a sharding key.
+    /// Represents a request to drop an existing a sharding key.
     /// </summary>
     internal sealed class DropShardingKeyRequest : UpdateCollectionClusteringSetupRequest
     {
@@ -195,6 +208,30 @@ public abstract class UpdateCollectionClusteringSetupRequest
         /// The shard transfer method. If not set, <see cref="ShardTransferMethod.StreamRecords"/> will be used.
         /// </summary>
         public ShardTransferMethod? Method { set; get; }
+    }
+
+    /// <summary>
+    /// Represents a replicate points between shards operation to perform.
+    /// </summary>
+    internal sealed class ReplicatePointsOperationDescription
+    {
+        /// <summary>
+        /// The source shard key for the operation.
+        /// </summary>
+        [JsonConverter(typeof(ShardKeyJsonConverter))]
+        public required ShardKey FromShardKey { init; get; }
+
+        /// <summary>
+        /// The target shard key for the operation.
+        /// </summary>
+        [JsonConverter(typeof(ShardKeyJsonConverter))]
+        public required ShardKey ToShardKey { init; get; }
+
+        /// <summary>
+        /// The filter to select the points to replicate.
+        /// </summary>
+        [JsonConverter(typeof(QdrantFilterJsonConverter))]
+        public required QdrantFilter Filter { init; get; }
     }
 
     /// <summary>
@@ -284,6 +321,28 @@ public abstract class UpdateCollectionClusteringSetupRequest
                 FromPeerId = fromPeerId,
                 ToPeerId = toPeerId,
                 Method = shardTransferMethod
+            }
+        };
+    }
+
+    /// <summary>
+    /// Returns the replicate points from shard to shard operation request.
+    /// </summary>
+    /// <param name="fromShardKey">Source shard key to replicate points from.</param>
+    /// <param name="toShardKey">Target shard key to replicate points to.</param>
+    /// <param name="filter">Filter to select points to replicate from the <paramref name="fromShardKey"/>.</param>
+    public static UpdateCollectionClusteringSetupRequest CreateReplicatePointsRequest(
+        ShardKey fromShardKey,
+        ShardKey toShardKey,
+        QdrantFilter filter)
+    {
+        return new ReplicatePointsRequest()
+        {
+            ReplicatePoints = new ReplicatePointsOperationDescription()
+            {
+                FromShardKey = fromShardKey,
+                ToShardKey = toShardKey,
+                Filter = filter
             }
         };
     }

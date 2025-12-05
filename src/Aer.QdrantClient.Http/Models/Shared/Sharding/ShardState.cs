@@ -1,4 +1,4 @@
-﻿namespace Aer.QdrantClient.Http.Models.Shared;
+namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
 /// State of the single shard within a replica set.
@@ -48,5 +48,10 @@ public enum ShardState
     /// <summary>
     /// Shard is in the process of being resharded scaling down.
     /// </summary>
-    ReshardingScaleDown
+    ReshardingScaleDown,
+
+    /// <summary>
+    /// Shard is active and read-only.
+    /// </summary>
+    ActiveRead
 }
