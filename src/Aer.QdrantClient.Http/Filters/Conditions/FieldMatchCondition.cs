@@ -10,13 +10,7 @@ namespace Aer.QdrantClient.Http.Filters.Conditions;
 /// </summary>
 /// <param name="payloadFieldName">The key to match.</param>
 /// <param name="value">The value to match against.</param>
-/// <param name="isSubstringMatch">If set to <c>true</c> performs substring match on full-text indexed payload field.</param>
-/// <param name="isPhraseMatch">If set to <c>true</c> use phrase matching for search on full-text indexed payload field.</param>
-internal sealed class FieldMatchCondition<T>(
-    string payloadFieldName,
-    T value,
-    bool isSubstringMatch = false,
-    bool isPhraseMatch = false) : FilterConditionBase(payloadFieldName)
+internal sealed class FieldMatchCondition<T>(string payloadFieldName, T value) : FilterConditionBase(payloadFieldName)
 {
     protected internal override PayloadIndexedFieldType? PayloadFieldType { get; } = GetPayloadFieldType<T>();
 
@@ -26,13 +20,7 @@ internal sealed class FieldMatchCondition<T>(
         jsonWriter.WritePropertyName("match");
         jsonWriter.WriteStartObject();
         {
-            jsonWriter.WritePropertyName(
-                isPhraseMatch
-                    ? "phrase"
-                    : isSubstringMatch
-                        ? "text"
-                        : "value");
-
+            jsonWriter.WritePropertyName("value");
             JsonSerializer.Serialize(jsonWriter, value, JsonSerializerConstants.DefaultSerializerOptions);
         }
         jsonWriter.WriteEndObject();

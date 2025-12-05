@@ -5,9 +5,9 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
-internal sealed class FieldMatchAnyCondition<T>(string payloadFieldName, IEnumerable<T> matchAnyValuesToMatchValues) : FilterConditionBase(payloadFieldName)
+internal sealed class FieldMatchAnyCondition<T>(string payloadFieldName, IEnumerable<T> matchAnyValuesToMatch) : FilterConditionBase(payloadFieldName)
 {
-    internal readonly IEnumerable<T> _anyValuesToMatch = matchAnyValuesToMatchValues;
+    internal readonly IEnumerable<T> _anyValuesToMatch = matchAnyValuesToMatch;
 
     protected internal override PayloadIndexedFieldType? PayloadFieldType { get; } = GetPayloadFieldType<T>();
 
@@ -16,11 +16,11 @@ internal sealed class FieldMatchAnyCondition<T>(string payloadFieldName, IEnumer
         WritePayloadFieldName(jsonWriter);
         jsonWriter.WritePropertyName("match");
         jsonWriter.WriteStartObject();
+        {
+            jsonWriter.WritePropertyName("any");
 
-        jsonWriter.WritePropertyName("any");
-
-        JsonSerializer.Serialize(jsonWriter, _anyValuesToMatch, JsonSerializerConstants.DefaultSerializerOptions);
-
+            JsonSerializer.Serialize(jsonWriter, _anyValuesToMatch, JsonSerializerConstants.DefaultSerializerOptions);
+        }
         jsonWriter.WriteEndObject();
     }
 
