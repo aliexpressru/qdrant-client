@@ -379,6 +379,56 @@ public class PointsQueryTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task FindNearestPoints_WithAcorn()
+    {
+        OnlyIfVersionAfterOrEqual("1.16.0", "ACORN algorithm is available only from v1.16");
+
+        var (_, upsertPointsByPointIds, _) =
+            await PrepareCollection(
+                _qdrantHttpClient,
+                TestCollectionName);
+
+        var queryPointsResponse = await _qdrantHttpClient.QueryPoints(
+            TestCollectionName,
+            new QueryPointsRequest(PointsQuery.CreateFindNearestPointsQuery(upsertPointsByPointIds.First().Value.Vector))
+            {
+                WithPayload = true,
+                WithVector = true,
+                Limit = 2,
+
+                Params = new()
+                {
+                    Acorn = new()
+                    {
+                        Enable = true,
+                        MaxSelectivity = 1.0 // 1.0 means ACORN will always be used
+                    }
+                }
+            },
+            CancellationToken.None
+        );
+
+        queryPointsResponse.Status.IsSuccess.Should().BeTrue();
+        queryPointsResponse.Result.Points.Length.Should().Be(2);
+        queryPointsResponse.Result.Points.Should().AllSatisfy(
+            p => p.Score.Should().BeGreaterThan(0)
+        );
+
+        if (!IsCiEnvironment)
+        {
+            // CI environment container does not have usage statistics enabled
+
+            queryPointsResponse.Usage.Cpu.Should().BeGreaterThan(0);
+            queryPointsResponse.Usage.PayloadIoRead.Should().BeGreaterThan(0);
+            queryPointsResponse.Usage.VectorIoRead.Should().BeGreaterThan(0);
+        }
+        else
+        {
+            queryPointsResponse.Usage.Should().BeNull();
+        }
+    }
+
+    [Test]
     [TestCase(FusionAlgorithm.Rrf)]
     [TestCase(FusionAlgorithm.Dbsf)]
     public async Task Fusion(FusionAlgorithm fusionAlgorithm)
