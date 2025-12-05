@@ -44,9 +44,13 @@ public sealed class BatchUpdatePointsRequest
     /// The shard selector. If set performs operation on specified shard(s).
     /// If not set - performs operation on all shards.
     /// </param>
+    /// <param name="updateFilter">
+    /// If specified, only points that match this filter will be updated, others will be inserted.
+    /// </param>
     public BatchUpdatePointsRequest UpsertPoints(
         IEnumerable<UpsertPointsRequest.UpsertPoint> upsertPoints,
-        ShardSelector shardSelector = null)
+        ShardSelector shardSelector = null,
+        QdrantFilter updateFilter = null)
     {
         var operation = new UpsertPointsOperation()
         {
@@ -54,6 +58,7 @@ public sealed class BatchUpdatePointsRequest
             {
                 Points = upsertPoints,
                 ShardKey = shardSelector,
+                UpdateFilter = updateFilter
             }
         };
 
@@ -356,16 +361,19 @@ public sealed class BatchUpdatePointsRequest
     /// The shard selector. If set performs operation on specified shard(s).
     /// If not set - performs operation on all shards.
     /// </param>
+    /// <param name="updateFilter">If specified, only points that match this filter will be updated.</param>
     public BatchUpdatePointsRequest UpdatePointsVectors(
         PointVector[] updatedPointVectors,
-        ShardSelector shardSelector = null)
+        ShardSelector shardSelector = null,
+        QdrantFilter updateFilter = null)
     {
         var operation = new UpdatePointsVectorsOperation()
         {
             UpdateVectors = new UpdatePointsVectorsRequest()
             {
                 Points = updatedPointVectors,
-                ShardKey = shardSelector
+                ShardKey = shardSelector,
+                UpdateFilter = updateFilter
             }
         };
 

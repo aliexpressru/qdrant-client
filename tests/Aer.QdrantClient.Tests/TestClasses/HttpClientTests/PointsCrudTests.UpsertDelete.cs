@@ -647,6 +647,155 @@ internal partial class PointsCrudTests
     }
 
     [Test]
+    public async Task UpsertPoints_WithUpdateFilter()
+    {
+        OnlyIfVersionAfterOrEqual("1.16.0", "Conditional updates are available only from v1.16");
+
+        var vectorSize = 10U;
+        var vectorCount = 10;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        // Initial upsert of points
+
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
+        for (int i = 0; i < vectorCount; i++)
+        {
+            upsertPoints.Add(
+                new(
+                    PointId.Integer((ulong)i),
+                    CreateTestVector(vectorSize),
+                    (TestPayload)i
+                )
+            );
+        }
+
+        Dictionary<ulong, UpsertPointsRequest.UpsertPoint> upsertPointsByPointIds =
+            upsertPoints.ToDictionary(p => ((IntegerPointId)p.Id).Id);
+
+        (await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest()
+            {
+                Points = upsertPoints
+            },
+            CancellationToken.None,
+            isWaitForResult: true,
+            ordering: OrderingType.Strong)
+        ).EnsureSuccess();
+
+        // Conditional upsert with update filter
+
+        var notUpdatedPointPointId = PointId.Integer((ulong)0);
+        var updatedPointPointId = PointId.Integer((ulong)1);
+        var upsertedPointPointId = PointId.Integer((ulong)1000);
+
+        List<UpsertPointsRequest.UpsertPoint> updatedPoints = [
+            // Does not satisfy the filter and should NOT be updated
+            new(
+                notUpdatedPointPointId,
+                upsertPoints[0].Vector,
+                (TestPayload)1000
+            ),
+
+            // Satisfies the filter and should be updated
+            new(
+                updatedPointPointId,
+                upsertPoints[1].Vector,
+                new TestPayload(){
+                    Integer = 2,
+                    Text = "test"
+                }
+            ),
+
+            // Completely new point, should be inserted
+            new(
+                upsertedPointPointId,
+                CreateTestVector(vectorSize),
+                new TestPayload(){
+                    Integer = 1000,
+                    Text = "test_new"
+                }
+            ),
+        ];
+
+        var readPointsBeforeUpdateResult = (
+            await _qdrantHttpClient.GetPoints(
+                TestCollectionName,
+                updatedPoints.Select(p => p.Id),
+                PayloadPropertiesSelector.All,
+                CancellationToken.None,
+                withVector: true,
+                retryCount: 0)
+            ).EnsureSuccess();
+
+        var conditionalUpsertResult = await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest()
+            {
+                Points = updatedPoints,
+                UpdateFilter = Q.MatchValue("integer", 1)
+            },
+            CancellationToken.None,
+            isWaitForResult: true,
+            ordering: OrderingType.Strong);
+
+        conditionalUpsertResult.Status.IsSuccess.Should().BeTrue();
+
+        var readPointsAfterUpdateResult = (
+            await _qdrantHttpClient.GetPoints(
+                TestCollectionName,
+                updatedPoints.Select(p => p.Id),
+                PayloadPropertiesSelector.All,
+                CancellationToken.None,
+                withVector: true,
+                retryCount: 0)
+            ).EnsureSuccess();
+
+        readPointsAfterUpdateResult.Length.Should().Be(updatedPoints.Count);
+
+        readPointsAfterUpdateResult.Length.Should().BeGreaterThan(readPointsBeforeUpdateResult.Length); // 1 new point inserted
+
+        // Check point was not updated
+
+        var initialNotUpdatedPoint = readPointsBeforeUpdateResult.Single(p => p.Id == notUpdatedPointPointId);
+        var pointNotUpdated = readPointsAfterUpdateResult.Single(p => p.Id == notUpdatedPointPointId);
+
+        var initialPayload = initialNotUpdatedPoint.Payload.As<TestPayload>();
+        var notUpdatedPayload = pointNotUpdated.Payload.As<TestPayload>();
+
+        notUpdatedPayload.Integer.Should().Be(initialPayload.Integer);
+        notUpdatedPayload.Text.Should().Be(initialPayload.Text);
+
+        // Check point was updated
+
+        var initialUpdatedPoint = readPointsBeforeUpdateResult.Single(p => p.Id == updatedPointPointId);
+        var pointUpdated = readPointsAfterUpdateResult.Single(p => p.Id == updatedPointPointId);
+
+        var initialUpdatedPayload = initialUpdatedPoint.Payload.As<TestPayload>();
+        var updatedPayload = pointUpdated.Payload.As<TestPayload>();
+
+        updatedPayload.Integer.Should().NotBe(initialUpdatedPayload.Integer);
+        updatedPayload.Integer.Should().Be(2);
+
+        updatedPayload.Text.Should().NotBe(initialUpdatedPayload.Text);
+        updatedPayload.Text.Should().Be("test");
+
+        // Check point was inserted
+
+        var pointInserted = readPointsAfterUpdateResult.Single(p => p.Id == upsertedPointPointId);
+        var insertedPayload = pointInserted.Payload.As<TestPayload>();
+        insertedPayload.Integer.Should().Be(1000);
+        insertedPayload.Text.Should().Be("test_new");
+    }
+
+    [Test]
     public async Task UpsertPoints_ByteVector()
     {
         var vectorSize = 10U;

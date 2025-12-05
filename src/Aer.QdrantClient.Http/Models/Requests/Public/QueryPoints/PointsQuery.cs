@@ -206,8 +206,7 @@ public abstract class PointsQuery
     public static PointsQuery CreateFindNearestPointsQuery(
         PointIdOrQueryVector pointIdOrQueryVector,
         double? mmrDiversity = null,
-        uint? mmrCandidatesLimit = null,
-        VectorSearchParameters.AcornParameters acornParameters = null)
+        uint? mmrCandidatesLimit = null)
         =>
             new NearestPointsQuery(
                 pointIdOrQueryVector,
