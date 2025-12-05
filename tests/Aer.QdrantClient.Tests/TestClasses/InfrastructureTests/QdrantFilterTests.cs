@@ -1090,6 +1090,33 @@ internal class QdrantFilterTests
     }
 
     [Test]
+    [Obsolete("Testing obsolete logic")]
+    public void Must_Match_Fulltext_Phrase_Obsolete()
+    {
+        var filter = QdrantFilter.Create(
+                Q.Must(
+                    Q<TestComplexPayload>.MatchFulltext(p => p.Text, "test_substring", isPhraseMatch: true)
+                )
+            )
+            .ToString();
+
+        var expectedFilter = """
+            {
+              "must": [
+                {
+                  "key": "text",
+                  "match": {
+                    "phrase": "test_substring"
+                  }
+                }
+              ]
+            }
+            """;
+
+        filter.AssertSameString(expectedFilter);
+    }
+
+    [Test]
     public void Must_MatchText()
     {
         var filter = QdrantFilter.Create(
@@ -1737,31 +1764,5 @@ internal class QdrantFilterTests
         payloadFields.Should().Contain(x => x.Name == "location" && x.Type == PayloadIndexedFieldType.Geo);
         payloadFields.Should().Contain(x => x.Name == "date" && x.Type == PayloadIndexedFieldType.Datetime);
         payloadFields.Should().Contain(x => x.Name == "guid" && x.Type == PayloadIndexedFieldType.Uuid);
-    }
-
-    [Test]
-    public void PhraseMatching()
-    {
-        var filter = QdrantFilter.Create(
-                Q.Must(
-                    Q<TestComplexPayload>.MatchFulltext(p => p.Text, "test_substring", isPhraseMatch: true)
-                )
-            )
-            .ToString();
-
-        var expectedFilter = """
-            {
-              "must": [
-                {
-                  "key": "text",
-                  "match": {
-                    "phrase": "test_substring"
-                  }
-                }
-              ]
-            }
-            """;
-
-        filter.AssertSameString(expectedFilter);
     }
 }
