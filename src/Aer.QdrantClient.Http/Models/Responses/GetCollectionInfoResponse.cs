@@ -255,6 +255,11 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             public FullTextIndexStemmingAlgorithm Stemmer { set; get; }
 
             /// <summary>
+            /// Gets the value indicating whether tokens are normalized by folding accented characters to ASCII.
+            /// </summary>
+            public bool? AsciiFolding { set; get; }
+
+            /// <summary>
             /// Whether to convert tokens to lowercase before indexing. For full-text index only.
             /// </summary>
             public bool? Lowercase { set; get; }
