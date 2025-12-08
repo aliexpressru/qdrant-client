@@ -46,7 +46,7 @@ public class CollectionCreateTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task VeryLongName()
+    public async Task CreateCollection_VeryLongName()
     {
         var veryLongCollectionName = new string('t', 1024);
 
@@ -60,6 +60,44 @@ public class CollectionCreateTests : QdrantTestsBase
 
         await collectionCreationAct.Should().ThrowAsync<QdrantInvalidEntityNameException>()
             .Where(e => e.Message.Contains("1024"));
+    }
+
+    [Test]
+    public async Task CreateCollection_WithMetadata()
+    {
+        OnlyIfVersionAfterOrEqual("1.16.0", "Collection metadata is only supported from v1.16");
+
+        var metadata = new Dictionary<string, object>
+        {
+            ["created_by"] = "unit_test",
+            ["creation_date"] = DateTime.UtcNow.ToString("o"),
+            ["test_int"] = 1,
+            ["test_bool"] = true,
+            ["test_double"] = 1.567
+        };
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                Metadata = metadata
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
+
+        collectionCreationResult.Should().NotBeNull();
+        collectionCreationResult.Result.Should().BeTrue();
+
+        var createdCollectionInfoResponse =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        createdCollectionInfoResponse.Status.IsSuccess.Should().BeTrue();
+
+        createdCollectionInfoResponse.Result.Config.Metadata.Should().NotBeNull();
+        createdCollectionInfoResponse.Result.Config.Metadata.Count.Should().Be(metadata.Count);
     }
 
     [Test]

@@ -1,8 +1,9 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
+using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
 
@@ -56,6 +57,35 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// The indexed payload fields configurations by field names.
         /// </summary>
         public Dictionary<string, PayloadSchemaPropertyDefinition> PayloadSchema { set; get; }
+
+        /// <summary>
+        /// Gets the number of metadata entries associated with the collection.
+        /// </summary>
+        public int MetadataCount => Config?.Metadata?.Count ?? 0;
+
+        /// <summary>
+        /// Gets that metadata value by specified key. If no value is found returns the provided default value.
+        /// </summary>
+        /// <typeparam name="T">The type of the metadata value.</typeparam>
+        /// <param name="metadataKey">The metadata key.</param>
+        /// <param name="defaultValue">The default metadata value to return if no key found.</param>
+        public T GetMetadataValueOrDefault<T>(string metadataKey, T defaultValue = default)
+        {
+            if (Config.Metadata is null)
+            {
+                return defaultValue;
+            }
+
+            return Config.Metadata.GetValueOrDefault(metadataKey, defaultValue);
+        }
+
+        /// <summary>
+        /// Determines whether the metadata collection contains the specified key.
+        /// </summary>
+        /// <param name="metadataKey">The key to locate in the metadata collection. Cannot be null.</param>
+        /// <returns><c>true</c> if the metadata collection contains an entry with the specified key; otherwise, <c>false</c>.</returns>
+        public bool ContainsMetadataKey(string metadataKey) =>
+            Config.Metadata?.ContainsKey(metadataKey) ?? false;
     }
 
     /// <summary>
@@ -128,6 +158,12 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// Strict mode configuration.
         /// </summary>
         public StrictModeConfiguration StrictModeConfig { get; set; }
+
+        /// <summary>
+        /// Collection metadata.
+        /// </summary>
+        [JsonConverter(typeof(CollectionMetadataJsonConverter))]
+        public CollectionMetadata Metadata { get; set; }
 
         /// <summary>
         /// Represents the collection parameters.

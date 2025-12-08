@@ -12,8 +12,6 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public sealed class UpdateCollectionParametersRequest
 {
-    #region Nested classes
-
     /// <summary>
     /// Represents basic collection parameters.
     /// </summary>
@@ -45,8 +43,6 @@ public sealed class UpdateCollectionParametersRequest
         public bool? OnDiskPayload { get; set; }
     }
 
-    #endregion
-
     internal bool IsEmpty { private init; get; }
 
     /// <summary>
@@ -65,7 +61,7 @@ public sealed class UpdateCollectionParametersRequest
     /// As per documentation https://qdrant.tech/documentation/concepts/collections/#grey-collection-status such
     /// request should be issued to trigger optimizers for collections in <see cref="QdrantCollectionStatus.Grey"/> status.
     /// </summary>
-    public static UpdateCollectionParametersRequest Empty { get; } = new() {IsEmpty = true};
+    public static UpdateCollectionParametersRequest Empty { get; } = new() { IsEmpty = true };
 
     /// <summary>
     /// The dense vector configuration to update.
@@ -103,4 +99,10 @@ public sealed class UpdateCollectionParametersRequest
     /// Strict mode configuration.
     /// </summary>
     public StrictModeConfiguration StrictModeConfig { get; set; }
+
+    /// <summary>
+    /// Metadata to update for the collection. If provided, this will merge with existing metadata.
+    /// To remove metadata, set it to an empty object.
+    /// </summary>
+    public Dictionary<string, object> Metadata { get; set; }
 }
