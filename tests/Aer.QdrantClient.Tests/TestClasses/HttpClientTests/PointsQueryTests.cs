@@ -474,6 +474,51 @@ public class PointsQueryTests : QdrantTestsBase
     }
 
     [Test]
+    [TestCase(60U)]
+    [TestCase(100U)]
+    public async Task ParametrizedRrfQuery(uint rrfK)
+    {
+        var (_, upsertPointsByPointIds, _) =
+            await PrepareCollection(
+                _qdrantHttpClient,
+                TestCollectionName);
+
+        var nearestPointsResponse = await _qdrantHttpClient.QueryPoints(
+            TestCollectionName,
+            new QueryPointsRequest(PointsQuery.CreateRrfQuery(rrfK))
+            {
+                Prefetch =
+                [
+                    new PrefetchPoints()
+                    {
+                        Filter = Q<TestPayload>.BeInRange(
+                            p => p.Integer,
+                            greaterThanOrEqual: 0,
+                            lessThanOrEqual: 2),
+                        Limit = 10
+                    },
+                    new PrefetchPoints()
+                    {
+                        Query = PointsQuery.CreateFindNearestPointsQuery(upsertPointsByPointIds.First().Value.Id),
+                        Limit = 5
+                    }
+                ],
+                WithPayload = true,
+                WithVector = true
+            },
+            CancellationToken.None);
+
+        nearestPointsResponse.Status.IsSuccess.Should().BeTrue();
+        // first prefetch returns 3 points
+        // second prefetch returns up to 5 points
+        nearestPointsResponse.Result.Points.Length.Should().BeInRange(5, 8);
+
+        nearestPointsResponse.Result.Points.Should().AllSatisfy(
+            p => p.Score.Should().BeGreaterThan(0)
+        );
+    }
+
+    [Test]
     public async Task Sample()
     {
         await PrepareCollection(

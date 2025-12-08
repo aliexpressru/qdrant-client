@@ -17,6 +17,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 [JsonDerivedType(typeof(ContextQuery))]
 [JsonDerivedType(typeof(OrderByQuery))]
 [JsonDerivedType(typeof(FusionQuery))]
+[JsonDerivedType(typeof(RrfQuery))]
 [JsonDerivedType(typeof(SampleQuery))]
 [JsonDerivedType(typeof(FormulaQuery))]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
@@ -27,7 +28,7 @@ public abstract class PointsQuery
         /// <summary>
         /// Represents a Maximal Marginal Relevance parameters.
         /// </summary>
-        public sealed class MmrParameters
+        internal sealed class MmrParameters
         {
             /// <summary>
             /// Tunable parameter for the MMR algorithm. Determines the balance between diversity and relevance.
@@ -84,7 +85,7 @@ public abstract class PointsQuery
 
     internal sealed class RecommendPointsQuery : PointsQuery
     {
-        public sealed class RecommendPointsQueryUnit
+        internal sealed class RecommendPointsQueryUnit
         {
             [JsonConverter(typeof(PointIdOrQueryVectorCollectionJsonConverter))]
             public ICollection<PointIdOrQueryVector> Positive { get; init; }
@@ -117,7 +118,7 @@ public abstract class PointsQuery
 
     internal sealed class DiscoverPointsQuery : PointsQuery
     {
-        public sealed class DiscoverPointsQueryUnit
+        internal sealed class DiscoverPointsQueryUnit
         {
             [JsonConverter(typeof(PointIdOrQueryVectorJsonConverter))]
             public PointIdOrQueryVector Target { get; init; }
@@ -173,6 +174,21 @@ public abstract class PointsQuery
         }
     }
 
+    internal sealed class RrfQuery : PointsQuery
+    {
+        public RrfParameters Rrf { get; }
+
+        internal RrfQuery(uint? k)
+        {
+            Rrf = new RrfParameters() { K = k };
+        }
+
+        internal sealed class RrfParameters
+        {
+            public required uint? K { get; init; }
+        }
+    }
+
     internal sealed class SampleQuery : PointsQuery
     {
         [SuppressMessage("ReSharper", "UnusedMember.Global", Justification = "Required for serialization")]
@@ -206,12 +222,11 @@ public abstract class PointsQuery
     public static PointsQuery CreateFindNearestPointsQuery(
         PointIdOrQueryVector pointIdOrQueryVector,
         double? mmrDiversity = null,
-        uint? mmrCandidatesLimit = null)
-        =>
-            new NearestPointsQuery(
-                pointIdOrQueryVector,
-                mmrDiversity: mmrDiversity,
-                mmrCandidatesLimit: mmrCandidatesLimit);
+        uint? mmrCandidatesLimit = null) =>
+        new NearestPointsQuery(
+            pointIdOrQueryVector,
+            mmrDiversity: mmrDiversity,
+            mmrCandidatesLimit: mmrCandidatesLimit);
 
     /// <summary>
     /// Creates a "recommend points" query.
@@ -222,9 +237,8 @@ public abstract class PointsQuery
     public static PointsQuery CreateRecommendPointsQuery(
         ICollection<PointIdOrQueryVector> positiveVectorExamples,
         RecommendStrategy? strategy = null,
-        ICollection<PointIdOrQueryVector> negativeVectorExamples = null)
-        =>
-            new RecommendPointsQuery(positiveVectorExamples, negativeVectorExamples, strategy);
+        ICollection<PointIdOrQueryVector> negativeVectorExamples = null) =>
+        new RecommendPointsQuery(positiveVectorExamples, negativeVectorExamples, strategy);
 
     /// <summary>
     /// Creates a "discover points" query.
@@ -233,30 +247,35 @@ public abstract class PointsQuery
     /// <param name="target">Look for vectors closest to this.</param>
     public static PointsQuery CreateDiscoverPointsQuery(
         ICollection<PointsDiscoveryContext> positiveNegativeContextPairs,
-        PointIdOrQueryVector target = null)
-        =>
-            new DiscoverPointsQuery(target, positiveNegativeContextPairs);
+        PointIdOrQueryVector target = null) =>
+        new DiscoverPointsQuery(target, positiveNegativeContextPairs);
 
     /// <summary>
     /// Creates a "points discovery context" query.
     /// </summary>
     /// <param name="context">Pairs of positive - negative examples to constrain the search.</param>
-    public static PointsQuery CreatePointsContextQuery(ICollection<PointsDiscoveryContext> context)
-        => new ContextQuery(context);
+    public static PointsQuery CreatePointsContextQuery(ICollection<PointsDiscoveryContext> context) =>
+        new ContextQuery(context);
 
     /// <summary>
     /// Creates an "order by" query.
     /// </summary>
     /// <param name="orderBySelector">The selector for the field that the results should be ordered by.</param>
-    public static PointsQuery CreateOrderByQuery(OrderBySelector orderBySelector)
-        => new OrderByQuery(orderBySelector);
+    public static PointsQuery CreateOrderByQuery(OrderBySelector orderBySelector) =>
+        new OrderByQuery(orderBySelector);
 
     /// <summary>
-    /// Creates a "fusion" query.
+    /// Creates a Reciprocal Rank Fusion (with default parameters) query.
     /// </summary>
     /// <param name="fusionAlgorithm">The type of the algorithm used to combine prefetch results.</param>
-    public static PointsQuery CreateFusionQuery(FusionAlgorithm fusionAlgorithm = FusionAlgorithm.Rrf)
-        => new FusionQuery(fusionAlgorithm);
+    public static PointsQuery CreateFusionQuery(FusionAlgorithm fusionAlgorithm = FusionAlgorithm.Rrf) =>
+        new FusionQuery(fusionAlgorithm);
+
+    /// <summary>
+    /// Creates a parametrized Reciprocal Rank Fusion query.
+    /// </summary>
+    /// <param name="k">K parameter for reciprocal rank fusion.</param>
+    public static PointsQuery CreateRrfQuery(uint? k) => new RrfQuery(k);
 
     /// <summary>
     /// Creates a "random sample" query.
@@ -271,8 +290,8 @@ public abstract class PointsQuery
     /// The defaults for cases when the variable (either from payload or prefetch score) is not found.
     /// Key - variable name, value - default variable value.
     /// </param>
-    public static PointsQuery CreateFormulaQuery(QdrantFormula formula, Dictionary<string, object> defaults = null)
-        => new FormulaQuery(formula, defaults);
+    public static PointsQuery CreateFormulaQuery(QdrantFormula formula, Dictionary<string, object> defaults = null) =>
+        new FormulaQuery(formula, defaults);
 
     /// <summary>
     /// Implicitly converts query vector to an instance of <see cref="PointsQuery"/>.
