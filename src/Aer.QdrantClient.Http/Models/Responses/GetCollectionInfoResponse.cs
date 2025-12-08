@@ -25,18 +25,18 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// Yellow - optimization is running,
         /// Red - some operations failed and were not recovered.
         /// </summary>
-        public QdrantCollectionStatus Status { get; set; }
+        public QdrantCollectionStatus Status { get; init; }
 
         /// <summary>
         /// The collection optimizer status.
         /// </summary>
         [JsonConverter(typeof(QdrantCollectionOptimizerStatusJsonConverter))]
-        public QdrantOptimizerStatusUint OptimizerStatus { get; set; }
+        public QdrantOptimizerStatusUint OptimizerStatus { get; init; }
 
         /// <summary>
         /// Approximate number of indexed vectors in the collection.
         /// </summary>
-        public ulong? IndexedVectorsCount { get; set; }
+        public ulong? IndexedVectorsCount { get; init; }
 
         /// <summary>
         /// Approximate number of points (vectors + payloads) in collection.
@@ -46,17 +46,17 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// <summary>
         /// The total collection segments (storage units) count.
         /// </summary>
-        public ulong? SegmentsCount { get; set; }
+        public ulong? SegmentsCount { get; init; }
 
         /// <summary>
         /// The collection configuration.
         /// </summary>
-        public CollectionConfiguration Config { get; set; }
+        public CollectionConfiguration Config { get; init; }
 
         /// <summary>
         /// The indexed payload fields configurations by field names.
         /// </summary>
-        public Dictionary<string, PayloadSchemaPropertyDefinition> PayloadSchema { set; get; }
+        public Dictionary<string, PayloadSchemaPropertyDefinition> PayloadSchema { init; get; }
 
         /// <summary>
         /// Gets the number of metadata entries associated with the collection.
@@ -131,39 +131,39 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// <summary>
         /// The collection parameters.
         /// </summary>
-        public Parameters Params { get; set; }
+        public Parameters Params { get; init; }
 
         /// <summary>
         /// The HNSW index configuration.
         /// </summary>
-        public HnswConfiguration HnswConfig { get; set; }
+        public HnswConfiguration HnswConfig { get; init; }
 
         /// <summary>
         /// The optimizer configuration.
         /// </summary>
-        public OptimizersConfiguration OptimizerConfig { get; set; }
+        public OptimizersConfiguration OptimizerConfig { get; init; }
 
         /// <summary>
         /// The write-ahead log configuration.
         /// </summary>
-        public WalConfiguration WalConfig { get; set; }
+        public WalConfiguration WalConfig { get; init; }
 
         /// <summary>
         /// Quantization configuration.
         /// </summary>
         [JsonConverter(typeof(QuantizationConfigurationJsonConverter))]
-        public QuantizationConfiguration QuantizationConfig { get; set; }
+        public QuantizationConfiguration QuantizationConfig { get; init; }
 
         /// <summary>
         /// Strict mode configuration.
         /// </summary>
-        public StrictModeConfiguration StrictModeConfig { get; set; }
+        public StrictModeConfiguration StrictModeConfig { get; init; }
 
         /// <summary>
         /// Collection metadata.
         /// </summary>
         [JsonConverter(typeof(CollectionMetadataJsonConverter))]
-        public CollectionMetadata Metadata { get; set; }
+        public CollectionMetadata Metadata { get; init; }
 
         /// <summary>
         /// Represents the collection parameters.
@@ -174,12 +174,12 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// The vector parameters.
             /// </summary>
             [JsonConverter(typeof(VectorConfigurationJsonConverter))]
-            public VectorConfigurationBase Vectors { set; get; }
+            public VectorConfigurationBase Vectors { init; get; }
 
             /// <summary>
             /// The shard number.
             /// </summary>
-            public uint? ShardNumber { set; get; }
+            public uint? ShardNumber { init; get; }
 
             /// <summary>
             /// The sharding method. This field will have value of <see cref="ShardingMethod.Custom"/> if custom sharding is configured.
@@ -188,27 +188,27 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// In this mode, the <see cref="ShardNumber"/> means the number of shards per shard key,
             /// where points will be distributed evenly.
             /// </remarks>
-            public ShardingMethod? ShardingMethod { set; get; }
+            public ShardingMethod? ShardingMethod { init; get; }
 
             /// <summary>
             /// The replication factor.
             /// </summary>
-            public uint? ReplicationFactor { set; get; }
+            public uint? ReplicationFactor { init; get; }
 
             /// <summary>
             /// The write consistency factor.
             /// </summary>
-            public uint? WriteConsistencyFactor { set; get; }
+            public uint? WriteConsistencyFactor { init; get; }
 
             /// <summary>
             /// Whether the payload is stored on disk or in memory.
             /// </summary>
-            public bool OnDiskPayload { set; get; }
+            public bool OnDiskPayload { init; get; }
 
             /// <summary>
             /// Represents sparse vectors configuration.
             /// </summary>
-            public Dictionary<string, SparseVectorConfiguration> SparseVectors { get; set; }
+            public Dictionary<string, SparseVectorConfiguration> SparseVectors { get; init; }
         }
 
         /// <summary>
@@ -219,12 +219,12 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// <summary>
             /// The write-ahead log capacity in megabytes.
             /// </summary>
-            public ulong? WalCapacityMb { set; get; }
+            public ulong? WalCapacityMb { init; get; }
 
             /// <summary>
             /// The number of the WAL segments ahead (?)
             /// </summary>
-            public ulong WalSegmentsAhead { set; get; }
+            public ulong WalSegmentsAhead { init; get; }
         }
     }
 
@@ -236,17 +236,17 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// <summary>
         /// The payload field data type.
         /// </summary>
-        public PayloadIndexedFieldType DataType { set; get; }
+        public PayloadIndexedFieldType DataType { init; get; }
 
         /// <summary>
         /// The payload field indexing parameters.
         /// </summary>
-        public PayloadSchemaPropertyParameters Params { set; get; }
+        public PayloadSchemaPropertyParameters Params { init; get; }
 
         /// <summary>
         /// The points count in this schema.
         /// </summary>
-        public long Points { set; get; }
+        public long Points { init; get; }
 
         /// <summary>
         /// Represents the payload field indexing parameters.
@@ -256,74 +256,74 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// <summary>
             /// The index type.
             /// </summary>
-            public string Type { set; get; }
+            public string Type { init; get; }
 
             /// <summary>
             /// The tokenizer type. For full-text index only.
             /// </summary>
-            public FullTextIndexTokenizerType? Tokenizer { set; get; }
+            public FullTextIndexTokenizerType? Tokenizer { init; get; }
 
             /// <summary>
             /// The minimal token length. For full-text index only.
             /// </summary>
-            public ulong? MinTokenLen { set; get; }
+            public ulong? MinTokenLen { init; get; }
 
             /// <summary>
             /// The maximal token length. For full-text index only.
             /// </summary>
-            public ulong? MaxTokenLen { set; get; }
+            public ulong? MaxTokenLen { init; get; }
 
             /// <summary>
             /// If <c>true</c> - full-text index supports phrase matching. Default: <c>false</c>.
             /// </summary>
-            public bool? PhraseMatching { set; get; }
+            public bool? PhraseMatching { init; get; }
 
             /// <summary>
             /// Ignore this set of tokens. Can select from predefined languages and/or provide a custom set.
             /// </summary>
             [JsonConverter(typeof(FullTextIndexStopwordsJsonConverter))]
-            public FullTextIndexStopwords Stopwords { set; get; }
+            public FullTextIndexStopwords Stopwords { init; get; }
 
             /// <summary>
             /// Algorithm for stemming. Default: disabled.
             /// </summary>
             [JsonConverter(typeof(FullTextIndexStemmingAlgorithmJsonConverter))]
-            public FullTextIndexStemmingAlgorithm Stemmer { set; get; }
+            public FullTextIndexStemmingAlgorithm Stemmer { init; get; }
 
             /// <summary>
             /// Gets the value indicating whether tokens are normalized by folding accented characters to ASCII.
             /// </summary>
-            public bool? AsciiFolding { set; get; }
+            public bool? AsciiFolding { init; get; }
 
             /// <summary>
             /// Whether to convert tokens to lowercase before indexing. For full-text index only.
             /// </summary>
-            public bool? Lowercase { set; get; }
+            public bool? Lowercase { init; get; }
 
             /// <summary>
             /// If <c>true</c> - integer index supports ranges filters. Default is <c>true</c> for integer indexes.
             /// </summary>
-            public bool? Range { set; get; }
+            public bool? Range { init; get; }
 
             /// <summary>
             /// If <c>true</c> - integer index supports direct lookups. Default is <c>true</c> for integer indexes.
             /// </summary>
-            public bool? Lookup { set; get; }
+            public bool? Lookup { init; get; }
 
             /// <summary>
             /// Whether the payload index is stored on-disk instead of in-memory.
             /// </summary>
-            public bool OnDisk { set; get; }
+            public bool OnDisk { init; get; }
 
             /// <summary>
             /// Whether the field index is a tenant index.
             /// </summary>
-            public bool? IsTenant { set; get; }
+            public bool? IsTenant { init; get; }
 
             /// <summary>
             /// Whether the field index is a principal index.
             /// </summary>
-            public bool? IsPrincipal { set; get; }
+            public bool? IsPrincipal { init; get; }
         }
     }
 }

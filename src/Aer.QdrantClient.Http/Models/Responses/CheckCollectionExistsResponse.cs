@@ -18,6 +18,6 @@ public sealed class CheckCollectionExistsResponse : QdrantResponseBase<CheckColl
         /// State of existence of a collection, <c>true</c> means the collection exists,
         /// <c>false</c> means it does not exist.
         /// </summary>
-        public bool Exists { set; get; }
+        public bool Exists { init; get; }
     }
 }

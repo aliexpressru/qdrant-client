@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
@@ -17,11 +17,11 @@ public sealed class SetLockOptionsResponse : QdrantResponseBase<SetLockOptionsRe
         /// <summary>
         /// The write operations lock reason.
         /// </summary>
-        public string ErrorMessage { set; get; }
+        public string ErrorMessage { init; get; }
 
         /// <summary>
         /// If set to <c>true</c> write operations are locked, otherwise - write operations are enabled.
         /// </summary>
-        public bool Write { set; get; }
+        public bool Write { init; get; }
     }
 }

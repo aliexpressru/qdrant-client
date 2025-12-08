@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Models.Responses.Base;
@@ -20,7 +20,7 @@ public class FacetCountPointsResponse : QdrantResponseBase<FacetCountPointsRespo
         /// <summary>
         /// The facet fount for each existing field value.
         /// </summary>
-        public FacetCountHitUnit[] Hits { get; set; }
+        public FacetCountHitUnit[] Hits { get; init; }
     }
 
     /// <summary>
@@ -31,7 +31,7 @@ public class FacetCountPointsResponse : QdrantResponseBase<FacetCountPointsRespo
         /// <summary>
         /// The field value to count facet for.
         /// </summary>
-        public JsonElement Value { get; set; }
+        public JsonElement Value { get; init; }
 
         /// <summary>
         /// Gets the value of the field as specified data type.
@@ -42,6 +42,6 @@ public class FacetCountPointsResponse : QdrantResponseBase<FacetCountPointsRespo
         /// <summary>
         /// The field value facet count.
         /// </summary>
-        public ulong Count { get; set; }
+        public ulong Count { get; init; }
     }
 }

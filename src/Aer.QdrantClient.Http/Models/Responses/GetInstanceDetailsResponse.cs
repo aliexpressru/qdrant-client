@@ -12,12 +12,12 @@ public sealed class GetInstanceDetailsResponse
     /// <summary>
     /// The qdrant version title.
     /// </summary>
-    public string Title { get; set; }
+    public string Title { get; init; }
 
     /// <summary>
     /// The qdrant version.
     /// </summary>
-    public string Version { get; set; }
+    public string Version { get; init; }
 
     /// <summary>
     /// The <see cref="System.Version"/> parsed from the <see cref="Version"/> string.
@@ -37,5 +37,5 @@ public sealed class GetInstanceDetailsResponse
     /// <summary>
     /// The commit hash this version was built from.
     /// </summary>
-    public string Commit { get; set; }
+    public string Commit { get; init; }
 }

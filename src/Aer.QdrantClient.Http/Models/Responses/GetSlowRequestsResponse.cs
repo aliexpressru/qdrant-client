@@ -17,7 +17,7 @@ public sealed class GetSlowRequestsResponse : QdrantResponseBase<SlowRequestsDat
         /// <summary>
         /// List of slow requests recorded by Qdrant.
         /// </summary>
-        public SlowRequestInfo[] Requests { get; set; }
+        public SlowRequestInfo[] Requests { get; init; }
     }
 
     /// <summary>
@@ -28,31 +28,31 @@ public sealed class GetSlowRequestsResponse : QdrantResponseBase<SlowRequestsDat
         /// <summary>
         /// The collection name where the slow request occurred.
         /// </summary>
-        public string CollectionName { get; set; }
+        public string CollectionName { get; init; }
 
         /// <summary>
         /// The slow request duration in seconds.
         /// </summary>
-        public double Duration { get; set; }
+        public double Duration { get; init; }
 
         /// <summary>
         /// The date and time when the slow request was made.
         /// </summary>
-        public DateTime Datetime { get; set; }
+        public DateTime Datetime { get; init; }
 
         /// <summary>
         /// The name of the slow request operation.
         /// </summary>
-        public string RequestName { get; set; }
+        public string RequestName { get; init; }
 
         /// <summary>
         /// Approximate number of times this request has been recorded.
         /// </summary>
-        public uint ApproxCount { get; set; }
+        public uint ApproxCount { get; init; }
 
         /// <summary>
         /// The slow request body.
         /// </summary>
-        public JsonObject RequestBody { get; set; }
+        public JsonObject RequestBody { get; init; }
     }
 }

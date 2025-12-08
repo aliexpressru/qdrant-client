@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
@@ -19,7 +19,7 @@ public sealed class ListCollectionAliasesResponse
         /// <summary>
         /// The existing collection aliases.
         /// </summary>
-        public CollectionAlias[] Aliases { set; get; }
+        public CollectionAlias[] Aliases { init; get; }
 
         /// <summary>
         /// The collection aliases by collection names.
@@ -43,11 +43,11 @@ public sealed class ListCollectionAliasesResponse
         /// <summary>
         /// The collection alias.
         /// </summary>
-        public string AliasName { set; get; }
+        public string AliasName { init; get; }
 
         /// <summary>
         /// The collection original name.
         /// </summary>
-        public string CollectionName { set; get; }
+        public string CollectionName { init; get; }
     }
 }

@@ -17,7 +17,7 @@ public sealed class ListCollectionsResponse : QdrantResponseBase<ListCollections
         /// <summary>
         /// The collection name objects.
         /// </summary>
-        public CollectionName[] Collections { get; set; }
+        public CollectionName[] Collections { get; init; }
 
         /// <summary>
         /// Represents one existing collection name.

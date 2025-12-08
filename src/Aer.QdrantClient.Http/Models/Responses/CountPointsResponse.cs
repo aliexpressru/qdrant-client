@@ -17,6 +17,6 @@ public sealed class CountPointsResponse : QdrantResponseBase<CountPointsResponse
         /// <summary>
         /// Number of points which satisfy the count points conditions.
         /// </summary>
-        public ulong Count { set; get; }
+        public ulong Count { init; get; }
     }
 }
