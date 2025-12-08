@@ -11,7 +11,7 @@ namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 [Ignore("I didn't find a way to configure both single-node and a multi-node cluster in "
 +"GitHub actions so these tests will run only locally")]
 #endif
-public partial class ClusterTests : QdrantTestsBase
+internal partial class ClusterTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
 

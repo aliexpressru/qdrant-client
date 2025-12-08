@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
@@ -16,7 +16,7 @@ public sealed class CheckCollectionExistsResponse : QdrantResponseBase<CheckColl
     {
         /// <summary>
         /// State of existence of a collection, <c>true</c> means the collection exists,
-        /// <c>flase</c> means it does not exist.
+        /// <c>false</c> means it does not exist.
         /// </summary>
         public bool Exists { set; get; }
     }

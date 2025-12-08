@@ -8,7 +8,7 @@ using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
-public class ServiceMethodsTests : QdrantTestsBase
+internal class ServiceMethodsTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
 
@@ -219,7 +219,7 @@ public class ServiceMethodsTests : QdrantTestsBase
     }
 
     [Test]
-    [Experimental("QD0001")]
+    [Experimental("Beta")] // Testing beta API.
     public async Task ReportIssues()
     {
         var issuesReportResult =

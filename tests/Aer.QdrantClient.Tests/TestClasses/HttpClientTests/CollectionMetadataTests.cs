@@ -6,13 +6,15 @@ using Aer.QdrantClient.Tests.Base;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
-public class CollectionMetadataTests : QdrantTestsBase
+internal class CollectionMetadataTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
 
     [OneTimeSetUp]
     public void Setup()
     {
+        OnlyIfVersionAfterOrEqual("1.16.0", "Collection metadata is only supported from v1.16");
+
         Initialize();
 
         _qdrantHttpClient = ServiceProvider.GetRequiredService<QdrantHttpClient>();
@@ -27,8 +29,6 @@ public class CollectionMetadataTests : QdrantTestsBase
     [Test]
     public async Task CollectionWithNoMetadata()
     {
-        OnlyIfVersionAfterOrEqual("1.16.0", "Collection metadata is only supported from v1.16");
-
         (await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
@@ -51,8 +51,6 @@ public class CollectionMetadataTests : QdrantTestsBase
     [Test]
     public async Task UpdateCollectionMetadata()
     {
-        OnlyIfVersionAfterOrEqual("1.16.0", "Collection metadata is only supported from v1.16");
-
         var metadata = new Dictionary<string, object>
         {
             ["test_string"] = "test",
@@ -107,8 +105,6 @@ public class CollectionMetadataTests : QdrantTestsBase
     [Test]
     public async Task DeleteCollectionMetadata()
     {
-        OnlyIfVersionAfterOrEqual("1.16.0", "Collection metadata is only supported from v1.16");
-
         var metadata = new Dictionary<string, object>
         {
             ["test_string"] = "test",

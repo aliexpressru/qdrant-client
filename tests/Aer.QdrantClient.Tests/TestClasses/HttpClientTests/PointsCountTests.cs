@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -7,7 +7,7 @@ using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
-public class PointsCountTests : QdrantTestsBase
+internal class PointsCountTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
 
@@ -45,7 +45,7 @@ public class PointsCountTests : QdrantTestsBase
 
         countPointsResult.Status.IsSuccess.Should().BeTrue();
 
-        countPointsResult.Result.Count.Should().Be((ulong) vectorCount);
+        countPointsResult.Result.Count.Should().Be((ulong)vectorCount);
     }
 
     [Test]

@@ -9,7 +9,7 @@ using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
-public class CollectionCreateTests : QdrantTestsBase
+internal class CollectionCreateTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
 

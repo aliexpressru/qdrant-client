@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Requests.Public;
@@ -10,7 +10,7 @@ using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
-public class PointsDiscoverTests : QdrantTestsBase
+internal class PointsDiscoverTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
 
@@ -372,7 +372,8 @@ public class PointsDiscoverTests : QdrantTestsBase
             limit: 2,
             target: vector1Vector2Vector,
             withVector: true,
-            withPayload: true){
+            withPayload: true)
+        {
             Using = VectorBase.DefaultVectorName
         };
 
@@ -413,7 +414,7 @@ public class PointsDiscoverTests : QdrantTestsBase
         {
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     singleVector,
                     new TestPayload()
                     {
@@ -446,7 +447,7 @@ public class PointsDiscoverTests : QdrantTestsBase
                 [
                     new KeyValuePair<PointIdOrQueryVector, PointIdOrQueryVector>(positiveExamplePointId, negativeExamplePointId)
                 ],
-                limit: (uint) vectorCount,
+                limit: (uint)vectorCount,
                 target: targetPointId,
                 withVector: true,
                 withPayload: true),
@@ -494,7 +495,7 @@ public class PointsDiscoverTests : QdrantTestsBase
 
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     vector,
                     new TestPayload()
                     {
@@ -522,7 +523,7 @@ public class PointsDiscoverTests : QdrantTestsBase
                 [
                     new KeyValuePair<PointIdOrQueryVector, PointIdOrQueryVector>(positiveVector, negativeVector)
                 ],
-                limit: (uint) vectorCount,
+                limit: (uint)vectorCount,
                 withVector: true,
                 withPayload: true),
             CancellationToken.None);
@@ -564,7 +565,7 @@ public class PointsDiscoverTests : QdrantTestsBase
 
             upsertPoints.Add(
                 new(
-                    PointId.Integer((ulong) i),
+                    PointId.Integer((ulong)i),
                     vector,
                     new TestPayload()
                     {
@@ -590,7 +591,7 @@ public class PointsDiscoverTests : QdrantTestsBase
             [
                 new KeyValuePair<PointIdOrQueryVector, PointIdOrQueryVector>(positiveVector, negativeVector)
             ],
-            (uint) vectorCount,
+            (uint)vectorCount,
             withVector: true,
             withPayload: true);
 
@@ -599,7 +600,7 @@ public class PointsDiscoverTests : QdrantTestsBase
             [
                 new KeyValuePair<PointIdOrQueryVector, PointIdOrQueryVector>(negativeVector, positiveVector)
             ],
-            (uint) vectorCount,
+            (uint)vectorCount,
             withVector: true,
             withPayload: true);
 

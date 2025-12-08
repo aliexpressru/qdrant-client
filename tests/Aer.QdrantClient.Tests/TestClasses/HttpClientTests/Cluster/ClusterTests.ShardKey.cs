@@ -9,7 +9,7 @@ using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
-public partial class ClusterTests : QdrantTestsBase
+internal partial class ClusterTests : QdrantTestsBase
 {
     [Test]
     public async Task CollectionCreateShardKey_ManualPlacement()

@@ -71,7 +71,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// <param name="defaultValue">The default metadata value to return if no key found.</param>
         public T GetMetadataValueOrDefault<T>(string metadataKey, T defaultValue = default)
         {
-            if (Config.Metadata is null)
+            if (Config?.Metadata is null)
             {
                 return defaultValue;
             }
@@ -85,7 +85,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// <param name="metadataKey">The key to locate in the metadata collection. Cannot be null.</param>
         /// <returns><c>true</c> if the metadata collection contains an entry with the specified key; otherwise, <c>false</c>.</returns>
         public bool ContainsMetadataKey(string metadataKey) =>
-            Config.Metadata?.ContainsKey(metadataKey) ?? false;
+            Config?.Metadata?.ContainsKey(metadataKey) ?? false;
     }
 
     /// <summary>

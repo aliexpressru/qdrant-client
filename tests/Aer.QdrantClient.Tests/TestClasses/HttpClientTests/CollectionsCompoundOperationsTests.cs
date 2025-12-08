@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
-public class CollectionsCompoundOperationsTests : QdrantTestsBase
+internal class CollectionsCompoundOperationsTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
     private QdrantClientSettings _qdrantClientSettings;

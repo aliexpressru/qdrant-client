@@ -11,7 +11,7 @@ using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
-public class PointsQueryTests : QdrantTestsBase
+internal class PointsQueryTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
 

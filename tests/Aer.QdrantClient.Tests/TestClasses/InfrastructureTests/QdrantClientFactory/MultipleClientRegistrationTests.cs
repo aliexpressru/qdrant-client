@@ -5,7 +5,7 @@ using Aer.QdrantClient.Tests.Base;
 
 namespace Aer.QdrantClient.Tests.TestClasses.InfrastructureTests.QdrantClientFactory;
 
-public class MultipleClientRegistrationTests : QdrantTestsBase
+internal class MultipleClientRegistrationTests : QdrantTestsBase
 {
     [OneTimeSetUp]
     public void Setup()

@@ -9,7 +9,7 @@ namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots;
 #if !DEBUG
 [Ignore("Multi-node tests are ignored since we don't have multi-node test environment in CI/CD")]
 #endif
-public class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
+internal class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClientClusterNode1;
     private QdrantHttpClient _qdrantHttpClientClusterNode2;
