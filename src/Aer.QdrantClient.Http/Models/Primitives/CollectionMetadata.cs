@@ -19,6 +19,21 @@ public class CollectionMetadata
     /// </summary>
     public int Count => _metadata?.Count ?? 0;
 
+    /// <summary>
+    /// Represents the raw metadata dictionary. Used for serialization purposes.
+    /// </summary>
+    internal Dictionary<string, JsonElement> RawMetadata => _metadata;
+
+    /// <summary>
+    /// Represents an empty collection metadata instance with no items.
+    /// </summary>
+    /// <remarks>
+    /// Use this field to represent a collection with no metadata, rather than creating a new empty
+    /// instance. This can be useful for default values or when a method requires a non-null collection metadata
+    /// object.
+    /// </remarks>
+    public static CollectionMetadata Empty { get; } = new([]);
+
     internal CollectionMetadata(Dictionary<string, JsonElement> metadataValues)
     {
         _metadata = metadataValues;

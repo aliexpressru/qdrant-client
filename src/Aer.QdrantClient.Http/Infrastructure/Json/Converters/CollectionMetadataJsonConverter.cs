@@ -23,5 +23,9 @@ internal class CollectionMetadataJsonConverter : JsonConverter<CollectionMetadat
     }
 
     public override void Write(Utf8JsonWriter writer, CollectionMetadata value, JsonSerializerOptions options) =>
-        JsonSerializer.Serialize(writer, value, JsonSerializerConstants.DefaultSerializerOptions);
+        JsonSerializer.Serialize(
+            writer,
+            value.RawMetadata ?? CollectionMetadata.Empty.RawMetadata,
+            JsonSerializerConstants.DefaultSerializerOptions
+        );
 }
