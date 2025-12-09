@@ -4,6 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
+#if !DEBUG
+[Ignore("Testing non-documented API only locally")]
+#endif
 internal class ProfilerTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
