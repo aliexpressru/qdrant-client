@@ -6,23 +6,33 @@ using System.Text.Json;
 namespace Aer.QdrantClient.Http.Models.Primitives;
 
 /// <summary>
-/// Represents collection metadata.
+/// Represents collection metadata : key-value pairs associated with a given collection.
 /// </summary>
 public class CollectionMetadata
 {
     // Key: metadata key, Value: metadata value in JsonElement form
-    private readonly Dictionary<string, JsonElement> _metadata;
+    //private readonly Dictionary<string, JsonElement> _metadata;
     private readonly ConcurrentDictionary<string, object> _deserializedMetadataCache = new();
+
+    /// <summary>
+    /// Represents the raw metadata dictionary. Internal for serialization purposes.
+    /// </summary>
+    /// <remarks>Can't be null.</remarks>
+    internal Dictionary<string, JsonElement> RawMetadata { get; }
 
     /// <summary>
     /// Gets the number of metadata entries associated with the collection.
     /// </summary>
-    public int Count => _metadata?.Count ?? 0;
+    public int Count => RawMetadata.Count;
 
     /// <summary>
-    /// Represents the raw metadata dictionary. Used for serialization purposes.
+    /// Gets a read-only collection containing the keys of the metadata entries.
     /// </summary>
-    internal Dictionary<string, JsonElement> RawMetadata => _metadata;
+    /// <remarks>
+    /// The returned collection reflects the current set of metadata keys. If no metadata is present,
+    /// the collection will be empty.
+    /// </remarks>
+    public IReadOnlyCollection<string> Keys => (IReadOnlyCollection<string>)RawMetadata.Keys;
 
     /// <summary>
     /// Represents an empty collection metadata instance with no items.
@@ -36,7 +46,7 @@ public class CollectionMetadata
 
     internal CollectionMetadata(Dictionary<string, JsonElement> metadataValues)
     {
-        _metadata = metadataValues;
+        RawMetadata = metadataValues ?? [];
     }
 
     /// <summary>
@@ -51,12 +61,12 @@ public class CollectionMetadata
             ThrowHelper.ThrowArgumentNullException(nameof(metadataKey));
         }
 
-        if (_metadata is null or { Count: 0 })
+        if (RawMetadata is { Count: 0 })
         {
             return false;
         }
 
-        return _metadata.ContainsKey(metadataKey);
+        return RawMetadata.ContainsKey(metadataKey);
     }
 
     /// <summary>
@@ -72,7 +82,7 @@ public class CollectionMetadata
             ThrowHelper.ThrowArgumentNullException(nameof(metadataKey));
         }
 
-        if (_metadata is null or { Count: 0 })
+        if (RawMetadata is { Count: 0 })
         {
             return defaultValue;
         }
@@ -82,7 +92,7 @@ public class CollectionMetadata
             return (T)cachedValue;
         }
 
-        if (_metadata.TryGetValue(metadataKey, out var metadataValue))
+        if (RawMetadata.TryGetValue(metadataKey, out var metadataValue))
         {
             try
             {

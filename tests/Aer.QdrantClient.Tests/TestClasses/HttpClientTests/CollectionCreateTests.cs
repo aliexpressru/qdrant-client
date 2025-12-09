@@ -98,6 +98,8 @@ internal class CollectionCreateTests : QdrantTestsBase
 
         createdCollectionInfoResponse.Result.Config.Metadata.Should().NotBeNull();
         createdCollectionInfoResponse.Result.Config.Metadata.Count.Should().Be(metadata.Count);
+
+        createdCollectionInfoResponse.Result.GetMetadata().Keys.Should().BeEquivalentTo(metadata.Keys);
     }
 
     [Test]

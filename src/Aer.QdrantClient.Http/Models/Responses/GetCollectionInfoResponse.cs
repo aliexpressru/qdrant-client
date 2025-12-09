@@ -59,9 +59,9 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         public Dictionary<string, PayloadSchemaPropertyDefinition> PayloadSchema { init; get; }
 
         /// <summary>
-        /// Gets the number of metadata entries associated with the collection.
+        /// Gets the collection metadata if it is present or <c>CollectionMetadata.Empty</c> if it is not.
         /// </summary>
-        public int MetadataCount => Config?.Metadata?.Count ?? 0;
+        public CollectionMetadata GetMetadata() => Config?.Metadata ?? CollectionMetadata.Empty;
 
         /// <summary>
         /// Gets that metadata value by specified key. If no value is found returns the provided default value.
@@ -69,23 +69,15 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// <typeparam name="T">The type of the metadata value.</typeparam>
         /// <param name="metadataKey">The metadata key.</param>
         /// <param name="defaultValue">The default metadata value to return if no key found.</param>
-        public T GetMetadataValueOrDefault<T>(string metadataKey, T defaultValue = default)
-        {
-            if (Config?.Metadata is null)
-            {
-                return defaultValue;
-            }
-
-            return Config.Metadata.GetValueOrDefault(metadataKey, defaultValue);
-        }
+        public T GetMetadataValueOrDefault<T>(string metadataKey, T defaultValue = default) =>
+            GetMetadata().GetValueOrDefault(metadataKey, defaultValue);
 
         /// <summary>
         /// Determines whether the metadata collection contains the specified key.
         /// </summary>
         /// <param name="metadataKey">The key to locate in the metadata collection. Cannot be null.</param>
         /// <returns><c>true</c> if the metadata collection contains an entry with the specified key; otherwise, <c>false</c>.</returns>
-        public bool ContainsMetadataKey(string metadataKey) =>
-            Config?.Metadata?.ContainsKey(metadataKey) ?? false;
+        public bool ContainsMetadataKey(string metadataKey) => GetMetadata().ContainsKey(metadataKey);
     }
 
     /// <summary>
@@ -163,7 +155,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// Collection metadata.
         /// </summary>
         [JsonConverter(typeof(CollectionMetadataJsonConverter))]
-        public CollectionMetadata Metadata { get; init; }
+        public CollectionMetadata Metadata { get; init; } = CollectionMetadata.Empty;
 
         /// <summary>
         /// Represents the collection parameters.

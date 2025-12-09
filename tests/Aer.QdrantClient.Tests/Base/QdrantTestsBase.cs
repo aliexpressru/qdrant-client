@@ -27,7 +27,17 @@ public class QdrantTestsBase
 
     protected Version QdrantVersion
     {
-        get; private set;
+        get { // Yeah I know that this is an anti-pattern, but we can get away with it in tests
+            if (field is not null)
+            {
+                return field;
+            }
+            else
+            {
+                field = GetConfiguredQdrantVersion();
+                return field;
+            }
+        }
     }
 
     protected const string TestCollectionName = "test_collection";
@@ -62,10 +72,6 @@ public class QdrantTestsBase
             string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"))
                 ? "Local"
                 : "Testing");
-
-        var qdrantVersion = Environment.GetEnvironmentVariable("QDRANT_VERSION") ?? GetQdrantVersionFromEnvFile();
-
-        QdrantVersion = Version.Parse(qdrantVersion);
 
         var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ??
             throw new InvalidOperationException("ASPNETCORE_ENVIRONMENT in not set");
@@ -221,7 +227,7 @@ public class QdrantTestsBase
 
         try
         {
-            if (QdrantVersion <= Version.Parse("1.15"))
+            if (IsVersionBefore("1.16")) // Lock options are removed in v1.16
             {
 #pragma warning disable CS0618 // Type or member is obsolete
                 await qdrantHttpClient.SetLockOptions(areWritesDisabled: false, "", CancellationToken.None);
@@ -626,5 +632,12 @@ public class QdrantTestsBase
         var version = Version.Parse(versionInclusive);
 
         return QdrantVersion >= version;
+    }
+
+    private Version GetConfiguredQdrantVersion()
+    {
+        var configuredVersionString = Environment.GetEnvironmentVariable("QDRANT_VERSION") ?? GetQdrantVersionFromEnvFile();
+
+        return Version.Parse(configuredVersionString);
     }
 }

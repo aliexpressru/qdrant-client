@@ -14,7 +14,9 @@ internal class CollectionMetadataJsonConverter : JsonConverter<CollectionMetadat
             var metadataDictionary =
                 JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(ref reader, JsonSerializerConstants.DefaultSerializerOptions);
 
-            return new CollectionMetadata(metadataDictionary);
+            return metadataDictionary is not null
+                ? new CollectionMetadata(metadataDictionary)
+                : CollectionMetadata.Empty;
         }
         catch (JsonException)
         {

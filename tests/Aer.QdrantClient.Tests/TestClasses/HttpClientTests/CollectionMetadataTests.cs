@@ -42,7 +42,9 @@ internal class CollectionMetadataTests : QdrantTestsBase
             (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None))
             .EnsureSuccess();
 
-        collectionInfo.Config.Metadata.Should().BeNull();
+        collectionInfo.Config.Metadata.Should().NotBeNull();
+        collectionInfo.Config.Metadata.Keys.Count.Should().Be(0);
+        collectionInfo.GetMetadata().Keys.Count.Should().Be(0);
 
         collectionInfo.ContainsMetadataKey("some_key").Should().BeFalse();
         collectionInfo.GetMetadataValueOrDefault("some_other_key", 42).Should().Be(42);
@@ -75,6 +77,8 @@ internal class CollectionMetadataTests : QdrantTestsBase
 
         initialCollectionInfo.Config.Metadata.Count.Should().Be(2);
 
+        initialCollectionInfo.GetMetadata().Keys.Should().BeEquivalentTo(metadata.Keys);
+
         AssertMetadataValue(initialCollectionInfo, "test_string", "test");
         AssertMetadataValue(initialCollectionInfo, "test_int", 1);
 
@@ -96,7 +100,9 @@ internal class CollectionMetadataTests : QdrantTestsBase
         updatedCollectionInfo.Config.Metadata.Should().NotBeNull();
 
         updatedCollectionInfo.Config.Metadata.Count.Should().Be(2);
-        updatedCollectionInfo.MetadataCount.Should().Be(2);
+        updatedCollectionInfo.GetMetadata().Count.Should().Be(2);
+
+        updatedCollectionInfo.GetMetadata().Keys.Should().BeEquivalentTo(metadata.Keys);
 
         AssertMetadataValue(updatedCollectionInfo, "test_string", "updated");
         AssertMetadataValue(updatedCollectionInfo, "test_int", 42);
@@ -126,7 +132,7 @@ internal class CollectionMetadataTests : QdrantTestsBase
             .EnsureSuccess();
 
         initialCollectionInfo.Config.Metadata.Should().NotBeNull();
-        initialCollectionInfo.MetadataCount.Should().Be(2);
+        initialCollectionInfo.GetMetadata().Count.Should().Be(2);
         initialCollectionInfo.Config.Metadata.Count.Should().Be(2);
 
         // Delete first key
@@ -146,8 +152,10 @@ internal class CollectionMetadataTests : QdrantTestsBase
            .EnsureSuccess();
 
         updatedCollectionInfo.Config.Metadata.Should().NotBeNull();
-        updatedCollectionInfo.MetadataCount.Should().Be(1);
+        updatedCollectionInfo.GetMetadata().Count.Should().Be(1);
         updatedCollectionInfo.Config.Metadata.Count.Should().Be(1);
+
+        updatedCollectionInfo.GetMetadata().Keys.Should().BeEquivalentTo(["test_int"]); // Only one key left
 
         updatedCollectionInfo.Config.Metadata.ContainsKey("test_string").Should().BeFalse();
         updatedCollectionInfo.ContainsMetadataKey("test_string").Should().BeFalse();
@@ -171,8 +179,10 @@ internal class CollectionMetadataTests : QdrantTestsBase
 
         finalCollectionInfo.Config.Metadata.Should().NotBeNull();
 
-        finalCollectionInfo.MetadataCount.Should().Be(0);
+        finalCollectionInfo.GetMetadata().Count.Should().Be(0);
         finalCollectionInfo.Config.Metadata.Count.Should().Be(0);
+
+        finalCollectionInfo.GetMetadata().Keys.Should().BeEmpty();
 
         finalCollectionInfo.ContainsMetadataKey("test_string").Should().BeFalse();
         finalCollectionInfo.ContainsMetadataKey("test_int").Should().BeFalse();
