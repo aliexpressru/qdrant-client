@@ -16,6 +16,11 @@ public sealed class QdrantClientSettings
     public string HttpAddress { set; get; }
 
     /// <summary>
+    /// Gets the <see cref="HttpAddress"/> as a <see cref="Uri"/> instance.
+    /// </summary>
+    public Uri HttpAddressUri => new(HttpAddress);
+
+    /// <summary>
     /// The authorization key for Qdrant db requests authorization.
     /// If not set to <c>null</c>, all requests will include a header
     /// with the api-key : <c>api-key: 'API-KEY'</c>
