@@ -7,7 +7,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots;
 
-public class ShardSnapshotTests : SnapshotTestsBase
+internal class ShardSnapshotTests : SnapshotTestsBase
 {
     // NOTE: since we don't have a cluster in test and thus have only one shard
     // these tests basically repeat the tests from CollectionSnapshotTests but using shard methods

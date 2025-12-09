@@ -82,6 +82,97 @@ internal partial class PointsCrudTests
     }
 
     [Test]
+    public async Task UpdatePointsVectors_WithUpdateFilter()
+    {
+        OnlyIfVersionAfterOrEqual("1.16.0", "Conditional updates are available only from v1.16");
+
+        var vectorSize = 10U;
+
+        var (upsertPoints, _, upsertPointIds) =
+            await PrepareCollection(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorSize: vectorSize,
+                payloadInitializerFunction: (i) => new TestPayload()
+                {
+                    Integer = i, // [0..9]
+                    Text = (i).ToString()
+                });
+
+        var notUpdatedPointPointId = upsertPoints[0].Id;
+        var updatedPointPointId = upsertPoints[1].Id;
+
+        PointVector[] updateVectors = [
+            // Does not match the filter, should not be updated
+            new PointVector()
+            {
+                Id = notUpdatedPointPointId,
+                Vector = CreateTestVector(vectorSize)
+            },
+
+            // Matches the filter, should be updated
+            new PointVector()
+            {
+                Id = updatedPointPointId,
+                Vector = CreateTestVector(vectorSize)
+            }
+        ];
+
+        var readPointsBeforeUpdateResult = (
+           await _qdrantHttpClient.GetPoints(
+               TestCollectionName,
+               updateVectors.Select(p => p.Id),
+               PayloadPropertiesSelector.All,
+               CancellationToken.None,
+               withVector: true,
+               retryCount: 0)
+        ).EnsureSuccess();
+
+        var updatePointVectors =
+            await _qdrantHttpClient.UpdatePointsVectors(
+                TestCollectionName,
+                new UpdatePointsVectorsRequest()
+                {
+                    Points = updateVectors,
+                    UpdateFilter = Q.MatchValue("integer", 1)
+                },
+                CancellationToken.None
+            );
+
+        var readPointsAfterUpdateResult = (
+           await _qdrantHttpClient.GetPoints(
+               TestCollectionName,
+               updateVectors.Select(p => p.Id),
+               PayloadPropertiesSelector.All,
+               CancellationToken.None,
+               withVector: true,
+               retryCount: 0)
+        ).EnsureSuccess();
+
+        updatePointVectors.Status.IsSuccess.Should().BeTrue();
+
+        // Check point not matching the filter was not updated
+
+        var notUpdatedPointBeforeUpdate = readPointsBeforeUpdateResult
+            .First(p => p.Id == notUpdatedPointPointId);
+
+        var notUpdatedPointAfterUpdate = readPointsAfterUpdateResult
+            .First(p => p.Id == notUpdatedPointPointId);
+
+        notUpdatedPointBeforeUpdate.Vector.Equals(notUpdatedPointAfterUpdate.Vector).Should().BeTrue();
+
+        // Check point matching the filter was updated
+
+        var updatedPointBeforeUpdate = readPointsBeforeUpdateResult
+            .First(p => p.Id == updatedPointPointId);
+
+        var updatedPointAfterUpdate = readPointsAfterUpdateResult
+            .First(p => p.Id == updatedPointPointId);
+
+        updatedPointBeforeUpdate.Vector.Equals(updatedPointAfterUpdate.Vector).Should().BeFalse();
+    }
+
+    [Test]
     public async Task DeletePointsVectors_ById()
     {
         var vectorSize = 10U;

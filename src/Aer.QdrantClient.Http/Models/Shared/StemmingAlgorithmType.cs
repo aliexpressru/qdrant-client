@@ -1,4 +1,4 @@
-﻿namespace Aer.QdrantClient.Http.Models.Shared;
+namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
 /// The type of the stemming algorithm.

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
@@ -17,6 +17,6 @@ public class ReportIssuesResponse : QdrantResponseBase<ReportIssuesResponse.Qdra
         /// <summary>
         /// Reported qdrant issues.
         /// </summary>
-        public KeyValuePair<string, string>[] Issues { set; get; }
+        public KeyValuePair<string, string>[] Issues { init; get; }
     }
 }

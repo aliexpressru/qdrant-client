@@ -1063,12 +1063,12 @@ internal class QdrantFilterTests
     }
 
     [Test]
-    public void Must_Match_FullText()
+    [Obsolete("Testing obsolete logic")]
+    public void Must_Match_FullText_Obsolete()
     {
         var filter = QdrantFilter.Create(
                 Q.Must(
-                    Q<TestComplexPayload>.MatchFulltext(p => p.Text, "test_substring"),
-                    Q<TestComplexPayload>.MatchValue(p => p.Nested.Name, "test_value")
+                    Q<TestComplexPayload>.MatchFulltext(p => p.Text, "test_substring")
                 )
             )
             .ToString();
@@ -1081,11 +1081,110 @@ internal class QdrantFilterTests
                   "match": {
                     "text": "test_substring"
                   }
-                },
+                }
+              ]
+            }
+            """;
+
+        filter.AssertSameString(expectedFilter);
+    }
+
+    [Test]
+    [Obsolete("Testing obsolete logic")]
+    public void Must_Match_Fulltext_Phrase_Obsolete()
+    {
+        var filter = QdrantFilter.Create(
+                Q.Must(
+                    Q<TestComplexPayload>.MatchFulltext(p => p.Text, "test_substring", isPhraseMatch: true)
+                )
+            )
+            .ToString();
+
+        var expectedFilter = """
+            {
+              "must": [
                 {
-                  "key": "nested.name",
+                  "key": "text",
                   "match": {
-                    "value": "test_value"
+                    "phrase": "test_substring"
+                  }
+                }
+              ]
+            }
+            """;
+
+        filter.AssertSameString(expectedFilter);
+    }
+
+    [Test]
+    public void Must_MatchText()
+    {
+        var filter = QdrantFilter.Create(
+                Q.Must(
+                    Q<TestComplexPayload>.MatchText(p => p.Text, "test_substring")
+                )
+            )
+            .ToString();
+
+        var expectedFilter = """
+            {
+              "must": [
+                {
+                  "key": "text",
+                  "match": {
+                    "text": "test_substring"
+                  }
+                }
+              ]
+            }
+            """;
+
+        filter.AssertSameString(expectedFilter);
+    }
+
+    [Test]
+    public void Must_MatchTextPhrase()
+    {
+        var filter = QdrantFilter.Create(
+                Q.Must(
+                    Q<TestComplexPayload>.MatchTextPhrase(p => p.Text, "test_substring")
+                )
+            )
+            .ToString();
+
+        var expectedFilter = """
+            {
+              "must": [
+                {
+                  "key": "text",
+                  "match": {
+                    "phrase": "test_substring"
+                  }
+                }
+              ]
+            }
+            """;
+
+        filter.AssertSameString(expectedFilter);
+    }
+
+    [Test]
+    public void Must_MatchTextAny()
+    {
+        var filter = QdrantFilter.Create(
+                Q.Must(
+                    Q<TestComplexPayload>.MatchTextAny(p => p.Text, "test_substring")
+                )
+            )
+            .ToString();
+
+        var expectedFilter = """
+            {
+              "must": [
+                {
+                  "key": "text",
+                  "match": {
+                    "text_any": "test_substring"
                   }
                 }
               ]
@@ -1651,11 +1750,11 @@ internal class QdrantFilterTests
                 )
             )
         );
-        
+
         var payloadFields = filter.GetPayloadFieldsWithTypes();
-        
+
         payloadFields.Should().HaveCount(8);
-        
+
         // Check every introspected field and its type
         payloadFields.Should().Contain(x => x.Name == "nested.integer" && x.Type == PayloadIndexedFieldType.Integer);
         payloadFields.Should().Contain(x => x.Name == "nested.double" && x.Type == PayloadIndexedFieldType.Integer);
@@ -1665,31 +1764,5 @@ internal class QdrantFilterTests
         payloadFields.Should().Contain(x => x.Name == "location" && x.Type == PayloadIndexedFieldType.Geo);
         payloadFields.Should().Contain(x => x.Name == "date" && x.Type == PayloadIndexedFieldType.Datetime);
         payloadFields.Should().Contain(x => x.Name == "guid" && x.Type == PayloadIndexedFieldType.Uuid);
-    }
-
-    [Test]
-    public void PhraseMatching()
-    {
-        var filter = QdrantFilter.Create(
-                Q.Must(
-                    Q<TestComplexPayload>.MatchFulltext(p => p.Text, "test_substring", isPhraseMatch: true)
-                )
-            )
-            .ToString();
-
-        var expectedFilter = """
-            {
-              "must": [
-                {
-                  "key": "text",
-                  "match": {
-                    "phrase": "test_substring"
-                  }
-                }
-              ]
-            }
-            """;
-
-        filter.AssertSameString(expectedFilter);
     }
 }

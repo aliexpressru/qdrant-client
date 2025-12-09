@@ -2,7 +2,7 @@ using Aer.QdrantClient.Tests.Base;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots;
 
-public abstract class SnapshotTestsBase : QdrantTestsBase
+internal abstract class SnapshotTestsBase : QdrantTestsBase
 {
     protected static async Task AssertSnapshotActualSize(Stream snapshotStream, long expectedSize)
     {

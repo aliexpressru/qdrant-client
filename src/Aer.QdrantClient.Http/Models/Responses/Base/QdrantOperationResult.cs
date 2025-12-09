@@ -13,10 +13,10 @@ public sealed class QdrantOperationResult
     /// <summary>
     /// Sequential number of the operation.
     /// </summary>
-    public ulong OperationId { get; set; }
+    public ulong OperationId { get; init; }
 
     /// <summary>
     /// The operation status.
     /// </summary>
-    public QdrantOperationStatus Status { get; set; }
+    public QdrantOperationStatus Status { get; init; }
 }

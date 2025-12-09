@@ -1,8 +1,6 @@
 using Aer.QdrantClient.Http;
-using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Requests.Public;
-using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Model;
@@ -13,7 +11,7 @@ namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 [Ignore("I didn't find a way to configure both single-node and a multi-node cluster in "
 +"GitHub actions so these tests will run only locally")]
 #endif
-public class ClusterTests : QdrantTestsBase
+internal partial class ClusterTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
 
@@ -208,158 +206,6 @@ public class ClusterTests : QdrantTestsBase
             newCollectionClusteringInfoAfterShardMove.LocalShards.Length.Should().Be(2);
             newCollectionClusteringInfoAfterShardMove.RemoteShards.Length.Should().Be(1);
         }
-    }
-
-    [Test]
-    public async Task CollectionCreateShardKey_ManualPlacement()
-    {
-        var vectorSize = 10U;
-
-        (await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true,
-                WriteConsistencyFactor = 2,
-                ReplicationFactor = 1,
-                ShardNumber = 2,
-                ShardingMethod = ShardingMethod.Custom
-            },
-            CancellationToken.None)).EnsureSuccess();
-
-        // configure collection manual sharding to ensure consistent results
-
-        var allPeers = (await _qdrantHttpClient.GetClusterInfo(CancellationToken.None))
-            .EnsureSuccess().AllPeerIds;
-
-        var createFirstShardKey = await _qdrantHttpClient.CreateShardKey(
-            TestCollectionName,
-            TestShardKey1,
-            CancellationToken.None,
-            shardsNumber: 1,
-            replicationFactor: 1,
-            placement: [allPeers.First()]);
-
-        var createSecondShardKey = await _qdrantHttpClient.CreateShardKey(
-            TestCollectionName,
-            TestShardKeyInt1,
-            CancellationToken.None,
-            shardsNumber: 1,
-            replicationFactor: 1,
-            placement: [allPeers.Skip(1).First()]);
-
-        createFirstShardKey.Status.IsSuccess.Should().BeTrue();
-        createFirstShardKey.Result.Should().BeTrue();
-
-        createSecondShardKey.Status.IsSuccess.Should().BeTrue();
-        createSecondShardKey.Result.Should().BeTrue();
-
-        UpsertPointsRequest.UpsertPoint firstShardPoint = new(
-            id: 1,
-            vector: CreateTestVector(vectorSize),
-            payload: (TestPayload)1);
-
-        UpsertPointsRequest.UpsertPoint secondShardPoint = new(
-            id: 2,
-            vector: CreateTestVector(vectorSize),
-            payload: (TestPayload)2);
-
-        var upsertOnFirstShardResponse = await _qdrantHttpClient.UpsertPoints(
-            TestCollectionName,
-            new UpsertPointsRequest()
-            {
-                Points =
-                [
-                    firstShardPoint
-                ],
-                ShardKey = TestShardKey1
-            },
-            CancellationToken.None);
-
-        var upsertOnSecondShardResponse = await _qdrantHttpClient.UpsertPoints(
-            TestCollectionName,
-            new UpsertPointsRequest()
-            {
-                Points =
-                [
-                    secondShardPoint
-                ],
-                ShardKey = TestShardKeyInt1
-            },
-            CancellationToken.None);
-
-        upsertOnFirstShardResponse.Status.IsSuccess.Should().BeTrue();
-        upsertOnSecondShardResponse.Status.IsSuccess.Should().BeTrue();
-
-        var readPoints = (await _qdrantHttpClient.ScrollPoints(
-            TestCollectionName,
-            QdrantFilter.Empty,
-            PayloadPropertiesSelector.All,
-            CancellationToken.None,
-            withVector: true,
-            limit: 2)).EnsureSuccess();
-
-        readPoints.Points.Length.Should().Be(2);
-
-        var firstReadPoint = readPoints.Points.Single(p => p.Id == firstShardPoint.Id);
-        var secondReadPoint = readPoints.Points.Single(p => p.Id == secondShardPoint.Id);
-
-        firstReadPoint.Payload.As<int>().Should().Be(firstShardPoint.Payload.As<int>());
-
-        // manual cast to eliminate cyclic reference
-        // Default = {Cyclic reference to type Aer.QdrantClient.Http.Models.Primitives.Vectors.DenseVector detected},
-        firstReadPoint.Vector.Default.AsDenseVector().VectorValues.Should().BeEquivalentTo(firstShardPoint.Vector.Default.AsDenseVector().VectorValues);
-        firstReadPoint.ShardKey.IsString().Should().BeTrue();
-        firstReadPoint.ShardKey.GetString().Should().Be(TestShardKey1);
-
-        secondReadPoint.Payload.As<int>().Should().Be(secondShardPoint.Payload.As<int>());
-        secondReadPoint.Vector.Default.AsDenseVector().VectorValues.Should().BeEquivalentTo(secondShardPoint.Vector.Default.AsDenseVector().VectorValues);
-        secondReadPoint.ShardKey.IsInteger().Should().BeTrue();
-        secondReadPoint.ShardKey.GetInteger().Should().Be(TestShardKeyInt1);
-    }
-
-    [Test]
-    public async Task CollectionDeleteShardKey_ManualPlacement()
-    {
-        (await _qdrantHttpClient.CreateCollection(
-            TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 10U, isServeVectorsFromDisk: true)
-            {
-                OnDiskPayload = true,
-                WriteConsistencyFactor = 2,
-                ReplicationFactor = 1,
-                ShardNumber = 2,
-                ShardingMethod = ShardingMethod.Custom
-            },
-            CancellationToken.None)).EnsureSuccess();
-
-        // configure collection manual sharding to ensure consistent results
-
-        var allPeers = (await _qdrantHttpClient.GetClusterInfo(CancellationToken.None))
-            .EnsureSuccess().AllPeerIds;
-
-        (await _qdrantHttpClient.CreateShardKey(
-            TestCollectionName,
-            TestShardKey1,
-            CancellationToken.None,
-            shardsNumber: 1,
-            replicationFactor: 1,
-            placement: [allPeers.First()])).EnsureSuccess();
-
-        (await _qdrantHttpClient.CreateShardKey(
-            TestCollectionName,
-            TestShardKey2,
-            CancellationToken.None,
-            shardsNumber: 1,
-            replicationFactor: 1,
-            placement: [allPeers.Skip(1).First()])).EnsureSuccess();
-
-        var deleteShardKeyResult = await _qdrantHttpClient.DeleteShardKey(
-            TestCollectionName,
-            TestShardKey1,
-            CancellationToken.None);
-
-        deleteShardKeyResult.Status.IsSuccess.Should().BeTrue();
     }
 
     //[Test]

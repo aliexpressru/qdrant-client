@@ -1,10 +1,10 @@
-﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Tests.Base;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots;
 
-public class CompoundSnapshotOperationsTests : QdrantTestsBase
+internal class CompoundSnapshotOperationsTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
 
@@ -53,7 +53,7 @@ public class CompoundSnapshotOperationsTests : QdrantTestsBase
             .EnsureSuccess();
 
         var listAllSnapshotsResult = await _qdrantHttpClient.ListAllSnapshots(
-            CancellationToken.None, 
+            CancellationToken.None,
             includeStorageSnapshots: true); // We can include storage snapshots since we are in a single-node cluster
 
         listAllSnapshotsResult.Status.IsSuccess.Should().BeTrue();

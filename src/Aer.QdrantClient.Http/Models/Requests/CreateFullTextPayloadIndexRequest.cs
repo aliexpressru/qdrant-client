@@ -20,9 +20,9 @@ internal sealed class CreateFullTextPayloadIndexRequest
         /// <summary>
         /// The type of the payload field. Since this is a full-text index the field type can only be <c>Keyword</c>.
         /// </summary>
-#pragma warning disable CA1822 // Mark members as static | Justification: backwards compatibility
+#pragma warning disable CA1822 // Mark members as static | Justification: required to be non-static for json serialization.
         public PayloadIndexedFieldType Type => PayloadIndexedFieldType.Text;
-#pragma warning restore CA1822 // Mark members as static
+#pragma warning restore CA1822
 
         /// <summary>
         /// The type of the payload text tokenizer.
@@ -65,6 +65,12 @@ internal sealed class CreateFullTextPayloadIndexRequest
         /// </summary>
         [JsonConverter(typeof(FullTextIndexStemmingAlgorithmJsonConverter))]
         public FullTextIndexStemmingAlgorithm Stemmer { set; get; }
+
+        /// <summary>
+        /// If true, normalize tokens by folding accented characters to ASCII
+        /// (e.g., “ação” -> “acao”). Default: false.
+        /// </summary>
+        public bool? AsciiFolding { get; set; }
     }
 
     /// <summary>

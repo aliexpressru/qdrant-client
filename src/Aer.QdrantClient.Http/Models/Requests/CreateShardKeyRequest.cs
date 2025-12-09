@@ -1,7 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Shared;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Requests;
 
@@ -35,6 +36,15 @@ internal sealed class CreateShardKeyRequest
     public ulong[] Placement { get; }
 
     /// <summary>
+    /// Initial state of the shards for this key.
+    /// If not specified, will be <see cref="ShardState.Initializing"/> first and then <see cref="ShardState.Active"/>.
+    /// </summary>
+    /// <remarks>
+    /// Warning: do not change this unless you know what you are doing
+    /// </remarks>
+    public string InitialState { get; }
+
+    /// <summary>
     /// Initializes a new instance of <see cref="CreateShardKeyRequest"/>.
     /// </summary>
     /// <param name="shardKey">The shard key for shards to create.</param>
@@ -44,15 +54,25 @@ internal sealed class CreateShardKeyRequest
     /// Placement of shards for this key - array of peer ids, that can be used to place shards for this key.
     /// If not specified, will be randomly placed among all peers.
     /// </param>
+    /// <param name="initialState">
+    /// Initial state of the shards for this key.
+    /// If not specified, will be <see cref="ShardState.Initializing"/> first and then <see cref="ShardState.Active"/>.
+    /// Warning: do not change this unless you know what you are doing
+    /// </param>
     public CreateShardKeyRequest(
         ShardKey shardKey,
         uint? shardsNumber,
         uint? replicationFactor,
-        ulong[] placement)
+        ulong[] placement,
+        ShardState? initialState = null)
     {
         ShardKey = shardKey;
         ShardsNumber = shardsNumber;
         ReplicationFactor = replicationFactor;
         Placement = placement;
+
+        // Not using enum value directly since we need it to be in PascalCase
+        // and default serialization format is in snake_case
+        InitialState = initialState.HasValue ? initialState.ToString() : null;
     }
 }

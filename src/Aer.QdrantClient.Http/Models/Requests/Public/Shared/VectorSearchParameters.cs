@@ -1,4 +1,4 @@
-﻿namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
+namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 /// <summary>
 /// Represents the vector search parameters.
@@ -27,6 +27,31 @@ public sealed class VectorSearchParameters
     /// but does not guarantee that all uploaded vectors will be included in search results.
     /// </summary>
     public bool IndexedOnly { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets the parameters used to configure ACORN algorithm.
+    /// </summary>
+    public AcornParameters Acorn { get; set; }
+
+    /// <summary>
+    /// Represents ACORN algorithm search parameters.
+    /// </summary>
+    public class AcornParameters
+    {
+        /// <summary>
+        /// If <c>true</c>, then ACORN may be used for the HNSW search based on filters selectivity.
+        /// Improves search recall for searches with multiple low-selectivity payload filters, at cost of performance.
+        /// </summary>
+        public bool Enable { get; set; }
+
+        /// <summary>
+        /// Maximum selectivity of filters to enable ACORN.
+        /// If estimated filters selectivity is higher than this value, ACORN will not be used.
+        /// Selectivity is estimated as: estimated number of points satisfying the filters / total number of points.
+        /// <c>0.0</c> for never, <c>1.0</c> for always. If not set defaults to <c>0.4</c>.
+        /// </summary>
+        public double? MaxSelectivity { get; set; }
+    }
 
     /// <summary>
     /// Represents quantization parameters.

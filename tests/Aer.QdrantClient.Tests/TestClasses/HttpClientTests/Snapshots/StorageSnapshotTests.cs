@@ -1,11 +1,10 @@
-﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Models.Responses;
-using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots;
 
-public class StorageSnapshotTests : SnapshotTestsBase
+internal class StorageSnapshotTests : SnapshotTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
     private QdrantClientSettings _clientSettings;
@@ -14,7 +13,7 @@ public class StorageSnapshotTests : SnapshotTestsBase
     public void Setup()
     {
         Initialize();
-        
+
         _clientSettings = GetQdrantClientSettings();
         _qdrantHttpClient = ServiceProvider.GetRequiredService<QdrantHttpClient>();
     }

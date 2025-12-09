@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
@@ -21,7 +21,7 @@ public sealed class SearchPointsDistanceMatrixPairsResponse
         /// <summary>
         /// The distance matrix pairs.
         /// </summary>
-        public PointsDistanceMatrixPair[] Pairs { get; set; }
+        public PointsDistanceMatrixPair[] Pairs { get; init; }
 
         /// <summary>
         /// THe pair of points in distance matrix.
@@ -32,18 +32,18 @@ public sealed class SearchPointsDistanceMatrixPairsResponse
             /// First point id.
             /// </summary>
             [JsonConverter(typeof(PointIdJsonConverter))]
-            public PointId A { set; get; }
+            public PointId A { init; get; }
 
             /// <summary>
             /// Second point id.
             /// </summary>
             [JsonConverter(typeof(PointIdJsonConverter))]
-            public PointId B { set; get; }
+            public PointId B { init; get; }
 
             /// <summary>
             /// The point distance score.
             /// </summary>
-            public double Score { get; set; }
+            public double Score { get; init; }
         }
     }
 }

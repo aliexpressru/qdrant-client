@@ -1,7 +1,7 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Primitives;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 

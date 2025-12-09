@@ -8,7 +8,7 @@ using Aer.QdrantClient.Tests.Infrastructure;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
-public class CollectionUpdateParametersTests : QdrantTestsBase
+internal class CollectionUpdateParametersTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
 

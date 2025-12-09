@@ -35,6 +35,7 @@ public class QdrantTestsBase
     protected const string TestCollectionAlias2 = "test_collection_alias_2";
 
     protected const string TestShardKey1 = "shard1";
+    protected const string TestPartialShardKey = "partial";
     protected const string TestShardKey2 = "shard2";
     protected const int TestShardKeyInt1 = 1;
 

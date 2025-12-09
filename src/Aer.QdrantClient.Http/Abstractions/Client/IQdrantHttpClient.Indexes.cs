@@ -78,7 +78,7 @@ public partial interface IQdrantHttpClient
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null);
-    
+
     /// <summary>
     /// Creates the full text index on specified payload text field.
     /// </summary>
@@ -101,6 +101,10 @@ public partial interface IQdrantHttpClient
     /// <param name="enablePhraseMatching">Enable phrase matching on this text field.</param>
     /// <param name="stemmer">Algorithm for stemming. If <c>null</c> stemming is disabled.</param>
     /// <param name="stopwords">Ignore this set of tokens. Can select from predefined languages and/or provide a custom set.</param>
+    /// <param name="isAsciiFoldingEnabled">
+    /// If true, normalize tokens by folding accented characters to ASCII (e.g., “ação” -> “acao”).
+    /// If not set defaults to <c>false</c>.
+    /// </param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
@@ -123,6 +127,8 @@ public partial interface IQdrantHttpClient
 
         FullTextIndexStemmingAlgorithm stemmer = null,
         FullTextIndexStopwords stopwords = null,
+
+        bool? isAsciiFoldingEnabled = null,
 
         bool isWaitForResult = false,
         uint retryCount = 3,

@@ -7,7 +7,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests.Snapshots;
 
-public class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
+internal class CollectionSnapshotTestsSingleNode : SnapshotTestsBase
 {
     private QdrantHttpClient _qdrantHttpClientSingleNode;
     private QdrantClientSettings _clientSettings;

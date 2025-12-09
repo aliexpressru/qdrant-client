@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
@@ -21,22 +21,22 @@ public sealed class SearchPointsDistanceMatrixOffsetsResponse
         /// <summary>
         /// Row indices of the matrix.
         /// </summary>
-        public ulong[] OffsetsRow { get; set; }
+        public ulong[] OffsetsRow { get; init; }
 
         /// <summary>
         /// Column indices of the matrix
         /// </summary>
-        public ulong[] OffsetsCol { get; set; }
+        public ulong[] OffsetsCol { get; init; }
 
         /// <summary>
         /// Scores associated with matrix coordinates.
         /// </summary>
-        public double[] Scores { get; set; }
+        public double[] Scores { get; init; }
 
         /// <summary>
         /// Ids of the points in order
         /// </summary>
         [JsonConverter(typeof(PointIdCollectionJsonConverter))]
-        public IReadOnlyList<PointId> Ids { get; set; }
+        public IReadOnlyList<PointId> Ids { get; init; }
     }
 }

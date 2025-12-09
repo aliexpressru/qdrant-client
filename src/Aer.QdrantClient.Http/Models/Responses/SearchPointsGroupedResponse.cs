@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
@@ -20,7 +20,7 @@ public sealed class SearchPointsGroupedResponse : QdrantResponseBase<SearchPoint
         /// <summary>
         /// Found search groups.
         /// </summary>
-        public SearchGroupsUnit[] Groups { set; get; }
+        public SearchGroupsUnit[] Groups { init; get; }
 
         /// <summary>
         /// Search groups.
@@ -30,18 +30,18 @@ public sealed class SearchPointsGroupedResponse : QdrantResponseBase<SearchPoint
             /// <summary>
             /// Scored points that have the same value of the group_by key.
             /// </summary>
-            public ScoredPoint[] Hits { set; get; }
+            public ScoredPoint[] Hits { init; get; }
 
             /// <summary>
             /// Value of the group_by key, shared across all the hits in the group.
             /// </summary>
             [JsonConverter(typeof(SearchGroupIdJsonConverter))]
-            public SearchGroupId Id { set; get; }
+            public SearchGroupId Id { init; get; }
 
             /// <summary>
             /// Record that has been looked up using the group id
             /// </summary>
-            public Point Lookup { set; get; }
+            public Point Lookup { init; get; }
         }
     }
 }

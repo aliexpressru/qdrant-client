@@ -19,17 +19,17 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
         /// <summary>
         /// Current cluster status <c>enabled</c>, <c>disabled</c>.
         /// </summary>
-        public string Status { set; get; }
+        public string Status { init; get; }
 
         /// <summary>
         /// This node peer identifier.
         /// </summary>
-        public ulong PeerId { set; get; }
+        public ulong PeerId { init; get; }
 
         /// <summary>
         /// All cluster nodes peer information by string peer ids.
         /// </summary>
-        public Dictionary<string, PeerInfoUint> Peers { set; get; }
+        public Dictionary<string, PeerInfoUint> Peers { init; get; }
 
         /// <summary>
         /// All cluster nodes peer information by parsed ulong peer ids.
@@ -48,18 +48,18 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
         /// <summary>
         /// The nodes consensus status.
         /// </summary>
-        public RaftInfoUnit RaftInfo { set; get; }
+        public RaftInfoUnit RaftInfo { init; get; }
 
         /// <summary>
         /// Information about current consensus thread status.
         /// </summary>
-        public ConsensusThreadStatusUnit ConsensusThreadStatus { set; get; }
+        public ConsensusThreadStatusUnit ConsensusThreadStatus { init; get; }
 
         /// <summary>
         /// Consequent failures of message send operations in consensus by peer address.
         /// On the first success to send to that peer - entry is removed from this hashmap.
         /// </summary>
-        public Dictionary<string, MessageSendFailureUnit> MessageSendFailures { set; get; }
+        public Dictionary<string, MessageSendFailureUnit> MessageSendFailures { init; get; }
     }
 
     /// <summary>
@@ -70,17 +70,17 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
         /// <summary>
         /// Failures count.
         /// </summary>
-        public uint Count { set; get; }
+        public uint Count { init; get; }
 
         /// <summary>
         /// The latest message send error.
         /// </summary>
-        public string LatestError { set; get; }
+        public string LatestError { init; get; }
 
         /// <summary>
         /// The latest error timestamp.
         /// </summary>
-        public DateTime LatestErrorTimestamp { set; get; }
+        public DateTime LatestErrorTimestamp { init; get; }
     }
 
     /// <summary>
@@ -92,17 +92,17 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
         /// The consensus thread status.
         /// TODO: convert to enum
         /// </summary>
-        public string ConsensusThreadStatus { set; get; }
+        public string ConsensusThreadStatus { init; get; }
 
         /// <summary>
         /// The consensus status last update.
         /// </summary>
-        public DateTime LastUpdate { set; get; }
+        public DateTime LastUpdate { init; get; }
 
         /// <summary>
         /// The consensus status error.
         /// </summary>
-        public string Err { set; get; }
+        public string Err { init; get; }
     }
 
     /// <summary>
@@ -113,7 +113,7 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
         /// <summary>
         /// The peer URI.
         /// </summary>
-        public string Uri { set; get; }
+        public string Uri { init; get; }
     }
 
     /// <summary>
@@ -124,31 +124,31 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
         /// <summary>
         /// The term number.
         /// </summary>
-        public uint Term { set; get; }
+        public uint Term { init; get; }
 
         /// <summary>
         /// The commit number.
         /// </summary>
-        public uint Commit { set; get; }
+        public uint Commit { init; get; }
 
         /// <summary>
         /// Number of pending operations.
         /// </summary>
-        public uint PendingOperations { set; get; }
+        public uint PendingOperations { init; get; }
 
         /// <summary>
         /// The cluster consensus leader peer id.
         /// </summary>
-        public ulong? Leader { set; get; }
+        public ulong? Leader { init; get; }
 
         /// <summary>
         /// This node role.
         /// </summary>
-        public string Role { set; get; }
+        public string Role { init; get; }
 
         /// <summary>
         /// Is this peer a voter or a learner.
         /// </summary>
-        public bool IsVoter { set; get; }
+        public bool IsVoter { init; get; }
     }
 }

@@ -9,7 +9,7 @@ using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
-public class CollectionCreateTests : QdrantTestsBase
+internal class CollectionCreateTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
 
@@ -46,7 +46,7 @@ public class CollectionCreateTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task VeryLongName()
+    public async Task CreateCollection_VeryLongName()
     {
         var veryLongCollectionName = new string('t', 1024);
 
@@ -60,6 +60,44 @@ public class CollectionCreateTests : QdrantTestsBase
 
         await collectionCreationAct.Should().ThrowAsync<QdrantInvalidEntityNameException>()
             .Where(e => e.Message.Contains("1024"));
+    }
+
+    [Test]
+    public async Task CreateCollection_WithMetadata()
+    {
+        OnlyIfVersionAfterOrEqual("1.16.0", "Collection metadata is only supported from v1.16");
+
+        var metadata = new Dictionary<string, object>
+        {
+            ["created_by"] = "unit_test",
+            ["creation_date"] = DateTime.UtcNow.ToString("o"),
+            ["test_int"] = 1,
+            ["test_bool"] = true,
+            ["test_double"] = 1.567
+        };
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                Metadata = metadata
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
+
+        collectionCreationResult.Should().NotBeNull();
+        collectionCreationResult.Result.Should().BeTrue();
+
+        var createdCollectionInfoResponse =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        createdCollectionInfoResponse.Status.IsSuccess.Should().BeTrue();
+
+        createdCollectionInfoResponse.Result.Config.Metadata.Should().NotBeNull();
+        createdCollectionInfoResponse.Result.Config.Metadata.Count.Should().Be(metadata.Count);
     }
 
     [Test]
@@ -542,6 +580,46 @@ public class CollectionCreateTests : QdrantTestsBase
         quantizationConfig.Method.Should().Be(QuantizationConfiguration.ScalarQuantizationConfiguration.QuantizationMethodName);
         quantizationConfig.Quantile.Should().Be(0.9f);
         quantizationConfig.AlwaysRam.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task ScalarQuantization_InlineStorage()
+    {
+        OnlyIfVersionAfterOrEqual("1.16.0", "Inline storage is only available from v1.16");
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                QuantizationConfig = QuantizationConfiguration.Scalar(
+                    quantile: 0.9f,
+                    isQuantizedVectorAlwaysInRam: true),
+                HnswConfig = new HnswConfiguration
+                {
+                    InlineStorage = true
+                }
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        // check quantization parameters
+
+        var createdCollectionInfo =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        createdCollectionInfo.Result.Config.QuantizationConfig.Should()
+            .BeOfType<QuantizationConfiguration.ScalarQuantizationConfiguration>();
+
+        var quantizationConfig = createdCollectionInfo.Result.Config.QuantizationConfig
+            .As<QuantizationConfiguration.ScalarQuantizationConfiguration>();
+
+        quantizationConfig.Method.Should().Be(QuantizationConfiguration.ScalarQuantizationConfiguration.QuantizationMethodName);
+        quantizationConfig.Quantile.Should().Be(0.9f);
+        quantizationConfig.AlwaysRam.Should().BeTrue();
+
+        createdCollectionInfo.Result.Config.HnswConfig.InlineStorage.Should().BeTrue();
     }
 
     [Test]

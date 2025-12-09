@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -6,7 +6,7 @@ using Aer.QdrantClient.Tests.Base;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
-public class AuthorizationTests : QdrantTestsBase
+internal class AuthorizationTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
 

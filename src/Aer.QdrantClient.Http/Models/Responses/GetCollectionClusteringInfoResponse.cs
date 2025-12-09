@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
@@ -23,7 +23,7 @@ public sealed class GetCollectionClusteringInfoResponse
         /// <summary>
         /// ID of this peer.
         /// </summary>
-        public ulong PeerId { set; get; }
+        public ulong PeerId { init; get; }
 
         /// <summary>
         /// The uri of this peer.
@@ -33,21 +33,21 @@ public sealed class GetCollectionClusteringInfoResponse
         /// <summary>
         /// Total number of shards.
         /// </summary>
-        public uint ShardCount { set; get; }
+        public uint ShardCount { init; get; }
 
         /// <summary>
         /// Number of shards in the <see cref="ShardState.Partial"/> state.
         /// This state indicates node still being replicated.
         /// </summary>
         public uint PartialShardCount =>
-            (LocalShards is {Length: > 0} localShards
-                ? (uint) localShards.Sum(s => s.State == ShardState.Partial
+            (LocalShards is { Length: > 0 } localShards
+                ? (uint)localShards.Sum(s => s.State == ShardState.Partial
                     ? 1
                     : 0)
                 : 0U)
             +
-            (RemoteShards is {Length: > 0} remoteShards
-                ? (uint) remoteShards.Sum(s => s.State == ShardState.Partial
+            (RemoteShards is { Length: > 0 } remoteShards
+                ? (uint)remoteShards.Sum(s => s.State == ShardState.Partial
                     ? 1
                     : 0)
                 : 0U);
@@ -56,14 +56,14 @@ public sealed class GetCollectionClusteringInfoResponse
         /// Number of shards in the <see cref="ShardState.Dead"/> state.
         /// </summary>
         public uint DeadShardCount =>
-            (LocalShards is {Length: > 0} localShards
-                ? (uint) localShards.Sum(s => s.State == ShardState.Dead
+            (LocalShards is { Length: > 0 } localShards
+                ? (uint)localShards.Sum(s => s.State == ShardState.Dead
                     ? 1
                     : 0)
                 : 0U)
             +
-            (RemoteShards is {Length: > 0} remoteShards
-                ? (uint) remoteShards.Sum(s => s.State == ShardState.Dead
+            (RemoteShards is { Length: > 0 } remoteShards
+                ? (uint)remoteShards.Sum(s => s.State == ShardState.Dead
                     ? 1
                     : 0)
                 : 0U);
@@ -71,22 +71,22 @@ public sealed class GetCollectionClusteringInfoResponse
         /// <summary>
         /// Local shard information.
         /// </summary>
-        public LocalShardInfo[] LocalShards { set; get; }
+        public LocalShardInfo[] LocalShards { init; get; }
 
         /// <summary>
         /// Remote shard information.
         /// </summary>
-        public RemoteShardInfo[] RemoteShards { set; get; }
+        public RemoteShardInfo[] RemoteShards { init; get; }
 
         /// <summary>
         /// Ongoing shard transfers operations.
         /// </summary>
-        public ShardTransferInfo[] ShardTransfers { set; get; }
+        public ShardTransferInfo[] ShardTransfers { init; get; }
 
         /// <summary>
         /// Ongoing resharding operations.
         /// </summary>
-        public ReshardingOperationInfo[] ReshardingOperations { set; get; }
+        public ReshardingOperationInfo[] ReshardingOperations { init; get; }
     }
 
     /// <summary>
@@ -97,23 +97,23 @@ public sealed class GetCollectionClusteringInfoResponse
         /// <summary>
         /// Local shard identifier.
         /// </summary>
-        public uint ShardId { set; get; }
+        public uint ShardId { init; get; }
 
         /// <summary>
         /// Number of points in the shard.
         /// </summary>
-        public ulong PointsCount { set; get; }
+        public ulong PointsCount { init; get; }
 
         /// <summary>
         /// State of the single shard within a replica set.
         /// </summary>
-        public ShardState State { set; get; }
+        public ShardState State { init; get; }
 
         /// <summary>
         /// User-defined sharding key. If no user-defined sharding key created for this collection, this field is <c>null</c>.
         /// </summary>
         [JsonConverter(typeof(ShardKeyJsonConverter))]
-        public ShardKey ShardKey { set; get; }
+        public ShardKey ShardKey { init; get; }
     }
 
     /// <summary>
@@ -124,12 +124,12 @@ public sealed class GetCollectionClusteringInfoResponse
         /// <summary>
         /// Remote shard identifier.
         /// </summary>
-        public uint ShardId { set; get; }
+        public uint ShardId { init; get; }
 
         /// <summary>
         /// Peer identifier.
         /// </summary>
-        public ulong PeerId { set; get; }
+        public ulong PeerId { init; get; }
 
         /// <summary>
         /// Peer uri.
@@ -139,13 +139,13 @@ public sealed class GetCollectionClusteringInfoResponse
         /// <summary>
         /// State of the single shard within a replica set.
         /// </summary>
-        public ShardState State { set; get; }
+        public ShardState State { init; get; }
 
         /// <summary>
         /// User-defined sharding key. If no user-defined sharding key created for this collection, this field is <c>null</c>.
         /// </summary>
         [JsonConverter(typeof(ShardKeyJsonConverter))]
-        public ShardKey ShardKey { set; get; }
+        public ShardKey ShardKey { init; get; }
     }
 
     /// <summary>
@@ -156,23 +156,23 @@ public sealed class GetCollectionClusteringInfoResponse
         /// <summary>
         /// The transferring shard identifier.
         /// </summary>
-        public uint ShardId { set; get; }
+        public uint ShardId { init; get; }
 
         /// <summary>
         /// The peer id that the shard is being transferred from.
         /// </summary>
-        public ulong From { set; get; }
+        public ulong From { init; get; }
 
         /// <summary>
         /// The peer id that the shard is being transferred to.
         /// </summary>
-        public ulong To { set; get; }
+        public ulong To { init; get; }
 
         /// <summary>
         /// If <c>true</c> transfer is a synchronization of a replicas.
         /// If <c>false</c> transfer is a moving of a shard from one peer to another.
         /// </summary>
-        public bool Sync { set; get; }
+        public bool Sync { init; get; }
     }
 
     /// <summary>
@@ -183,17 +183,17 @@ public sealed class GetCollectionClusteringInfoResponse
         /// <summary>
         /// Resharding direction, scale up or down in number of shards.
         /// </summary>
-        public ReshardingOperationDirection Direction { set; get; }
+        public ReshardingOperationDirection Direction { init; get; }
 
         /// <summary>
         /// The id of the shards being added or removed.
         /// </summary>
-        public uint ShardId { set; get; }
+        public uint ShardId { init; get; }
 
         /// <summary>
         /// The peer id that the shard is being added or removed from.
         /// </summary>
-        public uint PeerId { set; get; }
+        public uint PeerId { init; get; }
 
         /// <summary>
         /// The peer uri that the shard is being added or removed from.
@@ -204,6 +204,6 @@ public sealed class GetCollectionClusteringInfoResponse
         /// The shard key for the resharding operation.
         /// </summary>
         [JsonConverter(typeof(ShardKeyJsonConverter))]
-        public ShardKey ShardKey { set; get; }
+        public ShardKey ShardKey { init; get; }
     }
 }

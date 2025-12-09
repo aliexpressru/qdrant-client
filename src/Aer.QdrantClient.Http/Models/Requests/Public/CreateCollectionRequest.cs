@@ -111,6 +111,11 @@ public sealed class CreateCollectionRequest
     /// </summary>
     public StrictModeConfiguration StrictModeConfig { get; set; }
 
+    /// <summary>
+    /// The custom key-value metadata associated with the collection.
+    /// </summary>
+    public Dictionary<string, object> Metadata { get; set; }
+
     /// <summary>Initializes a new instance of the <see cref="CreateCollectionRequest" /> class with singe vector
     /// or multiple named vectors with identical configuration.</summary>
     /// <param name="vectorDistanceMetric">The distance metric.</param>
