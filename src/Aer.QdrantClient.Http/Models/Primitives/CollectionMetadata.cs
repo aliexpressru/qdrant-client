@@ -1,6 +1,7 @@
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using CommunityToolkit.Diagnostics;
 using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Models.Primitives;
@@ -18,7 +19,7 @@ public class CollectionMetadata
     /// Represents the raw metadata dictionary. Internal for serialization purposes.
     /// </summary>
     /// <remarks>Can't be null.</remarks>
-    internal Dictionary<string, JsonElement> RawMetadata { get; }
+    internal ReadOnlyDictionary<string, JsonElement> RawMetadata { get; }
 
     /// <summary>
     /// Gets the number of metadata entries associated with the collection.
@@ -46,7 +47,7 @@ public class CollectionMetadata
 
     internal CollectionMetadata(Dictionary<string, JsonElement> metadataValues)
     {
-        RawMetadata = metadataValues ?? [];
+        RawMetadata = new(metadataValues ?? []);
     }
 
     /// <summary>
@@ -87,9 +88,12 @@ public class CollectionMetadata
             return defaultValue;
         }
 
-        if (_deserializedMetadataCache.TryGetValue(metadataKey, out var cachedValue))
+        if (_deserializedMetadataCache.TryGetValue(metadataKey, out object cachedValue)
+            && cachedValue is T typedValue)
         {
-            return (T)cachedValue;
+            // Return cached value only if it matches the requested type T
+            // If it does not - reparse it from JsonElement again
+            return typedValue;
         }
 
         if (RawMetadata.TryGetValue(metadataKey, out var metadataValue))
