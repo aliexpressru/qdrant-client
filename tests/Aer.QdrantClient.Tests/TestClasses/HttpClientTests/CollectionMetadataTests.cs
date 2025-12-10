@@ -48,6 +48,9 @@ internal class CollectionMetadataTests : QdrantTestsBase
 
         collectionInfo.ContainsMetadataKey("some_key").Should().BeFalse();
         collectionInfo.GetMetadataValueOrDefault("some_other_key", 42).Should().Be(42);
+
+        var metadataString = collectionInfo.GetMetadata().ToString(isFormatJson: true);
+        metadataString.Should().Be("{}");
     }
 
     [Test]
@@ -81,6 +84,10 @@ internal class CollectionMetadataTests : QdrantTestsBase
 
         AssertMetadataValue(initialCollectionInfo, "test_string", "test");
         AssertMetadataValue(initialCollectionInfo, "test_int", 1);
+
+        var metadataString = initialCollectionInfo.GetMetadata().ToString(isFormatJson: true);
+        metadataString.Should().Contain("test_string");
+        metadataString.Should().Contain("test_int");
 
         var updateCollectionParametersResponse = await _qdrantHttpClient.UpdateCollectionParameters(TestCollectionName, new()
         {

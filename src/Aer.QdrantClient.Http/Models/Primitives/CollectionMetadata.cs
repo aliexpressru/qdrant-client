@@ -32,7 +32,7 @@ public class CollectionMetadata
     /// The returned collection reflects the current set of metadata keys. If no metadata is present,
     /// the collection will be empty.
     /// </remarks>
-    public IReadOnlyCollection<string> Keys => (IReadOnlyCollection<string>)RawMetadata.Keys;
+    public IReadOnlyCollection<string> Keys => RawMetadata.Keys;
 
     /// <summary>
     /// Represents an empty collection metadata instance with no items.
@@ -111,4 +111,23 @@ public class CollectionMetadata
 
         return default;
     }
+
+    /// <summary>
+    /// Returns a JSON string representation of the collection metadata.
+    /// </summary>
+    /// <param name="isFormatJson">Whether to format the JSON string with indentation for readability.</param>
+    /// <returns>A JSON-formatted string that represents the metadata of the collection.</returns>
+    public string ToString(bool isFormatJson) =>
+        JsonSerializer.Serialize(
+            RawMetadata,
+            isFormatJson
+                ? JsonSerializerConstants.DefaultIndentedSerializerOptions
+                : JsonSerializerConstants.DefaultSerializerOptions
+        );
+
+    /// <summary>
+    /// Returns a JSON string representation of the collection metadata.
+    /// </summary>
+    /// <returns>A JSON-formatted string that represents the metadata of the collection.</returns>
+    public override string ToString() => ToString(isFormatJson: false);
 }
