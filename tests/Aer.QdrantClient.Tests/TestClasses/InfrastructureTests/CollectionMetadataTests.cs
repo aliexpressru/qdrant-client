@@ -19,7 +19,9 @@ internal class CollectionMetadataTests
             ["float"] = JsonSerializer.SerializeToElement(3.14f),
             ["double"] = JsonSerializer.SerializeToElement(3.14),
 
-            ["test"] = JsonSerializer.SerializeToElement(new List<int> { 1, 2, 3 })
+            ["test"] = JsonSerializer.SerializeToElement(new List<int> { 1, 2, 3 }),
+
+            ["empty"] = JsonSerializer.SerializeToElement(new List<int>())
         });
 
         metadata.GetValueOrDefault("int", 0).Should().Be(42);
@@ -38,5 +40,9 @@ internal class CollectionMetadataTests
 
         jObject["Name"]!.Value<string>().Should().Be("test");
         jObject["Value"]!.Value<int>().Should().Be(42);
+
+        metadata.GetValueOrDefault<string[]>("empty", []).Should().BeEquivalentTo(Array.Empty<string>());
+
+        metadata.GetValueOrDefault<string[]>("non-existent", null).Should().BeNull();
     }
 }
