@@ -29,8 +29,6 @@ namespace Aer.QdrantClient.Http;
 [SuppressMessage("ReSharper", "MemberCanBeInternal", Justification = "Public API")]
 public partial class QdrantHttpClient : IQdrantHttpClient
 {
-    private readonly ILogger _logger;
-
     private const int DEFAULT_OPERATION_TIMEOUT_SECONDS = 30;
     private const uint DEFAULT_RETRY_COUNT = 3;
     // This exists for cases when the client is created directly and cached
@@ -81,11 +79,26 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     /// <summary>
     /// The actual HTTP client used to make calls to Qdrant API.
     /// </summary>
-    /// <remarks>Protected internal for testing purposes.</remarks>
-    protected internal HttpClient ApiClient;
+    protected internal HttpClient ApiClient
+    {
+        get => field ?? throw new QdrantClientUninitializedException();
+        set;
+    }
+
+    /// <summary>
+    /// The logger instance this client will be using.
+    /// </summary>
+    protected internal ILogger Logger { get; set; } = NullLogger.Instance;
 
     /// <inheritdoc/>
     public Uri BaseAddress => ApiClient.BaseAddress;
+
+    /// <summary>
+    /// Initializes a new unconfigured Qdrant HTTP client instance.
+    /// Used for dependency injection scenarios when the actual configuration is provided later.
+    /// </summary>
+    public QdrantHttpClient()
+    { }
 
     /// <summary>
     /// Initializes a new Qdrant HTTP client instance.
@@ -95,7 +108,11 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     public QdrantHttpClient(HttpClient apiClient, ILogger logger = null)
     {
         ApiClient = apiClient;
-        _logger = logger ?? NullLogger.Instance;
+
+        if (logger is { } customLogger)
+        {
+            Logger = customLogger;
+        }
     }
 
     /// <summary>
@@ -149,7 +166,10 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         bool disableTracing = false,
         bool enableCompression = false)
     {
-        _logger = logger ?? NullLogger.Instance;
+        if (logger is { } customLogger)
+        {
+            Logger = customLogger;
+        }
 
         var handler =
             CreateHttpClientHandler(

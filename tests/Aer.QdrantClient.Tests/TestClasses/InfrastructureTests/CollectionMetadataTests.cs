@@ -41,7 +41,7 @@ internal class CollectionMetadataTests
         jObject["Name"]!.Value<string>().Should().Be("test");
         jObject["Value"]!.Value<int>().Should().Be(42);
 
-        metadata.GetValueOrDefault<string[]>("empty", []).Should().BeEquivalentTo(Array.Empty<string>());
+        metadata.GetValueOrDefault<string[]>("empty", []).Should().BeEquivalentTo([]);
 
         metadata.GetValueOrDefault<string[]>("non-existent", null).Should().BeNull();
     }

@@ -117,9 +117,9 @@ public partial class QdrantHttpClient
 
                         if (!createPayloadIndexResponse.Status.IsSuccess)
                         {
-                            if (_logger.IsEnabled(LogLevel.Error) == true)
+                            if (Logger.IsEnabled(LogLevel.Error) == true)
                             {
-                                _logger.LogError(
+                                Logger.LogError(
                                     "Failed to create payload index {PayloadIndex} for collection {CollectionName}. Details: {ErrorMessage}",
                                     payloadIndexDefinition.ToString(),
                                     collectionName,
@@ -131,9 +131,9 @@ public partial class QdrantHttpClient
                         }
                     }
 
-                    if (_logger.IsEnabled(LogLevel.Information) == true)
+                    if (Logger.IsEnabled(LogLevel.Information) == true)
                     {
-                        _logger.LogInformation(
+                        Logger.LogInformation(
                             "Successfully started collection {CollectionName} HNSW and payload indexes [{PayloadIndexDefinitions}] creation",
                             collectionName,
                             string.Join(", ", payloadIndexes.Select(x => x.ToString()))
@@ -142,9 +142,9 @@ public partial class QdrantHttpClient
                 }
                 catch (Exception ex)
                 {
-                    if (_logger.IsEnabled(LogLevel.Error) == true)
+                    if (Logger.IsEnabled(LogLevel.Error) == true)
                     {
-                        _logger.LogError("Exception during collection {CollectionName} indexes creation start: {ExceptionMessage}",
+                        Logger.LogError("Exception during collection {CollectionName} indexes creation start: {ExceptionMessage}",
                         collectionName,
                         ex.Message);
                     }
