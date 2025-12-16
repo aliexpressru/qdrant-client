@@ -79,7 +79,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     /// <summary>
     /// The actual HTTP client used to make calls to Qdrant API.
     /// </summary>
-    protected HttpClient ApiClient
+    protected internal HttpClient ApiClient
     {
         get => field ?? throw new QdrantClientUninitializedException();
         set;
@@ -88,7 +88,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     /// <summary>
     /// The logger instance this client will be using.
     /// </summary>
-    protected ILogger Logger { get; set; } = NullLogger.Instance;
+    protected internal ILogger Logger { get; set; } = NullLogger.Instance;
 
     /// <inheritdoc/>
     public Uri BaseAddress => ApiClient.BaseAddress;
