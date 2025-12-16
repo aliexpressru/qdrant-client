@@ -634,7 +634,7 @@ public class QdrantTestsBase
         return QdrantVersion >= version;
     }
 
-    private Version GetConfiguredQdrantVersion()
+    private static Version GetConfiguredQdrantVersion()
     {
         var configuredVersionString = Environment.GetEnvironmentVariable("QDRANT_VERSION") ?? GetQdrantVersionFromEnvFile();
 
