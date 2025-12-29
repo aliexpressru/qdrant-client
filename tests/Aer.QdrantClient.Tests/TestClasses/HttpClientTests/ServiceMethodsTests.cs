@@ -1,10 +1,14 @@
-using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Filters.Builders;
+using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests.Public;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Model;
+using MoreLinq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
@@ -219,7 +223,7 @@ internal class ServiceMethodsTests : QdrantTestsBase
     }
 
     [Test]
-    [Experimental("Beta")] // Testing beta API.
+    [Experimental("Beta_IssuesApi")]
     public async Task ReportIssues()
     {
         var issuesReportResult =
@@ -233,5 +237,85 @@ internal class ServiceMethodsTests : QdrantTestsBase
 
         issuesClearResult.Status.IsSuccess.Should().BeTrue();
         issuesClearResult.Result.Should().BeTrue();
+    }
+
+    [Test]
+    [Experimental("Beta_IssuesApi")]
+#if !DEBUG
+[Ignore("WiP on Testing beta API only locally")]
+#endif
+    public async Task ReportIssues_NonEmptyIssues()
+    {
+        var vectorSize = 1024U;
+        var vectorCount = 100_000;
+        var batchSize = 1_000;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            {
+                OptimizersConfig = new()
+                {
+                    IndexingThreshold = 1, // to force indexing on each upsert
+                },
+                HnswConfig = new()
+                {
+                    M = 16,
+                    FullScanThreshold = 10,
+                    EfConstruct = 100,
+                    OnDisk = true
+                },
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        foreach (var pointsBatch in Enumerable.Range(0, vectorCount).Batch(batchSize))
+        {
+            var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>(batchSize);
+
+            foreach (var i in pointsBatch)
+            {
+                upsertPoints.Add(
+                    new(
+                        PointId.Integer((ulong)i),
+                        CreateTestVector(vectorSize),
+                        new TestComplexPayload()
+                        {
+                            Array = [i, i + 1, i + 2],
+                            Text = $"Test payload {i}",
+                        }
+                    )
+                );
+            }
+
+            await _qdrantHttpClient.UpsertPoints(
+                TestCollectionName,
+                new UpsertPointsRequest()
+                {
+                    Points = upsertPoints
+                },
+                CancellationToken.None);
+        }
+
+        // Issue several scroll requests that will generate issues (due to lack of index on array field).
+
+        for (int i = 0; i < 1000; i++)
+        {
+            await _qdrantHttpClient.ScrollPoints(
+                TestCollectionName,
+                Q.Must(
+                    //Q<TestComplexPayload>.MatchValue(p => p.Array, 1)
+                    Q.MatchValue("non-indexed", 1)
+                ),
+                PayloadPropertiesSelector.All,
+                CancellationToken.None,
+                withVector: true);
+        }
+
+        var issuesReportResult =
+            await _qdrantHttpClient.ReportIssues(CancellationToken.None);
+
+        issuesReportResult.Status.IsSuccess.Should().BeTrue();
+        issuesReportResult.Result.Issues.Should().BeEmpty();
     }
 }

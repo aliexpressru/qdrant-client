@@ -28,6 +28,7 @@ public sealed class HnswConfiguration
     /// - in this case full-scan search should be preferred by query planner and additional
     /// indexing is not required. 1Kb = 1 vector of size 256
     /// </summary>
+    /// <remarks>Should be <c>10</c> or larger.</remarks>
     public ulong? FullScanThreshold { set; get; }
 
     /// <summary>
