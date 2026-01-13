@@ -221,4 +221,26 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) 
             disableTracing,
             enableCompression
         );
+
+    /// <inheritdoc/>
+    public HttpClient CreateQdrantApiClient(Uri httpAddress,
+        string apiKey = null,
+        TimeSpan? httpClientTimeout = null,
+        bool disableTracing = false,
+        bool enableCompression = false)
+    {
+        var handler =
+            QdrantHttpClient.CreateHttpClientHandler(
+                isCompressionEnabled: enableCompression,
+                isDisableTracing: disableTracing,
+                apiKey);
+
+        var apiClient = new HttpClient(handler)
+        {
+            BaseAddress = httpAddress,
+            Timeout = httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout,
+        };
+
+        return apiClient;
+    }
 }

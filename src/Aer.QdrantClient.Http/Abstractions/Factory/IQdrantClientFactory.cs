@@ -242,4 +242,29 @@ public interface IQdrantClientFactory
         ILogger logger = null,
         bool disableTracing = false,
         bool enableCompression = false);
+
+    /// <summary>
+    /// Creates a plain <see cref="HttpClient"/> instance with the specified settings.
+    /// This method can be used to obtain a raw HTTP client for making custom requests to the Qdrant API or to override default client,
+    /// configured for <see cref="IQdrantHttpClient"/> upon creation.
+    /// </summary>
+    /// <param name="httpAddress">The HTTP address of the remote service endpoint. Must be a valid absolute URI.</param>
+    /// <param name="apiKey">
+    /// An optional API key used for authenticating requests to the remote service. If null, authentication may be
+    /// disabled or handled differently depending on the service.
+    /// </param>
+    /// <param name="httpClientTimeout">An optional timeout value for HTTP requests made by the client. If <c>null</c>, the default timeout is used.</param>
+    /// <param name="disableTracing">
+    /// Specifies whether distributed tracing is disabled for this client. Set to <c>true</c> to disable
+    /// tracing; otherwise, tracing is enabled.
+    /// </param>
+    /// <param name="enableCompression">
+    /// Specifies whether HTTP request and response compression is enabled. Set to <c>true</c> to enable
+    /// compression; otherwise, compression is disabled.
+    /// </param>
+    HttpClient CreateQdrantApiClient(Uri httpAddress,
+        string apiKey = null,
+        TimeSpan? httpClientTimeout = null,
+        bool disableTracing = false,
+        bool enableCompression = false);
 }

@@ -94,9 +94,9 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     public virtual Task<HttpClient> GetHttpClient(string collectionOrClusterName) => Task.FromResult(_defaultHttpClient ?? throw new QdrantClientUninitializedException());
 
     /// <summary>
-    /// The logger instance this client will be using.
+    /// The logger instance this client will be using. Can be overridden in derived classes.
     /// </summary>
-    protected internal ILogger Logger { get; set; } = NullLogger.Instance;
+    protected virtual internal ILogger Logger { get; set; } = NullLogger.Instance;
 
     /// <summary>
     /// Initializes a new unconfigured Qdrant HTTP client instance.
