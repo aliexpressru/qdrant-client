@@ -10,11 +10,6 @@ namespace Aer.QdrantClient.Http.Abstractions;
 public partial interface IQdrantHttpClient
 {
     /// <summary>
-    /// Gets the base URI address of the qdrant node used by the API client.
-    /// </summary>
-    public Uri BaseAddress { get; }
-
-    /// <summary>
     /// Asynchronously wait until the collection status becomes <see cref="QdrantCollectionStatus.Green"/>
     /// and collection optimizer status becomes <see cref="QdrantOptimizerStatus.Ok"/>.
     /// </summary>

@@ -6,5 +6,5 @@ namespace Aer.QdrantClient.Http.Exceptions;
 public sealed class QdrantClientUninitializedException()
     : Exception($"""
         Qdrant client is not initialized. Either construct Qdrant client via one of the ctor methods that accept {nameof(HttpClient)}
-        or http client settings or set {nameof(QdrantHttpClient.ApiClient)} property in a Qdrant client derived from {nameof(QdrantHttpClient)}
+        or http client settings or override {nameof(QdrantHttpClient.GetHttpClient)} method in a Qdrant client derived from {nameof(QdrantHttpClient)}
         """);
