@@ -54,11 +54,56 @@ public sealed class UpsertPointsRequest
             Payload = payload;
         }
     }
+    
+    /// <summary>
+    /// Represents a points' batch to upsert to qdrant.
+    /// </summary>
+    public sealed class UpsertPointsBatch
+    {
+        /// <summary>
+        /// The points' identifiers.
+        /// </summary>
+        [JsonConverter(typeof(PointIdIEnumerableJsonConverter))]
+        public IEnumerable<PointId> Ids { get; }
+
+        /// <summary>
+        /// The points' payloads. Payload may contain either any serializable object or a dictionary or an already serialized JSON string.
+        /// </summary>
+        [JsonConverter(typeof(ObjectPayloadEnumerableJsonConverter))]
+        public IEnumerable<object> Payloads { get; }
+
+        /// <summary>
+        /// The points' vectors.
+        /// </summary>
+        [JsonConverter(typeof(VectorEnumerableJsonConverter))]
+        public IEnumerable<VectorBase> Vectors { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UpsertPointsBatch"/> class.
+        /// </summary>
+        /// <param name="ids">The points' identifiers.</param>
+        /// <param name="vectors">The points' vectors.</param>
+        /// <param name="payloads">The points' payloads.</param>
+        public UpsertPointsBatch(
+            IEnumerable<PointId> ids,
+            IEnumerable<VectorBase> vectors,
+            IEnumerable<object> payloads)
+        {
+            Ids = ids;
+            Vectors = vectors;
+            Payloads = payloads;
+        }
+    }
 
     /// <summary>
     /// The points to upsert.
     /// </summary>
     public required IEnumerable<UpsertPoint> Points { get; set; }
+    
+    /// <summary>
+    /// The points' batch to upsert.
+    /// </summary>
+    public required UpsertPointsBatch Batch { get; set; }
 
     /// <summary>
     /// The shard selector to perform operation only on specified shards.
