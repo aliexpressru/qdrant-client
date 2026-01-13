@@ -41,6 +41,8 @@ public partial class QdrantHttpClient : IQdrantHttpClient
 
     private const DecompressionMethods SUPPORTED_DECOMPRESSION_METHODS = DecompressionMethods.Deflate | DecompressionMethods.GZip;
 
+    private readonly HttpClient _defaultHttpClient;
+
     // Forbidden status code was issued until qdrant 1.9
     // from 1.9 Unauthorized is issued
     private static readonly HashSet<HttpStatusCode> _unauthorizedStatusCodes =
@@ -77,13 +79,14 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     internal const string ApiKeyHeaderName = "api-key";
 
     /// <summary>
-    /// The actual HTTP client used to make calls to Qdrant API.
+    /// Gets the actual HTTP client used to make calls to Qdrant API.
     /// </summary>
-    protected internal HttpClient ApiClient
-    {
-        get => field ?? throw new QdrantClientUninitializedException();
-        set;
-    }
+    public HttpClient ApiClient => GetHttpClient();
+
+    /// <summary>
+    /// Gets the actual HTTP client used to make calls to Qdrant API.
+    /// </summary>
+    protected virtual HttpClient GetHttpClient() => _defaultHttpClient ?? throw new QdrantClientUninitializedException();
 
     /// <summary>
     /// The logger instance this client will be using.
@@ -91,7 +94,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     protected internal ILogger Logger { get; set; } = NullLogger.Instance;
 
     /// <inheritdoc/>
-    public Uri BaseAddress => ApiClient.BaseAddress;
+    public Uri BaseAddress => GetHttpClient().BaseAddress;
 
     /// <summary>
     /// Initializes a new unconfigured Qdrant HTTP client instance.
@@ -107,7 +110,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     /// <param name="logger">The optional logger to log internal messages.</param>
     public QdrantHttpClient(HttpClient apiClient, ILogger logger = null)
     {
-        ApiClient = apiClient;
+        _defaultHttpClient = apiClient;
 
         if (logger is { } customLogger)
         {
@@ -183,7 +186,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
             Timeout = httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout,
         };
 
-        ApiClient = apiClient;
+        _defaultHttpClient = apiClient;
     }
 
     internal static HttpMessageHandler CreateHttpClientHandler(
@@ -301,7 +304,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
             throw new InvalidOperationException("Message request uri is null");
         }
 
-        var response = await ApiClient.SendAsync(message, cancellationToken);
+        var response = await GetHttpClient().SendAsync(message, cancellationToken);
 
         var result = await ReadResponseAndHandleErrors(
             message,
@@ -398,7 +401,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
             throw new InvalidOperationException("Message request uri is null");
         }
 
-        var response = await ApiClient.SendAsync(
+        var response = await GetHttpClient().SendAsync(
             message,
             HttpCompletionOption.ResponseHeadersRead,
             cancellationToken);
@@ -443,7 +446,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         where TResponse : QdrantResponseBase
     {
         var getResponse =
-            async () => await ApiClient.SendAsync(createMessage(), cancellationToken);
+            async () => await GetHttpClient().SendAsync(createMessage(), cancellationToken);
 
         if (retryCount > 0)
         {
@@ -479,9 +482,9 @@ public partial class QdrantHttpClient : IQdrantHttpClient
                 )
                 .ExecuteAsync(
 #if NETSTANDARD2_0
-                    async () => (await ApiClient.SendAsync(createMessage(), cancellationToken)).SetStatusCode()
+                    async () => (await GetHttpClient().SendAsync(createMessage(), cancellationToken)).SetStatusCode()
 #else
-                    () => ApiClient.SendAsync(createMessage(), cancellationToken)
+                    () => GetHttpClient().SendAsync(createMessage(), cancellationToken)
 #endif
                 );
         }
