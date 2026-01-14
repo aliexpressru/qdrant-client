@@ -11,15 +11,19 @@ public partial interface IQdrantHttpClient
     /// Get information about the current state and composition of the cluster (shards).
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     Task<GetClusterInfoResponse> GetClusterInfo(
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken,
+        string clusterName = null);
 
     /// <summary>
     /// Tries to recover current peer Raft state.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     Task<DefaultOperationResponse> RecoverPeerRaftState(
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken,
+        string clusterName = null);
 
     /// <summary>
     /// Removes the specified peer (shard) from the cluster.
@@ -28,11 +32,13 @@ public partial interface IQdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isForceDropOperation">If <c>true</c> - removes peer even if it has shards/replicas on it.</param>
     /// <param name="timeout">The operation timeout. If not set the default value of 30 seconds used.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     Task<DefaultOperationResponse> RemovePeer(
         ulong peerId,
         CancellationToken cancellationToken,
         bool isForceDropOperation = false,
-        TimeSpan? timeout = null);
+        TimeSpan? timeout = null,
+        string clusterName = null);
 
     /// <summary>
     /// Get clustering (sharding) information for a collection.

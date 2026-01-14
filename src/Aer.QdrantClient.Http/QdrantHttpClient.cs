@@ -91,7 +91,11 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     /// is supplied with corresponding cluster name (optional parameter for those methods).
     /// Otherwise this parameter will be null.
     /// </remarks>
+#if NETSTANDARD2_0 || NETSTANDARD2_1
     public virtual Task<HttpClient> GetHttpClient(string collectionOrClusterName) => Task.FromResult(_defaultHttpClient ?? throw new QdrantClientUninitializedException());
+#else
+    public virtual ValueTask<HttpClient> GetHttpClient(string collectionOrClusterName) => ValueTask.FromResult(_defaultHttpClient ?? throw new QdrantClientUninitializedException());
+#endif
 
     /// <summary>
     /// The logger instance this client will be using. Can be overridden in derived classes.

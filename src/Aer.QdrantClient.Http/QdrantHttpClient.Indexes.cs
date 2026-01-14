@@ -82,7 +82,7 @@ public partial class QdrantHttpClient
                 $"Direct creation of the text type indexes (fulltext search indexes) is not supported. To create fulltext index please use {nameof(CreateFullTextPayloadIndex)} method");
         }
 
-        var index = new CreatePayloadIndexRequest(
+        var createIndexRequest = new CreatePayloadIndexRequest(
             payloadFieldName,
             payloadFieldType,
             onDisk: onDisk,
@@ -102,7 +102,8 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<CreatePayloadIndexRequest, PayloadIndexOperationResponse>(
             url,
             HttpMethod.Put,
-            index,
+            createIndexRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -159,6 +160,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Put,
             createIndexRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -185,6 +187,7 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<PayloadIndexOperationResponse>(
             url,
             HttpMethod.Delete,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,

@@ -54,12 +54,13 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string clusterName = null)
     {
         Stopwatch sw = Stopwatch.StartNew();
 
         var listCollectionsResponse =
-            (await ListCollections(cancellationToken)).EnsureSuccess();
+            (await ListCollections(cancellationToken, clusterName)).EnsureSuccess();
 
         Dictionary<string, GetCollectionInfoResponse.CollectionInfo> collectionInfos =
             new(listCollectionsResponse.Collections.Length);

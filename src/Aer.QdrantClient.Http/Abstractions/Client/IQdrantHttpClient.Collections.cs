@@ -92,7 +92,8 @@ public partial interface IQdrantHttpClient
     /// Get the names of all the existing collections.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    Task<ListCollectionsResponse> ListCollections(CancellationToken cancellationToken);
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
+    Task<ListCollectionsResponse> ListCollections(CancellationToken cancellationToken, string clusterName = null);
 
     /// <summary>
     /// Delete collection by name.

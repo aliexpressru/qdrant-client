@@ -13,13 +13,15 @@ public partial class QdrantHttpClient
 {
     /// <inheritdoc/>
     public async Task<ListSnapshotsResponse> ListStorageSnapshots(
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string clusterName = null)
     {
         var url = "/snapshots";
 
         var response = await ExecuteRequest<ListSnapshotsResponse>(
             url,
             HttpMethod.Get,
+            clusterName,
             cancellationToken,
             retryCount: 0);
 
@@ -37,7 +39,8 @@ public partial class QdrantHttpClient
     /// <inheritdoc/>
     public async Task<CreateSnapshotResponse> CreateStorageSnapshot(
         CancellationToken cancellationToken,
-        bool isWaitForResult = true)
+        bool isWaitForResult = true,
+        string clusterName = null)
     {
         var url =
             $"/snapshots?wait={ToUrlQueryString(isWaitForResult)}";
@@ -45,6 +48,7 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<CreateSnapshotResponse>(
             url,
             HttpMethod.Post,
+            clusterName,
             cancellationToken,
             retryCount: 0);
 
@@ -56,13 +60,15 @@ public partial class QdrantHttpClient
     /// <inheritdoc/>
     public async Task<DownloadSnapshotResponse> DownloadStorageSnapshot(
         string snapshotName,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string clusterName = null)
     {
         var url = $"/snapshots/{snapshotName}";
 
         HttpRequestMessage message = new(HttpMethod.Get, url);
 
         var result = await DownloadSnapshot(
+            clusterName,
             snapshotName,
             message,
             cancellationToken);
@@ -76,14 +82,15 @@ public partial class QdrantHttpClient
     public async Task<DefaultOperationResponse> DeleteStorageSnapshot(
         string snapshotName,
         CancellationToken cancellationToken,
-        bool isWaitForResult = true
-    )
+        bool isWaitForResult = true,
+        string clusterName = null)
     {
         var url = $"/snapshots/{snapshotName}?wait={ToUrlQueryString(isWaitForResult)}";
 
         var response = await ExecuteRequest<DefaultOperationResponse>(
             url,
             HttpMethod.Delete,
+            clusterName,
             cancellationToken,
             retryCount: 0);
 

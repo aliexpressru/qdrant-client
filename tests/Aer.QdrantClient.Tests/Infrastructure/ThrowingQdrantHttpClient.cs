@@ -7,7 +7,11 @@ internal class ThrowingQdrantHttpClient : QdrantHttpClient
 {
     readonly HttpClient _throwingHttpClient;
 
-    protected override HttpClient GetHttpClient() => _throwingHttpClient;
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+    public override Task<HttpClient> GetHttpClient(string _) => Task.FromResult(_throwingHttpClient);
+#else
+    public override ValueTask<HttpClient> GetHttpClient(string _) => ValueTask.FromResult(_throwingHttpClient);
+#endif
 
     public ThrowingQdrantHttpClient(HttpClient apiClient, ILogger logger = null) : base(apiClient, logger)
     {
@@ -16,11 +20,35 @@ internal class ThrowingQdrantHttpClient : QdrantHttpClient
 
     public void ThrowOnce()
     {
-        ((ThrowingHttpClient)ApiClient).ThrowOnce();
+        HttpClient httpClient;
+
+        var getHttpClientTask = GetHttpClient(null);
+        if (getHttpClientTask.IsCompleted)
+        {
+            httpClient = getHttpClientTask.Result;
+        }
+        else
+        {
+            httpClient = getHttpClientTask.GetAwaiter().GetResult();
+        }
+
+        ((ThrowingHttpClient)httpClient).ThrowOnce();
     }
 
     public void BadRequestOnce()
     {
-        ((ThrowingHttpClient)ApiClient).BadRequestOnce();
+        HttpClient httpClient;
+
+        var getHttpClientTask = GetHttpClient(null);
+        if (getHttpClientTask.IsCompleted)
+        {
+            httpClient = getHttpClientTask.Result;
+        }
+        else
+        {
+            httpClient = getHttpClientTask.GetAwaiter().GetResult();
+        }
+
+        ((ThrowingHttpClient)httpClient).BadRequestOnce();
     }
 }

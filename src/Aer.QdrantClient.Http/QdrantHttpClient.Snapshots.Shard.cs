@@ -25,6 +25,7 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<ListSnapshotsResponse>(
             url,
             HttpMethod.Get,
+            collectionName,
             cancellationToken,
             retryCount: 0);
 
@@ -52,6 +53,7 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<CreateSnapshotResponse>(
             url,
             HttpMethod.Post,
+            collectionName,
             cancellationToken,
             retryCount: 0);
 
@@ -79,6 +81,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Put,
             request,
+            collectionName,
             cancellationToken,
             retryCount: 0);
 
@@ -111,6 +114,7 @@ public partial class QdrantHttpClient
 
         var result = await RecoverFromUploadedSnapshot(
             url,
+            collectionOrClusterName: collectionName,
             snapshotContent,
             cancellationToken);
 
@@ -130,6 +134,7 @@ public partial class QdrantHttpClient
         HttpRequestMessage message = new(HttpMethod.Get, url);
 
         var result = await DownloadSnapshot(
+            collectionOrClusterName: collectionName,
             snapshotName,
             message,
             cancellationToken);
@@ -154,6 +159,7 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<DefaultOperationResponse>(
             url,
             HttpMethod.Delete,
+            collectionName,
             cancellationToken,
             retryCount: 0);
 

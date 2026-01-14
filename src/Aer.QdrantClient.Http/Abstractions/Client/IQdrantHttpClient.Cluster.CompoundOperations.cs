@@ -31,6 +31,7 @@ public partial interface IQdrantHttpClient
     /// The ids of the shards to replicate to the target peer.
     /// If null or empty - replicates all shards that are missing on the target peer.
     /// </param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     Task<ReplicateShardsToPeerResponse> ReplicateShards(
         ulong sourcePeerId,
         ulong targetPeerId,
@@ -40,7 +41,8 @@ public partial interface IQdrantHttpClient
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
         bool isMoveShards = false,
         string[] collectionNamesToReplicate = null,
-        uint[] shardIdsToReplicate = null);
+        uint[] shardIdsToReplicate = null,
+        string clusterName = null);
 
     /// <summary>
     /// Replicates shards for specified or all collections from one peer to the other.
@@ -66,6 +68,7 @@ public partial interface IQdrantHttpClient
     /// The ids of the shards to replicate to the target peer.
     /// If null or empty - replicates all shards that are missing on the target peer.
     /// </param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     Task<ReplicateShardsToPeerResponse> ReplicateShards(
         string sourcePeerUriSelectorString,
         string targetPeerUriSelectorString,
@@ -75,7 +78,8 @@ public partial interface IQdrantHttpClient
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
         bool isMoveShards = false,
         string[] collectionNamesToReplicate = null,
-        uint[] shardIdsToReplicate = null);
+        uint[] shardIdsToReplicate = null,
+        string clusterName = null);
 
     /// <summary>
     /// Replicates shards for specified or all collections to specified peer.
@@ -91,6 +95,7 @@ public partial interface IQdrantHttpClient
     /// Method for transferring the shard from one node to another.
     /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
     /// </param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     /// <param name="collectionNamesToReplicate">
     /// Collection names to replicate shards for.
     /// If <c>null</c> or empty - replicates all collection shards.
@@ -101,6 +106,7 @@ public partial interface IQdrantHttpClient
         ILogger logger = null,
         bool isDryRun = false,
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        string clusterName = null,
         params string[] collectionNamesToReplicate);
 
     /// <summary>
@@ -117,6 +123,7 @@ public partial interface IQdrantHttpClient
     /// Method for transferring the shard from one node to another.
     /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
     /// </param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     /// <param name="collectionNamesToReplicate">
     /// Collection names to replicate shards for.
     /// If <c>null</c> or empty - replicates all collection shards.
@@ -127,6 +134,7 @@ public partial interface IQdrantHttpClient
         ILogger logger = null,
         bool isDryRun = false,
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        string clusterName = null,
         params string[] collectionNamesToReplicate);
 
     /// <summary>
@@ -146,6 +154,7 @@ public partial interface IQdrantHttpClient
     /// Method for transferring the shard from one node to another.
     /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
     /// </param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     Task<ReplicateShardsToPeerResponse> EqualizeShardReplication(
         string[] collectionNamesToEqualize,
         string sourcePeerUriSelectorString,
@@ -153,7 +162,8 @@ public partial interface IQdrantHttpClient
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
-        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot);
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        string clusterName = null);
 
     /// <summary>
     /// Equalizes shard replication between source and empty target peers for specified collections.
@@ -172,6 +182,7 @@ public partial interface IQdrantHttpClient
     /// Method for transferring the shard from one node to another.
     /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
     /// </param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     Task<ReplicateShardsToPeerResponse> EqualizeShardReplication(
         string[] collectionNamesToEqualize,
         ulong sourcePeerId,
@@ -179,7 +190,8 @@ public partial interface IQdrantHttpClient
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
-        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot);
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        string clusterName = null);
 
     /// <summary>
     /// Removes all shards for all collections or specified collections from a peer by distributing them between another peers.
@@ -195,6 +207,7 @@ public partial interface IQdrantHttpClient
     /// Method for transferring the shard from one node to another.
     /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
     /// </param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     /// <param name="collectionNamesToMove">
     /// Collection names to move shards for.
     /// If <c>null</c> or empty - moves all collection shards.
@@ -205,6 +218,7 @@ public partial interface IQdrantHttpClient
         ILogger logger = null,
         bool isDryRun = false,
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        string clusterName = null,
         params string[] collectionNamesToMove
     );
 
@@ -222,6 +236,7 @@ public partial interface IQdrantHttpClient
     /// Method for transferring the shard from one node to another.
     /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
     /// </param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     /// <param name="collectionNamesToMove">
     /// Collection names to move shards for.
     /// If <c>null</c> or empty - moves all collection shards.
@@ -232,6 +247,7 @@ public partial interface IQdrantHttpClient
         ILogger logger = null,
         bool isDryRun = false,
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        string clusterName = null,
         params string[] collectionNamesToMove
     );
 
@@ -245,6 +261,7 @@ public partial interface IQdrantHttpClient
     /// If set to <c>true</c>, this operation calculates and logs
     /// all shard movements without actually executing them.
     /// </param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     /// <param name="collectionNamesToClear">
     /// Collection names to drop shards for.
     /// If <c>null</c> or empty - drops all collection shards.
@@ -254,6 +271,7 @@ public partial interface IQdrantHttpClient
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
+        string clusterName = null,
         params string[] collectionNamesToClear
     );
 
@@ -267,6 +285,7 @@ public partial interface IQdrantHttpClient
     /// If set to <c>true</c>, this operation calculates and logs
     /// all shard movements without actually executing them.
     /// </param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     /// <param name="collectionNamesToClear">
     /// Collection names to drop shards for.
     /// If <c>null</c> or empty - drops all collection shards.
@@ -276,6 +295,7 @@ public partial interface IQdrantHttpClient
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
+        string clusterName = null,
         params string[] collectionNamesToClear
     );
 
@@ -284,18 +304,22 @@ public partial interface IQdrantHttpClient
     /// </summary>
     /// <param name="peerId">The cluster node peer id for the peer to check.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     Task<CheckIsPeerEmptyResponse> CheckIsPeerEmpty(
         ulong peerId,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken,
+        string clusterName = null);
 
     /// <summary>
     /// Checks whether the specified cluster node does not have any collection shards on it.
     /// </summary>
     /// <param name="peerUriSelectorString">The cluster node uri selector for the peer to check.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     Task<CheckIsPeerEmptyResponse> CheckIsPeerEmpty(
         string peerUriSelectorString,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken,
+        string clusterName = null);
 
     /// <summary>
     /// Gets the peer information by the peer node uri substring or by peer id. Returns the found peer and other peers.
@@ -303,30 +327,40 @@ public partial interface IQdrantHttpClient
     /// <param name="peerUriSelectorString">Peer uri substring to get peer info for or <c>null</c> if using <paramref name="peerId"/>.</param>
     /// <param name="peerId">Cluster node peer id to get peer info for or <c>null</c> if using <paramref name="peerUriSelectorString"/>.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     /// <exception cref="QdrantNoPeersFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
     /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
     Task<GetPeerResponse> GetPeerInfo(
         string peerUriSelectorString,
         ulong? peerId,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken,
+        string clusterName = null);
 
     /// <summary>
     /// Gets the peer information by the peer node uri substring. Returns the found peer and other peers.
     /// </summary>
     /// <param name="peerUriSelectorString">Peer uri substring to get peer info for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     /// <exception cref="QdrantNoPeersFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
     /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
-    Task<GetPeerResponse> GetPeerInfo(string peerUriSelectorString, CancellationToken cancellationToken);
+    Task<GetPeerResponse> GetPeerInfo(
+        string peerUriSelectorString,
+        CancellationToken cancellationToken,
+        string clusterName = null);
 
     /// <summary>
     /// Gets the peer information by the peer node uri substring. Returns the found peer and other peers.
     /// </summary>
     /// <param name="peerId">Cluster node peer is to get peer info for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     /// <exception cref="QdrantNoPeersFoundForUriSubstringException">Occurs when no nodes found for uri substring.</exception>
     /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
-    Task<GetPeerResponse> GetPeerInfo(ulong peerId, CancellationToken cancellationToken);
+    Task<GetPeerResponse> GetPeerInfo(
+        ulong peerId,
+        CancellationToken cancellationToken,
+        string clusterName = null);
 
     /// <summary>
     /// Gets the peer information by the peer node uri substring. Returns the found peer and other peers.
@@ -337,5 +371,7 @@ public partial interface IQdrantHttpClient
     /// <exception cref="QdrantMoreThanOnePeerFoundForUriSubstringException">Occurs when more than one node found for uri substring.</exception>
     [Obsolete($"Use one of the {nameof(GetPeerInfo)} methods.")]
     Task<GetPeerResponse>
-        GetPeerInfoByUriSubstring(string clusterNodeUriSubstring, CancellationToken cancellationToken);
+        GetPeerInfoByUriSubstring(
+        string clusterNodeUriSubstring,
+        CancellationToken cancellationToken);
 }
