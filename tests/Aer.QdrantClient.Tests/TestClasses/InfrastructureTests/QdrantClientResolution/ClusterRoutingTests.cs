@@ -133,5 +133,9 @@ internal class ClusterRoutingTests : QdrantTestsBase
         secondClusterAllCollections.Status.IsSuccess.Should().BeTrue();
         secondClusterAllCollections.Result.Collections.Should().ContainSingle(c => c.Name == TestCollectionName2);
         secondClusterAllCollections.Result.Collections.Should().NotContain(c => c.Name == TestCollectionName);
+
+        // Cleanup
+        await ResetStorage(qdrantClientFactory.CreateClient(FirstClientName));
+        await ResetStorage(qdrantClientFactory.CreateClient(SecondClientName));
     }
 }
