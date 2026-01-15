@@ -8,13 +8,16 @@ public partial class QdrantHttpClient
 {
     /// <inheritdoc/>
     [Experimental("QD0003")]
-    public async Task<GetSlowRequestsResponse> GetSlowRequests(CancellationToken cancellationToken)
+    public async Task<GetSlowRequestsResponse> GetSlowRequests(
+        CancellationToken cancellationToken,
+        string clusterName = null)
     {
         var url = "/profiler/slow_requests";
 
         var response = await ExecuteRequest<GetSlowRequestsResponse>(
             url,
             HttpMethod.Get,
+            clusterName,
             cancellationToken,
             retryCount: 0);
 

@@ -10,9 +10,14 @@ namespace Aer.QdrantClient.Http.Abstractions;
 public partial interface IQdrantHttpClient
 {
     /// <summary>
-    /// Gets the base URI address of the qdrant node used by the API client.
+    /// Gets the underlying <see cref="HttpClient"/> instance for the specified collection or cluster name.
     /// </summary>
-    public Uri BaseAddress { get; }
+    /// <param name="collectionOrClusterName">The optional collection or cluster name for client resolution.</param>
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+    public Task<HttpClient> GetApiClient(string collectionOrClusterName);
+#else
+    public ValueTask<HttpClient> GetApiClient(string collectionOrClusterName);
+#endif
 
     /// <summary>
     /// Asynchronously wait until the collection status becomes <see cref="QdrantCollectionStatus.Green"/>

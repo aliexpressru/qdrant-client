@@ -25,7 +25,8 @@ public partial class QdrantHttpClient
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
         bool isMoveShards = false,
         string[] collectionNamesToReplicate = null,
-        uint[] shardIdsToReplicate = null)
+        uint[] shardIdsToReplicate = null,
+        string clusterName = null)
     {
         var sourcePeerInfo = await GetPeerInfo(
             sourcePeerId,
@@ -44,7 +45,8 @@ public partial class QdrantHttpClient
             isDryRun,
             collectionNamesToReplicate,
             shardIdsToReplicate ?? [],
-            isMoveShards);
+            isMoveShards,
+            clusterName: clusterName);
     }
 
     /// <inheritdoc/>
@@ -57,7 +59,8 @@ public partial class QdrantHttpClient
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
         bool isMoveShards = false,
         string[] collectionNamesToReplicate = null,
-        uint[] shardIdsToReplicate = null)
+        uint[] shardIdsToReplicate = null,
+        string clusterName = null)
     {
         var sourcePeerInfo = await GetPeerInfo(
             sourcePeerUriSelectorString,
@@ -76,7 +79,8 @@ public partial class QdrantHttpClient
             isDryRun,
             collectionNamesToReplicate,
             shardIdsToReplicate ?? [],
-            isMoveShards);
+            isMoveShards,
+            clusterName: clusterName);
     }
 
     private async Task<ReplicateShardsToPeerResponse> ReplicateShardsInternal(
@@ -88,7 +92,8 @@ public partial class QdrantHttpClient
         bool isDryRun,
         string[] collectionNamesToReplicate,
         uint[] shardIdsToReplicate,
-        bool isMoveShards)
+        bool isMoveShards,
+        string clusterName = null)
     {
         Stopwatch sw = Stopwatch.StartNew();
 
@@ -99,7 +104,8 @@ public partial class QdrantHttpClient
 
             var collectionInfos = (await ListCollectionInfo(
                 isCountExactPointsNumber: false,
-                cancellationToken)).EnsureSuccess();
+                cancellationToken,
+                clusterName: clusterName)).EnsureSuccess();
 
             string[] collectionNames;
 
@@ -156,7 +162,7 @@ public partial class QdrantHttpClient
 
                 IEnumerable<uint> sourceShardIds;
 
-                if (shardIdsToReplicate is { Length: >0 })
+                if (shardIdsToReplicate is { Length: > 0 })
                 {
                     // Check that all provided shard ids exist on the source peer
                     foreach (var shardIdToReplicate in shardIdsToReplicate)
@@ -301,6 +307,7 @@ public partial class QdrantHttpClient
         ILogger logger = null,
         bool isDryRun = false,
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        string clusterName = null,
         params string[] collectionNamesToReplicate)
     {
         var targetPeerInfo = await GetPeerInfo(
@@ -313,6 +320,7 @@ public partial class QdrantHttpClient
             cancellationToken,
             logger,
             isDryRun,
+            clusterName,
             collectionNamesToReplicate);
     }
 
@@ -323,6 +331,7 @@ public partial class QdrantHttpClient
         ILogger logger = null,
         bool isDryRun = false,
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        string clusterName = null,
         params string[] collectionNamesToReplicate)
     {
         var targetPeerInfo = await GetPeerInfo(
@@ -335,6 +344,7 @@ public partial class QdrantHttpClient
             cancellationToken,
             logger,
             isDryRun,
+            clusterName,
             collectionNamesToReplicate);
     }
 
@@ -344,6 +354,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
+        string clusterName = null,
         params string[] collectionNamesToReplicate)
     {
         Stopwatch sw = Stopwatch.StartNew();
@@ -354,7 +365,8 @@ public partial class QdrantHttpClient
 
             var collectionInfos = (await ListCollectionInfo(
                 isCountExactPointsNumber: false,
-                cancellationToken)).EnsureSuccess();
+                cancellationToken,
+                clusterName: clusterName)).EnsureSuccess();
 
             var sourcePeers = new CircularEnumerable<ulong>(sourcePeerIds);
 
@@ -563,7 +575,8 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
-        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot)
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        string clusterName = null)
     {
         GetPeerResponse sourcePeerInfo = await GetPeerInfo(
             sourcePeerUriSelectorString,
@@ -577,6 +590,7 @@ public partial class QdrantHttpClient
             sourcePeerInfo,
             targetPeerInfo,
             collectionNamesToEqualize,
+            clusterName,
             shardTransferMethod,
             cancellationToken,
             logger,
@@ -591,7 +605,8 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
-        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot)
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        string clusterName = null)
     {
         GetPeerResponse sourcePeerInfo = await GetPeerInfo(
             sourcePeerId,
@@ -605,6 +620,7 @@ public partial class QdrantHttpClient
             sourcePeerInfo,
             targetPeerInfo,
             collectionNamesToEqualize,
+            clusterName,
             shardTransferMethod,
             cancellationToken,
             logger,
@@ -616,6 +632,7 @@ public partial class QdrantHttpClient
         GetPeerResponse sourcePeerInfoResponse,
         GetPeerResponse emptyTargetPeerInfoResponse,
         string[] collectionNamesToEqualize,
+        string clusterName,
         ShardTransferMethod shardTransferMethod,
         CancellationToken cancellationToken,
         ILogger logger = null,
@@ -630,7 +647,8 @@ public partial class QdrantHttpClient
 
             var collectionInfos = (await ListCollectionInfo(
                 isCountExactPointsNumber: false,
-                cancellationToken)).EnsureSuccess();
+                cancellationToken,
+                clusterName: clusterName)).EnsureSuccess();
 
             string[] collectionNames;
 
@@ -814,6 +832,7 @@ public partial class QdrantHttpClient
         ILogger logger = null,
         bool isDryRun = false,
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        string clusterName = null,
         params string[] collectionNamesToMove
     )
     {
@@ -824,6 +843,7 @@ public partial class QdrantHttpClient
         return await DrainPeerInternal(
             peerToDrainInfo,
             shardTransferMethod,
+            clusterName,
             cancellationToken,
             logger,
             isDryRun,
@@ -837,6 +857,7 @@ public partial class QdrantHttpClient
         ILogger logger = null,
         bool isDryRun = false,
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        string clusterName = null,
         params string[] collectionNamesToMove
     )
     {
@@ -847,6 +868,7 @@ public partial class QdrantHttpClient
         return await DrainPeerInternal(
             peerToDrainInfo,
             shardTransferMethod,
+            clusterName,
             cancellationToken,
             logger,
             isDryRun,
@@ -856,6 +878,7 @@ public partial class QdrantHttpClient
     private async Task<DrainPeerResponse> DrainPeerInternal(
         GetPeerResponse peerToDrainInfoResponse,
         ShardTransferMethod shardTransferMethod,
+        string clusterName,
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
@@ -869,7 +892,7 @@ public partial class QdrantHttpClient
             var (sourcePeerId, _, targetPeerIds, peerUriPerPeerId) =
                 peerToDrainInfoResponse.EnsureSuccess();
 
-            var collectionNames = (await ListCollections(cancellationToken))
+            var collectionNames = (await ListCollections(cancellationToken, clusterName))
                 .EnsureSuccess()
                 .Collections
                 .Select(c => c.Name)
@@ -1046,6 +1069,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
+        string clusterName = null,
         params string[] collectionNamesToClear
     )
     {
@@ -1055,6 +1079,7 @@ public partial class QdrantHttpClient
 
         return await ClearPeerInternal(
             peerToDrainInfo,
+            clusterName,
             cancellationToken,
             logger,
             isDryRun,
@@ -1067,6 +1092,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
+        string clusterName = null,
         params string[] collectionNamesToClear
     )
     {
@@ -1076,6 +1102,7 @@ public partial class QdrantHttpClient
 
         return await ClearPeerInternal(
             peerToDrainInfo,
+            clusterName,
             cancellationToken,
             logger,
             isDryRun,
@@ -1084,6 +1111,7 @@ public partial class QdrantHttpClient
 
     private async Task<ClearPeerResponse> ClearPeerInternal(
         GetPeerResponse peerToClearInfoResponse,
+        string clusterName,
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
@@ -1097,7 +1125,7 @@ public partial class QdrantHttpClient
             var (sourcePeerId, _, _, peerUriPerPeerId) =
                 peerToClearInfoResponse.EnsureSuccess();
 
-            var collectionNames = (await ListCollections(cancellationToken))
+            var collectionNames = (await ListCollections(cancellationToken, clusterName))
                 .EnsureSuccess()
                 .Collections
                 .Select(c => c.Name)
@@ -1235,7 +1263,8 @@ public partial class QdrantHttpClient
     /// <inheritdoc/>
     public async Task<CheckIsPeerEmptyResponse> CheckIsPeerEmpty(
         ulong peerId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string clusterName = null)
     {
         var peerToCheckInfo = await GetPeerInfo(
             peerId,
@@ -1243,13 +1272,15 @@ public partial class QdrantHttpClient
 
         return await CheckIsPeerEmptyInternal(
             peerToCheckInfo,
+            clusterName,
             cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<CheckIsPeerEmptyResponse> CheckIsPeerEmpty(
         string peerUriSelectorString,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string clusterName = null)
     {
         var peerToCheckInfo = await GetPeerInfo(
             peerUriSelectorString,
@@ -1257,11 +1288,13 @@ public partial class QdrantHttpClient
 
         return await CheckIsPeerEmptyInternal(
             peerToCheckInfo,
+            clusterName,
             cancellationToken);
     }
 
     private async Task<CheckIsPeerEmptyResponse> CheckIsPeerEmptyInternal(
         GetPeerResponse peerToCheckInfoResponse,
+        string clusterName,
         CancellationToken cancellationToken)
     {
         Stopwatch sw = Stopwatch.StartNew();
@@ -1270,7 +1303,7 @@ public partial class QdrantHttpClient
         {
             var (peerIdToCheck, _, _, _) = peerToCheckInfoResponse.EnsureSuccess();
 
-            var collectionNames = (await ListCollections(cancellationToken))
+            var collectionNames = (await ListCollections(cancellationToken, clusterName))
                 .EnsureSuccess()
                 .Collections
                 .Select(c => c.Name);
@@ -1327,7 +1360,8 @@ public partial class QdrantHttpClient
     public Task<GetPeerResponse> GetPeerInfo(
         string peerUriSelectorString,
         ulong? peerId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string clusterName = null)
     {
         if (string.IsNullOrWhiteSpace(peerUriSelectorString)
             && !peerId.HasValue)
@@ -1338,18 +1372,21 @@ public partial class QdrantHttpClient
 
         if (!string.IsNullOrWhiteSpace(peerUriSelectorString))
         {
-            return GetPeerInfo(peerUriSelectorString, cancellationToken);
+            return GetPeerInfo(peerUriSelectorString, cancellationToken, clusterName: clusterName);
         }
 
         return GetPeerInfo(peerId!.Value, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<GetPeerResponse> GetPeerInfo(string peerUriSelectorString, CancellationToken cancellationToken)
+    public async Task<GetPeerResponse> GetPeerInfo(
+        string peerUriSelectorString,
+        CancellationToken cancellationToken,
+        string clusterName = null)
     {
         Stopwatch sw = Stopwatch.StartNew();
 
-        var clusterInfo = await GetClusterInfoInternal(cancellationToken);
+        var clusterInfo = await GetClusterInfoInternal(clusterName, cancellationToken);
 
         // Here we need to check whether the cluster don't have duplicated peers by same URI.
 
@@ -1433,11 +1470,14 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<GetPeerResponse> GetPeerInfo(ulong peerId, CancellationToken cancellationToken)
+    public async Task<GetPeerResponse> GetPeerInfo(
+        ulong peerId,
+        CancellationToken cancellationToken,
+        string clusterName = null)
     {
         Stopwatch sw = Stopwatch.StartNew();
 
-        var clusterInfo = await GetClusterInfoInternal(cancellationToken);
+        var clusterInfo = await GetClusterInfoInternal(clusterName, cancellationToken);
 
         if (!clusterInfo.ParsedPeers.TryGetValue(peerId, out GetClusterInfoResponse.PeerInfoUint peerInfo))
         {
@@ -1572,9 +1612,9 @@ public partial class QdrantHttpClient
         return (collectionShardsPerPeers, shardReplicationFactors);
     }
 
-    private async Task<GetClusterInfoResponse.ClusterInfo> GetClusterInfoInternal(CancellationToken cancellationToken)
+    private async Task<GetClusterInfoResponse.ClusterInfo> GetClusterInfoInternal(string collectionOrClusterName, CancellationToken cancellationToken)
     {
-        var getClusterInfoResponse = await GetClusterInfo(cancellationToken);
+        var getClusterInfoResponse = await GetClusterInfo(cancellationToken, collectionOrClusterName);
 
         getClusterInfoResponse.EnsureSuccess();
 
