@@ -10,7 +10,7 @@ internal class ThrowingQdrantHttpClient : QdrantHttpClient
 #if NETSTANDARD2_0 || NETSTANDARD2_1
     public override Task<HttpClient> GetHttpClient(string _) => Task.FromResult(_throwingHttpClient);
 #else
-    public override ValueTask<HttpClient> GetHttpClient(string _) => ValueTask.FromResult(_throwingHttpClient);
+    public override ValueTask<HttpClient> GetApiClient(string _) => ValueTask.FromResult(_throwingHttpClient);
 #endif
 
     public ThrowingQdrantHttpClient(HttpClient apiClient, ILogger logger = null) : base(apiClient, logger)
@@ -18,11 +18,12 @@ internal class ThrowingQdrantHttpClient : QdrantHttpClient
         _throwingHttpClient = new ThrowingHttpClient(apiClient);
     }
 
+#pragma warning disable CA2012 // Justification: Need to support synchronous calls in tests, can't await ValueTasks directly.
     public void ThrowOnce()
     {
         HttpClient httpClient;
 
-        var getHttpClientTask = GetHttpClient(null);
+        var getHttpClientTask = GetApiClient(null);
         if (getHttpClientTask.IsCompleted)
         {
             httpClient = getHttpClientTask.Result;
@@ -39,7 +40,7 @@ internal class ThrowingQdrantHttpClient : QdrantHttpClient
     {
         HttpClient httpClient;
 
-        var getHttpClientTask = GetHttpClient(null);
+        var getHttpClientTask = GetApiClient(null);
         if (getHttpClientTask.IsCompleted)
         {
             httpClient = getHttpClientTask.Result;
@@ -51,4 +52,5 @@ internal class ThrowingQdrantHttpClient : QdrantHttpClient
 
         ((ThrowingHttpClient)httpClient).BadRequestOnce();
     }
+#pragma warning restore CA2012
 }

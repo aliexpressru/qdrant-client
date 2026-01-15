@@ -223,24 +223,57 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) 
         );
 
     /// <inheritdoc/>
-    public HttpClient CreateQdrantApiClient(Uri httpAddress,
+    public HttpClient CreateQdrantApiClient(
+        Uri httpAddress,
         string apiKey = null,
         TimeSpan? httpClientTimeout = null,
         bool disableTracing = false,
         bool enableCompression = false)
     {
-        var handler =
-            QdrantHttpClient.CreateHttpClientHandler(
-                isCompressionEnabled: enableCompression,
-                isDisableTracing: disableTracing,
-                apiKey);
+        var httpApiClient = QdrantHttpClient.CreateApiClient(
+            httpAddress,
+            apiKey,
+            httpClientTimeout,
+            disableTracing: disableTracing,
+            enableCompression: enableCompression);
 
-        var apiClient = new HttpClient(handler)
+        return httpApiClient;
+    }
+
+    /// <inheritdoc/>
+    public HttpClient GetQdrantApiClient(string clientName)
+    {
+        // If we have already determined that this client name is not registered, throw immediately
+        if (_unregisteredClientNames.Contains(clientName))
         {
-            BaseAddress = httpAddress,
-            Timeout = httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout,
-        };
+            throw new QdrantNamedQdrantClientNotFound(clientName);
+        }
 
-        return apiClient;
+        // Check if we have stored settings for this client name
+        if (_clientSettings.TryGetValue(clientName, out StoredQdrantClientSettings settings))
+        {
+            var httpApiClient = QdrantHttpClient.CreateApiClient(
+                settings.QdrantAddress,
+                settings.ApiKey,
+                settings.HttpClientTimeout,
+                disableTracing: settings.DisableTracing,
+                enableCompression: settings.EnableCompression);
+
+            return httpApiClient;
+        }
+        else
+        {
+            // Means we are trying to created a client that has been registered in DI
+            var httpApiClient = httpClientFactory.CreateClient(clientName);
+
+            if (httpApiClient.BaseAddress == null)
+            {
+                // Means that no HttpClient was registered with such name
+                _ = _unregisteredClientNames.Add(clientName);
+                throw new QdrantNamedQdrantClientNotFound(clientName);
+            }
+
+            return httpApiClient;
+        }
     }
 }

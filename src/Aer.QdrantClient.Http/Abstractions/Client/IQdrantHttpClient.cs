@@ -10,6 +10,16 @@ namespace Aer.QdrantClient.Http.Abstractions;
 public partial interface IQdrantHttpClient
 {
     /// <summary>
+    /// Gets the underlying <see cref="HttpClient"/> instance for the specified collection or cluster name.
+    /// </summary>
+    /// <param name="collectionOrClusterName">The optional collection or cluster name for client resolution.</param>
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+    public Task<HttpClient> GetApiClient(string collectionOrClusterName);
+#else
+    public ValueTask<HttpClient> GetApiClient(string collectionOrClusterName);
+#endif
+
+    /// <summary>
     /// Asynchronously wait until the collection status becomes <see cref="QdrantCollectionStatus.Green"/>
     /// and collection optimizer status becomes <see cref="QdrantOptimizerStatus.Ok"/>.
     /// </summary>
