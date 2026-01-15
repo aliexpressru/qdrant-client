@@ -244,8 +244,8 @@ public interface IQdrantClientFactory
         bool enableCompression = false);
 
     /// <summary>
-    /// Creates a plain <see cref="HttpClient"/> instance with the specified settings.
-    /// This method can be used to obtain a raw HTTP client for making custom requests to the Qdrant API or to override default client,
+    /// Creates a plain <see cref="HttpClient"/> instance configured for making calls to Qdrant HTTP api.
+    /// This method can be used to create a raw HTTP client for making custom requests to the Qdrant API or to override default client,
     /// configured for <see cref="IQdrantHttpClient"/> upon creation.
     /// </summary>
     /// <param name="httpAddress">The HTTP address of the remote service endpoint. Must be a valid absolute URI.</param>
@@ -262,28 +262,29 @@ public interface IQdrantClientFactory
     /// Specifies whether HTTP request and response compression is enabled. Set to <c>true</c> to enable
     /// compression; otherwise, compression is disabled.
     /// </param>
-    HttpClient CreateQdrantApiClient(Uri httpAddress,
+    HttpClient CreateApiClient(Uri httpAddress,
         string apiKey = null,
         TimeSpan? httpClientTimeout = null,
         bool disableTracing = false,
         bool enableCompression = false);
 
     /// <summary>
-    /// Gets a plain <see cref="HttpClient"/> instance.
+    /// Gets a plain <see cref="HttpClient"/> instance configured for making calls to Qdrant HTTP api.
+    ///
+    /// This method can be used to obtain a raw HTTP client for making custom requests to the Qdrant API or to override default client,
+    /// configured for <see cref="IQdrantHttpClient"/> upon creation.
+    /// 
     /// For client to be obtained, it must either be previously registered in the dependency
     /// injection container with the same name it is going to be requested by using one of the
     /// <c>ServiceCollectionExtensions.AddQdrantHttpClient</c> overloads.
     /// 
     /// Or it must be registered using one of the <c>IQdrantClientFactory.AddClientConfiguration</c> overloads.
     /// If no named configuration is found, an exception of type <see cref="QdrantNamedQdrantClientNotFound"/> is thrown.
-    /// 
-    /// This method can be used to obtain a raw HTTP client for making custom requests to the Qdrant API or to override default client,
-    /// configured for <see cref="IQdrantHttpClient"/> upon creation.
     /// </summary>
     /// <param name="clientName">The name of the client to get.</param>
     /// <exception cref="QdrantNamedQdrantClientNotFound">
     /// Thrown when the client configuration was not registered either by directly calling to
     /// factory or via <c>ServiceCollectionExtensions.AddQdrantHttpClient</c> overloads.
     /// </exception>
-    HttpClient GetQdrantApiClient(string clientName);
+    HttpClient GetApiClient(string clientName);
 }

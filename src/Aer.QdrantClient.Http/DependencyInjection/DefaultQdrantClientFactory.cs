@@ -223,7 +223,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) 
         );
 
     /// <inheritdoc/>
-    public HttpClient CreateQdrantApiClient(
+    public HttpClient CreateApiClient(
         Uri httpAddress,
         string apiKey = null,
         TimeSpan? httpClientTimeout = null,
@@ -241,7 +241,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory) 
     }
 
     /// <inheritdoc/>
-    public HttpClient GetQdrantApiClient(string clientName)
+    public HttpClient GetApiClient(string clientName)
     {
         // If we have already determined that this client name is not registered, throw immediately
         if (_unregisteredClientNames.Contains(clientName))

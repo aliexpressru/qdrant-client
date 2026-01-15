@@ -66,8 +66,8 @@ internal class QdrantClientFactoryTests : QdrantTestsBase
     {
         var factory = ServiceProvider.GetRequiredService<IQdrantClientFactory>();
 
-        var firstClient = factory.GetQdrantApiClient(FirstClientName);
-        var secondClient = factory.GetQdrantApiClient(SecondClientName);
+        var firstClient = factory.GetApiClient(FirstClientName);
+        var secondClient = factory.GetApiClient(SecondClientName);
 
         var firstClientBaseAddress = firstClient.BaseAddress;
         var secondClientBaseAddress = secondClient.BaseAddress;
