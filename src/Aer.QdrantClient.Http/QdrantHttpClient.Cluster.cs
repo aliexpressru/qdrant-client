@@ -110,6 +110,46 @@ public partial class QdrantHttpClient
             }
         }
 
+        // Collect shards by peers info
+
+        if (collectionShardingInfo.Status.IsSuccess
+            && collectionShardingInfo.Result is not null)
+        {
+            var shardsByPeers = new Dictionary<ulong, List<uint>>(
+                collectionShardingInfo.Result.RemoteShards.Length
+                + collectionShardingInfo.Result.LocalShards.Length
+            );
+
+            var answeringPeerId = collectionShardingInfo.Result.PeerId;
+
+            shardsByPeers.Add(answeringPeerId, new List<uint>(collectionShardingInfo.Result.LocalShards.Length));
+
+            foreach (var shard in collectionShardingInfo.Result.LocalShards)
+            {
+                var shardId = shard.ShardId;
+
+                shardsByPeers[answeringPeerId].Add(shardId);
+            }
+
+            foreach (var shard in collectionShardingInfo.Result.RemoteShards)
+            {
+                var shardPeer = shard.PeerId;
+
+#pragma warning disable CA1854 // Justification: false positive
+                if (!shardsByPeers.ContainsKey(shardPeer))
+                {
+                    shardsByPeers.Add(shardPeer, []);
+                }
+#pragma warning restore CA1854
+
+                var shardId = shard.ShardId;
+
+                shardsByPeers[shardPeer].Add(shardId);
+            }
+
+            collectionShardingInfo.Result.ShardsByPeers = shardsByPeers;
+        }
+
         return collectionShardingInfo;
     }
 

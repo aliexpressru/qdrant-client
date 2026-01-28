@@ -348,6 +348,59 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task DropCollectionShards()
+    {
+        await CreateTestShardedCollection(
+            _qdrantHttpClient,
+            TestCollectionName,
+            10U,
+            replicationFactor: 2);
+
+        await CreateTestShardedCollection(
+            _qdrantHttpClient,
+            TestCollectionName2,
+            10U,
+            replicationFactor: 2);
+
+        var peerInfo =
+            (await _qdrantHttpClient.GetPeerInfo("http://qdrant-1", CancellationToken.None))
+            .EnsureSuccess();
+
+        var collection1ClusteringBeforeDrop = (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
+            .EnsureSuccess();
+
+        var peerIdToDrain = peerInfo.PeerId;
+
+        var shardsOnPeer = collection1ClusteringBeforeDrop.ShardsByPeers[peerIdToDrain];
+
+        var shardToDrop = shardsOnPeer.First();
+
+        var dropOneShardResponse =
+            await _qdrantHttpClient.DropCollectionShardsFromPeer(
+                TestCollectionName,
+                "qdrant-1",
+                [shardToDrop],
+                CancellationToken.None,
+                logger: _logger);
+
+        await _qdrantHttpClient.EnsureCollectionReady(
+            TestCollectionName,
+            CancellationToken.None,
+            isCheckShardTransfersCompleted: true);
+
+        dropOneShardResponse.Status.IsSuccess.Should().BeTrue();
+        dropOneShardResponse.Result.IsSuccess.Should().BeTrue();
+        dropOneShardResponse.Result.DroppedShardIds.Should().BeEquivalentTo([shardToDrop]);
+
+        var collection1ClusteringAfterDrop = (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
+            .EnsureSuccess();
+
+        var shardsOnPeerAfterDrop = collection1ClusteringAfterDrop.ShardsByPeers[peerIdToDrain];
+
+        shardsOnPeerAfterDrop.Should().NotContain(shardToDrop);
+    }
+
+    [Test]
     public async Task ClearPeer_CollectionDoesNotExist()
     {
         var clearPeerResponse =

@@ -23,12 +23,23 @@ public abstract class QdrantResponseBase<TResult> : QdrantResponseBase
     { }
 
     /// <summary>
-    /// Used to copy the base properties (<see cref="QdrantResponseBase.Status"/>, <see cref="QdrantResponseBase.Usage"/>, <see cref="QdrantResponseBase.Time"/>) from another response.
+    /// Used to copy the base properties
+    /// (
+    /// <see cref="QdrantResponseBase.Status"/>,
+    /// <see cref="QdrantResponseBase.Usage"/>,
+    /// <see cref="QdrantResponseBase.Time"/>
+    /// )
+    /// from another response.
     /// Primarily used to propagate operation status and statistics in case of errors in compound operations.
     /// </summary>
-    /// <param name="childResponse">This child response to copy base properties from</param>
+    /// <param name="childResponse">The child response to copy base properties from.</param>
     protected internal QdrantResponseBase(QdrantResponseBase childResponse)
-    { 
+    {
+        if (childResponse is null)
+        {
+            return;
+        }
+
         Status = childResponse.Status;
         Usage = childResponse.Usage;
         Time = childResponse.Time;
@@ -47,22 +58,5 @@ public abstract class QdrantResponseBase<TResult> : QdrantResponseBase
         }
 
         throw new QdrantUnsuccessfulResponseStatusException(GetType(), Status);
-    }
-    
-    /// <summary>
-    /// Fills the response stats (<see cref="QdrantResponseBase.Status"/>, <see cref="QdrantResponseBase.Usage"/>, <see cref="QdrantResponseBase.Time"/>) from another response.
-    /// </summary>
-    public QdrantResponseBase FillResponseStatsFromResponse(QdrantResponseBase response)
-    {
-        if (response is null)
-        {
-            return this;
-        }
-
-        Status = response.Status;
-        Time = response.Time;
-        Usage = response.Usage;
-        
-        return this;
     }
 }
