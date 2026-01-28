@@ -87,6 +87,11 @@ public sealed class GetCollectionClusteringInfoResponse
         /// Ongoing resharding operations.
         /// </summary>
         public ReshardingOperationInfo[] ReshardingOperations { init; get; }
+
+        /// <summary>
+        /// Gets or sets the mapping of peer identifiers to the list of shard identifiers they are responsible for.
+        /// </summary>
+        public Dictionary<ulong, List<uint>> ShardsByPeers { set; get; }
     }
 
     /// <summary>
