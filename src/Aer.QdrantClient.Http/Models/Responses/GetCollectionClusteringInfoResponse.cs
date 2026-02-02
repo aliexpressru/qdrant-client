@@ -1,9 +1,9 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
 
@@ -198,7 +198,7 @@ public sealed class GetCollectionClusteringInfoResponse
         /// <summary>
         /// The peer id that the shard is being added or removed from.
         /// </summary>
-        public uint PeerId { init; get; }
+        public ulong PeerId { init; get; }
 
         /// <summary>
         /// The peer uri that the shard is being added or removed from.
