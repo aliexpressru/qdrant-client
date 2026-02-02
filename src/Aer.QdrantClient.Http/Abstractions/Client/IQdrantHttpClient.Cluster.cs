@@ -46,10 +46,13 @@ public partial interface IQdrantHttpClient
     /// <param name="collectionName">Collection name to get sharding info for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isTranslatePeerIdsToUris">If set to <c>true</c>, enriches collection cluster info response with peer URI values.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     Task<GetCollectionClusteringInfoResponse> GetCollectionClusteringInfo(
         string collectionName,
         CancellationToken cancellationToken,
-        bool isTranslatePeerIdsToUris = false);
+        bool isTranslatePeerIdsToUris = false,
+        string clusterName = null
+    );
 
     /// <summary>
     /// Update collection clustering (sharding) setup.

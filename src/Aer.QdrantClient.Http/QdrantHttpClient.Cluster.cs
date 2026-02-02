@@ -67,14 +67,15 @@ public partial class QdrantHttpClient
     public async Task<GetCollectionClusteringInfoResponse> GetCollectionClusteringInfo(
         string collectionName,
         CancellationToken cancellationToken,
-        bool isTranslatePeerIdsToUris = false)
+        bool isTranslatePeerIdsToUris = false,
+        string clusterName = null)
     {
         var url = $"/collections/{collectionName}/cluster";
 
         var collectionShardingInfo = await ExecuteRequest<GetCollectionClusteringInfoResponse>(
             url,
             HttpMethod.Get,
-            collectionName,
+            clusterName,
             cancellationToken,
             retryCount: 0);
 
@@ -82,7 +83,7 @@ public partial class QdrantHttpClient
             && collectionShardingInfo.Status.IsSuccess
             && collectionShardingInfo.Result is not null)
         {
-            var clusterInfo = await GetClusterInfo(cancellationToken);
+            var clusterInfo = await GetClusterInfo(cancellationToken, clusterName);
 
             collectionShardingInfo.Result.PeerUri =
                 clusterInfo.Result.ParsedPeers[collectionShardingInfo.Result.PeerId].Uri;
