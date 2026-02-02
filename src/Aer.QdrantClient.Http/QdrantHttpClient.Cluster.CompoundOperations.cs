@@ -1255,10 +1255,62 @@ public partial class QdrantHttpClient
         }
     }
 
+
+    /// <inheritdoc/>
+    public async Task<DropCollectionReplicaFromPeerResponse> DropCollectionShardsFromPeer(
+        string collectionName,
+        ulong peerId,
+        uint[] shardIds,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        string clusterName = null
+    )
+    {
+        var peerToDropShardFromInfo = await GetPeerInfo(
+            peerId,
+            cancellationToken);
+
+        return await DropCollectionShardsFromPeerInternal(
+            collectionName,
+            peerToDropShardFromInfo,
+            shardIds,
+            cancellationToken,
+            logger,
+            isDryRun,
+            clusterName
+        );
+    }
+
     /// <inheritdoc/>
     public async Task<DropCollectionReplicaFromPeerResponse> DropCollectionShardsFromPeer(
         string collectionName,
         string peerUriSelectorString,
+        uint[] shardIds,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        string clusterName = null
+    )
+    {
+        var peerToDropShardFromInfo = await GetPeerInfo(
+            peerUriSelectorString,
+            cancellationToken);
+
+        return await DropCollectionShardsFromPeerInternal(
+            collectionName,
+            peerToDropShardFromInfo,
+            shardIds,
+            cancellationToken,
+            logger,
+            isDryRun,
+            clusterName
+        );
+    }
+
+    private async Task<DropCollectionReplicaFromPeerResponse> DropCollectionShardsFromPeerInternal(
+        string collectionName,
+        GetPeerResponse peerToDropShardFromInfo,
         uint[] shardIds,
         CancellationToken cancellationToken,
         ILogger logger = null,
@@ -1272,11 +1324,8 @@ public partial class QdrantHttpClient
 
         try
         {
-            var peerToDropShardFromInfo = (await GetPeerInfo(
-            peerUriSelectorString,
-            cancellationToken)).EnsureSuccess();
-
-            var sourcePeerId = peerToDropShardFromInfo.PeerId;
+            var (sourcePeerId, _, _, peerUriPerPeerId) =
+                peerToDropShardFromInfo.EnsureSuccess();
 
             foreach (var shardIdToDrop in shardIds)
             {
@@ -1299,7 +1348,7 @@ public partial class QdrantHttpClient
                                 collectionName,
                                 shardIdToDrop,
                                 sourcePeerId,
-                                peerToDropShardFromInfo.PeerUri,
+                                peerUriPerPeerId[sourcePeerId],
                                 dropShardReplicaResponse.Status.GetErrorMessage()
                             );
                         }
