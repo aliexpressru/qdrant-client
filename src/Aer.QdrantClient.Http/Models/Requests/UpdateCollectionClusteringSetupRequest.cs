@@ -356,17 +356,16 @@ public abstract class UpdateCollectionClusteringSetupRequest
     public static UpdateCollectionClusteringSetupRequest CreateAbortShardTransferRequest(
         uint shardId,
         ulong fromPeerId,
-        ulong toPeerId)
-        =>
-            new AbortShardTransferRequest()
+        ulong toPeerId) =>
+        new AbortShardTransferRequest()
+        {
+            AbortTransfer = new ShardOperationDescription()
             {
-                AbortTransfer = new ShardOperationDescription()
-                {
-                    ShardId = shardId,
-                    FromPeerId = fromPeerId,
-                    ToPeerId = toPeerId
-                }
-            };
+                ShardId = shardId,
+                FromPeerId = fromPeerId,
+                ToPeerId = toPeerId
+            }
+        };
 
     /// <summary>
     /// Returns the abort shard transfer operation request.
@@ -379,18 +378,43 @@ public abstract class UpdateCollectionClusteringSetupRequest
         uint shardId,
         ulong fromPeerId,
         ulong toPeerId,
-        ShardTransferMethod shardTransferMethod)
-        =>
-            new RestartShardTransferRequest()
+        ShardTransferMethod shardTransferMethod) =>
+        new RestartShardTransferRequest()
+        {
+            RestartTransfer = new ShardOperationDescription()
             {
-                RestartTransfer = new ShardOperationDescription()
-                {
-                    ShardId = shardId,
-                    FromPeerId = fromPeerId,
-                    ToPeerId = toPeerId,
-                    Method = shardTransferMethod
-                }
-            };
+                ShardId = shardId,
+                FromPeerId = fromPeerId,
+                ToPeerId = toPeerId,
+                Method = shardTransferMethod
+            }
+        };
+
+    /// <summary>
+    /// Returns the start resharding operation request.
+    /// </summary>
+    /// <param name="direction">Resharding direction, scale up or down in number of shards.</param>
+    /// <param name="peerId">The peer identifier to issue resharding operation on. Optional.</param>
+    /// <param name="shardKey">The shard key to select sards to start resharing for.</param>
+    public static UpdateCollectionClusteringSetupRequest CreateStartReshardingRequest(
+        ReshardingOperationDirection direction,
+        ulong? peerId = null,
+        ShardKey shardKey = null) =>
+        new StartReshardingOperationRequest()
+        {
+            StartResharding = new()
+            {
+                Direction = direction,
+                PeerId = peerId,
+                ShardKey = shardKey
+            }
+        };
+
+    /// <summary>
+    /// Returns the abort resharding operation request.
+    /// </summary>
+    public static UpdateCollectionClusteringSetupRequest CreateAbortReshardingRequest() =>
+        new AbortReshardingOperationRequest();
 
     /// <summary>
     /// Returns the drop shard replica operation request.
@@ -399,16 +423,15 @@ public abstract class UpdateCollectionClusteringSetupRequest
     /// <param name="peerId">The peer identifier to drop shard on.</param>
     public static UpdateCollectionClusteringSetupRequest CreateDropShardReplicaRequest(
         uint shardId,
-        ulong peerId)
-        =>
-            new DropShardReplicaRequest()
+        ulong peerId) =>
+        new DropShardReplicaRequest()
+        {
+            DropReplica = new DropShardReplicaRequest.DropShardReplicaDescriptor()
             {
-                DropReplica = new DropShardReplicaRequest.DropShardReplicaDescriptor()
-                {
-                    ShardId = shardId,
-                    PeerId = peerId,
-                }
-            };
+                ShardId = shardId,
+                PeerId = peerId,
+            }
+        };
 
     /// <summary>
     /// Returns the create sharding key operation request.
@@ -424,18 +447,17 @@ public abstract class UpdateCollectionClusteringSetupRequest
         ShardKey shardKey,
         uint? shardsNumber = null,
         uint? replicationFactor = null,
-        ulong[] placement = null)
-        =>
-            new CreateShardingKeyRequest()
+        ulong[] placement = null) =>
+        new CreateShardingKeyRequest()
+        {
+            CreateShardingKey = new CreateShardingKeyRequest.ShardKeyOperationDescription()
             {
-                CreateShardingKey = new CreateShardingKeyRequest.ShardKeyOperationDescription()
-                {
-                    ShardKey = shardKey,
-                    ShardsNumber = shardsNumber,
-                    ReplicationFactor = replicationFactor,
-                    Placement = placement
-                }
-            };
+                ShardKey = shardKey,
+                ShardsNumber = shardsNumber,
+                ReplicationFactor = replicationFactor,
+                Placement = placement
+            }
+        };
 
     /// <summary>
     /// Returns the drop sharding key operation request.
@@ -443,13 +465,12 @@ public abstract class UpdateCollectionClusteringSetupRequest
     /// <param name="shardKey">The shard key for shards to drop.</param>
     /// <returns></returns>
     public static UpdateCollectionClusteringSetupRequest CreateDropShardingKeyRequest(
-        ShardKey shardKey)
-        =>
-            new DropShardingKeyRequest()
+        ShardKey shardKey) =>
+        new DropShardingKeyRequest()
+        {
+            DropShardingKey = new DropShardingKeyRequest.DropShardKeyOperationDescription()
             {
-                DropShardingKey = new DropShardingKeyRequest.DropShardKeyOperationDescription()
-                {
-                    ShardKey = shardKey
-                }
-            };
+                ShardKey = shardKey
+            }
+        };
 }
