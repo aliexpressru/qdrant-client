@@ -10,11 +10,16 @@ namespace Aer.QdrantClient.Http.Models.Requests;
 /// <summary>
 /// Represents the request to update collection clustering (sharding) information.
 /// </summary>
+[JsonDerivedType(typeof(CreateShardingKeyRequest))]
 [JsonDerivedType(typeof(MoveShardRequest))]
 [JsonDerivedType(typeof(ReplicateShardRequest))]
 [JsonDerivedType(typeof(ReplicatePointsRequest))]
 [JsonDerivedType(typeof(AbortShardTransferRequest))]
+[JsonDerivedType(typeof(RestartShardTransferRequest))]
 [JsonDerivedType(typeof(DropShardReplicaRequest))]
+[JsonDerivedType(typeof(StartReshardingOperationRequest))]
+[JsonDerivedType(typeof(AbortReshardingOperationRequest))]
+[JsonDerivedType(typeof(DropShardingKeyRequest))]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public abstract class UpdateCollectionClusteringSetupRequest
