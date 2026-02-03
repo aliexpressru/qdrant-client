@@ -30,11 +30,13 @@ public partial class QdrantHttpClient
     {
         var sourcePeerInfo = await GetPeerInfo(
             sourcePeerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         var targetPeerInfo = await GetPeerInfo(
             targetPeerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await ReplicateShardsInternal(
             sourcePeerInfo,
@@ -64,11 +66,13 @@ public partial class QdrantHttpClient
     {
         var sourcePeerInfo = await GetPeerInfo(
             sourcePeerUriSelectorString,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         var targetPeerInfo = await GetPeerInfo(
             targetPeerUriSelectorString,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await ReplicateShardsInternal(
             sourcePeerInfo,
@@ -311,7 +315,8 @@ public partial class QdrantHttpClient
     {
         var targetPeerInfo = await GetPeerInfo(
             targetPeerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await ReplicateShardsToPeerInternal(
             targetPeerInfo,
@@ -335,7 +340,8 @@ public partial class QdrantHttpClient
     {
         var targetPeerInfo = await GetPeerInfo(
             targetPeerUriSelectorString,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await ReplicateShardsToPeerInternal(
             targetPeerInfo,
@@ -578,11 +584,13 @@ public partial class QdrantHttpClient
     {
         GetPeerResponse sourcePeerInfo = await GetPeerInfo(
             sourcePeerUriSelectorString,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         GetPeerResponse targetPeerInfo = await GetPeerInfo(
             emptyTargetPeerUriSelectorString,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await EqualizeShardReplicationInternal(
             sourcePeerInfo,
@@ -608,11 +616,13 @@ public partial class QdrantHttpClient
     {
         GetPeerResponse sourcePeerInfo = await GetPeerInfo(
             sourcePeerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         GetPeerResponse targetPeerInfo = await GetPeerInfo(
             emptyTargetPeerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await EqualizeShardReplicationInternal(
             sourcePeerInfo,
@@ -835,7 +845,8 @@ public partial class QdrantHttpClient
     {
         var peerToDrainInfo = await GetPeerInfo(
             peerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await DrainPeerInternal(
             peerToDrainInfo,
@@ -860,7 +871,8 @@ public partial class QdrantHttpClient
     {
         var peerToDrainInfo = await GetPeerInfo(
             peerUriSelectorString,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await DrainPeerInternal(
             peerToDrainInfo,
@@ -1071,7 +1083,8 @@ public partial class QdrantHttpClient
     {
         var peerToDrainInfo = await GetPeerInfo(
             peerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await ClearPeerInternal(
             peerToDrainInfo,
@@ -1094,7 +1107,8 @@ public partial class QdrantHttpClient
     {
         var peerToDrainInfo = await GetPeerInfo(
             peerUriSelectorString,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await ClearPeerInternal(
             peerToDrainInfo,
@@ -1255,7 +1269,6 @@ public partial class QdrantHttpClient
         }
     }
 
-
     /// <inheritdoc/>
     public async Task<DropCollectionReplicaFromPeerResponse> DropCollectionShardsFromPeer(
         string collectionName,
@@ -1269,7 +1282,8 @@ public partial class QdrantHttpClient
     {
         var peerToDropShardFromInfo = await GetPeerInfo(
             peerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await DropCollectionShardsFromPeerInternal(
             collectionName,
@@ -1295,7 +1309,8 @@ public partial class QdrantHttpClient
     {
         var peerToDropShardFromInfo = await GetPeerInfo(
             peerUriSelectorString,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await DropCollectionShardsFromPeerInternal(
             collectionName,
@@ -1402,7 +1417,8 @@ public partial class QdrantHttpClient
     {
         var peerToCheckInfo = await GetPeerInfo(
             peerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await CheckIsPeerEmptyInternal(
             peerToCheckInfo,
@@ -1509,7 +1525,7 @@ public partial class QdrantHttpClient
             return GetPeerInfo(peerUriSelectorString, cancellationToken, clusterName: clusterName);
         }
 
-        return GetPeerInfo(peerId!.Value, cancellationToken);
+        return GetPeerInfo(peerId!.Value, cancellationToken, clusterName: clusterName);
     }
 
     /// <inheritdoc/>
