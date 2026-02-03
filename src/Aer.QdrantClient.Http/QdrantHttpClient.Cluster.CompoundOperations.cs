@@ -2,6 +2,7 @@ using Aer.QdrantClient.Http.Collections;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Helpers;
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
+using Aer.QdrantClient.Http.Infrastructure.ShardBalancing;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -547,6 +548,63 @@ public partial class QdrantHttpClient
                         logger?.LogInformation("Shard move simulation mode ON. No shards replicated");
                     }
                 }
+            }
+
+            sw.Stop();
+
+            return new ReplicateShardsToPeerResponse()
+            {
+                Result = true,
+                Status = QdrantStatus.Success(),
+                Time = sw.Elapsed.TotalSeconds
+            };
+        }
+        catch (QdrantUnsuccessfulResponseStatusException qex)
+        {
+            sw.Stop();
+
+            return new ReplicateShardsToPeerResponse()
+            {
+                Result = false,
+                Status = QdrantStatus.Fail(qex.Message, qex),
+                Time = sw.Elapsed.TotalSeconds
+            };
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<ReplicateShardsToPeerResponse> BalanceShardReplication(
+        string collectionName,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        string clusterName = null)
+    {
+
+        Stopwatch sw = Stopwatch.StartNew();
+
+        try
+        {
+            var collectionInfo = (
+                await GetCollectionInfo(collectionName, cancellationToken)
+            ).EnsureSuccess();
+
+            var collectionClusteringInfo = (
+                await GetCollectionClusteringInfo(
+                    collectionName,
+                    cancellationToken,
+                    clusterName: clusterName
+                )
+            ).EnsureSuccess();
+
+            var shardBalanceCalculator = new ShardBalanceCalculator(collectionName, collectionInfo, collectionClusteringInfo);
+
+            shardBalanceCalculator.Calculate(logger);
+
+            if (shardBalanceCalculator.HasUnbalancedReplicas)
+            {
+                await shardBalanceCalculator.ExecuteRebalance(this);
             }
 
             sw.Stop();

@@ -116,36 +116,57 @@ public partial class QdrantHttpClient
         if (collectionShardingInfo.Status.IsSuccess
             && collectionShardingInfo.Result is not null)
         {
-            var shardsByPeers = new Dictionary<ulong, List<uint>>(
-                collectionShardingInfo.Result.RemoteShards.Length
-                + collectionShardingInfo.Result.LocalShards.Length
-            );
+            // To avoid counting peers we just use some arbitrary number
+            var shardsByPeers = new Dictionary<ulong, HashSet<uint>>(16);
+            // Assume each peer has the same number of shard replicas
+            var peersByShards = new Dictionary<uint, HashSet<ulong>>(collectionShardingInfo.Result.LocalShards.Length);
 
             var answeringPeerId = collectionShardingInfo.Result.PeerId;
 
-            shardsByPeers.Add(answeringPeerId, new List<uint>(collectionShardingInfo.Result.LocalShards.Length));
+            // Collect local shards
+
+            shardsByPeers.Add(answeringPeerId, []);
 
             foreach (var shard in collectionShardingInfo.Result.LocalShards)
             {
                 var shardId = shard.ShardId;
 
                 shardsByPeers[answeringPeerId].Add(shardId);
+
+#pragma warning disable CA1854 // Justification: we intend to check and then add key-value pair to avoid allocating new list
+                if (!peersByShards.ContainsKey(shardId))
+                {
+                    peersByShards.Add(shardId, []);
+                }
+#pragma warning restore CA1854
+
+                peersByShards[shardId].Add(answeringPeerId);
             }
+
+            // Collect remote shards
 
             foreach (var shard in collectionShardingInfo.Result.RemoteShards)
             {
                 var shardPeer = shard.PeerId;
+                var shardId = shard.ShardId;
 
-#pragma warning disable CA1854 // Justification: false positive
+#pragma warning disable CA1854 // Justification: we intend to check and then add key-value pair to avoid allocating new list
                 if (!shardsByPeers.ContainsKey(shardPeer))
                 {
                     shardsByPeers.Add(shardPeer, []);
                 }
+
+                if (!peersByShards.ContainsKey(shardId))
+                {
+                    // We should never get here unless for cases when we have non-balanced shard distribution:
+                    // i.e. not every peer has equal number of shard replicas
+                    peersByShards.Add(shardId, []);
+                }
 #pragma warning restore CA1854
 
-                var shardId = shard.ShardId;
-
                 shardsByPeers[shardPeer].Add(shardId);
+
+                peersByShards[shardId].Add(shardPeer);
             }
 
             collectionShardingInfo.Result.ShardsByPeers = shardsByPeers;

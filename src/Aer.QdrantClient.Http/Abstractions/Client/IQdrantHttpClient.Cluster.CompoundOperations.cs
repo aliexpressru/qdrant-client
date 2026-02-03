@@ -138,6 +138,30 @@ public partial interface IQdrantHttpClient
         params string[] collectionNamesToReplicate);
 
     /// <summary>
+    /// Equalizes shard replication for specified collections across all cluster peers.
+    /// The final result will be moving shards between peers until equal number of shard replicas on all peers.
+    /// </summary>
+    /// <param name="collectionName">Collection name to balance shard replication for.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="logger">The optional logger for state logging.</param>
+    /// <param name="isDryRun">
+    /// If set to <c>true</c>, this operation calculates and logs
+    /// all shard movements without actually executing them.
+    /// </param>
+    /// <param name="shardTransferMethod">
+    /// Method for transferring the shard from one node to another.
+    /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
+    /// </param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
+    Task<ReplicateShardsToPeerResponse> BalanceShardReplication(
+        string collectionName,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        string clusterName = null);
+
+    /// <summary>
     /// Equalizes shard replication between source and empty target peers for specified collections.
     /// The final result will be moving shards form source to empty target until equal number of shard replicas on both peers.
     /// </summary>
