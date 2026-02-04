@@ -8,6 +8,8 @@ using Aer.QdrantClient.Tests.Helpers;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
+// NOTE: this is an ad-hoc mess used to troubleshoot various problems
+
 [Ignore("Real world tests are run locally only and are enabled manually")]
 internal class RealWorldTests : QdrantTestsBase
 {
