@@ -383,20 +383,11 @@ internal class VectorTests : QdrantTestsBase
     [Test]
     public void VectorEqualityMembers()
     {
-        DenseVector denseVector = new()
-        {
-            VectorValues = [1, 2, 3]
-        };
+        DenseVector denseVector = new([1, 2, 3]);
 
-        DenseVector denseVectorEqual = new()
-        {
-            VectorValues = [1, 2, 3]
-        };
+        DenseVector denseVectorEqual = new([1, 2, 3]);
 
-        DenseVector denseVectorNotEqual = new()
-        {
-            VectorValues = [3, 4, 5]
-        };
+        DenseVector denseVectorNotEqual = new([3, 4, 5]);
 
 #pragma warning disable CA1861 // Avoid constant arrays as arguments | Justification : Test code
         SparseVector sparseVector = new(new[] { 1U, 2U, 3U }, [1, 2, 3]);

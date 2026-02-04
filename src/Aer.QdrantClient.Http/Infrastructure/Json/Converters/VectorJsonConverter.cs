@@ -174,10 +174,7 @@ internal sealed class VectorJsonConverter : JsonConverter<VectorBase>
                 var vectorValuesArray =
                     vectorValuesJArray.Deserialize<float[]>(JsonSerializerConstants.DefaultSerializerOptions);
 
-                return new DenseVector()
-                {
-                    VectorValues = vectorValuesArray
-                };
+                return new DenseVector(vectorValuesArray);
 
             case JsonValueKind.Array:
                 var multiVectorValuesArray =
