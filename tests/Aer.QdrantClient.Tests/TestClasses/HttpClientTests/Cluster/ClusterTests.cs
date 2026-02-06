@@ -8,12 +8,12 @@ using Aer.QdrantClient.Tests.Model;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
-//#if !DEBUG
-//[Ignore(
-//    "I didn't find a way to configure both single-node and a multi-node cluster in "
-//        + "GitHub actions so these tests will run only locally"
-//)]
-//#endif
+#if !DEBUG
+[Ignore(
+    "I didn't find a way to configure both single-node and a multi-node cluster in "
+        + "GitHub actions so these tests will run only locally"
+)]
+#endif
 internal partial class ClusterTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;
