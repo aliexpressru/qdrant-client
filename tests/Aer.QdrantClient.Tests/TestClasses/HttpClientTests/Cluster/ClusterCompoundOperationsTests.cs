@@ -11,10 +11,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
-#if !DEBUG
-[Ignore("I didn't find a way to configure both single-node and a multi-node cluster in "
-+"GitHub actions so these tests will run only locally")]
-#endif
+//#if !DEBUG
+//[Ignore("I didn't find a way to configure both single-node and a multi-node cluster in "
+//+"GitHub actions so these tests will run only locally")]
+//#endif
 internal class ClusterCompoundOperationsTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient;

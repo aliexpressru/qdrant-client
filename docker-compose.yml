@@ -30,7 +30,14 @@ services:
     container_name: qdrant-1
     image: qdrant/qdrant:${QDRANT_VERSION}
     entrypoint: ./entrypoint.sh
-    command: --uri 'http://qdrant-1:6335'
+
+    # we use environment variables instead of command since github actions do not support command section
+    #command: --uri 'http://qdrant-1:6335'
+
+    environment:
+      QDRANT__CLUSTER__ENABLED: true
+      QDRANT_URI: 'http://qdrant-1:6335'
+    
     volumes:
       - qdrant-storage-1:/qdrant/storage
       - snapshot-data-1:/qdrant/snapshots
@@ -52,7 +59,15 @@ services:
     container_name: qdrant-2
     image: qdrant/qdrant:${QDRANT_VERSION}
     entrypoint: ./entrypoint.sh
-    command: --bootstrap 'http://qdrant-1:6335' --uri 'http://qdrant-2:6335'
+
+    # we use environment variables instead of command since github actions do not support command section
+    #command: --bootstrap 'http://qdrant-1:6335' --uri 'http://qdrant-2:6335'
+
+    environment:
+      QDRANT__CLUSTER__ENABLED: true
+      QDRANT_URI: 'http://qdrant-2:6335'
+      QDRANT_BOOTSTRAP: 'http://qdrant-1:6335'
+
     volumes:
       - qdrant-storage-2:/qdrant/storage
       - snapshot-data-2:/qdrant/snapshots
@@ -76,7 +91,13 @@ services:
     container_name: qdrant-00
     image: qdrant/qdrant:${QDRANT_VERSION}
     entrypoint: ./entrypoint.sh
-    command: --uri 'http://qdrant-00:6335'
+    
+    # we use environment variables instead of command since github actions do not support command section
+    #command: --uri 'http://qdrant-00:6335'
+
+    environment:
+      QDRANT_URI: 'http://qdrant-00:6335'
+    
     volumes:
       - qdrant-storage-00:/qdrant/storage
       - snapshot-data-00:/qdrant/snapshots
@@ -94,7 +115,7 @@ services:
           cpus: '3'
           memory: 2G
 
-# We need to use named volumes instead of local volumes to avoid qdrant zerioing out the vectors after index creation.
+# We need to use named volumes instead of local volumes to avoid qdrant zeroing out the vectors after index creation.
 # And also to avoid the " \"called `Result::unwrap()` on an `Err` value: OutputTooSmall { expected: 4, actual: 0 }" error on version 1.14.x.
 volumes:
   qdrant-storage-0:

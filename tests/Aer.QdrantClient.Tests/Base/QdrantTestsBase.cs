@@ -287,7 +287,7 @@ public class QdrantTestsBase
         return ret;
     }
 
-    private static float[] CreateTestFloat32Vector(uint vectorLength)
+    internal static float[] CreateTestFloat32Vector(uint vectorLength)
         =>
             [..Enumerable.Range(0, (int)vectorLength)
 #if NET7_0_OR_GREATER
