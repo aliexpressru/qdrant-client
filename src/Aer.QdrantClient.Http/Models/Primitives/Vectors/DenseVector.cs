@@ -23,6 +23,21 @@ public sealed class DenseVector : VectorBase, IEquatable<VectorBase>, IEquatable
     [JsonIgnore]
     public override VectorBase Default => this;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="DenseVector"/> from provided element values.
+    /// </summary>
+    /// <param name="vectorValues">The vector elements values.</param>
+    [JsonConstructor]
+    public DenseVector(float[] vectorValues)
+    {
+        if (vectorValues is null or { Length: 0 })
+        {
+            throw new ArgumentException($"{nameof(vectorValues)} array can't be null or empty", nameof(vectorValues));
+        }
+
+        VectorValues = vectorValues;
+    }
+
     /// <inheritdoc/>
     public override VectorBase this[string vectorName] =>
         throw new NotSupportedException($"Vector names are not supported for single vector values {GetType()}");
@@ -117,7 +132,7 @@ public sealed class DenseVector : VectorBase, IEquatable<VectorBase>, IEquatable
         // "]"
         reader.ReadString();
 
-        return new DenseVector() { VectorValues = values };
+        return new DenseVector(values);
     }
 
     /// <inheritdoc/>
