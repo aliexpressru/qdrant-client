@@ -2,7 +2,7 @@ using Aer.QdrantClient.Http.Collections;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Helpers;
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
-using Aer.QdrantClient.Http.Infrastructure.ShardBalancing;
+using Aer.QdrantClient.Http.Infrastructure.Replication;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -573,15 +573,15 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<ReplicateShardsToPeerResponse> BalanceShardReplication(
+    public async Task<ReplicateShardsToPeerResponse> RestoreShardReplicationFactor(
         string collectionName,
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        TimeSpan? timeout = null,
         string clusterName = null)
     {
-
         Stopwatch sw = Stopwatch.StartNew();
 
         try
@@ -598,13 +598,16 @@ public partial class QdrantHttpClient
                 )
             ).EnsureSuccess();
 
-            var shardBalanceCalculator = new ShardBalanceCalculator(collectionName, collectionInfo, collectionClusteringInfo);
+            var shardReplicator = new ShardReplicator(collectionName, collectionInfo, collectionClusteringInfo);
 
-            shardBalanceCalculator.Calculate(logger);
+            shardReplicator.Calculate(logger);
 
-            if (shardBalanceCalculator.HasUnbalancedReplicas)
+            if (shardReplicator.ShardsNeedReplication)
             {
-                await shardBalanceCalculator.ExecuteRebalance(this);
+                await foreach (var replication in shardReplicator.ExecuteReplications(this, cancellationToken, shardTransferMethod))
+                {
+                    await EnsureCollectionReady(collectionName, cancellationToken, isCheckShardTransfersCompleted: true);
+                }
             }
 
             sw.Stop();

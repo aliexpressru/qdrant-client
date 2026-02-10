@@ -138,8 +138,9 @@ public partial interface IQdrantHttpClient
         params string[] collectionNamesToReplicate);
 
     /// <summary>
-    /// Equalizes shard replication for specified collections across all cluster peers.
-    /// The final result will be moving shards between peers until equal number of shard replicas on all peers.
+    /// Restores shard replica count to be no fewer than configured replication factor for a specified collection.
+    /// The final result will be replicating shards until replication factor for each shard is restored.
+    /// If shard has number of replicas greater than configured replication factor for collection - it will not be altered.
     /// </summary>
     /// <param name="collectionName">Collection name to balance shard replication for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -152,13 +153,15 @@ public partial interface IQdrantHttpClient
     /// Method for transferring the shard from one node to another.
     /// If not set, <see cref="ShardTransferMethod.Snapshot"/> will be used.
     /// </param>
+    /// <param name="timeout">The timeout to wait for resharding operation initiation.</param>
     /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
-    Task<ReplicateShardsToPeerResponse> BalanceShardReplication(
+    Task<ReplicateShardsToPeerResponse> RestoreShardReplicationFactor(
         string collectionName,
         CancellationToken cancellationToken,
         ILogger logger = null,
         bool isDryRun = false,
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
+        TimeSpan? timeout = null,
         string clusterName = null);
 
     /// <summary>

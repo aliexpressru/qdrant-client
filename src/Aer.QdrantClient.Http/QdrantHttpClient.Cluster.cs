@@ -111,7 +111,7 @@ public partial class QdrantHttpClient
             }
         }
 
-        // Collect shards by peers info
+        // Collect shards and peers info
 
         if (collectionShardingInfo.Status.IsSuccess
             && collectionShardingInfo.Result is not null)
@@ -170,6 +170,7 @@ public partial class QdrantHttpClient
             }
 
             collectionShardingInfo.Result.ShardsByPeers = shardsByPeers;
+            collectionShardingInfo.Result.PeersByShards = peersByShards;
         }
 
         return collectionShardingInfo;
