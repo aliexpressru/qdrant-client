@@ -17,13 +17,18 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="clusterName">
+    /// The optional cluster name for multi-cluster client scenarios.
+    /// If set it will be used for multi-cluster routing instead of <paramref name="collectionName"/>.
+    /// </param>
     Task<GetCollectionInfoResponse> GetCollectionInfo(
         string collectionName,
         bool isCountExactPointsNumber,
         CancellationToken cancellationToken,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string clusterName = null);
 
     /// <summary>
     /// Get the detailed information about all existing collections.
