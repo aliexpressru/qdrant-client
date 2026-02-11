@@ -19,14 +19,16 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string clusterName = null)
     {
         var getCollectionInfoResponse = await GetCollectionInfo(
             collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
-            onRetry);
+            onRetry,
+            clusterName);
 
         if (!getCollectionInfoResponse.Status.IsSuccess)
         {
@@ -73,7 +75,8 @@ public partial class QdrantHttpClient
                     cancellationToken,
                     retryCount,
                     retryDelay,
-                    onRetry)
+                    onRetry,
+                    clusterName)
                 ).EnsureSuccess();
 
             collectionInfos.Add(collectionNameInfo.Name, getCollectionInfoResponse);

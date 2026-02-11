@@ -129,7 +129,8 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string clusterName = null)
     {
         EnsureQdrantNameCorrect(collectionName);
 
@@ -138,7 +139,7 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<GetCollectionInfoResponse>(
             url,
             HttpMethod.Get,
-            collectionName,
+            clusterName ?? collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
