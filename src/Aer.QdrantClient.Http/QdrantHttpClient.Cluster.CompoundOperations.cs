@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Collections;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Helpers;
@@ -9,6 +7,8 @@ using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Microsoft.Extensions.Logging;
 using MoreLinq;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http;
 
@@ -30,11 +30,13 @@ public partial class QdrantHttpClient
     {
         var sourcePeerInfo = await GetPeerInfo(
             sourcePeerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         var targetPeerInfo = await GetPeerInfo(
             targetPeerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await ReplicateShardsInternal(
             sourcePeerInfo,
@@ -64,11 +66,13 @@ public partial class QdrantHttpClient
     {
         var sourcePeerInfo = await GetPeerInfo(
             sourcePeerUriSelectorString,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         var targetPeerInfo = await GetPeerInfo(
             targetPeerUriSelectorString,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await ReplicateShardsInternal(
             sourcePeerInfo,
@@ -212,7 +216,7 @@ public partial class QdrantHttpClient
 
                         if (!isDryRun)
                         {
-                            var isSuccessfullyStartOperationResponse = await UpdateCollectionClusteringSetup(
+                            var replicateShardResponse = await UpdateCollectionClusteringSetup(
                                 collectionName,
                                 isMoveShards
                                     ? UpdateCollectionClusteringSetupRequest.CreateMoveShardRequest(
@@ -227,8 +231,8 @@ public partial class QdrantHttpClient
                                         shardTransferMethod: shardTransferMethod),
                                 cancellationToken);
 
-                            if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
-                                || isSuccessfullyStartOperationResponse.Result is false)
+                            if (!replicateShardResponse.Status.IsSuccess
+                                || replicateShardResponse.Result is false)
                             {
                                 if (logger?.IsEnabled(LogLevel.Error) == true)
                                 {
@@ -240,7 +244,7 @@ public partial class QdrantHttpClient
                                         peerUriPerPeerId[sourcePeerId],
                                         targetPeerId,
                                         peerUriPerPeerId[targetPeerId],
-                                        isSuccessfullyStartOperationResponse.Status.GetErrorMessage()
+                                        replicateShardResponse.Status.GetErrorMessage()
                                     );
                                 }
 
@@ -248,10 +252,9 @@ public partial class QdrantHttpClient
 
                                 sw.Stop();
 
-                                return new ReplicateShardsToPeerResponse()
+                                return new ReplicateShardsToPeerResponse(replicateShardResponse)
                                 {
                                     Result = false,
-                                    Status = isSuccessfullyStartOperationResponse.Status,
                                     Time = sw.Elapsed.TotalSeconds
                                 };
                             }
@@ -312,7 +315,8 @@ public partial class QdrantHttpClient
     {
         var targetPeerInfo = await GetPeerInfo(
             targetPeerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await ReplicateShardsToPeerInternal(
             targetPeerInfo,
@@ -336,7 +340,8 @@ public partial class QdrantHttpClient
     {
         var targetPeerInfo = await GetPeerInfo(
             targetPeerUriSelectorString,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await ReplicateShardsToPeerInternal(
             targetPeerInfo,
@@ -500,7 +505,7 @@ public partial class QdrantHttpClient
 
                     if (!isDryRun)
                     {
-                        var isSuccessfullyStartOperationResponse = await UpdateCollectionClusteringSetup(
+                        var replicateShardResponse = await UpdateCollectionClusteringSetup(
                             collectionName,
                             UpdateCollectionClusteringSetupRequest.CreateReplicateShardRequest(
                                 shardId: sourceShardId,
@@ -509,8 +514,8 @@ public partial class QdrantHttpClient
                                 shardTransferMethod: shardTransferMethod),
                             cancellationToken);
 
-                        if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
-                            || isSuccessfullyStartOperationResponse.Result is false)
+                        if (!replicateShardResponse.Status.IsSuccess
+                            || replicateShardResponse.Result is false)
                         {
                             if (logger?.IsEnabled(LogLevel.Error) == true)
                             {
@@ -522,7 +527,7 @@ public partial class QdrantHttpClient
                                     peerUriPerPeerId[shardReplicaSourcePeerId],
                                     targetPeerId,
                                     peerUriPerPeerId[targetPeerId],
-                                    isSuccessfullyStartOperationResponse.Status.GetErrorMessage()
+                                    replicateShardResponse.Status.GetErrorMessage()
                                 );
                             }
 
@@ -530,10 +535,9 @@ public partial class QdrantHttpClient
 
                             sw.Stop();
 
-                            return new ReplicateShardsToPeerResponse()
+                            return new ReplicateShardsToPeerResponse(replicateShardResponse)
                             {
                                 Result = false,
-                                Status = isSuccessfullyStartOperationResponse.Status,
                                 Time = sw.Elapsed.TotalSeconds
                             };
                         }
@@ -580,11 +584,13 @@ public partial class QdrantHttpClient
     {
         GetPeerResponse sourcePeerInfo = await GetPeerInfo(
             sourcePeerUriSelectorString,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         GetPeerResponse targetPeerInfo = await GetPeerInfo(
             emptyTargetPeerUriSelectorString,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await EqualizeShardReplicationInternal(
             sourcePeerInfo,
@@ -610,11 +616,13 @@ public partial class QdrantHttpClient
     {
         GetPeerResponse sourcePeerInfo = await GetPeerInfo(
             sourcePeerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         GetPeerResponse targetPeerInfo = await GetPeerInfo(
             emptyTargetPeerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await EqualizeShardReplicationInternal(
             sourcePeerInfo,
@@ -758,7 +766,7 @@ public partial class QdrantHttpClient
 
                     if (!isDryRun)
                     {
-                        var isSuccessfullyStartOperationResponse = await UpdateCollectionClusteringSetup(
+                        var moveShardResponse = await UpdateCollectionClusteringSetup(
                             collectionName,
                             UpdateCollectionClusteringSetupRequest.CreateMoveShardRequest(
                                 shardId: shardIdToMove,
@@ -767,8 +775,8 @@ public partial class QdrantHttpClient
                                 shardTransferMethod: shardTransferMethod),
                             cancellationToken);
 
-                        if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
-                            || isSuccessfullyStartOperationResponse.Result is false)
+                        if (!moveShardResponse.Status.IsSuccess
+                            || moveShardResponse.Result is false)
                         {
                             if (logger?.IsEnabled(LogLevel.Error) == true)
                             {
@@ -780,7 +788,7 @@ public partial class QdrantHttpClient
                                     peerUriPerPeerId[sourcePeerId],
                                     targetPeerId,
                                     peerUriPerPeerId[targetPeerId],
-                                    isSuccessfullyStartOperationResponse.Status.GetErrorMessage()
+                                    moveShardResponse.Status.GetErrorMessage()
                                 );
                             }
 
@@ -788,10 +796,9 @@ public partial class QdrantHttpClient
 
                             sw.Stop();
 
-                            return new ReplicateShardsToPeerResponse()
+                            return new ReplicateShardsToPeerResponse(moveShardResponse)
                             {
                                 Result = false,
-                                Status = isSuccessfullyStartOperationResponse.Status,
                                 Time = sw.Elapsed.TotalSeconds
                             };
                         }
@@ -838,7 +845,8 @@ public partial class QdrantHttpClient
     {
         var peerToDrainInfo = await GetPeerInfo(
             peerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await DrainPeerInternal(
             peerToDrainInfo,
@@ -863,7 +871,8 @@ public partial class QdrantHttpClient
     {
         var peerToDrainInfo = await GetPeerInfo(
             peerUriSelectorString,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await DrainPeerInternal(
             peerToDrainInfo,
@@ -993,7 +1002,7 @@ public partial class QdrantHttpClient
 
                         if (!isDryRun)
                         {
-                            var isSuccessfullyStartOperationResponse = await UpdateCollectionClusteringSetup(
+                            var moveShardResponse = await UpdateCollectionClusteringSetup(
                                 collectionName,
                                 UpdateCollectionClusteringSetupRequest.CreateMoveShardRequest(
                                     shardId: shardToMoveToPeer,
@@ -1002,8 +1011,8 @@ public partial class QdrantHttpClient
                                     shardTransferMethod: shardTransferMethod),
                                 cancellationToken);
 
-                            if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
-                                || isSuccessfullyStartOperationResponse.Result is false)
+                            if (!moveShardResponse.Status.IsSuccess
+                                || moveShardResponse.Result is false)
                             {
                                 if (logger?.IsEnabled(LogLevel.Error) == true)
                                 {
@@ -1015,18 +1024,17 @@ public partial class QdrantHttpClient
                                         peerUriPerPeerId[sourcePeerId],
                                         targetPeerId,
                                         peerUriPerPeerId[targetPeerId],
-                                        isSuccessfullyStartOperationResponse.Status.GetErrorMessage()
+                                        moveShardResponse.Status.GetErrorMessage()
                                     );
                                 }
 
-                                // means issuing move operation failed - abandon move
+                                // means issuing move operation failed - abandon drain
 
                                 sw.Stop();
 
-                                return new DrainPeerResponse()
+                                return new DrainPeerResponse(moveShardResponse)
                                 {
                                     Result = false,
-                                    Status = isSuccessfullyStartOperationResponse.Status,
                                     Time = sw.Elapsed.TotalSeconds
                                 };
                             }
@@ -1075,7 +1083,8 @@ public partial class QdrantHttpClient
     {
         var peerToDrainInfo = await GetPeerInfo(
             peerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await ClearPeerInternal(
             peerToDrainInfo,
@@ -1098,7 +1107,8 @@ public partial class QdrantHttpClient
     {
         var peerToDrainInfo = await GetPeerInfo(
             peerUriSelectorString,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await ClearPeerInternal(
             peerToDrainInfo,
@@ -1197,15 +1207,15 @@ public partial class QdrantHttpClient
                 {
                     if (!isDryRun)
                     {
-                        var isSuccessfullyStartOperationResponse = await UpdateCollectionClusteringSetup(
+                        var dropShardReplicaResponse = await UpdateCollectionClusteringSetup(
                             collectionName,
                             UpdateCollectionClusteringSetupRequest.CreateDropShardReplicaRequest(
                                 shardId: shardIdToDrop,
                                 peerId: sourcePeerId),
                             cancellationToken);
 
-                        if (!isSuccessfullyStartOperationResponse.Status.IsSuccess
-                            || isSuccessfullyStartOperationResponse.Result is false)
+                        if (!dropShardReplicaResponse.Status.IsSuccess
+                            || dropShardReplicaResponse.Result is false)
                         {
                             if (logger?.IsEnabled(LogLevel.Error) == true)
                             {
@@ -1215,18 +1225,17 @@ public partial class QdrantHttpClient
                                     shardIdToDrop,
                                     sourcePeerId,
                                     peerUriPerPeerId[sourcePeerId],
-                                    isSuccessfullyStartOperationResponse.Status.GetErrorMessage()
+                                    dropShardReplicaResponse.Status.GetErrorMessage()
                                 );
                             }
 
-                            // means issuing move operation failed - abandon move
+                            // means issuing remove operation failed - abandon clear
 
                             sw.Stop();
 
-                            return new ClearPeerResponse()
+                            return new ClearPeerResponse(dropShardReplicaResponse)
                             {
                                 Result = false,
-                                Status = isSuccessfullyStartOperationResponse.Status,
                                 Time = sw.Elapsed.TotalSeconds
                             };
                         }
@@ -1261,6 +1270,146 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
+    public async Task<DropCollectionReplicaFromPeerResponse> DropCollectionShardsFromPeer(
+        string collectionName,
+        ulong peerId,
+        uint[] shardIds,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        string clusterName = null
+    )
+    {
+        var peerToDropShardFromInfo = await GetPeerInfo(
+            peerId,
+            cancellationToken,
+            clusterName: clusterName);
+
+        return await DropCollectionShardsFromPeerInternal(
+            collectionName,
+            peerToDropShardFromInfo,
+            shardIds,
+            cancellationToken,
+            logger,
+            isDryRun,
+            clusterName
+        );
+    }
+
+    /// <inheritdoc/>
+    public async Task<DropCollectionReplicaFromPeerResponse> DropCollectionShardsFromPeer(
+        string collectionName,
+        string peerUriSelectorString,
+        uint[] shardIds,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        string clusterName = null
+    )
+    {
+        var peerToDropShardFromInfo = await GetPeerInfo(
+            peerUriSelectorString,
+            cancellationToken,
+            clusterName: clusterName);
+
+        return await DropCollectionShardsFromPeerInternal(
+            collectionName,
+            peerToDropShardFromInfo,
+            shardIds,
+            cancellationToken,
+            logger,
+            isDryRun,
+            clusterName
+        );
+    }
+
+    private async Task<DropCollectionReplicaFromPeerResponse> DropCollectionShardsFromPeerInternal(
+        string collectionName,
+        GetPeerResponse peerToDropShardFromInfo,
+        uint[] shardIds,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        string clusterName = null
+    )
+    {
+        Stopwatch sw = Stopwatch.StartNew();
+
+        List<uint> shardsWithSuccessfulOperationStarts = new(shardIds.Length);
+
+        try
+        {
+            var (sourcePeerId, _, _, peerUriPerPeerId) =
+                peerToDropShardFromInfo.EnsureSuccess();
+
+            foreach (var shardIdToDrop in shardIds)
+            {
+                if (!isDryRun)
+                {
+                    var dropShardReplicaResponse = await UpdateCollectionClusteringSetup(
+                        collectionName,
+                        UpdateCollectionClusteringSetupRequest.CreateDropShardReplicaRequest(
+                            shardId: shardIdToDrop,
+                            peerId: sourcePeerId),
+                        cancellationToken);
+
+                    if (!dropShardReplicaResponse.Status.IsSuccess
+                        || dropShardReplicaResponse.Result is false)
+                    {
+                        if (logger?.IsEnabled(LogLevel.Error) == true)
+                        {
+                            logger?.LogError(
+                                "Error dropping collection '{CollectionName}' shard {ShardId} from peer {SourcePeer}({SourcePeerUri}) : {ErrorMessage}",
+                                collectionName,
+                                shardIdToDrop,
+                                sourcePeerId,
+                                peerUriPerPeerId[sourcePeerId],
+                                dropShardReplicaResponse.Status.GetErrorMessage()
+                            );
+                        }
+
+                        // means issuing drop operation failed - abandon clear
+
+                        var ret = new DropCollectionReplicaFromPeerResponse(dropShardReplicaResponse)
+                        {
+                            Result = new(false, [.. shardsWithSuccessfulOperationStarts]),
+                            Time = sw.Elapsed.TotalSeconds
+                        };
+
+                        return ret;
+                    }
+                }
+                else
+                {
+                    logger?.LogInformation("Shard drop simulation mode ON. No shard replicas dropped");
+                }
+
+                shardsWithSuccessfulOperationStarts.Add(shardIdToDrop);
+            }
+
+            sw.Stop();
+
+            return new DropCollectionReplicaFromPeerResponse()
+            {
+                Result = new(true, [.. shardsWithSuccessfulOperationStarts]),
+                Status = QdrantStatus.Success(),
+                Time = sw.Elapsed.TotalSeconds
+            };
+        }
+        catch (QdrantUnsuccessfulResponseStatusException qex)
+        {
+            sw.Stop();
+
+            return new DropCollectionReplicaFromPeerResponse()
+            {
+                Result = new(false, [.. shardsWithSuccessfulOperationStarts]),
+                Status = QdrantStatus.Fail(qex.Message, qex),
+                Time = sw.Elapsed.TotalSeconds
+            };
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task<CheckIsPeerEmptyResponse> CheckIsPeerEmpty(
         ulong peerId,
         CancellationToken cancellationToken,
@@ -1268,7 +1417,8 @@ public partial class QdrantHttpClient
     {
         var peerToCheckInfo = await GetPeerInfo(
             peerId,
-            cancellationToken);
+            cancellationToken,
+            clusterName: clusterName);
 
         return await CheckIsPeerEmptyInternal(
             peerToCheckInfo,
@@ -1375,7 +1525,7 @@ public partial class QdrantHttpClient
             return GetPeerInfo(peerUriSelectorString, cancellationToken, clusterName: clusterName);
         }
 
-        return GetPeerInfo(peerId!.Value, cancellationToken);
+        return GetPeerInfo(peerId!.Value, cancellationToken, clusterName: clusterName);
     }
 
     /// <inheritdoc/>

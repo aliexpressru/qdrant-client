@@ -300,6 +300,54 @@ public partial interface IQdrantHttpClient
     );
 
     /// <summary>
+    /// Drops the specified collection shards from a peer node in the cluster.
+    /// </summary>
+    /// <param name="collectionName">The name of the collection to drop shards for.</param>
+    /// <param name="peerId">The peer id for the peer to drop collection shards from.</param>
+    /// <param name="shardIds">An array of shard IDs to be dropped from the peer. Each ID must correspond to an existing shard in the
+    /// collection.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="logger">The optional logger for state logging.</param>
+    /// <param name="isDryRun">
+    /// If set to <c>true</c>, this operation calculates and logs
+    /// all shard movements without actually executing them.
+    /// </param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
+    Task<DropCollectionReplicaFromPeerResponse> DropCollectionShardsFromPeer(
+        string collectionName,
+        ulong peerId,
+        uint[] shardIds,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        string clusterName = null
+    );
+
+    /// <summary>
+    /// Drops the specified collection shards from a peer node in the cluster.
+    /// </summary>
+    /// <param name="collectionName">The name of the collection to drop shards for.</param>
+    /// <param name="peerUriSelectorString">The peer uri selector string for the peer to drop shards from.</param>
+    /// <param name="shardIds">An array of shard IDs to be dropped from the peer. Each ID must correspond to an existing shard in the
+    /// collection.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="logger">The optional logger for state logging.</param>
+    /// <param name="isDryRun">
+    /// If set to <c>true</c>, this operation calculates and logs
+    /// all shard movements without actually executing them.
+    /// </param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
+    Task<DropCollectionReplicaFromPeerResponse> DropCollectionShardsFromPeer(
+        string collectionName,
+        string peerUriSelectorString,
+        uint[] shardIds,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        bool isDryRun = false,
+        string clusterName = null
+    );
+
+    /// <summary>
     /// Checks whether the specified cluster node does not have any collection shards on it.
     /// </summary>
     /// <param name="peerId">The cluster node peer id for the peer to check.</param>

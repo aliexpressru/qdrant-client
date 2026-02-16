@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http.Models.Responses.Base;
+using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
@@ -22,7 +22,7 @@ public sealed class DownloadSnapshotResponse : QdrantResponseBase<DownloadSnapsh
         /// The name of the snapshot. Used to name the temporary file on qdrant side.
         /// </summary>
         public string SnapshotName { get; }
-        
+
         /// <summary>
         /// The stream with binary snapshot data.
         /// </summary>
@@ -51,7 +51,7 @@ public sealed class DownloadSnapshotResponse : QdrantResponseBase<DownloadSnapsh
         /// <param name="snapshotName">The name of the snapshot file.</param>
         /// <param name="snapshotDataStream">The stream with binary snapshot data.</param>
         /// <param name="snapshotSizeBytes">The snapshot size in bytes.</param>
-        internal DownloadSnapshotUnit(
+        public DownloadSnapshotUnit(
             string snapshotName,
             Stream snapshotDataStream,
             long snapshotSizeBytes)
@@ -72,7 +72,7 @@ public sealed class DownloadSnapshotResponse : QdrantResponseBase<DownloadSnapsh
     /// <param name="snapshotSizeBytes">The snapshot length in bytes.</param>
     /// <param name="qdrantOperationStatus">The download snapshot qdrant operation status.</param>
     /// <param name="qdrantOperationTime">The download snapshot time.</param>
-    internal DownloadSnapshotResponse(
+    public DownloadSnapshotResponse(
         string snapshotName,
         Stream snapshotDataStream,
         long snapshotSizeBytes,

@@ -1,4 +1,4 @@
-﻿using Aer.QdrantClient.Http.Models.Responses.Base;
+using Aer.QdrantClient.Http.Models.Responses.Base;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
 
@@ -8,4 +8,13 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// that there were no errors during operation start.
 /// </summary>
 public sealed class ClearPeerResponse : QdrantResponseBase<bool>
-{ }
+{
+    /// <summary>
+    /// Creates a new instance of <see cref="ClearPeerResponse"/>.
+    /// </summary>
+    public ClearPeerResponse()
+    { }
+
+    internal ClearPeerResponse(QdrantResponseBase childResponse) : base(childResponse)
+    { }
+}

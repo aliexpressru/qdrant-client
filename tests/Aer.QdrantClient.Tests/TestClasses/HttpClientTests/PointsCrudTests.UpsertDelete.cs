@@ -3108,10 +3108,7 @@ internal partial class PointsCrudTests
 
         UpsertPointsRequest.UpsertPoint thirdPoint = new(
             id: 3,
-            vector: new DenseVector()
-            {
-                VectorValues = CreateTestVector(vectorLength, VectorDataType.Float16)
-            },
+            vector: new DenseVector(CreateTestVector(vectorLength, VectorDataType.Float16)),
             payload: (TestPayload)3);
 
         var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>()

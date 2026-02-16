@@ -67,14 +67,15 @@ public partial class QdrantHttpClient
     public async Task<GetCollectionClusteringInfoResponse> GetCollectionClusteringInfo(
         string collectionName,
         CancellationToken cancellationToken,
-        bool isTranslatePeerIdsToUris = false)
+        bool isTranslatePeerIdsToUris = false,
+        string clusterName = null)
     {
         var url = $"/collections/{collectionName}/cluster";
 
         var collectionShardingInfo = await ExecuteRequest<GetCollectionClusteringInfoResponse>(
             url,
             HttpMethod.Get,
-            collectionName,
+            clusterName,
             cancellationToken,
             retryCount: 0);
 
@@ -82,7 +83,7 @@ public partial class QdrantHttpClient
             && collectionShardingInfo.Status.IsSuccess
             && collectionShardingInfo.Result is not null)
         {
-            var clusterInfo = await GetClusterInfo(cancellationToken);
+            var clusterInfo = await GetClusterInfo(cancellationToken, clusterName);
 
             collectionShardingInfo.Result.PeerUri =
                 clusterInfo.Result.ParsedPeers[collectionShardingInfo.Result.PeerId].Uri;
@@ -108,6 +109,46 @@ public partial class QdrantHttpClient
                     reshardingOperation.PeerUri = shardPeerUri;
                 }
             }
+        }
+
+        // Collect shards by peers info
+
+        if (collectionShardingInfo.Status.IsSuccess
+            && collectionShardingInfo.Result is not null)
+        {
+            var shardsByPeers = new Dictionary<ulong, List<uint>>(
+                collectionShardingInfo.Result.RemoteShards.Length
+                + collectionShardingInfo.Result.LocalShards.Length
+            );
+
+            var answeringPeerId = collectionShardingInfo.Result.PeerId;
+
+            shardsByPeers.Add(answeringPeerId, new List<uint>(collectionShardingInfo.Result.LocalShards.Length));
+
+            foreach (var shard in collectionShardingInfo.Result.LocalShards)
+            {
+                var shardId = shard.ShardId;
+
+                shardsByPeers[answeringPeerId].Add(shardId);
+            }
+
+            foreach (var shard in collectionShardingInfo.Result.RemoteShards)
+            {
+                var shardPeer = shard.PeerId;
+
+#pragma warning disable CA1854 // Justification: false positive
+                if (!shardsByPeers.ContainsKey(shardPeer))
+                {
+                    shardsByPeers.Add(shardPeer, []);
+                }
+#pragma warning restore CA1854
+
+                var shardId = shard.ShardId;
+
+                shardsByPeers[shardPeer].Add(shardId);
+            }
+
+            collectionShardingInfo.Result.ShardsByPeers = shardsByPeers;
         }
 
         return collectionShardingInfo;

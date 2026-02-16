@@ -125,10 +125,7 @@ public abstract class VectorBase : IEquatable<VectorBase>
             throw new ArgumentNullException(nameof(vectorValues));
         }
 
-        return new DenseVector()
-        {
-            VectorValues = vectorValues
-        };
+        return new DenseVector(vectorValues);
     }
 
     /// <summary>
@@ -148,13 +145,12 @@ public abstract class VectorBase : IEquatable<VectorBase>
             Vectors = namedVectors
                 .ToDictionary(
                     nv => nv.Key,
-                    nv => (VectorBase)new DenseVector()
-                    {
-                        VectorValues = nv.Value is null or { Length: 0 }
-                            ? throw new InvalidOperationException(
-                                $"Can't create named vector {nv.Key} with null or empty vector value")
+                    nv => (VectorBase)new DenseVector(
+                        nv.Value is null or { Length: 0 }
+                            ? throw new InvalidOperationException($"Can't create named vector {nv.Key} with null or empty vector value")
                             : nv.Value
-                    })
+                    )
+                )
         };
     }
 
