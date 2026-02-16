@@ -40,7 +40,6 @@ public sealed class BatchUpdatePointsRequest
     /// Append an "upsert points" operation to batch.
     /// </summary>
     /// <param name="upsertPoints">Points to upsert.</param>
-    /// <param name="upsertPointsBatch">Points' batch to upsert.</param>
     /// <param name="shardSelector">
     /// The shard selector. If set performs operation on specified shard(s).
     /// If not set - performs operation on all shards.
@@ -50,7 +49,6 @@ public sealed class BatchUpdatePointsRequest
     /// </param>
     public BatchUpdatePointsRequest UpsertPoints(
         IEnumerable<UpsertPointsRequest.UpsertPoint> upsertPoints,
-        UpsertPointsRequest.UpsertPointsBatch upsertPointsBatch,
         ShardSelector shardSelector = null,
         QdrantFilter updateFilter = null)
     {
@@ -59,6 +57,36 @@ public sealed class BatchUpdatePointsRequest
             Upsert = new UpsertPointsRequest()
             {
                 Points = upsertPoints,
+                ShardKey = shardSelector,
+                UpdateFilter = updateFilter
+            }
+        };
+
+        Operations.Add(operation);
+
+        return this;
+    }
+    
+    /// <summary>
+    /// Append an "upsert points" operation to batch.
+    /// </summary>
+    /// <param name="upsertPointsBatch">Points' batch to upsert.</param>
+    /// <param name="shardSelector">
+    /// The shard selector. If set performs operation on specified shard(s).
+    /// If not set - performs operation on all shards.
+    /// </param>
+    /// <param name="updateFilter">
+    /// If specified, only points that match this filter will be updated, others will be inserted.
+    /// </param>
+    public BatchUpdatePointsRequest UpsertPoints(
+        UpsertPointsRequest.UpsertPointsBatch upsertPointsBatch,
+        ShardSelector shardSelector = null,
+        QdrantFilter updateFilter = null)
+    {
+        var operation = new UpsertPointsOperation()
+        {
+            Upsert = new UpsertPointsRequest()
+            {
                 Batch = upsertPointsBatch,
                 ShardKey = shardSelector,
                 UpdateFilter = updateFilter
