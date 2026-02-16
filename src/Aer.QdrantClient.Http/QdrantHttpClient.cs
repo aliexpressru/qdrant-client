@@ -79,22 +79,30 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     internal const string ApiKeyHeaderName = "api-key";
 
     /// <summary>
-    /// Gets the actual HTTP client used to make calls to Qdrant API.
+    /// Gets the actual HTTP API client used to make calls to Qdrant API.
+    /// Override this to provide custom HttpClient per collection or cluster.
     /// </summary>
-    public HttpClient ApiClient => GetHttpClient();
+    /// <param name="collectionOrClusterName">
+    /// The collection or cluster name. May be used in custom http client acquisition logic.
+    /// May be <c>null</c> for operations not related to specific collection when the cluster name parameter is not specified.
+    /// </param>
+    /// <remarks>
+    /// When using to facilitate multi-cluster scenarios, make sure that every method, not related to a specific collection,
+    /// is supplied with corresponding cluster name (optional parameter for those methods).
+    /// Otherwise this parameter will be <c>null</c>.
+    /// </remarks>
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+    public virtual Task<HttpClient> GetApiClient(string collectionOrClusterName) =>
+        Task.FromResult(_defaultHttpClient ?? throw new QdrantClientUninitializedException());
+#else
+    public virtual ValueTask<HttpClient> GetApiClient(string collectionOrClusterName) =>
+        ValueTask.FromResult(_defaultHttpClient ?? throw new QdrantClientUninitializedException());
+#endif
 
     /// <summary>
-    /// Gets the actual HTTP client used to make calls to Qdrant API.
+    /// The logger instance this client will be using. Can be overridden in derived classes.
     /// </summary>
-    protected virtual HttpClient GetHttpClient() => _defaultHttpClient ?? throw new QdrantClientUninitializedException();
-
-    /// <summary>
-    /// The logger instance this client will be using.
-    /// </summary>
-    protected internal ILogger Logger { get; set; } = NullLogger.Instance;
-
-    /// <inheritdoc/>
-    public Uri BaseAddress => GetHttpClient().BaseAddress;
+    protected virtual internal ILogger Logger { get; set; } = NullLogger.Instance;
 
     /// <summary>
     /// Initializes a new unconfigured Qdrant HTTP client instance.
@@ -174,6 +182,22 @@ public partial class QdrantHttpClient : IQdrantHttpClient
             Logger = customLogger;
         }
 
+        var apiClient = CreateApiClient(
+            httpAddress,
+            apiKey,
+            httpClientTimeout,
+            disableTracing: disableTracing,
+            enableCompression: enableCompression);
+
+        _defaultHttpClient = apiClient;
+    }
+
+    internal static HttpClient CreateApiClient(Uri httpAddress,
+        string apiKey = null,
+        TimeSpan? httpClientTimeout = null,
+        bool disableTracing = false,
+        bool enableCompression = false)
+    {
         var handler =
             CreateHttpClientHandler(
                 isCompressionEnabled: enableCompression,
@@ -186,7 +210,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
             Timeout = httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout,
         };
 
-        _defaultHttpClient = apiClient;
+        return apiClient;
     }
 
     internal static HttpMessageHandler CreateHttpClientHandler(
@@ -297,6 +321,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
 
     private async Task<TResponse> ExecuteRequest<TResponse>(
         HttpRequestMessage message,
+        string collectionOrClusterName,
         CancellationToken cancellationToken)
     {
         if (message.RequestUri is null)
@@ -304,7 +329,9 @@ public partial class QdrantHttpClient : IQdrantHttpClient
             throw new InvalidOperationException("Message request uri is null");
         }
 
-        var response = await GetHttpClient().SendAsync(message, cancellationToken);
+        var httpClient = await GetApiClient(collectionOrClusterName);
+
+        var response = await httpClient.SendAsync(message, cancellationToken);
 
         var result = await ReadResponseAndHandleErrors(
             message,
@@ -336,6 +363,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     private Task<TResponse> ExecuteRequest<TResponse>(
         string url,
         HttpMethod method,
+        string collectionOrClusterName,
         CancellationToken cancellationToken,
         uint retryCount,
         TimeSpan? retryDelay = null,
@@ -344,6 +372,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         =>
             ExecuteRequestCore<TResponse>(
                 () => new(method, url),
+                collectionOrClusterName,
                 cancellationToken,
                 retryCount,
                 retryDelay,
@@ -353,6 +382,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         string url,
         HttpMethod method,
         TRequest requestContent,
+        string collectionOrClusterName,
         CancellationToken cancellationToken,
         uint retryCount,
         TimeSpan? retryDelay = null,
@@ -362,6 +392,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     {
         var response = ExecuteRequestCore<TResponse>(
             CreateMessage,
+            collectionOrClusterName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -394,6 +425,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
 
     private async Task<(long ContentLength, Stream ResponseStream, bool IsSuccess, string ErrorMessage)> ExecuteRequestReadAsStream(
         HttpRequestMessage message,
+        string collectionOrClusterName,
         CancellationToken cancellationToken)
     {
         if (message.RequestUri is null)
@@ -401,7 +433,9 @@ public partial class QdrantHttpClient : IQdrantHttpClient
             throw new InvalidOperationException("Message request uri is null");
         }
 
-        var response = await GetHttpClient().SendAsync(
+        var httpClient = await GetApiClient(collectionOrClusterName);
+
+        var response = await httpClient.SendAsync(
             message,
             HttpCompletionOption.ResponseHeadersRead,
             cancellationToken);
@@ -439,14 +473,17 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     private async Task<TResponse> ExecuteRequestCore<TResponse>(
         // We are using func to create message since sending one instance of HttpRequestMessage several times is not allowed.
         Func<HttpRequestMessage> createMessage,
+        string collectionOrClusterName,
         CancellationToken cancellationToken,
         uint retryCount,
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
         where TResponse : QdrantResponseBase
     {
+        var httpClient = await GetApiClient(collectionOrClusterName);
+
         var getResponse =
-            async () => await GetHttpClient().SendAsync(createMessage(), cancellationToken);
+            async () => await httpClient.SendAsync(createMessage(), cancellationToken);
 
         if (retryCount > 0)
         {
@@ -482,9 +519,9 @@ public partial class QdrantHttpClient : IQdrantHttpClient
                 )
                 .ExecuteAsync(
 #if NETSTANDARD2_0
-                    async () => (await GetHttpClient().SendAsync(createMessage(), cancellationToken)).SetStatusCode()
+                    async () => (await httpClient.SendAsync(createMessage(), cancellationToken)).SetStatusCode()
 #else
-                    () => GetHttpClient().SendAsync(createMessage(), cancellationToken)
+                    () => httpClient.SendAsync(createMessage(), cancellationToken)
 #endif
                 );
         }

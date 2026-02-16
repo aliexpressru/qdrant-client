@@ -8,6 +8,7 @@ public partial interface IQdrantHttpClient
     /// Gets the slow requests profiler data.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <remarks>This is an experimental undocumented API.</remarks>
-    Task<GetSlowRequestsResponse> GetSlowRequests(CancellationToken cancellationToken);
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
+    /// <remarks>This is an experimental undocumented API - use at your own risk.</remarks>
+    Task<GetSlowRequestsResponse> GetSlowRequests(CancellationToken cancellationToken, string clusterName = null);
 }

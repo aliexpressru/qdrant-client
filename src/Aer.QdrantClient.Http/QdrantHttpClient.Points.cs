@@ -40,6 +40,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             points,
+            collectionName,
             cancellationToken,
             retryCount: 0);
 
@@ -70,6 +71,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             points,
+            collectionName,
             cancellationToken,
             retryCount: 0);
 
@@ -93,6 +95,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Put,
             upsertPoints,
+            collectionName,
             cancellationToken,
             retryCount: 0);
 
@@ -116,6 +119,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             setPointsPayload,
+            collectionName,
             cancellationToken,
             retryCount: 0);
 
@@ -142,6 +146,7 @@ public partial class QdrantHttpClient
                 ? HttpMethod.Post
                 : HttpMethod.Put,
             overwritePointsPayload,
+            collectionName,
             cancellationToken,
             retryCount: 0);
 
@@ -165,6 +170,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             deletePointsPayloadKeys,
+            collectionName,
             cancellationToken,
             retryCount: 0);
 
@@ -188,6 +194,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             clearPointsPayload,
+            collectionName,
             cancellationToken,
             retryCount: 0);
 
@@ -211,6 +218,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Put,
             updatePointsVectors,
+            collectionName,
             cancellationToken,
             retryCount: 0);
 
@@ -234,6 +242,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             deletePointsVectors,
+            collectionName,
             cancellationToken,
             retryCount: 0);
 
@@ -265,6 +274,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             batchUpdatePointsRequest,
+            collectionName,
             cancellationToken,
             retryCount: 0);
 
@@ -284,12 +294,13 @@ public partial class QdrantHttpClient
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
         var pointIdValue = pointId.ToString(false);
-        
+
         var url = $"/collections/{collectionName}/points/{pointIdValue}";
 
         var response = await ExecuteRequest<GetPointResponse>(
             url,
             HttpMethod.Get,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -311,7 +322,7 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
-        var points = new GetPointsRequest
+        var getPointsRequest = new GetPointsRequest
         {
             Ids = pointIds,
             WithPayload = withPayload,
@@ -326,7 +337,8 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<GetPointsRequest, GetPointsResponse>(
             url,
             HttpMethod.Post,
-            points,
+            getPointsRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -370,6 +382,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             scrollRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -393,6 +406,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             countPointsRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -421,6 +435,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             facetCountPointsRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -452,6 +467,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             searchPointsRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -478,6 +494,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             searchPointsBatchedRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -504,6 +521,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             searchPointsGroupedRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -532,6 +550,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             searchPointsDistanceMatrixRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -561,6 +580,7 @@ public partial class QdrantHttpClient
                 url,
                 HttpMethod.Post,
                 searchPointsDistanceMatrixRequest,
+                collectionName,
                 cancellationToken,
                 retryCount,
                 retryDelay,
@@ -587,6 +607,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             recommendPointsRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -613,6 +634,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             recommendPointsBatchedRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -639,6 +661,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             recommendPointsGroupedRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -667,6 +690,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             discoverPointsRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -695,6 +719,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             discoverPointsBatchedRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -723,6 +748,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             queryPointsRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -751,6 +777,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             queryPointsRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -779,6 +806,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             queryPointsRequest,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,

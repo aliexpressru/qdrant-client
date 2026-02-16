@@ -16,6 +16,7 @@ public partial class QdrantHttpClient
 {
     private async Task<DefaultOperationResponse> RecoverFromUploadedSnapshot(
         string url,
+        string collectionOrClusterName,
         Stream snapshotContent,
         CancellationToken cancellationToken)
     {
@@ -23,6 +24,7 @@ public partial class QdrantHttpClient
 
         var response = await ExecuteRequestCore<DefaultOperationResponse>(
             CreateMessage,
+            collectionOrClusterName,
             cancellationToken,
             retryCount: 0U);
 
@@ -42,6 +44,7 @@ public partial class QdrantHttpClient
     }
 
     private async Task<DownloadSnapshotResponse> DownloadSnapshot(
+        string collectionOrClusterName,
         string snapshotName,
         HttpRequestMessage message,
         CancellationToken cancellationToken)
@@ -51,7 +54,7 @@ public partial class QdrantHttpClient
         try
         {
             var (contentLength, responseStream, isSuccess, errorMessage)
-                = await ExecuteRequestReadAsStream(message, cancellationToken);
+                = await ExecuteRequestReadAsStream(message, collectionOrClusterName, cancellationToken);
 
             sw.Stop();
 

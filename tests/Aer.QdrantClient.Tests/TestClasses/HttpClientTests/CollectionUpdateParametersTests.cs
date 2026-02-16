@@ -309,7 +309,7 @@ internal class CollectionUpdateParametersTests : QdrantTestsBase
 
         const int newOptimizationThreads = 10;
 
-        var throwingQdrantHttpClient = new ThrowingQdrantHttpClient(_qdrantHttpClient.ApiClient);
+        var throwingQdrantHttpClient = new ThrowingQdrantHttpClient(await _qdrantHttpClient.GetApiClient(null));
 
         throwingQdrantHttpClient.ThrowOnce();
         throwingQdrantHttpClient.BadRequestOnce();

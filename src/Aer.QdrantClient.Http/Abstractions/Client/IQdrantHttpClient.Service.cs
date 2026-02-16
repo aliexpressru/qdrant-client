@@ -11,11 +11,12 @@ public partial interface IQdrantHttpClient
     /// However, deletion operations or updates are not forbidden under the write lock.
     /// Returns previous lock options.
     /// </summary>
-    /// <param name="areWritesDisabled">If set to <c>true</c>, qdrant doesn’t allow
+    /// <param name="areWritesDisabled">If set to <c>true</c>, qdrant does not allow
     /// creating new collections or adding new data to the existing storage.
     /// </param>
     /// <param name="reasonMessage">The reason why the current lock options are set.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     /// <remarks>
     /// This feature enables administrators to prevent a qdrant process from using more disk space
     /// while permitting users to search and delete unnecessary data.
@@ -24,35 +25,40 @@ public partial interface IQdrantHttpClient
     Task<SetLockOptionsResponse> SetLockOptions(
         bool areWritesDisabled,
         string reasonMessage,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken,
+        string clusterName = null);
 
     /// <summary>
     /// Get lock options. If write is locked, all write operations and collection creation are forbidden.
     /// However, deletion operations or updates are not forbidden under the write lock.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     [Obsolete("Lock API is deprecated and going to be removed in v1.16")]
-    Task<SetLockOptionsResponse> GetLockOptions(CancellationToken cancellationToken);
+    Task<SetLockOptionsResponse> GetLockOptions(CancellationToken cancellationToken, string clusterName = null);
 
     /// <summary>
     /// Retrieves a report of performance issues and configuration suggestions.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     [Experimental("QD0001")]
-    Task<ReportIssuesResponse> ReportIssues(CancellationToken cancellationToken);
+    Task<ReportIssuesResponse> ReportIssues(CancellationToken cancellationToken, string clusterName = null);
 
     /// <summary>
     /// Removes all issues reported so far.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     [Experimental("QD0002")]
-    Task<ClearReportedIssuesResponse> ClearIssues(CancellationToken cancellationToken);
-    
+    Task<ClearReportedIssuesResponse> ClearIssues(CancellationToken cancellationToken, string clusterName = null);
+
     /// <summary>
     /// Gets the Qdrant instance details.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    Task<GetInstanceDetailsResponse> GetInstanceDetails(CancellationToken cancellationToken);
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
+    Task<GetInstanceDetailsResponse> GetInstanceDetails(CancellationToken cancellationToken, string clusterName = null);
 
     /// <summary>
     /// Get the Qdrant telemetry information.
@@ -60,17 +66,21 @@ public partial interface IQdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="detailsLevel">Defines how detailed the telemetry data is.</param>
     /// <param name="isAnonymizeTelemetryData">If set tot <c>true</c>, anonymize the collected telemetry result.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     Task<GetTelemetryResponse> GetTelemetry(
         CancellationToken cancellationToken,
         uint detailsLevel = 3,
-        bool isAnonymizeTelemetryData = true);
+        bool isAnonymizeTelemetryData = true,
+        string clusterName = null);
 
     /// <summary>
     /// Collect metrics data including app info, collections info, cluster info and statistics in Prometheus format.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isAnonymizeMetricsData">If set tot <c>true</c>, anonymize the collected metrics result.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     Task<string> GetPrometheusMetrics(
         CancellationToken cancellationToken,
-        bool isAnonymizeMetricsData = true);
+        bool isAnonymizeMetricsData = true,
+        string clusterName = null);
 }

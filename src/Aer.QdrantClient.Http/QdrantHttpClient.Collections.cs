@@ -40,6 +40,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Put,
             request,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -85,6 +86,7 @@ public partial class QdrantHttpClient
             url,
             _patchHttpMethod,
             request,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -112,6 +114,7 @@ public partial class QdrantHttpClient
             url,
             _patchHttpMethod,
             UpdateCollectionParametersRequest.EmptyRequestBody,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -135,6 +138,7 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<GetCollectionInfoResponse>(
             url,
             HttpMethod.Get,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -144,13 +148,14 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<ListCollectionsResponse> ListCollections(CancellationToken cancellationToken)
+    public async Task<ListCollectionsResponse> ListCollections(CancellationToken cancellationToken, string clusterName = null)
     {
         var url = "/collections";
 
         var response = await ExecuteRequest<ListCollectionsResponse>(
             url,
             HttpMethod.Get,
+            clusterName,
             cancellationToken,
             retryCount: 0);
 
@@ -173,6 +178,7 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<DefaultOperationResponse>(
             url,
             HttpMethod.Delete,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -186,13 +192,15 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string clusterName = null)
     {
         var url = "/aliases";
 
         var response = await ExecuteRequest<ListCollectionAliasesResponse>(
             url,
             HttpMethod.Get,
+            clusterName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -214,6 +222,7 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<ListCollectionAliasesResponse>(
             url,
             HttpMethod.Get,
+            collectionName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -229,7 +238,8 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string clusterName = null)
     {
         if (updateCollectionAliasesRequest.OperationsCount == 0)
         {
@@ -245,6 +255,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             updateCollectionAliasesRequest,
+            clusterName,
             cancellationToken,
             retryCount,
             retryDelay,
@@ -263,6 +274,7 @@ public partial class QdrantHttpClient
         var response = await ExecuteRequest<CheckCollectionExistsResponse>(
             url,
             HttpMethod.Get,
+            collectionName,
             cancellationToken,
             retryCount: 0);
 

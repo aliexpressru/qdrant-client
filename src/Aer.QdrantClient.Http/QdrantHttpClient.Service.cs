@@ -8,7 +8,7 @@ namespace Aer.QdrantClient.Http;
 public partial class QdrantHttpClient
 {
     /// <inheritdoc/>
-    public async Task<GetInstanceDetailsResponse> GetInstanceDetails(CancellationToken cancellationToken)
+    public async Task<GetInstanceDetailsResponse> GetInstanceDetails(CancellationToken cancellationToken, string clusterName = null)
     {
         var url = "/";
 
@@ -16,6 +16,7 @@ public partial class QdrantHttpClient
 
         var response = await ExecuteRequest<GetInstanceDetailsResponse>(
             message,
+            clusterName,
             cancellationToken);
 
         return response;
@@ -25,13 +26,15 @@ public partial class QdrantHttpClient
     public async Task<GetTelemetryResponse> GetTelemetry(
         CancellationToken cancellationToken,
         uint detailsLevel = 3,
-        bool isAnonymizeTelemetryData = true)
+        bool isAnonymizeTelemetryData = true,
+        string clusterName = null)
     {
         var url = $"/telemetry?details_level={detailsLevel}&anonymize={ToUrlQueryString(isAnonymizeTelemetryData)}";
 
         var response = await ExecuteRequest<GetTelemetryResponse>(
             url,
             HttpMethod.Get,
+            clusterName,
             cancellationToken,
             retryCount: 0);
 
@@ -41,13 +44,14 @@ public partial class QdrantHttpClient
     /// <inheritdoc/>
     public async Task<string> GetPrometheusMetrics(
         CancellationToken cancellationToken,
-        bool isAnonymizeMetricsData = true)
+        bool isAnonymizeMetricsData = true,
+        string clusterName = null)
     {
         var url = $"/metrics?anonymize={ToUrlQueryString(isAnonymizeMetricsData)}";
 
         HttpRequestMessage message = new(HttpMethod.Get, url);
 
-        var result = await ExecuteRequest<string>(message, cancellationToken);
+        var result = await ExecuteRequest<string>(message, clusterName, cancellationToken);
 
         return result;
     }
@@ -57,7 +61,8 @@ public partial class QdrantHttpClient
     public async Task<SetLockOptionsResponse> SetLockOptions(
         bool areWritesDisabled,
         string reasonMessage,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string clusterName = null)
     {
         var qdrantVersion = (await GetInstanceDetails(cancellationToken)).ParsedVersion;
 
@@ -76,6 +81,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             setLockOptionsRequest,
+            clusterName,
             cancellationToken,
             retryCount: 0);
 
@@ -84,13 +90,14 @@ public partial class QdrantHttpClient
 
     /// <inheritdoc/>
     [Obsolete("Lock API is deprecated and going to be removed in v1.16")]
-    public async Task<SetLockOptionsResponse> GetLockOptions(CancellationToken cancellationToken)
+    public async Task<SetLockOptionsResponse> GetLockOptions(CancellationToken cancellationToken, string clusterName = null)
     {
         var url = "/locks";
 
         var response = await ExecuteRequest<SetLockOptionsResponse>(
             url,
             HttpMethod.Get,
+            clusterName,
             cancellationToken,
             retryCount: 0);
 
@@ -99,13 +106,14 @@ public partial class QdrantHttpClient
 
     /// <inheritdoc/>
     [Experimental("QD0001")]
-    public async Task<ReportIssuesResponse> ReportIssues(CancellationToken cancellationToken)
+    public async Task<ReportIssuesResponse> ReportIssues(CancellationToken cancellationToken, string clusterName = null)
     {
         var url = "/issues";
 
         var response = await ExecuteRequest<ReportIssuesResponse>(
             url,
             HttpMethod.Get,
+            clusterName,
             cancellationToken,
             retryCount: 0);
 
@@ -114,13 +122,14 @@ public partial class QdrantHttpClient
 
     /// <inheritdoc/>
     [Experimental("QD0002")]
-    public async Task<ClearReportedIssuesResponse> ClearIssues(CancellationToken cancellationToken)
+    public async Task<ClearReportedIssuesResponse> ClearIssues(CancellationToken cancellationToken, string clusterName = null)
     {
         var url = "/issues";
 
         var response = await ExecuteRequest<ClearReportedIssuesResponse>(
             url,
             HttpMethod.Delete,
+            clusterName,
             cancellationToken,
             retryCount: 0);
 
