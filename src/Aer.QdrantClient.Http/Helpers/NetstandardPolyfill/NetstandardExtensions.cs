@@ -8,6 +8,20 @@ internal static class HttpResponseMessageExtensions
 {
     private const string STATUS_CODE_KEY_NAME = "StatusCode";
 
+    extension<T>(IEnumerable<T> collection)
+    {
+        public bool TryGetNonEnumeratedCount(out int count)
+        {
+            if (collection is null)
+            {
+                throw new ArgumentNullException(nameof(collection));
+            }
+
+            count = 0;
+            return false;
+        }
+    }
+
     extension(HttpRequestException httpRequestException)
     {
         public bool SetStatusCode(HttpStatusCode httpStatusCode)

@@ -1,20 +1,22 @@
+using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
+using Aer.QdrantClient.Http.Models.Primitives.Vectors;
+using Aer.QdrantClient.Http.Models.Requests.Public;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Aer.QdrantClient.Http.Exceptions;
-using Aer.QdrantClient.Http.Models.Requests.Public;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 internal sealed class VectorsBatchJsonConverter : JsonConverter<UpsertPointsRequest.UpsertPointsBatch.VectorsBatch>
 {
-   private static readonly JsonSerializerOptions _serializerOptions =
-        JsonSerializerConstants.CreateSerializerOptions(new VectorJsonConverter());
+    private static readonly JsonSerializerOptions _serializerOptions =
+         JsonSerializerConstants.CreateSerializerOptions(new VectorJsonConverter());
 
     public override UpsertPointsRequest.UpsertPointsBatch.VectorsBatch Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         throw new NotSupportedException("Reading upsert vectors' batch is not supported");
     }
-    
+
     /*
      Example of the request with different vector types
      {
@@ -53,9 +55,10 @@ internal sealed class VectorsBatchJsonConverter : JsonConverter<UpsertPointsRequ
    */
     public override void Write(Utf8JsonWriter writer, UpsertPointsRequest.UpsertPointsBatch.VectorsBatch value, JsonSerializerOptions options)
     {
-        // Means that the request contains only unnamed dense/multi vectors
-        if (value.Vectors?.Any() == true)
+        if (HasVectors(value.Vectors))
         {
+            // Means that the request contains only unnamed dense/multi vectors
+
             writer.WriteStartArray();
 
             foreach (var vector in value.Vectors)
@@ -68,27 +71,42 @@ internal sealed class VectorsBatchJsonConverter : JsonConverter<UpsertPointsRequ
         else if (value.NamedVectors?.Any() == true)
         {
             writer.WriteStartObject();
-            
+
             // Vectors of each type are grouped by their names in the batch
             foreach (var vectorBatch in value.NamedVectors)
             {
                 writer.WritePropertyName(vectorBatch.Key);
 
                 writer.WriteStartArray();
-                
+
                 foreach (var vector in vectorBatch.Value)
                 {
                     JsonSerializer.Serialize(writer, vector, _serializerOptions);
                 }
-                
+
                 writer.WriteEndArray();
             }
-            
+
             writer.WriteEndObject();
         }
         else
         {
             throw new QdrantJsonSerializationException($"Can't serialize vectors' batch since unnamed and named vectors are empty");
         }
+    }
+
+    private bool HasVectors(IEnumerable<VectorBase> vectors)
+    {
+        if (vectors is null)
+        {
+            return false;
+        }
+
+        if (vectors.TryGetNonEnumeratedCount(out var vectorsCount))
+        {
+            return vectorsCount > 0;
+        }
+
+        return vectors.Any();
     }
 }
