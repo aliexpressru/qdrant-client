@@ -9,7 +9,7 @@ internal sealed class ObjectPayloadEnumerableJsonConverter : JsonConverter<IEnum
         JsonSerializerConstants.CreateSerializerOptions(new ObjectPayloadJsonConverter());
 
     public override IEnumerable<object> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-        throw new NotSupportedException("Reading upsert point payload object instances is not supported");
+        throw new NotSupportedException("Reading enumerable point payload instances is not supported");
 
     public override void Write(Utf8JsonWriter writer, IEnumerable<object> value, JsonSerializerOptions options)
     {

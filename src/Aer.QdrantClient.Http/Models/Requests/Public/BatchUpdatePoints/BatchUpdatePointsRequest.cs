@@ -79,7 +79,7 @@ public sealed class BatchUpdatePointsRequest
     /// If specified, only points that match this filter will be updated, others will be inserted.
     /// </param>
     public BatchUpdatePointsRequest UpsertPoints(
-        UpsertPointsRequest.UpsertPointsBatch upsertPointsBatch,
+        UpsertPointsBatch upsertPointsBatch,
         ShardSelector shardSelector = null,
         QdrantFilter updateFilter = null)
     {

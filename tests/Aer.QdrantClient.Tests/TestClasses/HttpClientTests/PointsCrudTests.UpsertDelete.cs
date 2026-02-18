@@ -117,9 +117,9 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                    Batch = new UpsertPointsBatch(
                         testPointIds, 
-                        new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(testVectors),
+                        new UpsertPointsBatch.VectorsBatch(testVectors),
                         testPayloads)
                 },
                 CancellationToken.None);
@@ -268,9 +268,9 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                    Batch = new UpsertPointsBatch(
                         testPointIds, 
-                        new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(testVectors),
+                        new UpsertPointsBatch.VectorsBatch(testVectors),
                         testPayloads)
                 },
                 CancellationToken.None);
@@ -514,9 +514,9 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                    Batch = new UpsertPointsBatch(
                         testPointIds, 
-                        new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(testVectors), 
+                        new UpsertPointsBatch.VectorsBatch(testVectors), 
                         null)
                 },
                 CancellationToken.None);
@@ -575,9 +575,9 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                    Batch = new UpsertPointsBatch(
                         testPointIds, 
-                        new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(testVectors),
+                        new UpsertPointsBatch.VectorsBatch(testVectors),
                         [])
                 },
                 CancellationToken.None);
@@ -666,9 +666,9 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                    Batch = new UpsertPointsBatch(
                         testPointIds, 
-                        new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(testVectors),
+                        new UpsertPointsBatch.VectorsBatch(testVectors),
                         testPayloads)
                 },
                 CancellationToken.None);
@@ -868,9 +868,9 @@ internal partial class PointsCrudTests
             TestCollectionName,
             new UpsertPointsRequest()
             {
-                Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                Batch = new UpsertPointsBatch(
                     testPointIds, 
-                    new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(testVectors), 
+                    new UpsertPointsBatch.VectorsBatch(testVectors), 
                     [testPayload1, testPayload2])
             },
             CancellationToken.None);
@@ -1044,9 +1044,9 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                    Batch = new UpsertPointsBatch(
                         testPointIds,
-                        new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(testVectors), 
+                        new UpsertPointsBatch.VectorsBatch(testVectors), 
                         testPayloads)
                 },
                 CancellationToken.None,
@@ -1153,7 +1153,7 @@ internal partial class PointsCrudTests
         }
     }
     
-        [Test]
+    [Test]
     public async Task UpsertPoints_By_Batch()
     {
         var vectorSize = 10U;
@@ -1176,9 +1176,9 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                    Batch = new UpsertPointsBatch(
                         testPointIds, 
-                        new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(testVectors), 
+                        new UpsertPointsBatch.VectorsBatch(testVectors), 
                         testPayloads)
                 },
                 CancellationToken.None,
@@ -1413,9 +1413,9 @@ internal partial class PointsCrudTests
             TestCollectionName,
             new UpsertPointsRequest()
             {
-                Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                Batch = new UpsertPointsBatch(
                     testPointIds, 
-                    new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(testVectors), 
+                    new UpsertPointsBatch.VectorsBatch(testVectors), 
                     testPayloads)
             },
             CancellationToken.None,
@@ -1457,9 +1457,9 @@ internal partial class PointsCrudTests
             TestCollectionName,
             new UpsertPointsRequest()
             {
-                Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                Batch = new UpsertPointsBatch(
                     updatedtPointIds, 
-                    new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(updatedVectors), 
+                    new UpsertPointsBatch.VectorsBatch(updatedVectors), 
                     updatedPayloads),
                 UpdateFilter = Q.MatchValue("integer", 1)
             },
@@ -1619,9 +1619,9 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                    Batch = new UpsertPointsBatch(
                         testPointIds, 
-                        new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(testVectors), 
+                        new UpsertPointsBatch.VectorsBatch(testVectors), 
                         testPayloads)
                 },
                 CancellationToken.None);
@@ -1786,9 +1786,9 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                    Batch = new UpsertPointsBatch(
                         testPointIds, 
-                        new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(namedVectors),
+                        new UpsertPointsBatch.VectorsBatch(namedVectors),
                         testPayloads)
                 },
                 CancellationToken.None);
@@ -1974,9 +1974,9 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                    Batch = new UpsertPointsBatch(
                         testPointIds, 
-                        new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(namedVectors),
+                        new UpsertPointsBatch.VectorsBatch(namedVectors),
                         testPayloads)
                 },
                 CancellationToken.None);
@@ -2406,9 +2406,9 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                    Batch = new UpsertPointsBatch(
                         testPointIds, 
-                        new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(sparseVectors),
+                        new UpsertPointsBatch.VectorsBatch(sparseVectors),
                         testPayloads)
                 },
                 CancellationToken.None);
@@ -2618,9 +2618,9 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                    Batch = new UpsertPointsBatch(
                         testPointIds, 
-                        new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(namedVectors),
+                        new UpsertPointsBatch.VectorsBatch(namedVectors),
                         testPayloads)
                 },
                 CancellationToken.None);
@@ -2780,9 +2780,9 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                    Batch = new UpsertPointsBatch(
                         testPointIds, 
-                        new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(testVectors),
+                        new UpsertPointsBatch.VectorsBatch(testVectors),
                         testPayloads)
                 },
                 CancellationToken.None);
@@ -2999,9 +2999,9 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                    Batch = new UpsertPointsBatch(
                         testPointIds, 
-                        new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(namedVectors),
+                        new UpsertPointsBatch.VectorsBatch(namedVectors),
                         testPayloads)
                 },
                 CancellationToken.None);
@@ -3204,9 +3204,9 @@ internal partial class PointsCrudTests
                 TestCollectionName,
                 new UpsertPointsRequest()
                 {
-                    Batch = new UpsertPointsRequest.UpsertPointsBatch(
+                    Batch = new UpsertPointsBatch(
                         testPointIds, 
-                        new UpsertPointsRequest.UpsertPointsBatch.VectorsBatch(testVectors),
+                        new UpsertPointsBatch.VectorsBatch(testVectors),
                         testPayloads)
                 },
                 CancellationToken.None);

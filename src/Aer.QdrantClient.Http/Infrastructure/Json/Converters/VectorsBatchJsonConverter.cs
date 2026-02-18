@@ -1,20 +1,20 @@
 using Aer.QdrantClient.Http.Exceptions;
-using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
-using Aer.QdrantClient.Http.Models.Requests.Public;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal sealed class VectorsBatchJsonConverter : JsonConverter<UpsertPointsRequest.UpsertPointsBatch.VectorsBatch>
+internal sealed class VectorsBatchJsonConverter : JsonConverter<UpsertPointsBatch.VectorsBatch>
 {
     private static readonly JsonSerializerOptions _serializerOptions =
          JsonSerializerConstants.CreateSerializerOptions(new VectorJsonConverter());
 
-    public override UpsertPointsRequest.UpsertPointsBatch.VectorsBatch Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override UpsertPointsBatch.VectorsBatch Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        throw new NotSupportedException("Reading upsert vectors' batch is not supported");
+        throw new NotSupportedException("Reading vectors' batch is not supported");
     }
 
     /*
@@ -53,7 +53,7 @@ internal sealed class VectorsBatchJsonConverter : JsonConverter<UpsertPointsRequ
        }
      }
    */
-    public override void Write(Utf8JsonWriter writer, UpsertPointsRequest.UpsertPointsBatch.VectorsBatch value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, UpsertPointsBatch.VectorsBatch value, JsonSerializerOptions options)
     {
         if (HasVectors(value.Vectors))
         {
