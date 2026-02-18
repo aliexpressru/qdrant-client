@@ -19,7 +19,7 @@ namespace Aer.QdrantClient.Http.Infrastructure.Replication;
 /// The class provides methods to determine replication needs
 /// and to perform asynchronous replication operations.
 /// </remarks>
-internal class ShardReplicator
+public class ShardReplicator
 {
     private readonly QdrantHttpClient _qdrantClient;
     private readonly ILogger _logger;

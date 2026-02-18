@@ -573,7 +573,7 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<ReplicateShardsToPeerResponse> RestoreShardReplicationFactor(
+    public async Task<RestoreShardReplicationFactorResponse> RestoreShardReplicationFactor(
         string collectionName,
         CancellationToken cancellationToken,
         ILogger logger = null,
@@ -607,22 +607,13 @@ public partial class QdrantHttpClient
 
             shardReplicator.Calculate();
 
-            if (shardReplicator.ShardsNeedReplication)
+            return new RestoreShardReplicationFactorResponse()
             {
-                await foreach (var replication in shardReplicator.ExecuteReplications(cancellationToken, shardTransferMethod))
-                {
-                    await EnsureCollectionReady(collectionName, cancellationToken, isCheckShardTransfersCompleted: true);
-                }
-            }
-
-            sw.Stop();
-
-            return new ReplicateShardsToPeerResponse()
-            {
-                Result = true,
+                Result = shardReplicator,
                 Status = QdrantStatus.Success(),
                 Time = sw.Elapsed.TotalSeconds
             };
+
         }
         catch (QdrantUnsuccessfulResponseStatusException qex)
         {
