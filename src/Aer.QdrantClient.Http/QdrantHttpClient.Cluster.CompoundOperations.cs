@@ -598,13 +598,18 @@ public partial class QdrantHttpClient
                 )
             ).EnsureSuccess();
 
-            var shardReplicator = new ShardReplicator(collectionName, collectionInfo, collectionClusteringInfo);
+            var shardReplicator = new ShardReplicator(
+                this,
+                logger,
+                collectionName,
+                collectionInfo,
+                collectionClusteringInfo);
 
-            shardReplicator.Calculate(logger);
+            shardReplicator.Calculate();
 
             if (shardReplicator.ShardsNeedReplication)
             {
-                await foreach (var replication in shardReplicator.ExecuteReplications(this, cancellationToken, shardTransferMethod))
+                await foreach (var replication in shardReplicator.ExecuteReplications(cancellationToken, shardTransferMethod))
                 {
                     await EnsureCollectionReady(collectionName, cancellationToken, isCheckShardTransfersCompleted: true);
                 }
