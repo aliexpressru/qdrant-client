@@ -7,7 +7,7 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// Note that replicate collections operation is asynchronous and success result means
 /// that there were no errors during operation start.
 /// </summary>
-public sealed class ReplicateShardsToPeerResponse : QdrantResponseBase<bool>
+public sealed class ReplicateShardsToPeerResponse : QdrantResponseBase<ReplicateShardsToPeerResponse.ReplicateShardsToPeerResponseUnit>
 {
     /// <summary>
     /// Creates a new instance of <see cref="ReplicateShardsToPeerResponse"/>.
@@ -17,4 +17,18 @@ public sealed class ReplicateShardsToPeerResponse : QdrantResponseBase<bool>
 
     internal ReplicateShardsToPeerResponse(QdrantResponseBase childResponse) : base(childResponse)
     { }
+
+    /// <summary>
+    /// Represents the information if the operation is successful or not and returns a map of shards per peer for which the operation was not required to execute.
+    /// </summary>
+    public sealed record ReplicateShardsToPeerResponseUnit(bool IsSuccess, Dictionary<ulong, HashSet<uint>> UntouchedPeerShards)
+    {
+        /// <summary>
+        /// Initializes a new ReplicateShardsToPeerResponseUnit instance with empty UntouchedPeerShards
+        /// </summary>
+        /// <param name="IsSuccess"></param>
+        public ReplicateShardsToPeerResponseUnit(bool IsSuccess) : this(IsSuccess, [])
+        {
+        }
+    }
 }

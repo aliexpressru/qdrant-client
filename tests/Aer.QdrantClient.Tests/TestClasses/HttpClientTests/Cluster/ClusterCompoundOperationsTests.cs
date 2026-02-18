@@ -643,8 +643,10 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
             isCheckShardTransfersCompleted: true);
 
         replicateCollectionResponse.Status.IsSuccess.Should().BeTrue();
-        replicateCollectionResponse.Result.Should().BeTrue();
-
+        replicateCollectionResponse.Result.IsSuccess.Should().BeTrue();
+        replicateCollectionResponse.Result.UntouchedPeerShards.Count.Should().Be(1);
+        replicateCollectionResponse.Result.UntouchedPeerShards[targetPeerId].Count.Should().Be(replicationFactor);
+        
         var replicatedCollectionClusteringInfo =
             (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
             .EnsureSuccess();
@@ -744,8 +746,10 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
             isCheckShardTransfersCompleted: true);
 
         replicateCollectionResponse.Status.IsSuccess.Should().BeTrue();
-        replicateCollectionResponse.Result.Should().BeTrue();
-
+        replicateCollectionResponse.Result.IsSuccess.Should().BeTrue();
+        replicateCollectionResponse.Result.UntouchedPeerShards.Count.Should().Be(1);
+        replicateCollectionResponse.Result.UntouchedPeerShards[targetPeerId].Count.Should().Be(1);
+        
         var replicatedCollectionClusteringInfo =
             (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
             .EnsureSuccess();
@@ -806,8 +810,10 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
             isCheckShardTransfersCompleted: true);
 
         replicateCollectionResponse.Status.IsSuccess.Should().BeTrue();
-        replicateCollectionResponse.Result.Should().BeTrue();
-
+        replicateCollectionResponse.Result.IsSuccess.Should().BeTrue();
+        replicateCollectionResponse.Result.UntouchedPeerShards.Count.Should().Be(1);
+        replicateCollectionResponse.Result.UntouchedPeerShards[targetPeerId].Count.Should().Be(replicationFactor);
+        
         var firstReplicatedCollectionClusteringInfo =
             (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
             .EnsureSuccess();
@@ -880,7 +886,7 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
           S2       
           S3       
           S4
-        --------------- ReplicateShards from Node 1 to Node 2 (all shards)
+        --------------- ReplicateShards from Node 1 to Node 2 (all shards). Untouched shard is S2.
           S1       S1
           S2       S2
           S3       S3
@@ -915,7 +921,7 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
             shardNumber: 4,
             replicationFactor: 1);
 
-        var sourcePeerInfo =
+        var qdrant2PeerInfo =
             (await _qdrantHttpClient.GetPeerInfo("http://qdrant-2", CancellationToken.None))
             .EnsureSuccess();
 
@@ -925,11 +931,11 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
 
         // First we replicate one shard for one collection
 
-        var shardToReplicate = initialSubjectCollectionClusteringInfo.PeerId == sourcePeerInfo.PeerId
+        var shardToReplicate = initialSubjectCollectionClusteringInfo.PeerId == qdrant2PeerInfo.PeerId
             ? initialSubjectCollectionClusteringInfo.LocalShards[0].ShardId
             : initialSubjectCollectionClusteringInfo.RemoteShards[0].ShardId;
 
-        var shardToMove = initialSubjectCollectionClusteringInfo.PeerId == sourcePeerInfo.PeerId
+        var shardToMove = initialSubjectCollectionClusteringInfo.PeerId == qdrant2PeerInfo.PeerId
             ? initialSubjectCollectionClusteringInfo.LocalShards[1].ShardId
             : initialSubjectCollectionClusteringInfo.RemoteShards[1].ShardId;
 
@@ -943,6 +949,8 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
                 shardIdsToReplicate: [shardToReplicate]);
 
         replicateOneCollectionOneShardResponse.Status.IsSuccess.Should().BeTrue();
+        replicateOneCollectionOneShardResponse.Result.IsSuccess.Should().BeTrue();
+        replicateOneCollectionOneShardResponse.Result.UntouchedPeerShards.Should().BeEmpty();
 
         await _qdrantHttpClient.EnsureCollectionReady(
             TestCollectionName,
@@ -953,7 +961,7 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
             (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
             .EnsureSuccess();
 
-        if (collectionClusteringInfoAfterShardReplicate.PeerId == sourcePeerInfo.PeerId)
+        if (collectionClusteringInfoAfterShardReplicate.PeerId == qdrant2PeerInfo.PeerId)
         {
             // means we got response from source peer
             collectionClusteringInfoAfterShardReplicate.LocalShards.Length.Should().Be(2);
@@ -996,6 +1004,8 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
                 isMoveShards: true);
 
         moveOneCollectionOneShardResponse.Status.IsSuccess.Should().BeTrue();
+        moveOneCollectionOneShardResponse.Result.IsSuccess.Should().BeTrue();
+        moveOneCollectionOneShardResponse.Result.UntouchedPeerShards.Should().BeEmpty();
 
         await _qdrantHttpClient.EnsureCollectionReady(
             TestCollectionName,
@@ -1006,7 +1016,7 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
             (await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None))
             .EnsureSuccess();
 
-        if (collectionClusteringInfoAfterShardMove.PeerId == sourcePeerInfo.PeerId)
+        if (collectionClusteringInfoAfterShardMove.PeerId == qdrant2PeerInfo.PeerId)
         {
             // means we got response from source peer
             collectionClusteringInfoAfterShardMove.LocalShards.Length.Should().Be(1); // Shard 4 should be moved
@@ -1053,6 +1063,9 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
                 isMoveShards: false);
 
         replicateOneCollectionAllShardsResponse.Status.IsSuccess.Should().BeTrue();
+        replicateOneCollectionAllShardsResponse.Result.IsSuccess.Should().BeTrue();
+        replicateOneCollectionAllShardsResponse.Result.UntouchedPeerShards.Count.Should().Be(1);
+        replicateOneCollectionAllShardsResponse.Result.UntouchedPeerShards[qdrant2PeerInfo.PeerId].Count.Should().Be(1);//S2 already exists on the target node
 
         await _qdrantHttpClient.EnsureCollectionReady(
             TestCollectionName,
@@ -1099,7 +1112,7 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
           S4       S4
 
         Both collections should have full replication on both shards the end.
-
+        S2 and S4 should stay untouched here since they are already on Node2.
         */
 
         await CreateTestShardedCollection(
@@ -1116,7 +1129,7 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
             shardNumber: 4,
             replicationFactor: 1);
 
-        var sourcePeerInfo =
+        var qdrant2PeerInfo =
             (await _qdrantHttpClient.GetPeerInfo("http://qdrant-2", CancellationToken.None))
             .EnsureSuccess();
 
@@ -1132,6 +1145,8 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
                 shardIdsToReplicate: null);
 
         replicateAllCollectionAllShardResponse.Status.IsSuccess.Should().BeTrue();
+        replicateAllCollectionAllShardResponse.Result.IsSuccess.Should().BeTrue();
+        replicateAllCollectionAllShardResponse.Result.UntouchedPeerShards.Should().BeEmpty();
 
         await _qdrantHttpClient.EnsureCollectionReady(
             TestCollectionName,
@@ -1149,7 +1164,7 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
                 (await _qdrantHttpClient.GetCollectionClusteringInfo(collectionName, CancellationToken.None))
                 .EnsureSuccess();
 
-            if (collectionClusteringInfoAfterFirstReplication.PeerId == sourcePeerInfo.PeerId)
+            if (collectionClusteringInfoAfterFirstReplication.PeerId == qdrant2PeerInfo.PeerId)
             {
                 // means we got response from source peer
                 collectionClusteringInfoAfterFirstReplication.LocalShards.Length.Should().Be(2);
@@ -1175,6 +1190,9 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
                 shardIdsToReplicate: null);
 
         replicateAllCollectionAllShardBackResponse.Status.IsSuccess.Should().BeTrue();
+        replicateAllCollectionAllShardBackResponse.Result.IsSuccess.Should().BeTrue();
+        replicateAllCollectionAllShardBackResponse.Result.UntouchedPeerShards.Count.Should().Be(1);
+        replicateAllCollectionAllShardBackResponse.Result.UntouchedPeerShards[qdrant2PeerInfo.PeerId].Count.Should().Be(2);
 
         await _qdrantHttpClient.EnsureCollectionReady(
             TestCollectionName,
