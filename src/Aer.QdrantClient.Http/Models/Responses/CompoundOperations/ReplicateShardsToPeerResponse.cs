@@ -21,12 +21,12 @@ public sealed class ReplicateShardsToPeerResponse : QdrantResponseBase<Replicate
     /// <summary>
     /// Represents the information if the operation is successful or not and returns a map of shards per peer for which the operation was not required to execute.
     /// </summary>
-    public sealed record ReplicateShardsToPeerResponseUnit(bool IsSuccess, Dictionary<ulong, HashSet<uint>> UntouchedPeerShards)
+    public sealed record ReplicateShardsToPeerResponseUnit(bool IsSuccess, Dictionary<ulong, HashSet<uint>> AlreadyReplicatedShardsByPeers)
     {
         /// <summary>
         /// Initializes a new ReplicateShardsToPeerResponseUnit instance with empty UntouchedPeerShards
         /// </summary>
-        /// <param name="IsSuccess"></param>
+        /// <param name="IsSuccess">Returns if the operation is successful.</param>
         public ReplicateShardsToPeerResponseUnit(bool IsSuccess) : this(IsSuccess, [])
         {
         }
