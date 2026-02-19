@@ -16,7 +16,7 @@ public sealed class ReplicateShardsToPeerResponse : QdrantResponseBase<Replicate
     /// </summary>
     public sealed record ReplicateShardsToPeerResponseUnit(
         IReadOnlyList<ReplicateShardToPeerResult> ReplicatedShards,
-        Dictionary<ulong, HashSet<uint>> AlreadyReplicatedShardsByPeers);
+        Dictionary<string, Dictionary<ulong, HashSet<uint>>> AlreadyReplicatedShards);
 
     /// <summary>
     /// Represents the outcome of a shard replication operation to a peer.
@@ -48,11 +48,11 @@ public sealed class ReplicateShardsToPeerResponse : QdrantResponseBase<Replicate
     )
     {
         internal static ReplicateShardToPeerResult Fail(
-            uint? ShardId = null,
-            ulong? SourcePeerId = null,
-            ulong? TargetPeerId = null,
-            string CollectionName = null
-        ) => new(IsSuccess: false, ShardId: ShardId, SourcePeerId: SourcePeerId, TargetPeerId: TargetPeerId, CollectionName);
+            uint? shardId = null,
+            ulong? sourcePeerId = null,
+            ulong? targetPeerId = null,
+            string collectionName = null
+        ) => new(IsSuccess: false, ShardId: shardId, SourcePeerId: sourcePeerId, TargetPeerId: targetPeerId, collectionName);
     }
 
     /// <summary>
@@ -66,15 +66,15 @@ public sealed class ReplicateShardsToPeerResponse : QdrantResponseBase<Replicate
     internal static ReplicateShardsToPeerResponse Fail(
         QdrantStatus status,
         double time,
-        uint? ShardId = null,
-        ulong? SourcePeerId = null,
-        ulong? TargetPeerId = null
+        uint? shardId = null,
+        ulong? sourcePeerId = null,
+        ulong? targetPeerId = null
     ) =>
         new()
         {
             Result = new(
-                ReplicatedShards: [ReplicateShardToPeerResult.Fail(ShardId, SourcePeerId, TargetPeerId)],
-                AlreadyReplicatedShardsByPeers: null),
+                ReplicatedShards: [ReplicateShardToPeerResult.Fail(shardId, sourcePeerId, targetPeerId)],
+                AlreadyReplicatedShards: null),
             Status = status,
             Time = time,
         };

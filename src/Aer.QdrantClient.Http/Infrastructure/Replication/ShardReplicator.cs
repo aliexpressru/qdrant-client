@@ -183,7 +183,7 @@ public class ShardReplicator
                                     _collectionName
                                 )
                             ],
-                            AlreadyReplicatedShardsByPeers: []
+                            AlreadyReplicatedShards: []
                         ),
                         Status = QdrantStatus.Success(),
                         Time = replicateShardStartResponse.Time
@@ -203,7 +203,7 @@ public class ShardReplicator
                                     _collectionName
                                 )
                             ],
-                            AlreadyReplicatedShardsByPeers: []
+                            AlreadyReplicatedShards: []
                         )
                     };
                 }

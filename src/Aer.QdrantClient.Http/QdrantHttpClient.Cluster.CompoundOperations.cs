@@ -151,7 +151,7 @@ public partial class QdrantHttpClient
             }
 
             List<ReplicateShardsToPeerResponse.ReplicateShardToPeerResult> replicateShardResults = [];
-            Dictionary<ulong, HashSet<uint>> alreadyReplicatedShardsByPeers = [];
+            Dictionary<string, Dictionary<ulong, HashSet<uint>>> alreadyReplicatedShards = [];
 
             foreach (var collectionName in collectionNames)
             {
@@ -259,7 +259,7 @@ public partial class QdrantHttpClient
                                         ReplicateShardsToPeerResponse.ReplicateShardToPeerResult.Fail(
                                             sourceShardId, sourcePeerId, targetPeerId, collectionName)
                                     ],
-                                    AlreadyReplicatedShardsByPeers: []),
+                                    AlreadyReplicatedShards: []),
                                     Time = sw.Elapsed.TotalSeconds
                                 };
                             }
@@ -280,8 +280,10 @@ public partial class QdrantHttpClient
                     else
                     {
                         // save shard that already exists on the target node
-                        alreadyReplicatedShardsByPeers.TryAdd(targetPeerId, new HashSet<uint>());
-                        alreadyReplicatedShardsByPeers[targetPeerId].Add(sourceShardId);
+                        alreadyReplicatedShards.TryAdd(collectionName, []);
+                        
+                        alreadyReplicatedShards[collectionName].TryAdd(targetPeerId, []);
+                        alreadyReplicatedShards[collectionName][targetPeerId].Add(sourceShardId);
 
                         if (logger?.IsEnabled(LogLevel.Information) == true)
                         {
@@ -302,7 +304,7 @@ public partial class QdrantHttpClient
 
             return new ReplicateShardsToPeerResponse()
             {
-                Result = new(replicateShardResults, alreadyReplicatedShardsByPeers),
+                Result = new(replicateShardResults, alreadyReplicatedShards),
                 Status = QdrantStatus.Success(),
                 Time = sw.Elapsed.TotalSeconds
             };
@@ -425,7 +427,7 @@ public partial class QdrantHttpClient
             }
 
             List<ReplicateShardsToPeerResponse.ReplicateShardToPeerResult> replicateShardResults = [];
-            Dictionary<ulong, HashSet<uint>> alreadyReplicatedShardsByPeers = [];
+            Dictionary<string, Dictionary<ulong, HashSet<uint>>> alreadyReplicatedShards = [];
 
             foreach (var collectionName in collectionNames)
             {
@@ -488,8 +490,10 @@ public partial class QdrantHttpClient
                     else
                     {
                         // save shard that already exists on the target node
-                        alreadyReplicatedShardsByPeers.TryAdd(targetPeerId, new HashSet<uint>());
-                        alreadyReplicatedShardsByPeers[targetPeerId].Add(sourceShardId);
+                        alreadyReplicatedShards.TryAdd(collectionName, []);
+
+                        alreadyReplicatedShards[collectionName].TryAdd(targetPeerId, []);
+                        alreadyReplicatedShards[collectionName][targetPeerId].Add(sourceShardId);
 
                         if (logger?.IsEnabled(LogLevel.Information) == true)
                         {
@@ -562,7 +566,7 @@ public partial class QdrantHttpClient
                                             targetPeerId,
                                             collectionName)
                                     ],
-                                    AlreadyReplicatedShardsByPeers: []),
+                                    AlreadyReplicatedShards: []),
                                 Time = sw.Elapsed.TotalSeconds
                             };
                         }
@@ -586,7 +590,7 @@ public partial class QdrantHttpClient
 
             return new ReplicateShardsToPeerResponse()
             {
-                Result = new(replicateShardResults, alreadyReplicatedShardsByPeers),
+                Result = new(replicateShardResults, alreadyReplicatedShards),
                 Status = QdrantStatus.Success(),
                 Time = sw.Elapsed.TotalSeconds
             };
@@ -887,7 +891,7 @@ public partial class QdrantHttpClient
                                             targetPeerId,
                                             collectionName)
                                     ],
-                                    AlreadyReplicatedShardsByPeers: []
+                                    AlreadyReplicatedShards: []
                                 ),
                                 Time = sw.Elapsed.TotalSeconds
                             };
