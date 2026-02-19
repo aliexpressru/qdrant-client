@@ -117,6 +117,12 @@ internal partial class ClusterTests : QdrantTestsBase
         newCollectionClusteringInfo.ShardTransfers[0].From.Should().Be(localPeerId);
         newCollectionClusteringInfo.ShardTransfers[0].To.Should().Be(remotePeerId);
         newCollectionClusteringInfo.ShardTransfers[0].Sync.Should().Be(false);
+        newCollectionClusteringInfo.ShardTransfers[0].ToShardId.Should().BeNull();
+
+        if (IsVersionAfterOrEqual("1.16.0"))
+        {
+            newCollectionClusteringInfo.ShardTransfers[0].Comment.Should().NotBeNull();
+        }
 
         await _qdrantHttpClient.EnsureCollectionReady(
             TestCollectionName,

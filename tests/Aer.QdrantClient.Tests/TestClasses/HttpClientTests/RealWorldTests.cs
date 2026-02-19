@@ -2112,5 +2112,4 @@ internal class RealWorldTests : QdrantTestsBase
         searchResult.Status.IsSuccess.Should().BeTrue();
     }
 }
-
 #pragma warning restore IDE0059 // Unnecessary assignment of a value
