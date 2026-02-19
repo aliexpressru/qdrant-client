@@ -9,7 +9,7 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// Note that replicate collections operation is asynchronous and success result means
 /// that there were no errors during operation start.
 /// </summary>
-public sealed class ReplicateShardsToPeerResponse : QdrantResponseBase<ICollection<ReplicateShardToPeerResult>>
+public sealed class ReplicateShardsToPeerResponse : QdrantResponseBase<IReadOnlyList<ReplicateShardToPeerResult>>
 {
     /// <summary>
     /// Represents the outcome of a shard replication operation to a peer.
