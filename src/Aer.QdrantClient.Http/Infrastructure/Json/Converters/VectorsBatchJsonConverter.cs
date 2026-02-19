@@ -68,7 +68,7 @@ internal sealed class VectorsBatchJsonConverter : JsonConverter<UpsertPointsBatc
 
             writer.WriteEndArray();
         }
-        else if (value.NamedVectors?.Any() == true)
+        else if (value.NamedVectors is {Count: > 0})
         {
             writer.WriteStartObject();
 
