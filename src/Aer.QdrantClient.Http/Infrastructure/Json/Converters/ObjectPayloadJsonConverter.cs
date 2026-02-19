@@ -7,7 +7,7 @@ namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 internal sealed class ObjectPayloadJsonConverter : JsonConverter<object>
 {
     public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-        throw new NotSupportedException("Reading upsert point payload object instances is not supported");
+        throw new NotSupportedException("Reading point payload object instances is not supported");
 
     public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
     {

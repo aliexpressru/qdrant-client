@@ -54,11 +54,16 @@ public sealed class UpsertPointsRequest
             Payload = payload;
         }
     }
-
+    
     /// <summary>
     /// The points to upsert.
     /// </summary>
-    public required IEnumerable<UpsertPoint> Points { get; set; }
+    public IEnumerable<UpsertPoint> Points { get; set; }
+    
+    /// <summary>
+    /// The points' batch to upsert.
+    /// </summary>
+    public UpsertPointsBatch Batch { get; set; }
 
     /// <summary>
     /// The shard selector to perform operation only on specified shards.
