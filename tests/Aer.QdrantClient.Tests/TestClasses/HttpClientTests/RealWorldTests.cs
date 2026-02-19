@@ -9,6 +9,7 @@ using Aer.QdrantClient.Tests.Helpers;
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
 // NOTE: this is an ad-hoc mess used to troubleshoot various problems
+#pragma warning disable IDE0059 // Unnecessary assignment of a value | Justification - this is a meesy test file
 
 [Ignore("Real world tests are run locally only and are enabled manually")]
 internal class RealWorldTests : QdrantTestsBase
@@ -2110,3 +2111,4 @@ internal class RealWorldTests : QdrantTestsBase
         searchResult.Status.IsSuccess.Should().BeTrue();
     }
 }
+#pragma warning restore IDE0059 // Unnecessary assignment of a value

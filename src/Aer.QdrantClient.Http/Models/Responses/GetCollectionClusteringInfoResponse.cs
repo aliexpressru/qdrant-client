@@ -178,6 +178,18 @@ public sealed class GetCollectionClusteringInfoResponse
         /// If <c>false</c> transfer is a moving of a shard from one peer to another.
         /// </summary>
         public bool Sync { init; get; }
+
+        /// <summary>
+        /// Target shard ID if different than source shard ID.
+        /// Used exclusively with ReshardStreamRecords transfer method.
+        /// </summary>
+        public uint? ToShardId { init; get; }
+
+        /// <summary>
+        /// A human-readable report of the transfer progress.
+        /// Available only on the source peer.
+        /// </summary>
+        public string Comment { init; get; }
     }
 
     /// <summary>
