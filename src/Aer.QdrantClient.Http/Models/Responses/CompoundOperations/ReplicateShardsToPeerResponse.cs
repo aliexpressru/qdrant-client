@@ -9,8 +9,15 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// Note that replicate collections operation is asynchronous and success result means
 /// that there were no errors during operation start.
 /// </summary>
-public sealed class ReplicateShardsToPeerResponse : QdrantResponseBase<IReadOnlyList<ReplicateShardToPeerResult>>
+public sealed class ReplicateShardsToPeerResponse : QdrantResponseBase<ReplicateShardsToPeerResponseUnit>
 {
+    /// <summary>
+    /// Represents the shard replication operation result.
+    /// </summary>
+    public sealed record ReplicateShardsToPeerResponseUnit(
+        IReadOnlyList<ReplicateShardToPeerResult> ReplicatedShards,
+        Dictionary<ulong, HashSet<uint>> AlreadyReplicatedShardsByPeers);
+
     /// <summary>
     /// Represents the outcome of a shard replication operation to a peer.
     /// </summary>
@@ -65,7 +72,9 @@ public sealed class ReplicateShardsToPeerResponse : QdrantResponseBase<IReadOnly
     ) =>
         new()
         {
-            Result = [ReplicateShardToPeerResult.Fail(ShardId, SourcePeerId, TargetPeerId)],
+            Result = new(
+                ReplicatedShards: [ReplicateShardToPeerResult.Fail(ShardId, SourcePeerId, TargetPeerId)],
+                AlreadyReplicatedShardsByPeers: null),
             Status = status,
             Time = time,
         };

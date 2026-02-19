@@ -173,16 +173,18 @@ public class ShardReplicator
                 {
                     replicateShardResponse = new ReplicateShardsToPeerResponse()
                     {
-                        Result =
-[
-                            new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
-                                IsSuccess: true,
-                                ShardId: shardId,
-                                SourcePeerId: sourcePeerId,
-                                TargetPeerId: targetPeerId,
-                                _collectionName
-                            )
-                        ],
+                        Result = new(
+                            ReplicatedShards: [
+                                new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
+                                    IsSuccess: true,
+                                    ShardId: shardId,
+                                    SourcePeerId: sourcePeerId,
+                                    TargetPeerId: targetPeerId,
+                                    _collectionName
+                                )
+                            ],
+                            AlreadyReplicatedShardsByPeers: []
+                        ),
                         Status = QdrantStatus.Success(),
                         Time = replicateShardStartResponse.Time
                     };
@@ -191,15 +193,18 @@ public class ShardReplicator
                 {
                     replicateShardResponse = new ReplicateShardsToPeerResponse(replicateShardStartResponse)
                     {
-                        Result = [
-                            new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
-                                IsSuccess: false,
-                                ShardId: shardId,
-                                SourcePeerId: sourcePeerId,
-                                TargetPeerId: targetPeerId,
-                                _collectionName
-                            )
-                        ]
+                        Result = new(
+                            ReplicatedShards: [
+                                new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
+                                    IsSuccess: false,
+                                    ShardId: shardId,
+                                    SourcePeerId: sourcePeerId,
+                                    TargetPeerId: targetPeerId,
+                                    _collectionName
+                                )
+                            ],
+                            AlreadyReplicatedShardsByPeers: []
+                        )
                     };
                 }
 
