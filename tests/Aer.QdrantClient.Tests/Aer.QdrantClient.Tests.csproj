@@ -11,11 +11,11 @@
     <EnableNUnitRunner>true</EnableNUnitRunner>
     <OutputType>Exe</OutputType>
     <TestTfmsInParallel>false</TestTfmsInParallel>
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
-    <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
+    <!--<TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>-->
+    <!--<TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>-->
     <!--  By default, all console output that the underlying test executable writes is captured and hidden from the user. 
     This includes the banner, version information, and formatted test information.   -->
-    <TestingPlatformCaptureOutput>true</TestingPlatformCaptureOutput>
+    <!--<TestingPlatformCaptureOutput>true</TestingPlatformCaptureOutput>-->
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
