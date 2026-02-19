@@ -155,7 +155,7 @@ public partial interface IQdrantHttpClient
     /// </param>
     /// <param name="timeout">The timeout to wait for resharding operation initiation.</param>
     /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
-    Task<ReplicateShardsToPeerResponse> RestoreShardReplicationFactor(
+    Task<RestoreShardReplicationFactorResponse> RestoreShardReplicationFactor(
         string collectionName,
         CancellationToken cancellationToken,
         ILogger logger = null,

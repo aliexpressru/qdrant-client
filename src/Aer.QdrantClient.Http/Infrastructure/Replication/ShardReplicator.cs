@@ -109,7 +109,7 @@ public class ShardReplicator
     }
 
     /// <summary>
-    /// Asynchronously replicates the specified shards to target peers if needed.
+    /// Asynchronously replicates the specified shards to target peers.
     /// </summary>
     /// <param name="cancellationToken">
     /// A cancellation token that can be used to cancel
@@ -124,13 +124,13 @@ public class ShardReplicator
     /// to wait for each replication operation.
     /// If not provided, the default timeout of 30 seconds is used.</param>
     /// <returns>
-    /// An asynchronous stream of tuples, each containing the shard ID,
-    /// source peer ID, and target peer ID for each replication performed.
+    /// An asynchronous stream of shard replication results.
     /// </returns>
     /// <remarks>
-    /// It is advised to check on each returned replication status before continuing with the next one.
+    /// It is recommended to check on each returned replication status
+    /// before continuing with the next replication step.
     /// </remarks>
-    public async IAsyncEnumerable<(uint ShardId, ulong SourcePeerId, ulong TargetPeerId, ReplicateShardsToPeerResponse replicateShardResponse)> ExecuteReplications(
+    public async IAsyncEnumerable<ReplicateShardsToPeerResponse> ExecuteReplications(
         [EnumeratorCancellation] CancellationToken cancellationToken,
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
         TimeSpan? timeout = null)
@@ -173,7 +173,16 @@ public class ShardReplicator
                 {
                     replicateShardResponse = new ReplicateShardsToPeerResponse()
                     {
-                        Result = true,
+                        Result =
+[
+                            new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
+                                IsSuccess: true,
+                                ShardId: shardId,
+                                SourcePeerId: sourcePeerId,
+                                TargetPeerId: targetPeerId,
+                                _collectionName
+                            )
+                        ],
                         Status = QdrantStatus.Success(),
                         Time = replicateShardStartResponse.Time
                     };
@@ -182,17 +191,21 @@ public class ShardReplicator
                 {
                     replicateShardResponse = new ReplicateShardsToPeerResponse(replicateShardStartResponse)
                     {
-                        Result = false
+                        Result = [
+                            new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
+                                IsSuccess: false,
+                                ShardId: shardId,
+                                SourcePeerId: sourcePeerId,
+                                TargetPeerId: targetPeerId,
+                                _collectionName
+                            )
+                        ]
                     };
                 }
 
                 replicasLeftToAdd--;
 
-                yield return (
-                    shardId,
-                    sourcePeerId,
-                    targetPeerId,
-                    replicateShardResponse);
+                yield return replicateShardResponse;
             }
         }
     }

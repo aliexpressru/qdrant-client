@@ -123,13 +123,11 @@ public partial class QdrantHttpClient
                     {
                         sw.Stop();
 
-                        return new ReplicateShardsToPeerResponse()
-                        {
-                            Result = false,
-                            Status = QdrantStatus.Fail(
+                        return ReplicateShardsToPeerResponse.Fail(
+                            QdrantStatus.Fail(
                                 $"Collection '{collectionNameFromParameter}' does not exist, check parameters"),
-                            Time = sw.Elapsed.TotalSeconds
-                        };
+                            sw.Elapsed.TotalSeconds
+                        );
                     }
                 }
 
@@ -151,6 +149,8 @@ public partial class QdrantHttpClient
                     peerUriPerPeerId[targetPeerId]
                 );
             }
+
+            List<ReplicateShardsToPeerResponse.ReplicateShardToPeerResult> replicateShardResults = [];
 
             foreach (var collectionName in collectionNames)
             {
@@ -176,13 +176,11 @@ public partial class QdrantHttpClient
                         {
                             sw.Stop();
 
-                            return new ReplicateShardsToPeerResponse()
-                            {
-                                Result = false,
-                                Status = QdrantStatus.Fail(
+                            return ReplicateShardsToPeerResponse.Fail(
+                                QdrantStatus.Fail(
                                     $"Collection '{collectionName}' does not have shard {shardIdToReplicate} on source peer {sourcePeerId}({peerUriPerPeerId[sourcePeerId]})"),
-                                Time = sw.Elapsed.TotalSeconds
-                            };
+                                sw.Elapsed.TotalSeconds
+                            );
                         }
                     }
 
@@ -255,10 +253,21 @@ public partial class QdrantHttpClient
 
                                 return new ReplicateShardsToPeerResponse(replicateShardResponse)
                                 {
-                                    Result = false,
+                                    Result = [
+                                        ReplicateShardsToPeerResponse.ReplicateShardToPeerResult.Fail(
+                                            sourceShardId, sourcePeerId, targetPeerId, collectionName)
+                                    ],
                                     Time = sw.Elapsed.TotalSeconds
                                 };
                             }
+
+                            replicateShardResults.Add(new(
+                                IsSuccess: true,
+                                ShardId: sourceShardId,
+                                SourcePeerId: sourcePeerId,
+                                TargetPeerId: targetPeerId,
+                                collectionName)
+                            );
                         }
                         else
                         {
@@ -286,7 +295,7 @@ public partial class QdrantHttpClient
 
             return new ReplicateShardsToPeerResponse()
             {
-                Result = true,
+                Result = replicateShardResults,
                 Status = QdrantStatus.Success(),
                 Time = sw.Elapsed.TotalSeconds
             };
@@ -295,12 +304,7 @@ public partial class QdrantHttpClient
         {
             sw.Stop();
 
-            return new ReplicateShardsToPeerResponse()
-            {
-                Result = false,
-                Status = QdrantStatus.Fail(qex.Message, qex),
-                Time = sw.Elapsed.TotalSeconds
-            };
+            return ReplicateShardsToPeerResponse.Fail(QdrantStatus.Fail(qex.Message, qex), sw.Elapsed.TotalSeconds);
         }
     }
 
@@ -387,13 +391,11 @@ public partial class QdrantHttpClient
                     {
                         sw.Stop();
 
-                        return new ReplicateShardsToPeerResponse()
-                        {
-                            Result = false,
-                            Status = QdrantStatus.Fail(
-                                $"Collection '{collectionNameFromParameter}' does not exist, check parameters"),
-                            Time = sw.Elapsed.TotalSeconds
-                        };
+                        return ReplicateShardsToPeerResponse.Fail(
+                            QdrantStatus.Fail(
+                            $"Collection '{collectionNameFromParameter}' does not exist, check parameters"),
+                            sw.Elapsed.TotalSeconds
+                        );
                     }
                 }
 
@@ -414,6 +416,8 @@ public partial class QdrantHttpClient
                     peerUriPerPeerId[targetPeerId]
                 );
             }
+
+            List<ReplicateShardsToPeerResponse.ReplicateShardToPeerResult> replicateShardResults = [];
 
             foreach (var collectionName in collectionNames)
             {
@@ -538,10 +542,24 @@ public partial class QdrantHttpClient
 
                             return new ReplicateShardsToPeerResponse(replicateShardResponse)
                             {
-                                Result = false,
+                                Result = [
+                                    ReplicateShardsToPeerResponse.ReplicateShardToPeerResult.Fail(
+                                        sourceShardId,
+                                        shardReplicaSourcePeerId,
+                                        targetPeerId,
+                                        collectionName)
+                                ],
                                 Time = sw.Elapsed.TotalSeconds
                             };
                         }
+
+                        replicateShardResults.Add(new(
+                                IsSuccess: true,
+                                ShardId: sourceShardId,
+                                SourcePeerId: shardReplicaSourcePeerId,
+                                TargetPeerId: targetPeerId,
+                                collectionName)
+                        );
                     }
                     else
                     {
@@ -554,7 +572,7 @@ public partial class QdrantHttpClient
 
             return new ReplicateShardsToPeerResponse()
             {
-                Result = true,
+                Result = replicateShardResults,
                 Status = QdrantStatus.Success(),
                 Time = sw.Elapsed.TotalSeconds
             };
@@ -563,12 +581,7 @@ public partial class QdrantHttpClient
         {
             sw.Stop();
 
-            return new ReplicateShardsToPeerResponse()
-            {
-                Result = false,
-                Status = QdrantStatus.Fail(qex.Message, qex),
-                Time = sw.Elapsed.TotalSeconds
-            };
+            return ReplicateShardsToPeerResponse.Fail(QdrantStatus.Fail(qex.Message, qex), sw.Elapsed.TotalSeconds);
         }
     }
 
@@ -607,6 +620,8 @@ public partial class QdrantHttpClient
 
             shardReplicator.Calculate();
 
+            sw.Stop();
+
             return new RestoreShardReplicationFactorResponse()
             {
                 Result = shardReplicator,
@@ -619,9 +634,9 @@ public partial class QdrantHttpClient
         {
             sw.Stop();
 
-            return new ReplicateShardsToPeerResponse()
+            return new RestoreShardReplicationFactorResponse()
             {
-                Result = false,
+                Result = null,
                 Status = QdrantStatus.Fail(qex.Message, qex),
                 Time = sw.Elapsed.TotalSeconds
             };
@@ -726,13 +741,11 @@ public partial class QdrantHttpClient
                     {
                         sw.Stop();
 
-                        return new ReplicateShardsToPeerResponse()
-                        {
-                            Result = false,
-                            Status = QdrantStatus.Fail(
+                        return ReplicateShardsToPeerResponse.Fail(
+                            QdrantStatus.Fail(
                                 $"Collection '{collectionNameFromParameter}' does not exist, check parameters"),
-                            Time = sw.Elapsed.TotalSeconds
-                        };
+                            sw.Elapsed.TotalSeconds
+                        );
                     }
                 }
 
@@ -754,6 +767,8 @@ public partial class QdrantHttpClient
                 );
             }
 
+            List<ReplicateShardsToPeerResponse.ReplicateShardToPeerResult> replicateShardResults = [];
+
             foreach (var collectionName in collectionNames)
             {
                 var collectionShardingInfo =
@@ -772,13 +787,11 @@ public partial class QdrantHttpClient
 
                 if (sourceShardIds.Count <= 1)
                 {
-                    return new ReplicateShardsToPeerResponse()
-                    {
-                        Result = false,
-                        Status = QdrantStatus.Fail(
+                    return ReplicateShardsToPeerResponse.Fail(
+                        QdrantStatus.Fail(
                             $"Collection '{collectionName}' has {sourceShardIds.Count} shards on source peer {sourcePeerId}({peerUriPerPeerId[sourcePeerId]}). The source peer should have more than 1 shards for equalization"),
-                        Time = sw.Elapsed.TotalSeconds
-                    };
+                        sw.Elapsed.TotalSeconds
+                    );
                 }
 
                 var targetShardIds = collectionShardsPerPeers.TryGetValue(
@@ -793,13 +806,10 @@ public partial class QdrantHttpClient
 
                     sw.Stop();
 
-                    return new ReplicateShardsToPeerResponse()
-                    {
-                        Result = false,
-                        Status = QdrantStatus.Fail(
+                    return ReplicateShardsToPeerResponse.Fail(
+                        QdrantStatus.Fail(
                             $"Collection '{collectionName}' has {targetShardIds.Count} shards on target peer {targetPeerId}({collectionShardsPerPeers[targetPeerId]}). The target peer should be empty for equalization"),
-                        Time = sw.Elapsed.TotalSeconds
-                    };
+                        sw.Elapsed.TotalSeconds);
                 }
 
                 var shardsToMoveCount = sourceShardIds.Count / 2;
@@ -855,10 +865,24 @@ public partial class QdrantHttpClient
 
                             return new ReplicateShardsToPeerResponse(moveShardResponse)
                             {
-                                Result = false,
+                                Result = [
+                                    ReplicateShardsToPeerResponse.ReplicateShardToPeerResult.Fail(
+                                        shardIdToMove,
+                                        sourcePeerId,
+                                        targetPeerId,
+                                        collectionName)
+                                ],
                                 Time = sw.Elapsed.TotalSeconds
                             };
                         }
+
+                        replicateShardResults.Add(new(
+                            IsSuccess: true,
+                            ShardId: shardIdToMove,
+                            SourcePeerId: sourcePeerId,
+                            TargetPeerId: targetPeerId,
+                            collectionName)
+                        );
                     }
                     else
                     {
@@ -871,7 +895,7 @@ public partial class QdrantHttpClient
 
             return new ReplicateShardsToPeerResponse()
             {
-                Result = true,
+                Result = replicateShardResults,
                 Status = QdrantStatus.Success(),
                 Time = sw.Elapsed.TotalSeconds
             };
@@ -880,12 +904,10 @@ public partial class QdrantHttpClient
         {
             sw.Stop();
 
-            return new ReplicateShardsToPeerResponse()
-            {
-                Result = false,
-                Status = QdrantStatus.Fail(qex.Message, qex),
-                Time = sw.Elapsed.TotalSeconds
-            };
+            return ReplicateShardsToPeerResponse.Fail(
+                QdrantStatus.Fail(qex.Message, qex),
+                sw.Elapsed.TotalSeconds
+            );
         }
     }
 
