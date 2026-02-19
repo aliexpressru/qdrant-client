@@ -100,7 +100,8 @@ internal partial class ClusterTests : QdrantTestsBase
 
         var moveShardResult = await _qdrantHttpClient.UpdateCollectionClusteringSetup(
             TestCollectionName,
-            UpdateCollectionClusteringSetupRequest.CreateMoveShardRequest(localShardId, localPeerId, remotePeerId),
+            UpdateCollectionClusteringSetupRequest.CreateMoveShardRequest(
+                localShardId, localPeerId, remotePeerId, ShardTransferMethod.Snapshot),
             CancellationToken.None
         );
 
@@ -118,6 +119,7 @@ internal partial class ClusterTests : QdrantTestsBase
         newCollectionClusteringInfo.ShardTransfers[0].To.Should().Be(remotePeerId);
         newCollectionClusteringInfo.ShardTransfers[0].Sync.Should().Be(false);
         newCollectionClusteringInfo.ShardTransfers[0].ToShardId.Should().BeNull();
+        newCollectionClusteringInfo.ShardTransfers[0].Method.Should().Be(ShardTransferMethod.Snapshot);
 
         if (IsVersionAfterOrEqual("1.16.0"))
         {
@@ -191,6 +193,14 @@ internal partial class ClusterTests : QdrantTestsBase
         newCollectionClusteringInfo.Result.ShardTransfers[0].From.Should().Be(localPeerId);
         newCollectionClusteringInfo.Result.ShardTransfers[0].To.Should().Be(remotePeerId);
         newCollectionClusteringInfo.Result.ShardTransfers[0].Sync.Should().Be(true);
+
+        newCollectionClusteringInfo.Result.ShardTransfers[0].ToShardId.Should().BeNull();
+        newCollectionClusteringInfo.Result.ShardTransfers[0].Method.Should().Be(ShardTransferMethod.StreamRecords);
+
+        if (IsVersionAfterOrEqual("1.16.0"))
+        {
+            newCollectionClusteringInfo.Result.ShardTransfers[0].Comment.Should().NotBeNull();
+        }
 
         await _qdrantHttpClient.EnsureCollectionReady(
             TestCollectionName,

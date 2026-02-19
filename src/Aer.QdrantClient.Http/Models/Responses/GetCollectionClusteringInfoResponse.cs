@@ -185,8 +185,13 @@ public sealed class GetCollectionClusteringInfoResponse
         public bool Sync { init; get; }
 
         /// <summary>
+        /// The method used to transfer shards.
+        /// </summary>
+        public ShardTransferMethod Method { init; get; }
+
+        /// <summary>
         /// Target shard ID if different than source shard ID.
-        /// Used exclusively with ReshardStreamRecords transfer method.
+        /// Used exclusively with <see cref="ShardTransferMethod.ReshardingStreamRecords"/> transfer method.
         /// </summary>
         public uint? ToShardId { init; get; }
 
