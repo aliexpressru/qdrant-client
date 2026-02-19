@@ -1,9 +1,9 @@
 using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
-using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -107,6 +107,8 @@ internal sealed class VectorsBatchJsonConverter : JsonConverter<UpsertPointsBatc
             return vectorsCount > 0;
         }
 
-        return vectors.Any();
+        using var enumerator = vectors.GetEnumerator();
+
+        return enumerator.MoveNext();
     }
 }
