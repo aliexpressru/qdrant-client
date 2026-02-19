@@ -89,9 +89,14 @@ public sealed class GetCollectionClusteringInfoResponse
         public ReshardingOperationInfo[] ReshardingOperations { init; get; }
 
         /// <summary>
-        /// Gets or sets the mapping of peer identifiers to the list of shard identifiers they are responsible for.
+        /// Gets the mapping of peer identifiers to the list of shard identifiers replicated on them .
         /// </summary>
-        public Dictionary<ulong, List<uint>> ShardsByPeers { set; get; }
+        public Dictionary<ulong, HashSet<uint>> ShardsByPeers { internal set; get; }
+
+        /// <summary>
+        /// Gets the mapping of shard identifiers to the list of peer identifiers they are replicated on.
+        /// </summary>
+        public Dictionary<uint, HashSet<ulong>> PeersByShards { internal set; get; }
     }
 
     /// <summary>

@@ -6,10 +6,11 @@ using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Helpers;
 
+#pragma warning disable IDE0059 // Unnecessary assignment of a value. Justification : this is intentionall, since we are using this test as a template for testing issues
+
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
 // NOTE: this is an ad-hoc mess used to troubleshoot various problems
-#pragma warning disable IDE0059 // Unnecessary assignment of a value | Justification - this is a meesy test file
 
 [Ignore("Real world tests are run locally only and are enabled manually")]
 internal class RealWorldTests : QdrantTestsBase
