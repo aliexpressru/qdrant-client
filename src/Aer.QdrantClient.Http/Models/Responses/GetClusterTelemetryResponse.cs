@@ -4,6 +4,7 @@ using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Responses.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using static Aer.QdrantClient.Http.Models.Responses.GetClusterTelemetryResponse;
 
@@ -49,7 +50,7 @@ public sealed class GetClusterTelemetryResponse : QdrantResponseBase<ClusterTele
         /// <summary>
         /// Ongoing resharding operations.
         /// </summary>
-        public ReshardingInfo[] Reshardings { get; set; }
+        public ReshardingOperationInfo[] Reshardings { get; set; }
 
         /// <summary>
         /// Ongoing shard transfers.
@@ -127,44 +128,14 @@ public sealed class GetClusterTelemetryResponse : QdrantResponseBase<ClusterTele
                 /// <summary>
                 /// Shard cleaning task status.
                 /// After a resharding, a cleanup task is performed to remove outdated points from this shard.
+                /// TODO: expand to class.
                 /// </summary>
-                public ShardCleanStatus ShardCleaningStatus { get; set; }
+                public JsonObject ShardCleaningStatus { get; set; }
 
                 /// <summary>
                 /// Partial snapshot information.
                 /// </summary>
                 public PartialSnapshotInfo PartialSnapshot { get; set; }
-
-                /// <summary>
-                /// Status of a background shard-cleanup task.
-                /// Discriminated by the <c>status</c> field:
-                /// <c>"in_progress"</c>, <c>"failed"</c>, or <c>"completed"</c>.
-                /// </summary>
-                [JsonPolymorphic(TypeDiscriminatorPropertyName = "status")]
-                [JsonDerivedType(typeof(ShardCleanStatusProgress), "in_progress")]
-                [JsonDerivedType(typeof(ShardCleanStatusFailed), "failed")]
-                [JsonDerivedType(typeof(ShardCleanStatusCompleted), "completed")]
-                public abstract class ShardCleanStatus { }
-
-                /// <summary>Shard cleanup is in progress.</summary>
-                public class ShardCleanStatusProgress : ShardCleanStatus
-                {
-                    /// <summary>Number of points cleaned up so far.</summary>
-                    public long Progress { get; set; }
-
-                    /// <summary>Total number of points that need to be cleaned up.</summary>
-                    public long Total { get; set; }
-                }
-
-                /// <summary>Shard cleanup failed.</summary>
-                public class ShardCleanStatusFailed : ShardCleanStatus
-                {
-                    /// <summary>Human-readable description of the error that caused cleanup to fail.</summary>
-                    public string Error { get; set; }
-                }
-
-                /// <summary>Shard cleanup completed successfully.</summary>
-                public class ShardCleanStatusCompleted : ShardCleanStatus { }
 
                 /// <summary>
                 /// Snapshot creation and recovery activity for a single collection.
@@ -187,33 +158,6 @@ public sealed class GetClusterTelemetryResponse : QdrantResponseBase<ClusterTele
                     public ulong RecoveryTimestamp { get; set; }
                 }
             }
-        }
-
-        /// <summary>
-        /// Represents a resharding information.
-        /// </summary>
-        public sealed class ReshardingInfo
-        {
-            /// <summary>
-            /// Resharding direction, scale up or down in number of shards.
-            /// </summary>
-            public ReshardingOperationDirection Direction { set; get; }
-
-            /// <summary>
-            /// The shard id.
-            /// </summary>
-            public uint ShardId { get; set; }
-
-            /// <summary>
-            /// The peer id to perform resharding on.
-            /// </summary>
-            public ulong? PeerId { init; get; }
-
-            /// <summary>
-            /// The shard key for the resharding operation.
-            /// </summary>
-            [JsonConverter(typeof(ShardKeyJsonConverter))]
-            public ShardKey ShardKey { set; get; }
         }
     }
 
