@@ -1,6 +1,7 @@
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Responses.Shared;
 
