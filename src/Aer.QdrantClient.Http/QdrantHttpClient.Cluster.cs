@@ -257,4 +257,25 @@ public partial class QdrantHttpClient
 
         return response;
     }
+
+    /// <inheritdoc/>
+    public async Task<GetClusterTelemetryResponse> GetClusterTelemetry(
+        CancellationToken cancellationToken,
+        uint detailsLevel = 3,
+        TimeSpan? timeout = null,
+        string clusterName = null)
+    {
+        var timeoutValue = GetTimeoutValueOrDefault(timeout);
+
+        var url = $"/cluster/telemetry?details_level={detailsLevel}&timeout={timeoutValue}";
+
+        var response = await ExecuteRequest<GetClusterTelemetryResponse>(
+            url,
+            HttpMethod.Get,
+            clusterName,
+            cancellationToken,
+            retryCount: 0);
+
+        return response;
+    }
 }
