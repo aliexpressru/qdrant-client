@@ -68,7 +68,7 @@ internal sealed class VectorsBatchJsonConverter : JsonConverter<UpsertPointsBatc
 
             writer.WriteEndArray();
         }
-        else if (value.NamedVectors is {Count: > 0})
+        else if (value.NamedVectors is { Count: > 0 })
         {
             writer.WriteStartObject();
 
@@ -95,7 +95,7 @@ internal sealed class VectorsBatchJsonConverter : JsonConverter<UpsertPointsBatc
         }
     }
 
-    private bool HasVectors(IEnumerable<VectorBase> vectors)
+    private static bool HasVectors(IEnumerable<VectorBase> vectors)
     {
         if (vectors is null)
         {

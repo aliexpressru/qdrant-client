@@ -156,7 +156,7 @@ public partial class QdrantHttpClient
             foreach (var collectionName in collectionNames)
             {
                 var collectionShardingInfo =
-                    (await GetCollectionClusteringInfo(collectionName, cancellationToken))
+                    (await GetCollectionClusteringInfo(collectionName, cancellationToken, clusterName: clusterName))
                     .EnsureSuccess();
 
                 var (collectionShardsPerPeers, _) =
@@ -229,7 +229,9 @@ public partial class QdrantHttpClient
                                         fromPeerId: sourcePeerId,
                                         toPeerId: targetPeerId,
                                         shardTransferMethod: shardTransferMethod),
-                                cancellationToken);
+                                cancellationToken,
+                                clusterName: clusterName
+                            );
 
                             if (!replicateShardResponse.Status.IsSuccess
                                 || replicateShardResponse.Result is false)
@@ -281,7 +283,7 @@ public partial class QdrantHttpClient
                     {
                         // save shard that already exists on the target node
                         alreadyReplicatedShards.TryAdd(collectionName, []);
-                        
+
                         alreadyReplicatedShards[collectionName].TryAdd(targetPeerId, []);
                         alreadyReplicatedShards[collectionName][targetPeerId].Add(sourceShardId);
 
@@ -432,7 +434,7 @@ public partial class QdrantHttpClient
             foreach (var collectionName in collectionNames)
             {
                 var collectionShardingInfo =
-                    (await GetCollectionClusteringInfo(collectionName, cancellationToken))
+                    (await GetCollectionClusteringInfo(collectionName, cancellationToken, clusterName: clusterName))
                     .EnsureSuccess();
 
                 var collectionInfo = collectionInfos[collectionName];
@@ -447,6 +449,7 @@ public partial class QdrantHttpClient
                             "Collection '{CollectionName}' replication factor is unknown. Skipping collection shards replication",
                             collectionName);
                     }
+
                     continue;
                 }
 
@@ -533,7 +536,9 @@ public partial class QdrantHttpClient
                                 fromPeerId: shardReplicaSourcePeerId,
                                 toPeerId: targetPeerId,
                                 shardTransferMethod: shardTransferMethod),
-                            cancellationToken);
+                            cancellationToken,
+                            clusterName: clusterName
+                        );
 
                         if (!replicateShardResponse.Status.IsSuccess
                             || replicateShardResponse.Result is false)
@@ -618,7 +623,7 @@ public partial class QdrantHttpClient
         try
         {
             var collectionInfo = (
-                await GetCollectionInfo(collectionName, cancellationToken)
+                await GetCollectionInfo(collectionName, cancellationToken, clusterName: clusterName)
             ).EnsureSuccess();
 
             var collectionClusteringInfo = (
@@ -773,6 +778,7 @@ public partial class QdrantHttpClient
             {
                 collectionNames = [.. collectionInfos.Keys];
             }
+
             if (logger?.IsEnabled(LogLevel.Information) == true)
             {
                 logger?.LogInformation(
@@ -790,7 +796,7 @@ public partial class QdrantHttpClient
             foreach (var collectionName in collectionNames)
             {
                 var collectionShardingInfo =
-                    (await GetCollectionClusteringInfo(collectionName, cancellationToken))
+                    (await GetCollectionClusteringInfo(collectionName, cancellationToken, clusterName: clusterName))
                     .EnsureSuccess();
 
                 // we don't care about replication factor here - we just want to equalize shards between two peers
@@ -858,7 +864,9 @@ public partial class QdrantHttpClient
                                 fromPeerId: sourcePeerId,
                                 toPeerId: targetPeerId,
                                 shardTransferMethod: shardTransferMethod),
-                            cancellationToken);
+                            cancellationToken,
+                            clusterName: clusterName
+                        );
 
                         if (!moveShardResponse.Status.IsSuccess
                             || moveShardResponse.Result is false)
@@ -1047,7 +1055,7 @@ public partial class QdrantHttpClient
             foreach (var collectionName in collectionNames)
             {
                 var collectionShardingInfo =
-                    (await GetCollectionClusteringInfo(collectionName, cancellationToken))
+                    (await GetCollectionClusteringInfo(collectionName, cancellationToken, clusterName: clusterName))
                     .EnsureSuccess();
 
                 var (collectionShardsPerPeers, _) =
@@ -1109,7 +1117,8 @@ public partial class QdrantHttpClient
                                     fromPeerId: sourcePeerId,
                                     toPeerId: targetPeerId,
                                     shardTransferMethod: shardTransferMethod),
-                                cancellationToken);
+                                cancellationToken,
+                                clusterName: clusterName);
 
                             if (!moveShardResponse.Status.IsSuccess
                                 || moveShardResponse.Result is false)
@@ -1278,7 +1287,7 @@ public partial class QdrantHttpClient
             foreach (var collectionName in collectionNames)
             {
                 var collectionShardingInfo =
-                    (await GetCollectionClusteringInfo(collectionName, cancellationToken))
+                    (await GetCollectionClusteringInfo(collectionName, cancellationToken, clusterName: clusterName))
                     .EnsureSuccess();
 
                 var (collectionShardsPerPeers, _) =
@@ -1312,7 +1321,8 @@ public partial class QdrantHttpClient
                             UpdateCollectionClusteringSetupRequest.CreateDropShardReplicaRequest(
                                 shardId: shardIdToDrop,
                                 peerId: sourcePeerId),
-                            cancellationToken);
+                            cancellationToken,
+                            clusterName: clusterName);
 
                         if (!dropShardReplicaResponse.Status.IsSuccess
                             || dropShardReplicaResponse.Result is false)
@@ -1451,7 +1461,8 @@ public partial class QdrantHttpClient
                         UpdateCollectionClusteringSetupRequest.CreateDropShardReplicaRequest(
                             shardId: shardIdToDrop,
                             peerId: sourcePeerId),
-                        cancellationToken);
+                        cancellationToken,
+                        clusterName: clusterName);
 
                     if (!dropShardReplicaResponse.Status.IsSuccess
                         || dropShardReplicaResponse.Result is false)
@@ -1564,7 +1575,7 @@ public partial class QdrantHttpClient
             foreach (var collectionName in collectionNames)
             {
                 var collectionShardingInfo =
-                    (await GetCollectionClusteringInfo(collectionName, cancellationToken))
+                    (await GetCollectionClusteringInfo(collectionName, cancellationToken, clusterName: clusterName))
                     .EnsureSuccess();
 
                 bool isPeerEmptyForCollection;

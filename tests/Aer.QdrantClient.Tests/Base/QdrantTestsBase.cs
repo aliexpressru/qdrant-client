@@ -393,7 +393,8 @@ public class QdrantTestsBase
             Func<int, object> payloadInitializerFunction = null,
             QuantizationConfiguration quantizationConfig = null,
             StrictModeConfiguration strictModeConfig = null,
-            List<UpsertPointsRequest.UpsertPoint> upsertPoints = null)
+            List<UpsertPointsRequest.UpsertPoint> upsertPoints = null,
+            bool isWaitForCollectionReady = true)
     {
         await qdrantHttpClient.CreateCollection(
             collectionName,
@@ -459,7 +460,10 @@ public class QdrantTestsBase
 
         upsertPointsResult.EnsureSuccess();
 
-        await qdrantHttpClient.EnsureCollectionReady(collectionName, CancellationToken.None);
+        if (isWaitForCollectionReady)
+        {
+            await qdrantHttpClient.EnsureCollectionReady(collectionName, CancellationToken.None);
+        }
 
         return (pointsToUpsert, upsertPointsByPointIds, upsertPointIds);
     }

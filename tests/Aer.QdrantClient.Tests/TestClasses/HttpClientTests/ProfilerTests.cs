@@ -31,7 +31,7 @@ internal class ProfilerTests : QdrantTestsBase
     [Experimental("Undocumented_profiler_slow_requests")] // Testing undocumented profiler/slow_requests API.
     public async Task GetSlowRequests()
     {
-        var vectorCount = 100000;
+        var vectorCount = 100_000;
 
         await PrepareCollection(
             _qdrantHttpClient,

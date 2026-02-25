@@ -61,11 +61,13 @@ public partial interface IQdrantHttpClient
     /// <param name="updateOperation">The required collection clustering setup update operation model.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="timeout">The operation timeout. If not set the default value of 30 seconds used.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     Task<DefaultOperationResponse> UpdateCollectionClusteringSetup(
         string collectionName,
         UpdateCollectionClusteringSetupRequest updateOperation,
         CancellationToken cancellationToken,
-        TimeSpan? timeout = null);
+        TimeSpan? timeout = null,
+        string clusterName = null);
 
     /// <summary>
     /// Creates collection shards with specified shard key.
@@ -85,6 +87,7 @@ public partial interface IQdrantHttpClient
     /// If not specified, will be <see cref="ShardState.Initializing"/> first and then <see cref="ShardState.Active"/>.
     /// Warning: do not change this unless you know what you are doing
     /// </param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     Task<DefaultOperationResponse> CreateShardKey(
         string collectionName,
         ShardKey shardKey,
@@ -93,7 +96,8 @@ public partial interface IQdrantHttpClient
         uint? replicationFactor = null,
         ulong[] placement = null,
         TimeSpan? timeout = null,
-        ShardState? initialState = null);
+        ShardState? initialState = null,
+        string clusterName = null);
 
     /// <summary>
     /// Deletes collection shards with specified shard key.
@@ -102,9 +106,11 @@ public partial interface IQdrantHttpClient
     /// <param name="shardKey">The shard key for shards to delete.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="timeout">The operation timeout. If not set the default value of 30 seconds used.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
     Task<DefaultOperationResponse> DeleteShardKey(
         string collectionName,
         ShardKey shardKey,
         CancellationToken cancellationToken,
-        TimeSpan? timeout = null);
+        TimeSpan? timeout = null,
+        string clusterName = null);
 }

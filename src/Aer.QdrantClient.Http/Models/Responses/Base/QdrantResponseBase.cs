@@ -1,7 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Responses.Base;
 
@@ -39,6 +39,11 @@ public abstract class QdrantResponseBase
         /// The hardware resources usage report. 
         /// </summary>
         public HardwareUsageReport Hardware { get; init; }
+
+        /// <summary>
+        /// The inference model resources usage report.
+        /// </summary>
+        public InferenceUsageReport Inference { get; init; }
 
         /// <summary>
         /// CPU usage to execute request.
@@ -134,6 +139,28 @@ public abstract class QdrantResponseBase
             /// Vector IO write operations.
             /// </summary>
             public long VectorIoWrite { get; init; }
+        }
+
+        /// <summary>
+        /// Represents AllowNullAttribute inference model usage report.
+        /// </summary>
+        public class InferenceUsageReport
+        {
+            /// <summary>
+            /// Model usage by model name.
+            /// </summary>
+            public Dictionary<string, ModelUsage> Models { get; init; }
+
+            /// <summary>
+            /// Represents a specific model usage report.
+            /// </summary>
+            public class ModelUsage
+            {
+                /// <summary>
+                /// The number of used tokens.
+                /// </summary>
+                public ulong Tokens { get; init; }
+            }
         }
     }
 }

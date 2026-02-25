@@ -75,7 +75,7 @@ public partial class QdrantHttpClient
         var collectionShardingInfo = await ExecuteRequest<GetCollectionClusteringInfoResponse>(
             url,
             HttpMethod.Get,
-            clusterName,
+            clusterName ?? collectionName,
             cancellationToken,
             retryCount: 0);
 
@@ -181,7 +181,8 @@ public partial class QdrantHttpClient
         string collectionName,
         UpdateCollectionClusteringSetupRequest updateOperation,
         CancellationToken cancellationToken,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null,
+        string clusterName = null)
     {
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
 
@@ -191,7 +192,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             updateOperation,
-            collectionName,
+            clusterName ?? collectionName,
             cancellationToken,
             retryCount: 0);
 
@@ -207,7 +208,8 @@ public partial class QdrantHttpClient
         uint? replicationFactor = null,
         ulong[] placement = null,
         TimeSpan? timeout = null,
-        ShardState? initialState = null)
+        ShardState? initialState = null,
+        string clusterName = null)
     {
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
 
@@ -224,7 +226,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Put,
             createShardKeyRequest,
-            collectionName,
+            clusterName ?? collectionName,
             cancellationToken,
             retryCount: 0);
 
@@ -236,7 +238,8 @@ public partial class QdrantHttpClient
         string collectionName,
         ShardKey shardKey,
         CancellationToken cancellationToken,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null,
+        string clusterName = null)
     {
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
 
@@ -248,7 +251,7 @@ public partial class QdrantHttpClient
             url,
             HttpMethod.Post,
             deleteShardKeyRequest,
-            collectionName,
+            clusterName ?? collectionName,
             cancellationToken,
             retryCount: 0);
 
