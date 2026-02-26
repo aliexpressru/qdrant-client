@@ -473,8 +473,16 @@ public class QdrantTestsBase
         string collectionName,
         uint vectorSize,
         uint replicationFactor = 1,
-        uint shardNumber = 2)
+        uint shardNumber = 2,
+        int vectorCount = 1)
     {
+        if (vectorCount == 0)
+        {
+            throw new InvalidOperationException("The logic of this method does not expect vector count of 0");
+        }
+
+        // Create collection
+
         (await qdrantHttpClient.CreateCollection(
             collectionName,
             new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
@@ -492,7 +500,11 @@ public class QdrantTestsBase
         var allPeers = (await qdrantHttpClient.GetClusterInfo(CancellationToken.None))
             .EnsureSuccess().AllPeerIds;
 
-        if (shardNumber > 1)
+        List<string> shardKeys = new(2);
+
+        // Create shard keys
+
+        if (shardNumber != 1)
         {
             (await qdrantHttpClient.CreateShardKey(
                 collectionName,
@@ -518,29 +530,8 @@ public class QdrantTestsBase
                     ? [allPeers.Skip(1).First()]
                     : [.. allPeers])).EnsureSuccess();
 
-            (await qdrantHttpClient.UpsertPoints(
-                collectionName,
-                new UpsertPointsRequest()
-                {
-                    Points =
-                    [
-                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), (TestPayload)"test"),
-                    ],
-                    ShardKey = TestShardKey1
-                },
-                CancellationToken.None)).EnsureSuccess();
-
-            (await qdrantHttpClient.UpsertPoints(
-                collectionName,
-                new UpsertPointsRequest()
-                {
-                    Points =
-                    [
-                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), (TestPayload) "test2"),
-                    ],
-                    ShardKey = TestShardKey2
-                },
-                CancellationToken.None)).EnsureSuccess();
+            shardKeys.Add(TestShardKey1);
+            shardKeys.Add(TestShardKey2);
         }
         else
         {
@@ -557,18 +548,66 @@ public class QdrantTestsBase
                 placement: replicationFactor == 1
                     ? [allPeers.First()]
                     : [.. allPeers])).EnsureSuccess();
+        }
 
-            (await qdrantHttpClient.UpsertPoints(
-                collectionName,
-                new UpsertPointsRequest()
+        // Upsert points
+
+        foreach (var shardKey in shardKeys)
+        {
+            if (vectorCount == 1)
+            {
+                // Upsert 1 point per shard
+
+                (await qdrantHttpClient.UpsertPoints(
+                    collectionName,
+                    new UpsertPointsRequest()
+                    {
+                        Points =
+                        [
+                            new(
+                                PointId.NewGuid(),
+                                CreateTestFloat32Vector(vectorSize),
+                                new TestPayload()
+                                {
+                                        Text = "test"
+                                }
+                            ),
+                        ],
+                        ShardKey = shardKey
+                    },
+                    CancellationToken.None)).EnsureSuccess();
+            }
+            else
+            {
+                // Upsert vectorCountPointsPerShard
+
+                List<UpsertPointsRequest.UpsertPoint> upsertPoints = new(vectorCount);
+
+                for (int i = 0; i < vectorCount; i++)
                 {
-                    Points =
-                    [
-                        new(PointId.NewGuid(), CreateTestFloat32Vector(vectorSize), (TestPayload) "test"),
-                    ],
-                    ShardKey = TestShardKey1
-                },
-                CancellationToken.None)).EnsureSuccess();
+                    UpsertPointsRequest.UpsertPoint upsertPoint =
+                        new(
+                             PointId.NewGuid(),
+                             CreateTestFloat32Vector(vectorSize),
+                             new TestPayload()
+                             {
+                                 Text = $"test_{i}",
+                                 Integer = i
+                             }
+                        );
+
+                    upsertPoints.Add(upsertPoint);
+                }
+
+                (await qdrantHttpClient.UpsertPoints(
+                    collectionName,
+                    new UpsertPointsRequest()
+                    {
+                        Points = upsertPoints,
+                        ShardKey = shardKey
+                    },
+                    CancellationToken.None)).EnsureSuccess();
+            }
         }
 
         await qdrantHttpClient.EnsureCollectionReady(collectionName, cancellationToken: CancellationToken.None);

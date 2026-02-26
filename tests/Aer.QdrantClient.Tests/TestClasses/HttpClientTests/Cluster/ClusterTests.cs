@@ -347,4 +347,20 @@ internal partial class ClusterTests : QdrantTestsBase
         recoverCollectionRaftState.Status.IsSuccess.Should().BeTrue();
         recoverCollectionRaftState.Result.Should().BeTrue();
     }
+
+    [Test]
+    public async Task GetClusterTelemetry()
+    {
+        await CreateTestShardedCollection(
+            _qdrantHttpClient,
+            TestCollectionName,
+            10U,
+            vectorCount: 100);
+
+        var clusterTelemetry = await _qdrantHttpClient.GetClusterTelemetry(CancellationToken.None, detailsLevel: 10);
+
+        clusterTelemetry.Status.IsSuccess.Should().BeTrue();
+
+        clusterTelemetry.Result.Should().NotBeNull();
+    }
 }
