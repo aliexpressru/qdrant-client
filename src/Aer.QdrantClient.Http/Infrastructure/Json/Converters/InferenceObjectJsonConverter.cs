@@ -1,0 +1,64 @@
+using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared.Inference;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
+
+internal class InferenceObjectJsonConverter : JsonConverter<InferenceObjectBase>
+{
+    public override InferenceObjectBase Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+    throw new NotSupportedException($"Reading {typeof(InferenceObjectBase)} instances is not supported");
+
+    public override void Write(Utf8JsonWriter writer, InferenceObjectBase value, JsonSerializerOptions options)
+    {
+        switch (value)
+        {
+            case ImageInferenceObject iio:
+                JsonSerializer.Serialize(writer, iio, JsonSerializerConstants.DefaultSerializerOptions);
+
+                break;
+
+            case TextInferenceObject tio:
+                // Here we need to handle BM25 options override.
+
+                object optionsObject = tio.Bm25Options is null
+                    ? tio.Options
+                    : tio.Bm25Options;
+
+                writer.WriteStartObject();
+                {
+                    writer.WriteString("text", tio.Text);
+                    writer.WriteString("model", tio.Model);
+                    if (optionsObject is not null)
+                    {
+                        writer.WritePropertyName("options");
+                        writer.WriteStartObject();
+                        {
+                            JsonSerializer.Serialize(
+                            writer,
+                            optionsObject,
+                            JsonSerializerConstants.DefaultSerializerOptions);
+                        }
+
+                        writer.WriteEndObject();
+                    }
+                }
+
+                writer.WriteEndObject();
+
+                break;
+
+            case ObjectInferenceObject oio:
+                JsonSerializer.Serialize(
+                    writer,
+                    oio,
+                    JsonSerializerConstants.DefaultSerializerOptions);
+
+                break;
+
+            default:
+                throw new QdrantJsonSerializationException($"Unknown inference object {value.GetType()}");
+        }
+    }
+}

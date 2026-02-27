@@ -1,10 +1,11 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Formulas;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
+using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints.RelevanceFeedback;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 
@@ -20,6 +21,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 [JsonDerivedType(typeof(RrfQuery))]
 [JsonDerivedType(typeof(SampleQuery))]
 [JsonDerivedType(typeof(FormulaQuery))]
+[JsonDerivedType(typeof(RelevanceFeedbackQuery))]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public abstract class PointsQuery
 {
@@ -195,6 +197,30 @@ public abstract class PointsQuery
         public string Sample { get; } = "random";
     }
 
+    internal sealed class RelevanceFeedbackQuery : PointsQuery
+    {
+        public RelevanceFeedbackQueryUnit RelevanceFeedback { get; init; }
+
+        internal sealed class RelevanceFeedbackQueryUnit
+        {
+            [JsonConverter(typeof(PointIdOrVectorOrInferenceModelJsonConverter))]
+            public required PointIdOrVectorOrInferenceModel Target { get; init; }
+
+            public required Feedback Feedback { get; init; }
+
+            [JsonConverter(typeof(FeedbackStrategyJsonConverter))]
+            public required FeedbackStrategy Strategy { get; init; }
+        }
+
+        internal sealed class Feedback
+        {
+            [JsonConverter(typeof(PointIdOrVectorOrInferenceModelJsonConverter))]
+            public required PointIdOrVectorOrInferenceModel Example { get; init; }
+
+            public required double Score { get; init; }
+        }
+    }
+
     internal sealed class FormulaQuery : PointsQuery
     {
         [JsonConverter(typeof(QdrantFormulaJsonConverter))]
@@ -292,6 +318,34 @@ public abstract class PointsQuery
     /// </param>
     public static PointsQuery CreateFormulaQuery(QdrantFormula formula, Dictionary<string, object> defaults = null) =>
         new FormulaQuery(formula, defaults);
+
+    /// <summary>
+    /// Creates a relevance feedback query.
+    /// </summary>
+    /// <param name="target">The relevance feedback target.</param>
+    /// <param name="feedbackExample">The relevance feedback example.</param>
+    /// <param name="feedbackScore">The relevance feedback example target score.</param>
+    /// <param name="feedbackStrategy">The relevance feedback strategy.</param>
+    public static PointsQuery CreateRelevanceFeedback(
+        PointIdOrVectorOrInferenceModel target,
+        PointIdOrVectorOrInferenceModel feedbackExample,
+        double feedbackScore,
+        FeedbackStrategy feedbackStrategy)
+    {
+        return new RelevanceFeedbackQuery()
+        {
+            RelevanceFeedback = new RelevanceFeedbackQuery.RelevanceFeedbackQueryUnit()
+            {
+                Target = target,
+                Feedback = new()
+                {
+                    Example = feedbackExample,
+                    Score = feedbackScore
+                },
+                Strategy = feedbackStrategy
+            }
+        };
+    }
 
     /// <summary>
     /// Implicitly converts query vector to an instance of <see cref="PointsQuery"/>.
