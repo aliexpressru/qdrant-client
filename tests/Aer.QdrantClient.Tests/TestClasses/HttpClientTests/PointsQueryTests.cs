@@ -4,6 +4,7 @@ using Aer.QdrantClient.Http.Formulas.Builders;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
+using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints.RelevanceFeedback;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
@@ -858,5 +859,53 @@ internal class PointsQueryTests : QdrantTestsBase
 
         nearestPointsResponse.Status.IsSuccess.Should().BeTrue();
         nearestPointsResponse.Result.Points.Length.Should().Be(3); // Using mmr limit 3 therefore we get only 3 points
+    }
+
+    [Test]
+    public async Task QueryPoints_RelevanceFeedback()
+    {
+        OnlyIfVersionAfterOrEqual("1.17.0", "Relevance feedback query parameters is supported starting from Qdrant 1.17.0");
+
+        var vectorCount = 10;
+
+        var (upsertPoints, _, _) =
+            await PrepareCollection(
+                _qdrantHttpClient,
+                TestCollectionName,
+                vectorCount: vectorCount,
+                payloadInitializerFunction: i => new TestPayload()
+                {
+                    Integer = i < 5
+                        ? 1
+                        : 2,
+                    Text = (i + 1).ToString()
+                });
+
+        var queryResponse = await _qdrantHttpClient.QueryPoints(
+            TestCollectionName,
+            new QueryPointsRequest(
+                PointsQuery.CreateRelevanceFeedback(
+                    target: upsertPoints[0].Vector,
+                    feedbackExample: upsertPoints[0].Vector,
+                    feedbackScore: 0.5,
+                    feedbackStrategy: FeedbackStrategy.Naive(1, 1, 1)
+                ),
+                withVector: true,
+                withPayload: true)
+            {
+                Prefetch =
+                [
+                    new PrefetchPoints()
+                    {
+                        Query = PointsQuery.CreateFindNearestPointsQuery(upsertPoints[0].Vector),
+                        Limit = 2
+                    }
+                ]
+            },
+            CancellationToken.None);
+
+        queryResponse.Status.IsSuccess.Should().BeTrue();
+
+        queryResponse.Result.Points.Should().AllSatisfy(p => p.Score.Should().Be(10));
     }
 }
