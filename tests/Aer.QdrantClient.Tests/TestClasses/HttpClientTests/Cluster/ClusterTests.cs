@@ -351,16 +351,96 @@ internal partial class ClusterTests : QdrantTestsBase
     [Test]
     public async Task GetClusterTelemetry()
     {
+        var vectorCount = 100;
+        var testVectorName = "test_vector_name";
+
         await CreateTestShardedCollection(
             _qdrantHttpClient,
             TestCollectionName,
             10U,
-            vectorCount: 100);
+            shardNumber: 2,
+            vectorCount: vectorCount,
+            vectorName: testVectorName);
 
-        var clusterTelemetry = await _qdrantHttpClient.GetClusterTelemetry(CancellationToken.None, detailsLevel: 10);
+        var clusterTelemetryResponse = await _qdrantHttpClient.GetClusterTelemetry(CancellationToken.None, detailsLevel: 10);
 
-        clusterTelemetry.Status.IsSuccess.Should().BeTrue();
+        clusterTelemetryResponse.Status.IsSuccess.Should().BeTrue();
 
-        clusterTelemetry.Result.Should().NotBeNull();
+        clusterTelemetryResponse.Result.Should().NotBeNull();
+
+        clusterTelemetryResponse.Result.Cluster.Should().NotBeNull();
+        clusterTelemetryResponse.Result.Collections.Count.Should().Be(1);
+
+        // Check cluster telemetry
+
+        var clusterTelemetry = clusterTelemetryResponse.Result.Cluster;
+
+        clusterTelemetry.Enabled.Should().BeTrue();
+        clusterTelemetry.NumberOfPeers.Should().Be(2);
+        clusterTelemetry.Peers.Count.Should().Be(2);
+
+        // We check only one peer
+
+        var peer = clusterTelemetry.Peers.First().Value;
+        peer.Uri.Should().NotBeNullOrEmpty();
+        peer.Responsive.Should().BeTrue();
+
+        var peerDetails = peer.Details;
+
+        peerDetails.Version.Should().NotBeNullOrEmpty();
+        peerDetails.IsVoter.Should().BeTrue();
+        peerDetails.Term.Should().BeGreaterThan(0);
+        peerDetails.Commit.Should().BeGreaterThan(0);
+        peerDetails.PendingOperations.Should().Be(0);
+        peerDetails.Role.Should().BeOneOf(
+            Http.Models.Responses.Shared.PeerRole.Leader,
+            Http.Models.Responses.Shared.PeerRole.Follower
+        );
+        peerDetails.ConsensusThreadStatus.Should().NotBeNull();
+
+        var consensusStatus = peerDetails.ConsensusThreadStatus;
+
+        consensusStatus.ConsensusThreadStatus.Should().Be(Http.Models.Responses.Shared.ConsensusThreadStatus.Working);
+        consensusStatus.Err.Should().BeNullOrEmpty();
+        consensusStatus.LastUpdate.Should().BeAfter(DateTimeOffset.MinValue);
+
+        // Check collection telemetry
+
+        clusterTelemetryResponse.Result.Collections.Should().ContainKey(TestCollectionName);
+
+        var collectionTelemetry = clusterTelemetryResponse.Result.Collections
+            .First().Value;
+
+        collectionTelemetry.Id.Should().Be(TestCollectionName);
+        collectionTelemetry.Reshardings.Should().BeNullOrEmpty();
+        collectionTelemetry.ShardTransfers.Should().BeNullOrEmpty();
+        collectionTelemetry.Shards.Length.Should().Be(2);
+
+        // We check only one shard
+
+        var shard = collectionTelemetry.Shards[0];
+
+        shard.Id.Should().BeGreaterThan(0);
+        shard.Key.GetString().Should().BeOneOf(TestShardKey1, TestShardKey2);
+        shard.Replicas.Length.Should().Be(1);
+
+        var replica = shard.Replicas[0];
+
+        replica.PeerId.Should().BeGreaterThan(0);
+        replica.State.Should().Be(ShardState.Active);
+        replica.Status.Should().Be(QdrantCollectionStatus.Green);
+
+        replica.TotalOptimizedPoints.Should().Be(vectorCount);
+        replica.VectorsSizeBytes.Should().BeGreaterThan(0);
+        replica.PayloadsSizeBytes.Should().BeGreaterThan(0);
+        replica.NumPoints.Should().Be(vectorCount);
+        replica.NumVectors.Should().Be(vectorCount);
+        replica.NumVectorsByName.Count().Should().Be(1);
+
+        replica.NumVectorsByName.Should().ContainKey(testVectorName);
+        replica.NumVectorsByName[testVectorName].Should().Be(vectorCount);
+
+        replica.ShardCleaningStatus.Should().BeNullOrEmpty();
+        replica.PartialSnapshot.Should().BeNull();
     }
 }

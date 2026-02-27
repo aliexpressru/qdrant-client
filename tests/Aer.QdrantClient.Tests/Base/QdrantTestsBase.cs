@@ -317,9 +317,17 @@ public class QdrantTestsBase
 #endif
                 ];
 
-    protected static VectorBase CreateTestNamedVectors(uint vectorLength, int namedVectorsCount)
+    protected static VectorBase CreateTestNamedVector(
+        uint vectorLength,
+        string vectorName,
+        VectorDataType vectorDataType = VectorDataType.Float32) =>
+        NamedVectors.Create(vectorName, CreateTestVector(vectorLength, vectorDataType));
+
+    protected static VectorBase CreateTestNamedVectors(
+        uint vectorLength,
+        int namedVectorsCount)
     {
-        Dictionary<string, float[]> namedVectors = new(namedVectorsCount);
+        Dictionary<string, VectorBase> namedVectors = new(namedVectorsCount);
 
         foreach (var vectorName in CreateVectorNames(namedVectorsCount))
         {
@@ -327,7 +335,10 @@ public class QdrantTestsBase
             namedVectors.Add(vectorName, vector);
         }
 
-        return namedVectors;
+        return new NamedVectors()
+        {
+            Vectors = namedVectors
+        };
     }
 
     protected static List<string> CreateVectorNames(int vectorCount, bool addDefaultVector = false)
@@ -474,7 +485,8 @@ public class QdrantTestsBase
         uint vectorSize,
         uint replicationFactor = 1,
         uint shardNumber = 2,
-        int vectorCount = 1)
+        int vectorCount = 1,
+        string vectorName = null)
     {
         if (vectorCount == 0)
         {
@@ -485,8 +497,19 @@ public class QdrantTestsBase
 
         (await qdrantHttpClient.CreateCollection(
             collectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                vectorSize,
+                isServeVectorsFromDisk: true,
+                namedVectorNames: vectorName is null
+                ? null
+                : [vectorName]
+            )
             {
+                OptimizersConfig = new OptimizersConfiguration()
+                {
+                    IndexingThreshold = 1 // 1kB means that sufficiently many points will trigger optimisation
+                },
                 OnDiskPayload = true,
                 WriteConsistencyFactor = 2,
                 ReplicationFactor = replicationFactor,
@@ -566,7 +589,9 @@ public class QdrantTestsBase
                         [
                             new(
                                 PointId.NewGuid(),
-                                CreateTestFloat32Vector(vectorSize),
+                                vectorName is null
+                                    ? CreateTestVector(vectorSize)
+                                    : CreateTestNamedVector(vectorSize, vectorName),
                                 new TestPayload()
                                 {
                                         Text = "test"
@@ -588,7 +613,9 @@ public class QdrantTestsBase
                     UpsertPointsRequest.UpsertPoint upsertPoint =
                         new(
                              PointId.NewGuid(),
-                             CreateTestFloat32Vector(vectorSize),
+                             vectorName is null
+                                    ? CreateTestVector(vectorSize)
+                                    : CreateTestNamedVector(vectorSize, vectorName),
                              new TestPayload()
                              {
                                  Text = $"test_{i}",

@@ -13,7 +13,7 @@ public sealed class ConsensusThreadState
     /// <summary>
     /// The consensus status last update.
     /// </summary>
-    public DateTime LastUpdate { init; get; }
+    public DateTimeOffset LastUpdate { init; get; }
 
     /// <summary>
     /// The consensus status error.

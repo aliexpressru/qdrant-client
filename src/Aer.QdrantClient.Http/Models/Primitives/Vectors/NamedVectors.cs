@@ -1,8 +1,8 @@
+using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Serialization;
-using Aer.QdrantClient.Http.Exceptions;
-using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
@@ -35,6 +35,61 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
 
             throw new QdrantDefaultVectorNotFoundException(DefaultVectorName);
         }
+    }
+
+    /// <summary>
+    /// Creates a <see cref="NamedVectors"/> instance from provided sequence of vectors with names.
+    /// </summary>
+    /// <param name="vectors">The source vectors with names.</param>
+    public static NamedVectors Create(
+        params IEnumerable<KeyValuePair<string, VectorBase>> vectors)
+    {
+        if (vectors is null)
+        {
+            throw new ArgumentNullException(nameof(vectors));
+        }
+
+        NamedVectors ret = new()
+        {
+            Vectors = []
+        };
+
+        foreach (var (vectorName, vector) in vectors)
+        {
+            // If vectors param contains more than one vector with the same name - we fail
+            ret.Vectors.Add(vectorName, vector);
+        }
+
+        return ret;
+    }
+
+    /// <summary>
+    /// Creates a <see cref="NamedVectors"/> instance from provided single vector with name.
+    /// </summary>
+    /// <param name="vectorName">The source vector name.</param>
+    /// <param name="vector">The source vector.</param>
+    public static NamedVectors Create(string vectorName, VectorBase vector)
+    {
+        // We check only for null since empty string is a valid vector name
+        if (vectorName is null)
+        {
+            throw new ArgumentNullException(nameof(vectorName));
+        }
+
+        if (vector is null)
+        {
+            throw new ArgumentNullException(nameof(vector));
+        }
+
+        NamedVectors ret = new()
+        {
+            Vectors = new()
+            {
+                [vectorName] = vector
+            }
+        };
+
+        return ret;
     }
 
     /// <inheritdoc/>
@@ -251,7 +306,7 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
         }
 
         return ReferenceEquals(this, obj)
-            || obj is NamedVectors other && Equals(other);
+            || (obj is NamedVectors other && Equals(other));
     }
 
     /// <inheritdoc/>

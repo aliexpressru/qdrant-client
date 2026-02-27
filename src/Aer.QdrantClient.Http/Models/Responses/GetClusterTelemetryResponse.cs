@@ -43,7 +43,8 @@ public sealed class GetClusterTelemetryResponse : QdrantResponseBase<ClusterTele
         public string Id { get; set; }
 
         /// <summary>
-        /// Telemetry for each replica set (one per logical shard) hosted on this node.
+        /// Telemetry for each collection shard.
+        /// Note that array indexes do not correspond to shard indexes.
         /// </summary>
         public ShardInfo[] Shards { get; set; }
 
