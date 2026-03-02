@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Shared;
 using System.Diagnostics.CodeAnalysis;
@@ -28,6 +29,21 @@ public abstract class QdrantResponseBase
     /// Not all operations report usage data.
     /// </summary>
     public UsageReport Usage { get; set; }
+
+    /// <summary>
+    /// Ensures that the <see cref="Status"/> indicates successful response and returns.
+    /// Throws <see cref="QdrantUnsuccessfulResponseStatusException"/> if it does not.
+    /// </summary>
+    /// <exception cref="QdrantUnsuccessfulResponseStatusException">Occurs when <see cref="Status"/> does not indicate success.</exception>
+    public void EnsureSuccess()
+    {
+        if (Status.IsSuccess)
+        {
+            return;
+        }
+
+        throw new QdrantUnsuccessfulResponseStatusException(GetType(), Status);
+    }
 
     /// <summary>
     /// Represents the resource usage report if <c>service.hardware_reporting</c> config setting is set to <c>true</c>.

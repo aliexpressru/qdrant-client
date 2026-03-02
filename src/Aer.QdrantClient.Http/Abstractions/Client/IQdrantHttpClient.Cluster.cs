@@ -113,4 +113,28 @@ public partial interface IQdrantHttpClient
         CancellationToken cancellationToken,
         TimeSpan? timeout = null,
         string clusterName = null);
+
+    /// <summary>
+    /// Lists all shard keys defined for specified collection.
+    /// </summary>
+    /// <param name="collectionName">The collection to get shard keys for.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
+    Task<GetCollectionShardKeysResponse> ListShardKeys(
+        string collectionName,
+        CancellationToken cancellationToken,
+        string clusterName = null);
+
+    /// <summary>
+    /// Gets the cluster-wide telemetry.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="detailsLevel">Defines how detailed the telemetry data is.</param>
+    /// <param name="timeout">The operation timeout. If not set the default value of 30 seconds used.</param>
+    /// <param name="clusterName">The optional cluster name for multi-cluster client scenarios.</param>
+    Task<GetClusterTelemetryResponse> GetClusterTelemetry(
+        CancellationToken cancellationToken,
+        uint detailsLevel = 3,
+        TimeSpan? timeout = null,
+        string clusterName = null);
 }

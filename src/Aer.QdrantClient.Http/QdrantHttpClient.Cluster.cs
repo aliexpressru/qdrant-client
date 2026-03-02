@@ -259,6 +259,25 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
+    public async Task<GetCollectionShardKeysResponse> ListShardKeys(
+        string collectionName,
+        CancellationToken cancellationToken,
+        string clusterName = null)
+    {
+
+        var url = $"/collections/{collectionName}/shards";
+
+        var response = await ExecuteRequest<GetCollectionShardKeysResponse>(
+            url,
+            HttpMethod.Get,
+            clusterName ?? collectionName,
+            cancellationToken,
+            retryCount: 0);
+
+        return response;
+    }
+
+    /// <inheritdoc/>
     public async Task<GetClusterTelemetryResponse> GetClusterTelemetry(
         CancellationToken cancellationToken,
         uint detailsLevel = 3,

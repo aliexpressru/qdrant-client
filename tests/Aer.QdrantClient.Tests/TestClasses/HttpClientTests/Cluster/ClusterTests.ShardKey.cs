@@ -4,6 +4,7 @@ using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
+using Aer.QdrantClient.Http.Util;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Model;
 
@@ -12,7 +13,7 @@ namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 internal partial class ClusterTests : QdrantTestsBase
 {
     [Test]
-    public async Task CollectionCreateShardKey_ManualPlacement()
+    public async Task CreateShardKey()
     {
         var vectorSize = 10U;
 
@@ -123,7 +124,7 @@ internal partial class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CollectionCreateShardKey_WithInitialState()
+    public async Task CreateShardKey_WithInitialState()
     {
         OnlyIfVersionAfterOrEqual("1.16.0", "Initial shard state setting is available only after v1.16");
 
@@ -184,7 +185,7 @@ internal partial class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CollectionCreateShardKey_ManualPlacement_WithFallback()
+    public async Task CreateShardKey_WithFallback()
     {
         OnlyIfVersionAfterOrEqual("1.16.0", "Fallback shard and tiered multitenancy is available only after v1.16");
 
@@ -294,7 +295,7 @@ internal partial class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CollectionCreateShardKey_ManualPlacement_TieredMultitenancy()
+    public async Task CreateShardKey_TieredMultitenancy()
     {
         OnlyIfVersionAfterOrEqual("1.16.0", "Tiered multitenancy is available only after v1.16");
 
@@ -433,7 +434,7 @@ internal partial class ClusterTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CollectionDeleteShardKey_ManualPlacement()
+    public async Task DeleteShardKey()
     {
         (
             await _qdrantHttpClient.CreateCollection(
@@ -483,5 +484,104 @@ internal partial class ClusterTests : QdrantTestsBase
         );
 
         deleteShardKeyResult.Status.IsSuccess.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task ListShardKeys_NoShardKeys()
+    {
+        OnlyIfVersionAfterOrEqual("1.17.0", "List shard keys API is available from 1.17");
+
+        var vectorSize = 10U;
+
+        (
+            await _qdrantHttpClient.CreateCollection(
+                TestCollectionName,
+                new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+                {
+                    OnDiskPayload = true,
+                    WriteConsistencyFactor = 2,
+                    ReplicationFactor = 1,
+                    ShardNumber = 2,
+                    ShardingMethod = ShardingMethod.Custom,
+                },
+                CancellationToken.None
+            )
+        ).EnsureSuccess();
+
+        var listShardKeysResponse = await _qdrantHttpClient.ListShardKeys(TestCollectionName, CancellationToken.None);
+
+        listShardKeysResponse.Status.IsSuccess.Should().BeTrue();
+
+        listShardKeysResponse.Result.ShardKeys.Length.Should().Be(0);
+    }
+
+    [Test]
+    public async Task ListShardKeys()
+    {
+        OnlyIfVersionAfterOrEqual("1.17.0", "List shard keys API is available from 1.17");
+
+        var vectorSize = 10U;
+
+        (
+            await _qdrantHttpClient.CreateCollection(
+                TestCollectionName,
+                new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+                {
+                    OnDiskPayload = true,
+                    WriteConsistencyFactor = 2,
+                    ReplicationFactor = 1,
+                    ShardNumber = 2,
+                    ShardingMethod = ShardingMethod.Custom,
+                },
+                CancellationToken.None
+            )
+        ).EnsureSuccess();
+
+        // configure collection manual sharding to ensure consistent results
+
+        var allPeers = (await _qdrantHttpClient.GetClusterInfo(CancellationToken.None)).EnsureSuccess().AllPeerIds;
+
+        await QdrantOperationHelper.EnsureSuccess(
+            _qdrantHttpClient.CreateShardKey(
+                TestCollectionName,
+                TestShardKey1,
+                CancellationToken.None,
+                shardsNumber: 1,
+                replicationFactor: 1,
+                placement: [allPeers.First()]
+            ),
+
+            _qdrantHttpClient.CreateShardKey(
+                TestCollectionName,
+                TestShardKeyInt1,
+                CancellationToken.None,
+                shardsNumber: 1,
+                replicationFactor: 1,
+                placement: [allPeers.Skip(1).First()]
+            )
+
+        );
+
+        var listShardKeysResponse = await _qdrantHttpClient.ListShardKeys(TestCollectionName, CancellationToken.None);
+
+        listShardKeysResponse.Status.IsSuccess.Should().BeTrue();
+
+        listShardKeysResponse.Result.ShardKeys.Length.Should().Be(2);
+
+        foreach (var shardKey in listShardKeysResponse.Result.ShardKeys)
+        {
+            if (shardKey.Key.IsString())
+            {
+                shardKey.Key.GetString().Should().Be(TestShardKey1);
+            }
+            else if (shardKey.Key.IsInteger())
+            {
+                shardKey.Key.GetInteger().Should().Be(TestShardKeyInt1);
+            }
+            else
+            {
+                Assert.Fail("Unknown shard key type");
+            }
+        }
     }
 }
