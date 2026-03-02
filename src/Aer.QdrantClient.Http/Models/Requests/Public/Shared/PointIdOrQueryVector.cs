@@ -1,13 +1,19 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 /// <summary>
 /// Represents a point id or a search vector - dense or sparse.
+/// Can't be created manually, use implicit conversions from
+/// <see cref="PointId"/>,
+/// <see cref="QueryVector"/>,
+/// array of floats,
+/// <see cref="VectorBase"/>,
+/// indices and values arrays for sparse vectors.
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 public sealed class PointIdOrQueryVector

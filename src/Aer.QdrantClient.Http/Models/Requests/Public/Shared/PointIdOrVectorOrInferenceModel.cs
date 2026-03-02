@@ -9,6 +9,13 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 /// <summary>
 /// Represents a point id or a search vector - dense or sparse or an inference object to create vector form a text, image or other object.
+/// Can't be created manually, use implicit conversions from
+/// <see cref="PointId"/>,
+/// <see cref="QueryVector"/>,
+/// array of floats,
+/// <see cref="VectorBase"/>,
+/// indices and values arrays for sparse vectors,
+/// <see cref="Inference.InferenceObject"/>
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 public sealed class PointIdOrVectorOrInferenceModel
@@ -29,7 +36,7 @@ public sealed class PointIdOrVectorOrInferenceModel
     /// The inference object.
     /// </summary>
     [JsonConverter(typeof(InferenceObjectJsonConverter))]
-    internal InferenceObjectBase InferenceObject { get; }
+    internal InferenceObject InferenceObject { get; }
 
     /// <summary>
     /// Private ctor to enforce only implicit conversions.
@@ -59,7 +66,7 @@ public sealed class PointIdOrVectorOrInferenceModel
     /// Initializes a new instance of <see cref="PointIdOrVectorOrInferenceModel"/> with inference object.
     /// </summary>
     /// <param name="inferenceObject">The inference object.</param>
-    private PointIdOrVectorOrInferenceModel(InferenceObjectBase inferenceObject)
+    private PointIdOrVectorOrInferenceModel(InferenceObject inferenceObject)
     {
         InferenceObject = inferenceObject;
     }
@@ -96,8 +103,8 @@ public sealed class PointIdOrVectorOrInferenceModel
     public static implicit operator PointIdOrVectorOrInferenceModel(VectorBase vector) => new(vector);
 
     /// <summary>
-    /// Implicitly converts the <see cref="InferenceObjectBase"/> to <see cref="PointIdOrVectorOrInferenceModel"/>.
+    /// Implicitly converts the <see cref="Inference.InferenceObject"/> to <see cref="PointIdOrVectorOrInferenceModel"/>.
     /// </summary>
     /// <param name="inferenceObject">The inference object to convert.</param>
-    public static implicit operator PointIdOrVectorOrInferenceModel(InferenceObjectBase inferenceObject) => new(inferenceObject);
+    public static implicit operator PointIdOrVectorOrInferenceModel(InferenceObject inferenceObject) => new(inferenceObject);
 }

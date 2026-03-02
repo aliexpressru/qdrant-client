@@ -6,12 +6,12 @@ using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal class InferenceObjectJsonConverter : JsonConverter<InferenceObjectBase>
+internal class InferenceObjectJsonConverter : JsonConverter<InferenceObject>
 {
-    public override InferenceObjectBase Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-    throw new NotSupportedException($"Reading {typeof(InferenceObjectBase)} instances is not supported");
+    public override InferenceObject Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+    throw new NotSupportedException($"Reading {typeof(InferenceObject)} instances is not supported");
 
-    public override void Write(Utf8JsonWriter writer, InferenceObjectBase value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, InferenceObject value, JsonSerializerOptions options)
     {
         switch (value)
         {
@@ -20,7 +20,7 @@ internal class InferenceObjectJsonConverter : JsonConverter<InferenceObjectBase>
 
                 break;
 
-            case TextInferenceObject tio:
+            case DocumentInferenceObject tio:
                 // Here we need to handle BM25 options override.
 
                 object optionsObject = tio.Bm25Options is null
