@@ -1,10 +1,10 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public;
 
@@ -54,12 +54,12 @@ public sealed class UpsertPointsRequest
             Payload = payload;
         }
     }
-    
+
     /// <summary>
     /// The points to upsert.
     /// </summary>
     public IEnumerable<UpsertPoint> Points { get; set; }
-    
+
     /// <summary>
     /// The points' batch to upsert.
     /// </summary>
@@ -77,4 +77,9 @@ public sealed class UpsertPointsRequest
     /// </summary>
     [JsonConverter(typeof(QdrantFilterJsonConverter))]
     public QdrantFilter UpdateFilter { get; set; }
+
+    /// <summary>
+    /// Mode of the upsert operation.
+    /// </summary>
+    public PointsUpdateMode? UpdateMode { get; set; } = PointsUpdateMode.Upsert;
 }

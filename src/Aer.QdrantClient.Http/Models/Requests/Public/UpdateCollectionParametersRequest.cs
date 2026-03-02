@@ -1,7 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public;
 
@@ -33,6 +33,13 @@ public sealed class UpdateCollectionParametersRequest
         /// Fan-out every read request to these many additional remote nodes (and return first available response).
         /// </summary>
         public uint? ReadFanOutFactor { get; set; }
+
+        /// <summary>
+        /// Define number of milliseconds to wait before attempting to read from another replica.
+        /// This setting can help to reduce latency spikes in case of occasional slow replicas.
+        /// Default is 0, which means delayed fan out request is disabled.
+        /// </summary>
+        public ulong? ReadFanOutDelayMs { get; set; }
 
         /// <summary>
         /// If <c>true</c> - point's payload will not be stored in memory.

@@ -193,6 +193,18 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             public uint? WriteConsistencyFactor { init; get; }
 
             /// <summary>
+            /// Fan-out every read request to these many additional remote nodes (and return first available response).
+            /// </summary>
+            public uint? ReadFanOutFactor { get; set; }
+
+            /// <summary>
+            /// Define number of milliseconds to wait before attempting to read from another replica.
+            /// This setting can help to reduce latency spikes in case of occasional slow replicas.
+            /// Default is 0, which means delayed fan out request is disabled.
+            /// </summary>
+            public ulong? ReadFanOutDelayMs { get; set; }
+
+            /// <summary>
             /// Whether the payload is stored on disk or in memory.
             /// </summary>
             public bool OnDiskPayload { init; get; }

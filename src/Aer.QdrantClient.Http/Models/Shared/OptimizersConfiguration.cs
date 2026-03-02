@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Shared;
 
@@ -69,4 +69,12 @@ public sealed class OptimizersConfiguration
     /// Maximum available threads for optimization workers.
     /// </summary>
     public ulong? MaxOptimizationThreads { set; get; }
+
+    /// <summary>
+    /// If this option is set, service will try to prevent creation of large unoptimized segments.
+    /// When enabled, updates may be blocked at request level if there are unoptimized segments larger than indexing threshold.
+    /// Updates will be resumed when optimization is completed and segments are optimized below the threshold.
+    /// Using this option may lead to increased delay between submitting an update and its application. Default is <c>false</c>.
+    /// </summary>
+    public bool? PreventUnoptimized { set; get; }
 }

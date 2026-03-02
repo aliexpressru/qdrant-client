@@ -180,14 +180,22 @@ public abstract class PointsQuery
     {
         public RrfParameters Rrf { get; }
 
-        internal RrfQuery(uint? k)
+        internal RrfQuery(
+            uint? k = null,
+            double[] weights = null)
         {
-            Rrf = new RrfParameters() { K = k };
+            Rrf = new RrfParameters()
+            {
+                K = k,
+                Weights = weights
+            };
         }
 
         internal sealed class RrfParameters
         {
-            public required uint? K { get; init; }
+            public uint? K { get; init; }
+
+            public double[] Weights { get; init; }
         }
     }
 
@@ -301,7 +309,14 @@ public abstract class PointsQuery
     /// Creates a parametrized Reciprocal Rank Fusion query.
     /// </summary>
     /// <param name="k">K parameter for reciprocal rank fusion.</param>
-    public static PointsQuery CreateRrfQuery(uint? k) => new RrfQuery(k);
+    /// <param name="weights">
+    /// Weights for each prefetch source. Higher weight gives more influence on the final ranking.
+    /// If not specified, all prefetches are weighted equally.
+    /// The number of weights should match the number of prefetches.
+    /// Available as of v1.17.0
+    /// </param>
+    public static PointsQuery CreateRrfQuery(uint? k = null, double[] weights = null) =>
+        new RrfQuery(k, weights);
 
     /// <summary>
     /// Creates a "random sample" query.

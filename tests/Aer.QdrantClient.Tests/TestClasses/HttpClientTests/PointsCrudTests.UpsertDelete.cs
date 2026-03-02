@@ -81,6 +81,128 @@ internal partial class PointsCrudTests
     }
 
     [Test]
+    public async Task UpsertPoint_UpdateMode()
+    {
+        OnlyIfVersionAfterOrEqual("1.17.0", "Update mode is available from Qdrant 1.17");
+
+        var vectorSize = 10U;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                vectorSize,
+                isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var testPointId1 = PointId.NewGuid();
+        var testPointId2 = PointId.NewGuid();
+
+        var testVector = CreateTestVector(vectorSize);
+
+        TestPayload testPayload = "test";
+        TestPayload testPayload2 = "test2";
+
+        // Insert initial point
+
+        (await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest()
+            {
+                Points =
+                [
+                    new(testPointId1, testVector, testPayload)
+                ],
+                UpdateMode = PointsUpdateMode.Upsert
+            },
+            CancellationToken.None)
+        ).EnsureSuccess();
+
+        // Try to upsert the point with the same id with InsertOnly - should not be inserted
+
+        var insertOnlyUpsertResponse = await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest()
+            {
+                Points =
+                [
+                    new(testPointId1, testVector, testPayload2)
+                ],
+                UpdateMode = PointsUpdateMode.InsertOnly
+            },
+            CancellationToken.None);
+
+        insertOnlyUpsertResponse.Status.IsSuccess.Should().BeTrue();
+
+        var readNotUpdatedPoint = (
+            await _qdrantHttpClient.GetPoint(
+            TestCollectionName,
+            testPointId1,
+            CancellationToken.None)
+        ).EnsureSuccess();
+
+        // Payload should not be updated
+        readNotUpdatedPoint.Payload.As<TestPayload>()
+            .Should().BeEquivalentTo(testPayload);
+
+        // Try to insert point with UpdateOnly mode and id that does not exist - should not be inserted
+
+        var updateOnlyUpsertResponse = await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest()
+            {
+                Points =
+                [
+                    new(testPointId2, testVector, testPayload2)
+                ],
+                UpdateMode = PointsUpdateMode.UpdateOnly
+            },
+            CancellationToken.None);
+
+        updateOnlyUpsertResponse.Status.IsSuccess.Should().BeTrue();
+
+        var readNotInsertedPoint =
+            await _qdrantHttpClient.GetPoint(
+            TestCollectionName,
+            testPointId2,
+            CancellationToken.None);
+
+        readNotInsertedPoint.Status.IsSuccess.Should().BeFalse();
+        readNotInsertedPoint.Status.GetErrorMessage()
+            .Should().ContainEquivalentOf("not found");
+
+        // Update the point with existing id - should be updated
+
+        updateOnlyUpsertResponse = await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest()
+            {
+                Points =
+                [
+                    new(testPointId1, testVector, testPayload2)
+                ],
+                UpdateMode = PointsUpdateMode.UpdateOnly
+            },
+            CancellationToken.None);
+
+        updateOnlyUpsertResponse.Status.IsSuccess.Should().BeTrue();
+
+        var readUpdatedPoint = (
+            await _qdrantHttpClient.GetPoint(
+            TestCollectionName,
+            testPointId1,
+            CancellationToken.None)
+        ).EnsureSuccess();
+
+        // Payload should be updated
+        readUpdatedPoint.Payload.As<TestPayload>()
+            .Should().BeEquivalentTo(testPayload2);
+    }
+
+    [Test]
     [TestCase(VectorDataType.Float32)]
     [TestCase(VectorDataType.Uint8)]
     [TestCase(VectorDataType.Float16)]

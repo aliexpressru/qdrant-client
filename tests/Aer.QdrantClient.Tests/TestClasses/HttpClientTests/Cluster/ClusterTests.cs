@@ -435,7 +435,7 @@ internal partial class ClusterTests : QdrantTestsBase
         replica.PayloadsSizeBytes.Should().BeGreaterThan(0);
         replica.NumPoints.Should().Be(vectorCount);
         replica.NumVectors.Should().Be(vectorCount);
-        replica.NumVectorsByName.Count().Should().Be(1);
+        replica.NumVectorsByName.Count.Should().Be(1);
 
         replica.NumVectorsByName.Should().ContainKey(testVectorName);
         replica.NumVectorsByName[testVectorName].Should().Be(vectorCount);
