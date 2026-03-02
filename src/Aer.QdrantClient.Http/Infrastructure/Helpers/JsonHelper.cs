@@ -76,7 +76,7 @@ internal static class JsonHelper
             }
 
             var objectWriter = new ObjectWriter(jsonWriter, JsonObjectType.Array);
-            jsonWriter.WriteStartObject();
+            jsonWriter.WriteStartArray();
 
             return objectWriter;
         }

@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -13,13 +14,12 @@ internal sealed class ObjectPayloadEnumerableJsonConverter : JsonConverter<IEnum
 
     public override void Write(Utf8JsonWriter writer, IEnumerable<object> value, JsonSerializerOptions options)
     {
-        writer.WriteStartArray();
-
-        foreach (var payload in value)
+        using (writer.WriteArray())
         {
-            JsonSerializer.Serialize(writer, payload, _serializerOptions);
+            foreach (var payload in value)
+            {
+                JsonSerializer.Serialize(writer, payload, _serializerOptions);
+            }
         }
-
-        writer.WriteEndArray();
     }
 }

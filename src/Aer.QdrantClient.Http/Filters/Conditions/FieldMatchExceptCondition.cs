@@ -18,6 +18,7 @@ internal sealed class FieldMatchExceptCondition<T>(string payloadFieldName, para
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
+
         using (jsonWriter.WriteObject("match"))
         {
             jsonWriter.WritePropertyName("except");

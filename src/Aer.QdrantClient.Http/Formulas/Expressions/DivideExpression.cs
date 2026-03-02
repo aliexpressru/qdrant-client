@@ -16,7 +16,7 @@ internal sealed class DivideExpression(ExpressionBase left, ExpressionBase right
     {
         using (jsonWriter.WriteObject())
         {
-            jsonWriter.WriteObject("div");
+            using (jsonWriter.WriteObject("div"))
             {
                 jsonWriter.WritePropertyName("left");
 
@@ -26,12 +26,9 @@ internal sealed class DivideExpression(ExpressionBase left, ExpressionBase right
 
                 _right.WriteExpressionJson(jsonWriter);
 
-                jsonWriter.WritePropertyName("by_zero_default");
-
-                jsonWriter.WriteNumberValue(_divideByZeroDefaultValue);
+                jsonWriter.WriteNumber(
+                    "by_zero_default", _divideByZeroDefaultValue);
             }
         }
-
-        jsonWriter.WriteEndObject();
     }
 }

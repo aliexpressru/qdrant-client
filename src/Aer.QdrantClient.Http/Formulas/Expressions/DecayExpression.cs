@@ -21,7 +21,7 @@ internal sealed class DecayExpression(
     {
         using (jsonWriter.WriteObject())
         {
-            jsonWriter.WriteObject(_decayOperator);
+            using (jsonWriter.WriteObject(_decayOperator))
             {
                 jsonWriter.WritePropertyName("x");
                 _x.WriteExpressionJson(jsonWriter);
@@ -34,18 +34,14 @@ internal sealed class DecayExpression(
 
                 if (scale.HasValue)
                 {
-                    jsonWriter.WritePropertyName("scale");
-                    jsonWriter.WriteNumberValue(scale.Value);
+                    jsonWriter.WriteNumber("scale", scale.Value);
                 }
 
                 if (midpoint.HasValue)
                 {
-                    jsonWriter.WritePropertyName("midpoint");
-                    jsonWriter.WriteNumberValue(midpoint.Value);
+                    jsonWriter.WriteNumber("midpoint", midpoint.Value);
                 }
             }
         }
-
-        jsonWriter.WriteEndObject();
     }
 }

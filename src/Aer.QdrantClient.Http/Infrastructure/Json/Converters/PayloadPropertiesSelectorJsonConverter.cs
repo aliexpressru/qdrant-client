@@ -29,7 +29,7 @@ internal sealed class PayloadPropertiesSelectorJsonConverter : JsonConverter<Pay
 
                 return;
             case PayloadPropertiesSelector.ExcludePayloadPropertiesSelector eps:
-                writer.WriteObject();
+                using (writer.WriteObject())
                 {
                     writer.WritePropertyName("exclude");
 

@@ -45,7 +45,7 @@ internal sealed class ShouldCondition : FilterGroupConditionBase
         {
             foreach (var condition in Conditions)
             {
-                jsonWriter.WriteObject();
+                using (jsonWriter.WriteObject())
                 {
                     condition.WriteJson(jsonWriter);
                 }

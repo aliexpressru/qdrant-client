@@ -16,8 +16,7 @@ internal sealed class ValueExpression(string valueName, string value) : Expressi
     {
         using (jsonWriter.WriteObject())
         {
-            jsonWriter.WritePropertyName(_valueName);
-            jsonWriter.WriteStringValue(_value);
+            jsonWriter.WriteString(_valueName, _value);
         }
     }
 }

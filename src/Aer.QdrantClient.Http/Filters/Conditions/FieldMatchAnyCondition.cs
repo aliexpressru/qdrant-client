@@ -15,6 +15,7 @@ internal sealed class FieldMatchAnyCondition<T>(string payloadFieldName, IEnumer
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
+
         using (jsonWriter.WriteObject("match"))
         {
             jsonWriter.WritePropertyName("any");

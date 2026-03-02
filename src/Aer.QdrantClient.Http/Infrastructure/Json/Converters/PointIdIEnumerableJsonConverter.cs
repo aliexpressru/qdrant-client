@@ -1,8 +1,9 @@
+using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
+using Aer.QdrantClient.Http.Models.Primitives;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using Aer.QdrantClient.Http.Exceptions;
-using Aer.QdrantClient.Http.Models.Primitives;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -51,7 +52,7 @@ internal sealed class PointIdIEnumerableJsonConverter : JsonConverter<IEnumerabl
 #if NETSTANDARD2_0
                         : PointId.Integer(ulong.Parse(pointIdValueString));
 #else
-                        : PointId.Integer(ulong.Parse((ReadOnlySpan<char>) pointIdValueString));
+                        : PointId.Integer(ulong.Parse((ReadOnlySpan<char>)pointIdValueString));
 #endif
                     collection.Add(parsedPointId);
                     break;
@@ -66,13 +67,12 @@ internal sealed class PointIdIEnumerableJsonConverter : JsonConverter<IEnumerabl
 
     public override void Write(Utf8JsonWriter writer, IEnumerable<PointId> value, JsonSerializerOptions options)
     {
-        writer.WriteStartArray();
-
-        foreach (var pointId in value)
+        using (writer.WriteArray())
         {
-            JsonSerializer.Serialize(writer, pointId, _serializerOptions);
+            foreach (var pointId in value)
+            {
+                JsonSerializer.Serialize(writer, pointId, _serializerOptions);
+            }
         }
-
-        writer.WriteEndArray();
     }
 }

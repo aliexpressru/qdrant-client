@@ -12,23 +12,15 @@ internal sealed class GeoDistanceExpression(double originLongitude, double origi
     {
         using (jsonWriter.WriteObject())
         {
-            jsonWriter.WritePropertyName("geo_distance");
-
-            jsonWriter.WriteObject();
+            using (jsonWriter.WriteObject("geo_distance"))
             {
-                jsonWriter.WritePropertyName("origin");
-
-                jsonWriter.WriteObject();
+                using (jsonWriter.WriteObject("origin"))
                 {
-                    jsonWriter.WritePropertyName("lon");
-                    jsonWriter.WriteNumberValue(originLongitude);
-
-                    jsonWriter.WritePropertyName("lat");
-                    jsonWriter.WriteNumberValue(originLatitude);
+                    jsonWriter.WriteNumber("lon", originLongitude);
+                    jsonWriter.WriteNumber("lat", originLatitude);
                 }
 
-                jsonWriter.WritePropertyName("to");
-                jsonWriter.WriteStringValue(toPayloadFieldName);
+                jsonWriter.WriteString("to", toPayloadFieldName);
             }
         }
     }

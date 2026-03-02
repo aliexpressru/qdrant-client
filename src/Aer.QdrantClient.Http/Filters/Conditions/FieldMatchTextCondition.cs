@@ -34,6 +34,7 @@ internal sealed class FieldMatchTextCondition(
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
+
         using (jsonWriter.WriteObject("match"))
         {
             jsonWriter.WritePropertyName(

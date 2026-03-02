@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -14,13 +15,12 @@ internal sealed class PointIdOrQueryVectorCollectionJsonConverter : JsonConverte
 
     public override void Write(Utf8JsonWriter writer, ICollection<PointIdOrQueryVector> value, JsonSerializerOptions options)
     {
-        writer.WriteStartArray();
-
-        foreach (var typedValue in value)
+        using (writer.WriteArray())
         {
-            JsonSerializer.Serialize(writer, typedValue, _serializerOptions);
+            foreach (var typedValue in value)
+            {
+                JsonSerializer.Serialize(writer, typedValue, _serializerOptions);
+            }
         }
-
-        writer.WriteEndArray();
     }
 }

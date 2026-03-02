@@ -17,7 +17,8 @@ internal sealed class FieldRangeDoubleCondition(
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
-        jsonWriter.WriteObject("range");
+
+        using (jsonWriter.WriteObject("range"))
         {
             if (lt is not null)
             {

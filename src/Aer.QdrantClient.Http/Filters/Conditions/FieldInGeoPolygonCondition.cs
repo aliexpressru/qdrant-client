@@ -37,10 +37,8 @@ internal sealed class FieldInGeoPolygonCondition(
 
             using (jsonWriter.WriteArray("interiors"))
             {
-
                 if (interiorPolygonsPoints is { Length: > 0 })
                 {
-
                     foreach (var interiorPolygonPoints in interiorPolygonsPoints)
                     {
                         using (jsonWriter.WriteObject())
