@@ -16,7 +16,10 @@ internal class InferenceObjectJsonConverter : JsonConverter<InferenceObject>
         switch (value)
         {
             case ImageInferenceObject iio:
-                JsonSerializer.Serialize(writer, iio, JsonSerializerConstants.DefaultSerializerOptions);
+                JsonSerializer.Serialize(
+                    writer,
+                    iio,
+                    JsonSerializerConstants.DefaultSerializerOptions);
 
                 break;
 

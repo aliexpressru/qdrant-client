@@ -204,7 +204,7 @@ public abstract class PointsQuery
         internal sealed class RelevanceFeedbackQueryUnit
         {
             [JsonConverter(typeof(PointIdOrVectorOrInferenceModelJsonConverter))]
-            public required PointIdOrVectorOrInferenceModel Target { get; init; }
+            public required PointIdOrVectorOrInferenceObject Target { get; init; }
 
             public required IEnumerable<FeedbackExample> Feedback { get; init; }
 
@@ -215,7 +215,7 @@ public abstract class PointsQuery
         internal sealed class FeedbackExample
         {
             [JsonConverter(typeof(PointIdOrVectorOrInferenceModelJsonConverter))]
-            public required PointIdOrVectorOrInferenceModel Example { get; init; }
+            public required PointIdOrVectorOrInferenceObject Example { get; init; }
 
             public required double Score { get; init; }
         }
@@ -329,8 +329,8 @@ public abstract class PointsQuery
     /// </param>
     /// <param name="feedbackStrategy">The relevance feedback strategy.</param>
     public static PointsQuery CreateRelevanceFeedback(
-        PointIdOrVectorOrInferenceModel target,
-        IEnumerable<(PointIdOrVectorOrInferenceModel Example, double Score)> feedbackExamples,
+        PointIdOrVectorOrInferenceObject target,
+        IEnumerable<(PointIdOrVectorOrInferenceObject Example, double Score)> feedbackExamples,
         FeedbackStrategy feedbackStrategy)
     {
         return new RelevanceFeedbackQuery()

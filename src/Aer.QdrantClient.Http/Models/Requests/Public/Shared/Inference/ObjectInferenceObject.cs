@@ -3,7 +3,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared.Inference;
 /// <summary>
 /// Represents an arbitrary data and inference model name and settings.
 /// </summary>
-public class ObjectInferenceObject : InferenceObject
+public sealed class ObjectInferenceObject : InferenceObject
 {
     /// <summary>
     /// Arbitrary data, used as input for the embedding model.

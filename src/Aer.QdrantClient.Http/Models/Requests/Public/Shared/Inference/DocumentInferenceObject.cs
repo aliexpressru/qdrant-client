@@ -3,7 +3,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared.Inference;
 /// <summary>
 /// Represents a text and inference model name and settings.
 /// </summary>
-public class DocumentInferenceObject : InferenceObject
+public sealed class DocumentInferenceObject : InferenceObject
 {
     /// <summary>
     /// Text of the document. This field will be used as input for the embedding model.
