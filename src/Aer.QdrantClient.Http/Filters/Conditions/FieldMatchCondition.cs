@@ -1,7 +1,8 @@
-using System.Text.Json;
 using Aer.QdrantClient.Http.Filters.Introspection;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
@@ -17,13 +18,12 @@ internal sealed class FieldMatchCondition<T>(string payloadFieldName, T value) :
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
-        jsonWriter.WritePropertyName("match");
-        jsonWriter.WriteStartObject();
+        using (jsonWriter.WriteObject("match"))
         {
             jsonWriter.WritePropertyName("value");
+
             JsonSerializer.Serialize(jsonWriter, value, JsonSerializerConstants.DefaultSerializerOptions);
         }
-        jsonWriter.WriteEndObject();
     }
 
     internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldMatchCondition(this);

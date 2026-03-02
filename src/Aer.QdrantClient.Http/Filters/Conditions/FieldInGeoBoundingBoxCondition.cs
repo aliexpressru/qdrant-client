@@ -1,6 +1,7 @@
-using System.Text.Json;
 using Aer.QdrantClient.Http.Filters.Introspection;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
@@ -16,33 +17,23 @@ internal sealed class FieldInGeoBoundingBoxCondition(
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
-        jsonWriter.WritePropertyName("geo_bounding_box");
 
-        jsonWriter.WriteStartObject();
+        using (jsonWriter.WriteObject("geo_bounding_box"))
         {
-
-            jsonWriter.WritePropertyName("bottom_right");
-            jsonWriter.WriteStartObject();
+            using (jsonWriter.WriteObject("bottom_right"))
 
             {
                 jsonWriter.WriteNumber("lat", bottomRightLatitude);
                 jsonWriter.WriteNumber("lon", bottomRightLongitude);
             }
 
-            jsonWriter.WriteEndObject();
-
-            jsonWriter.WritePropertyName("top_left");
-            jsonWriter.WriteStartObject();
+            using (jsonWriter.WriteObject("top_left"))
 
             {
                 jsonWriter.WriteNumber("lat", topLeftLatitude);
                 jsonWriter.WriteNumber("lon", topLeftLongitude);
             }
-
-            jsonWriter.WriteEndObject();
         }
-
-        jsonWriter.WriteEndObject();
     }
 
     internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldInGeoBoundingBoxCondition(this);

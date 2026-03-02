@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Formulas.Expressions;
@@ -18,11 +19,9 @@ internal sealed class DecayExpression(
 
     public override void WriteExpressionJson(Utf8JsonWriter jsonWriter)
     {
-        jsonWriter.WriteStartObject();
+        using (jsonWriter.WriteObject())
         {
-            jsonWriter.WritePropertyName(_decayOperator);
-
-            jsonWriter.WriteStartObject();
+            jsonWriter.WriteObject(_decayOperator);
             {
                 jsonWriter.WritePropertyName("x");
                 _x.WriteExpressionJson(jsonWriter);
@@ -45,8 +44,8 @@ internal sealed class DecayExpression(
                     jsonWriter.WriteNumberValue(midpoint.Value);
                 }
             }
-            jsonWriter.WriteEndObject();
         }
+
         jsonWriter.WriteEndObject();
     }
 }

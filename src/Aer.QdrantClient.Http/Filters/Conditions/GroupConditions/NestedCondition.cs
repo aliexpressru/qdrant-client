@@ -1,4 +1,5 @@
 using Aer.QdrantClient.Http.Filters.Introspection;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
@@ -15,22 +16,18 @@ internal sealed class NestedCondition : FilterGroupConditionBase
 
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
-        jsonWriter.WritePropertyName("nested");
-        jsonWriter.WriteStartObject();
-
-        WritePayloadFieldName(jsonWriter);
-
-        jsonWriter.WritePropertyName("filter");
-        jsonWriter.WriteStartObject();
-
-        foreach (var condition in Conditions)
+        using (jsonWriter.WriteObject("nested"))
         {
-            condition.WriteJson(jsonWriter);
+            WritePayloadFieldName(jsonWriter);
+
+            using (jsonWriter.WriteObject("filter"))
+            {
+                foreach (var condition in Conditions)
+                {
+                    condition.WriteJson(jsonWriter);
+                }
+            }
         }
-
-        jsonWriter.WriteEndObject();
-
-        jsonWriter.WriteEndObject();
     }
 
     internal override void Accept(FilterConditionVisitor visitor)

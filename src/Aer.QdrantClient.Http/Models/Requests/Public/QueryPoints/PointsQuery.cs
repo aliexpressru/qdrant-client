@@ -206,13 +206,13 @@ public abstract class PointsQuery
             [JsonConverter(typeof(PointIdOrVectorOrInferenceModelJsonConverter))]
             public required PointIdOrVectorOrInferenceModel Target { get; init; }
 
-            public required Feedback Feedback { get; init; }
+            public required IEnumerable<FeedbackExample> Feedback { get; init; }
 
             [JsonConverter(typeof(FeedbackStrategyJsonConverter))]
             public required FeedbackStrategy Strategy { get; init; }
         }
 
-        internal sealed class Feedback
+        internal sealed class FeedbackExample
         {
             [JsonConverter(typeof(PointIdOrVectorOrInferenceModelJsonConverter))]
             public required PointIdOrVectorOrInferenceModel Example { get; init; }
@@ -323,13 +323,14 @@ public abstract class PointsQuery
     /// Creates a relevance feedback query.
     /// </summary>
     /// <param name="target">The relevance feedback target.</param>
-    /// <param name="feedbackExample">The relevance feedback example.</param>
-    /// <param name="feedbackScore">The relevance feedback example target score.</param>
+    /// <param name="feedbackExamples">
+    /// The relevance feedback example.
+    /// Each example should be a vector or a vector id or an inference object with corresponding relevance feedback score.
+    /// </param>
     /// <param name="feedbackStrategy">The relevance feedback strategy.</param>
     public static PointsQuery CreateRelevanceFeedback(
         PointIdOrVectorOrInferenceModel target,
-        PointIdOrVectorOrInferenceModel feedbackExample,
-        double feedbackScore,
+        IEnumerable<(PointIdOrVectorOrInferenceModel Example, double Score)> feedbackExamples,
         FeedbackStrategy feedbackStrategy)
     {
         return new RelevanceFeedbackQuery()
@@ -337,11 +338,11 @@ public abstract class PointsQuery
             RelevanceFeedback = new RelevanceFeedbackQuery.RelevanceFeedbackQueryUnit()
             {
                 Target = target,
-                Feedback = new()
+                Feedback = feedbackExamples.Select(e => new RelevanceFeedbackQuery.FeedbackExample()
                 {
-                    Example = feedbackExample,
-                    Score = feedbackScore
-                },
+                    Example = e.Example,
+                    Score = e.Score
+                }),
                 Strategy = feedbackStrategy
             }
         };

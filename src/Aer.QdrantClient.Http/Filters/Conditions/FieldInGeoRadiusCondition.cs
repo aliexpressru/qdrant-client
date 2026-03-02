@@ -1,6 +1,7 @@
-using System.Text.Json;
 using Aer.QdrantClient.Http.Filters.Introspection;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
@@ -15,25 +16,18 @@ internal sealed class FieldInGeoRadiusCondition(
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
-        jsonWriter.WritePropertyName("geo_radius");
 
-        jsonWriter.WriteStartObject();
+        using (jsonWriter.WriteObject("geo_radius"))
         {
-
-            jsonWriter.WritePropertyName("center");
-            jsonWriter.WriteStartObject();
+            using (jsonWriter.WriteObject("center"))
 
             {
                 jsonWriter.WriteNumber("lat", centerLatitude);
                 jsonWriter.WriteNumber("lon", centerLongitude);
             }
 
-            jsonWriter.WriteEndObject();
-
             jsonWriter.WriteNumber("radius", radius);
         }
-
-        jsonWriter.WriteEndObject();
     }
 
     internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldInGeoRadiusCondition(this);

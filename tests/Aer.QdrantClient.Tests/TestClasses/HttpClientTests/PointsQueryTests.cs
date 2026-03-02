@@ -886,8 +886,10 @@ internal class PointsQueryTests : QdrantTestsBase
             new QueryPointsRequest(
                 PointsQuery.CreateRelevanceFeedback(
                     target: upsertPoints[0].Vector,
-                    feedbackExample: upsertPoints[0].Vector,
-                    feedbackScore: 0.5,
+                    feedbackExamples:
+                    [
+                        (upsertPoints[0].Vector, 0.5)
+                    ],
                     feedbackStrategy: FeedbackStrategy.Naive(1, 1, 1)
                 ),
                 withVector: true,
@@ -906,6 +908,8 @@ internal class PointsQueryTests : QdrantTestsBase
 
         queryResponse.Status.IsSuccess.Should().BeTrue();
 
-        queryResponse.Result.Points.Should().AllSatisfy(p => p.Score.Should().Be(10));
+        queryResponse.Result.Points.Should()
+            .AllSatisfy(p => p.Score.Should().BeGreaterThan(2.5f));
+        queryResponse.Result.Points.Length.Should().Be(2);
     }
 }

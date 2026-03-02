@@ -1,4 +1,5 @@
 using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -21,14 +22,14 @@ internal sealed class ShardSelectorJsonConverter : JsonConverter<ShardSelector>
             {
                 if (iss.FallbackShardKeyValue is not null)
                 {
-                    writer.WriteStartObject();
+                    using (writer.WriteObject())
                     {
-                        writer.WritePropertyName("target");
-                        writer.WriteNumberValue(iss.ShardKeyValue!.Value);
+                        writer.WriteNumber("target", iss.ShardKeyValue.Value);
+
                         writer.WritePropertyName("fallback");
+
                         JsonSerializer.Serialize(writer, iss.FallbackShardKeyValue, _serializerOptions);
                     }
-                    writer.WriteEndObject();
                 }
                 else
                 {
@@ -50,14 +51,13 @@ internal sealed class ShardSelectorJsonConverter : JsonConverter<ShardSelector>
             {
                 if (sss.FallbackShardKeyValue is not null)
                 {
-                    writer.WriteStartObject();
+                    using (writer.WriteObject())
                     {
-                        writer.WritePropertyName("target");
-                        writer.WriteStringValue(sss.ShardKeyValue);
+                        writer.WriteString("target", sss.ShardKeyValue);
+
                         writer.WritePropertyName("fallback");
                         JsonSerializer.Serialize(writer, sss.FallbackShardKeyValue, _serializerOptions);
                     }
-                    writer.WriteEndObject();
                 }
                 else
                 {

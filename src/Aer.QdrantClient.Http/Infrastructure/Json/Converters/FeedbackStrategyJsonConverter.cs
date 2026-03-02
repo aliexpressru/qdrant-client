@@ -1,4 +1,5 @@
 using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints.RelevanceFeedback;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -16,17 +17,16 @@ internal class FeedbackStrategyJsonConverter : JsonConverter<FeedbackStrategy>
         {
             case NaiveFeedbackStrategy nfs:
 
-                writer.WritePropertyName("naive");
-                writer.WriteStartObject();
+                using (writer.WriteObject())
                 {
+                    writer.WritePropertyName("naive");
+
                     JsonSerializer.Serialize(
                         writer,
                         nfs,
                         JsonSerializerConstants.DefaultSerializerOptions
                     );
                 }
-
-                writer.WriteEndObject();
 
                 break;
             default:

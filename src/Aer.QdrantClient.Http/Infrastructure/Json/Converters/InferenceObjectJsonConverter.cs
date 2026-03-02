@@ -1,4 +1,5 @@
 using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared.Inference;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -26,26 +27,20 @@ internal class InferenceObjectJsonConverter : JsonConverter<InferenceObjectBase>
                     ? tio.Options
                     : tio.Bm25Options;
 
-                writer.WriteStartObject();
+                using (writer.WriteObject())
                 {
                     writer.WriteString("text", tio.Text);
                     writer.WriteString("model", tio.Model);
                     if (optionsObject is not null)
                     {
                         writer.WritePropertyName("options");
-                        writer.WriteStartObject();
-                        {
-                            JsonSerializer.Serialize(
-                            writer,
-                            optionsObject,
-                            JsonSerializerConstants.DefaultSerializerOptions);
-                        }
 
-                        writer.WriteEndObject();
+                        JsonSerializer.Serialize(
+                        writer,
+                        optionsObject,
+                        JsonSerializerConstants.DefaultSerializerOptions);
                     }
                 }
-
-                writer.WriteEndObject();
 
                 break;
 

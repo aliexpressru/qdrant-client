@@ -1,9 +1,10 @@
+using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
+using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using Aer.QdrantClient.Http.Exceptions;
-using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
-using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -81,14 +82,17 @@ internal sealed class VectorJsonConverter : JsonConverter<VectorBase>
                 return;
 
             case SparseVector sv:
-                writer.WriteStartObject();
+                using (writer.WriteObject())
                 {
                     writer.WritePropertyName("indices");
+
                     JsonSerializer.Serialize(writer, sv.Indices, JsonSerializerConstants.DefaultSerializerOptions);
+
                     writer.WritePropertyName("values");
+
                     JsonSerializer.Serialize(writer, sv.Values, JsonSerializerConstants.DefaultSerializerOptions);
                 }
-                writer.WriteEndObject();
+
                 return;
 
             case MultiVector mv:
@@ -96,7 +100,7 @@ internal sealed class VectorJsonConverter : JsonConverter<VectorBase>
                 return;
 
             case NamedVectors nv:
-                writer.WriteStartObject();
+                using (writer.WriteObject())
                 {
                     // named vector contains either DenseVector, SparseVector or MultiVector as value
 
@@ -145,7 +149,7 @@ internal sealed class VectorJsonConverter : JsonConverter<VectorBase>
                         }
                     }
                 }
-                writer.WriteEndObject();
+
                 return;
 
             default:

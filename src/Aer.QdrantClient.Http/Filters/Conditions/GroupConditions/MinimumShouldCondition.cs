@@ -1,4 +1,5 @@
 using Aer.QdrantClient.Http.Filters.Introspection;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
@@ -55,27 +56,21 @@ internal sealed class MinimumShouldCondition : FilterGroupConditionBase
 
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
-        jsonWriter.WritePropertyName("min_should");
-        jsonWriter.WriteStartObject();
+        using (jsonWriter.WriteObject("min_should"))
         {
             jsonWriter.WriteNumber("min_count", _minCount);
 
-            jsonWriter.WritePropertyName("conditions");
-            jsonWriter.WriteStartArray();
-
-            foreach (var condition in Conditions)
+            using (jsonWriter.WriteArray("conditions"))
             {
-                jsonWriter.WriteStartObject();
+                foreach (var condition in Conditions)
                 {
-                    condition.WriteJson(jsonWriter);
+                    using (jsonWriter.WriteObject())
+                    {
+                        condition.WriteJson(jsonWriter);
+                    }
                 }
-                jsonWriter.WriteEndObject();
             }
-
-            jsonWriter.WriteEndArray();
         }
-
-        jsonWriter.WriteEndObject();
     }
 
     internal override void Accept(FilterConditionVisitor visitor)
