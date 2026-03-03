@@ -1,7 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Requests;
 
@@ -71,6 +71,12 @@ internal sealed class CreateFullTextPayloadIndexRequest
         /// (e.g., “ação” -> “acao”). Default: false.
         /// </summary>
         public bool? AsciiFolding { get; set; }
+
+        /// <summary>
+        /// Enable HNSW graph building for this payload field.
+        /// If true, builds additional HNSW links (Need payload_m > 0). Default: true.
+        /// </summary>
+        public bool? EnableHnsw { get; set; }
     }
 
     /// <summary>

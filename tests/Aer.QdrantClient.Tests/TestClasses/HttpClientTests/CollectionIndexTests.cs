@@ -4,6 +4,7 @@ using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
+using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Model;
@@ -298,6 +299,117 @@ internal class CollectionIndexTests : QdrantTestsBase
             }
 
             isWholeVectorZero.Should().BeFalse();
+        }
+    }
+
+    [Test]
+    public async Task CreateIndex_EnableHnsw()
+    {
+        OnlyIfVersionAfterOrEqual("1.17.0", "Enable HNSW flag is only supported since 1.17.0");
+
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName, vectorCount: 100);
+
+        (
+            await _qdrantHttpClient.UpdateCollectionParameters(TestCollectionName,
+                new UpdateCollectionParametersRequest()
+                {
+                    OptimizersConfig = new()
+                    {
+                        IndexingThreshold = 1
+                    }
+                },
+                CancellationToken.None)
+        ).EnsureSuccess();
+
+        // Create different indexes, both fulltext and not with enabled and not enabled HNSW
+
+        var fulltextIndexNoHnswResult =
+            await _qdrantHttpClient.CreateFullTextPayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                FullTextIndexTokenizerType.Prefix,
+                CancellationToken.None,
+
+                minimalTokenLength: 5,
+                maximalTokenLength: 10,
+
+                isHnswEnabled: false,
+
+                isWaitForResult: true,
+                onDisk: true);
+
+        var fulltextIndexWithHnswResult =
+            await _qdrantHttpClient.CreateFullTextPayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName2,
+                FullTextIndexTokenizerType.Prefix,
+                CancellationToken.None,
+
+                minimalTokenLength: 5,
+                maximalTokenLength: 10,
+
+                isHnswEnabled: true,
+
+                isWaitForResult: true,
+                onDisk: true);
+
+        var payloadIndexNoHnsw =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName3,
+                PayloadIndexedFieldType.Float,
+                CancellationToken.None,
+
+                isHnswEnabled: false,
+
+                isWaitForResult: true);
+
+        var payloadIndexWithHnsw =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName4,
+                PayloadIndexedFieldType.Float,
+                CancellationToken.None,
+
+                isHnswEnabled: true,
+
+                isWaitForResult: true);
+
+        AssertIndexCreationResult(fulltextIndexNoHnswResult);
+        AssertIndexCreationResult(fulltextIndexWithHnswResult);
+
+        AssertIndexCreationResult(payloadIndexNoHnsw);
+        AssertIndexCreationResult(payloadIndexWithHnsw);
+
+        var collectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionInfo.Status.IsSuccess.Should().BeTrue();
+
+        collectionInfo.Result.PayloadSchema.Count.Should().Be(4);
+
+        collectionInfo.Result.PayloadSchema.Should()
+            .ContainKeys(
+            TestPayloadFieldName, // no HNSW
+            TestPayloadFieldName2, // with HNSW
+            TestPayloadFieldName3, // no HNSW
+            TestPayloadFieldName4 // with HNSW
+        );
+
+        // Check fields with HNSW enabled
+
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.EnableHnsw.Should().BeFalse();
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName3].Params.EnableHnsw.Should().BeFalse();
+
+        // Check fields with HNSW disabled
+
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.EnableHnsw.Should().BeTrue();
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName4].Params.EnableHnsw.Should().BeTrue();
+
+        void AssertIndexCreationResult(PayloadIndexOperationResponse indexCreationResult)
+        {
+            indexCreationResult.Status.IsSuccess.Should().BeTrue();
+            indexCreationResult.Result.Should().NotBeNull();
         }
     }
 

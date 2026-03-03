@@ -54,6 +54,7 @@ public class QdrantTestsBase
     protected const string TestPayloadFieldName = "test_payload_field";
     protected const string TestPayloadFieldName2 = "test_payload_field_2";
     protected const string TestPayloadFieldName3 = "test_payload_field_3";
+    protected const string TestPayloadFieldName4 = "test_payload_field_4";
 
     protected const string FirstClientName = "Client1";
     protected const string SecondClientName = "Client2";

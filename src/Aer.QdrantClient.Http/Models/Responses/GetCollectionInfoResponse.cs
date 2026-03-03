@@ -317,7 +317,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// <summary>
             /// Whether the payload index is stored on-disk instead of in-memory.
             /// </summary>
-            public bool OnDisk { init; get; }
+            public bool? OnDisk { init; get; }
 
             /// <summary>
             /// Whether the field index is a tenant index.
@@ -328,6 +328,11 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// Whether the field index is a principal index.
             /// </summary>
             public bool? IsPrincipal { init; get; }
+
+            /// <summary>
+            /// Whether HNSW graph building for this payload field is enabled.
+            /// </summary>
+            public bool? EnableHnsw { init; get; }
         }
     }
 }
