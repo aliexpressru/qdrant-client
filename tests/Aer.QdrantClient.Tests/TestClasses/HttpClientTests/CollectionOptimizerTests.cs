@@ -233,7 +233,7 @@ internal class CollectionOptimizerTests : QdrantTestsBase
             completedLimit: 10
         );
 
-        finishedCollectionOptimizationProgressResponse.Status.IsSuccess.Should().BeTrue();
+        finishedCollectionOptimizationProgressResponse.Status.IsSuccess.Should().BeTrue(finishedCollectionOptimizationProgressResponse.Status.GetErrorMessage());
 
         progress = finishedCollectionOptimizationProgressResponse.Result;
 
