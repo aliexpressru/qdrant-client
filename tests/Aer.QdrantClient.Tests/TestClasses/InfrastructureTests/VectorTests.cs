@@ -495,21 +495,5 @@ internal class VectorTests : QdrantTestsBase
         var vectorString = sr.ReadToEnd();
 
         vectorString.AssertSameString(expectedString);
-
-        // Since we don't have methods to read 
-
-        using MemoryStream msBinary = new();
-        using BinaryWriter bw = new(msBinary);
-
-        vector.WriteToStream(bw);
-        bw.Flush();
-        msBinary.Position = 0;
-
-        using BinaryReader br = new(msBinary);
-
-        VectorBase vb = VectorBase.ReadFromStream(vector.VectorKind, br);
-
-        var vectorStringFromBinary = vb.ToString();
-        vectorStringFromBinary.AssertSameString(expectedString);
     }
 }

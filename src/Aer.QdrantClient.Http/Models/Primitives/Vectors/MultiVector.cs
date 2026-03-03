@@ -105,100 +105,6 @@ public sealed class MultiVector : VectorBase, IEquatable<VectorBase>, IEquatable
     }
 
     /// <inheritdoc/>
-    public override void WriteToStream(BinaryWriter writer)
-    {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
-        writer.Write("[");
-
-        writer.Write(Vectors.Length);
-
-        for (int vectorIndex = 0; vectorIndex < Vectors.Length; vectorIndex++)
-        {
-            if (vectorIndex > 0)
-            {
-                writer.Write(',');
-            }
-
-            writer.Write('[');
-
-            writer.Write(Vectors[vectorIndex].Length);
-
-            for (int i = 0; i < Vectors[vectorIndex].Length; i++)
-            {
-                if (i > 0)
-                {
-                    writer.Write(',');
-                }
-
-                writer.Write(Vectors[vectorIndex][i]);
-            }
-
-            writer.Write(']');
-        }
-
-        writer.Write("]");
-    }
-
-    /// <summary>
-    /// Reads a <see cref="DenseVector"/> instance from a binary stream.
-    /// </summary>
-    /// <param name="reader">The reader to read vector from.</param>
-    public static VectorBase ReadFromStream(BinaryReader reader)
-    {
-        if (reader == null)
-        {
-            throw new ArgumentNullException(nameof(reader));
-        }
-
-        // "["
-        reader.ReadString();
-
-        int vectorsCount = reader.ReadInt32();
-        float[][] vectors = new float[vectorsCount][];
-
-        for (int vectorIndex = 0; vectorIndex < vectorsCount; vectorIndex++)
-        {
-            if (vectorIndex > 0)
-            {
-                // ","
-                reader.ReadChar();
-            }
-
-            // "["
-            reader.ReadChar();
-
-            int vectorLength = reader.ReadInt32();
-            vectors[vectorIndex] = new float[vectorLength];
-
-            for (int i = 0; i < vectorLength; i++)
-            {
-                if (i > 0)
-                {
-                    // ","
-                    reader.ReadChar();
-                }
-
-                vectors[vectorIndex][i] = reader.ReadSingle();
-            }
-
-            // "]"
-            reader.ReadChar();
-        }
-
-        // "]"
-        reader.ReadString();
-
-        return new MultiVector()
-        {
-            Vectors = vectors
-        };
-    }
-
-    /// <inheritdoc/>
     public override bool Equals(VectorBase other)
     {
         if (other is null)
@@ -223,7 +129,7 @@ public sealed class MultiVector : VectorBase, IEquatable<VectorBase>, IEquatable
         }
 
         return ReferenceEquals(this, obj)
-            || obj is MultiVector other && Equals(other);
+            || (obj is MultiVector other && Equals(other));
     }
 
     /// <inheritdoc/>
@@ -244,7 +150,7 @@ public sealed class MultiVector : VectorBase, IEquatable<VectorBase>, IEquatable
             return false;
         }
 
-        for (int i = 0; i<Vectors.Length; i++)
+        for (int i = 0; i < Vectors.Length; i++)
         {
             if (Vectors[i].Length != other.Vectors[i].Length)
             {

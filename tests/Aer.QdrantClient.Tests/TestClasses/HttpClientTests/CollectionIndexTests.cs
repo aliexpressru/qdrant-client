@@ -406,7 +406,7 @@ internal class CollectionIndexTests : QdrantTestsBase
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.EnableHnsw.Should().BeTrue();
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName4].Params.EnableHnsw.Should().BeTrue();
 
-        void AssertIndexCreationResult(PayloadIndexOperationResponse indexCreationResult)
+        static void AssertIndexCreationResult(PayloadIndexOperationResponse indexCreationResult)
         {
             indexCreationResult.Status.IsSuccess.Should().BeTrue();
             indexCreationResult.Result.Should().NotBeNull();

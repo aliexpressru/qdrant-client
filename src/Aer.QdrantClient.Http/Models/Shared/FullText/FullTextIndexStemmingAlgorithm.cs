@@ -1,4 +1,4 @@
-﻿namespace Aer.QdrantClient.Http.Models.Shared;
+namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
 /// Represents a fulltext stemmer algorithm definition.
@@ -24,7 +24,7 @@ public abstract class FullTextIndexStemmingAlgorithm
         public SnowballStemmerLanguage Language { init; get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FullTextIndexStemmingAlgorithm.SnowballStemmingAlgorithm"/> class with the specified language.
+        /// Initializes a new instance of the <see cref="SnowballStemmingAlgorithm"/> class with the specified language.
         /// </summary>
         /// <param name="language">The Snowball stemming algorithm language.</param>
         public SnowballStemmingAlgorithm(SnowballStemmerLanguage language)
@@ -32,13 +32,48 @@ public abstract class FullTextIndexStemmingAlgorithm
             Type = StemmingAlgorithmType.Snowball;
             Language = language;
         }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            HashCode hashCode = new();
+
+            hashCode.Add(Type);
+            hashCode.Add(Language);
+
+            return hashCode.ToHashCode();
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object other)
+        {
+            if (other is null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return other is SnowballStemmingAlgorithm sa
+                && sa.Language.Equals(Language)
+                && sa.Type.Equals(Type);
+        }
     }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="FullTextIndexStemmingAlgorithm.SnowballStemmingAlgorithm"/> class with the specified language.
+    /// Creates a new instance of the <see cref="SnowballStemmingAlgorithm"/> class with the specified language.
     /// </summary>
     /// <param name="language">The snowball stemming algorithm language.</param>
     public static FullTextIndexStemmingAlgorithm CreateSnowball(SnowballStemmerLanguage language)
         =>
             new SnowballStemmingAlgorithm(language);
+
+    /// <inheritdoc/>
+    public abstract override int GetHashCode();
+
+    /// <inheritdoc/>
+    public abstract override bool Equals(object other);
 }

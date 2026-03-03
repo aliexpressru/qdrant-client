@@ -2,12 +2,12 @@ using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Shared;
 using System.Text.Json.Serialization;
 
-namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared.Inference;
+namespace Aer.QdrantClient.Http.Models.Primitives.Inference;
 
 /// <summary>
 /// Represents a BM25 (Best Matching 25) inference model config.
 /// </summary>
-public sealed class Bm25Config
+public sealed class Bm25Config : IEquatable<Bm25Config>
 {
     /// <summary>
     /// Controls term frequency saturation.
@@ -66,4 +66,42 @@ public sealed class Bm25Config
     /// Maximum token length to keep. If token is longer than this, it will be discarded. Default is no maximum length.
     /// </summary>
     public int? MaxTokenLen { get; init; }
+
+    /// <inheritdoc/>
+    public override bool Equals(object obj) => Equals(obj as Bm25Config);
+
+    /// <inheritdoc/>
+    public bool Equals(Bm25Config other)
+    {
+        return other is not null
+            && K == other.K
+            && B == other.B
+            && AvgLen == other.AvgLen
+            && Tokenizer == other.Tokenizer
+            && Language == other.Language
+            && Lowercase == other.Lowercase
+            && AsciiFolding == other.AsciiFolding
+            && Stemmer.Equals(other.Stemmer)
+            && MinTokenLen == other.MinTokenLen
+            && MaxTokenLen == other.MaxTokenLen;
+    }
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+    {
+        HashCode hash = new();
+
+        hash.Add(K);
+        hash.Add(B);
+        hash.Add(AvgLen);
+        hash.Add(Tokenizer);
+        hash.Add(Language);
+        hash.Add(Lowercase);
+        hash.Add(AsciiFolding);
+        hash.Add(Stemmer);
+        hash.Add(MinTokenLen);
+        hash.Add(MaxTokenLen);
+
+        return hash.ToHashCode();
+    }
 }

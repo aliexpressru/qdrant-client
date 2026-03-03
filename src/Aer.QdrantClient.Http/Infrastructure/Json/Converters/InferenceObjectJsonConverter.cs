@@ -1,6 +1,6 @@
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Infrastructure.Helpers;
-using Aer.QdrantClient.Http.Models.Requests.Public.Shared.Inference;
+using Aer.QdrantClient.Http.Models.Primitives.Inference;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

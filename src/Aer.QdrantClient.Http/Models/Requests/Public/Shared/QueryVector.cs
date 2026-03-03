@@ -1,7 +1,8 @@
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
+using Aer.QdrantClient.Http.Models.Primitives.Inference;
+using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
-using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
-using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
@@ -27,6 +28,12 @@ public abstract class QueryVector
     {
         [JsonConverter(typeof(VectorJsonConverter))]
         public SparseVector Vector { get; } = vector;
+    }
+
+    internal sealed class InferredQueryVector(InferredVector vector) : QueryVector
+    {
+        [JsonConverter(typeof(InferenceObjectJsonConverter))]
+        public InferenceObject InferenceObject { get; } = vector.InferenceObject;
     }
 
     #endregion
@@ -70,6 +77,7 @@ public abstract class QueryVector
             null => throw new ArgumentNullException(nameof(vector)),
             DenseVector v => new DenseQueryVector(v.VectorValues),
             SparseVector sv => new SparseQueryVector(sv),
+            InferredVector iv => new InferredQueryVector(iv),
             _ => throw GetException(vector.GetType())
         };
 

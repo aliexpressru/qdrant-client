@@ -1,7 +1,7 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -22,6 +22,12 @@ internal sealed class QueryVectorJsonConverter : JsonConverter<QueryVector>
                 JsonSerializer.Serialize(writer, sv.Vector, JsonSerializerConstants.DefaultIndentedSerializerOptions);
 
                 return;
+
+            case QueryVector.InferredQueryVector iv:
+                JsonSerializer.Serialize(writer, iv.InferenceObject, JsonSerializerConstants.DefaultIndentedSerializerOptions);
+
+                return;
+
             default:
                 throw new QdrantJsonSerializationException($"Can't serialize {value} query vector of type {value.GetType()}");
         }

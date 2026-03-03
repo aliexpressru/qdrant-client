@@ -25,6 +25,7 @@ public abstract class VectorBase : IEquatable<VectorBase>
     /// for <see cref="NamedVectors"/> gets the vector named <see cref="DefaultVectorName"/>
     /// for <see cref="SparseVector"/> throws an exception.
     /// for <see cref="MultiVector"/> gets the first vector component.
+    /// for <see cref="InferredVector"/> throws an exception.
     /// </summary>
     [JsonIgnore]
     public abstract VectorBase Default { get; }
@@ -78,6 +79,13 @@ public abstract class VectorBase : IEquatable<VectorBase>
         ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(MultiVector)}");
 
     /// <summary>
+    /// Converts this instance into an instance of <see cref="InferredVector"/> type which represents a vector obtained from inference object processing by a specified model.
+    /// </summary>
+    /// <exception cref="InvalidCastException">Occurs when this instance is not an inferred vector.</exception>
+    public InferredVector AsInferredVector() => this as InferredVector
+        ?? throw new InvalidCastException($"Can't convert instance of {GetType()} to {typeof(InferredVector)}");
+
+    /// <summary>
     /// Gets the string representation of this vector instance.
     /// </summary>
     public abstract override string ToString();
@@ -87,30 +95,6 @@ public abstract class VectorBase : IEquatable<VectorBase>
     /// </summary>
     /// <param name="writer">The writer to write vector representation to.</param>
     public abstract void WriteToStream(StreamWriter writer);
-
-    /// <summary>
-    /// Writes the binary vector representation to the provided <see cref="BinaryWriter"/>.
-    /// </summary>
-    /// <param name="writer">The writer to write vector representation to.</param>
-    public abstract void WriteToStream(BinaryWriter writer);
-
-    /// <summary>
-    /// Reads the vector representation from the provided <see cref="BinaryReader"/>.
-    /// </summary>
-    /// <param name="vectorKind">The kind of vector to read from stream.</param>
-    /// <param name="reader">The reader to read vector representation from.</param>
-    public static VectorBase ReadFromStream(
-        VectorKind vectorKind,
-        BinaryReader reader)
-        =>
-        vectorKind switch
-        {
-            VectorKind.Dense => DenseVector.ReadFromStream(reader),
-            VectorKind.Named => NamedVectors.ReadFromStream(reader),
-            VectorKind.Sparse => SparseVector.ReadFromStream(reader),
-            VectorKind.Multi => MultiVector.ReadFromStream(reader),
-            _ => throw new ArgumentOutOfRangeException(nameof(vectorKind), vectorKind, $"Reading {vectorKind} vectors is not supported")
-        };
 
     #region Operators
 
