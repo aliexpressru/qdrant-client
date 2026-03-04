@@ -82,7 +82,7 @@ internal partial class PointsCrudTests
     }
 
     [Test]
-    public async Task UpsertPoint_InferredVector()
+    public async Task UpsertPoint_InferredVector_NoModel()
     {
         // Since we don't have an inference service URL configured
         // We use this as a simple smoke test.
@@ -106,7 +106,7 @@ internal partial class PointsCrudTests
 
         VectorBase testVector = InferenceObject.CreateFromDocument(
             "test",
-            "test",
+            "some-model",
             options: new()
             {
                 ["api-key"] = "test",
@@ -143,6 +143,63 @@ internal partial class PointsCrudTests
 
         await upsertPointsAct.Should().ThrowAsync<QdrantCommunicationException>()
             .Where(e => e.Message.Contains("InferenceService URL not configured"));
+    }
+
+    [Test]
+    public async Task UpsertPoint_InferredDocumentVector_Bm25_Local_Model()
+    {
+        var vectorSize = 10U;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                vectorSize,
+                isServeVectorsFromDisk: true)
+            {
+                SparseVectors = new()
+                {
+                    ["test"] = new SparseVectorConfiguration()
+                },
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var testPointId = PointId.NewGuid();
+
+        VectorBase testVector = InferenceObject.CreateFromDocument(
+            "Test text some text",
+            "qdrant/bm25", // This model will create a sparse vector
+            bm25Options: new()
+            {
+                B = 1,
+                K = 1,
+                Tokenizer = FullTextIndexTokenizerType.Prefix,
+                Stemmer = FullTextIndexStemmingAlgorithm.CreateSnowball(SnowballStemmerLanguage.English),
+                Language = "English",
+                AsciiFolding = true,
+                AvgLen = 256,
+                Lowercase = true
+            }
+        );
+
+        NamedVectors testNamedVector = NamedVectors.Create("test", testVector);
+
+        TestPayload testPayload = "test";
+
+        var upsertPointResult
+            = await _qdrantHttpClient.UpsertPoints(
+                TestCollectionName,
+                new UpsertPointsRequest()
+                {
+                    Points =
+                    [
+                        new(testPointId, testNamedVector, testPayload)
+                    ]
+                },
+                CancellationToken.None);
+
+        upsertPointResult.Status.IsSuccess.Should().BeTrue();
     }
 
     [Test]

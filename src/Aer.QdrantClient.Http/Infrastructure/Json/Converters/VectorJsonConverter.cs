@@ -144,6 +144,17 @@ internal sealed class VectorJsonConverter : JsonConverter<VectorBase>
 
                                 break;
 
+                            case VectorKind.Inferred:
+
+                                var inferredVector = vector.AsInferredVector();
+
+                                JsonSerializer.Serialize(
+                                    writer,
+                                    inferredVector.InferenceObject,
+                                    _serializerOptions);
+
+                                break;
+
                             case VectorKind.Named:
                                 throw new QdrantJsonSerializationException(
                                     $"Can't serialize {value} vector of type {value.GetType()}. Named vector can't be a member of another named vector");
