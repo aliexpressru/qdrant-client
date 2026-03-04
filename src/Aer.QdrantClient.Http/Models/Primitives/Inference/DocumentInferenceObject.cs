@@ -70,7 +70,8 @@ public sealed class DocumentInferenceObject : InferenceObject, IEquatable<Infere
     /// <inheritdoc/>
     public bool Equals(InferenceObject other)
     {
-        return EqualsCore(other)
+        // We compare Options components only if this vector does not have Bm25Options
+        return EqualsCore(other, isCompareOptions: Bm25Options is null)
             && other is DocumentInferenceObject o
             && Equals(o);
     }
@@ -78,7 +79,8 @@ public sealed class DocumentInferenceObject : InferenceObject, IEquatable<Infere
     /// <inheritdoc/>
     public bool Equals(DocumentInferenceObject other)
     {
-        if (!EqualsCore(other))
+        // We compare Options components only if this vector does not have Bm25Options
+        if (!EqualsCore(other, isCompareOptions: Bm25Options is null))
         {
             return false;
         }
@@ -114,8 +116,9 @@ public sealed class DocumentInferenceObject : InferenceObject, IEquatable<Infere
             hashCode.Add(Bm25Options);
         }
 
+        // We compute Options hash code only if this instance does not have Bm25Options defined
         return HashCode.Combine(
-            GetHashCodeCore(),
+            GetHashCodeCore(isComputeOptionsHashCode: Bm25Options is null),
             hashCode.ToHashCode());
     }
 }

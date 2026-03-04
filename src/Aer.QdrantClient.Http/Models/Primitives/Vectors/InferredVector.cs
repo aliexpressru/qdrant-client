@@ -81,6 +81,13 @@ public sealed class InferredVector : VectorBase, IEquatable<VectorBase>, IEquata
         writer.Write("}}");
     }
 
+    /// <summary>
+    /// Implicitly converts an inference object to an inferred vector instance.
+    /// </summary>
+    /// <param name="inferenceObject">The inference object to create vector from.</param>
+    public static implicit operator InferredVector(InferenceObject inferenceObject) =>
+        new(inferenceObject);
+
     /// <inheritdoc/>
     public override bool Equals(VectorBase other)
     {

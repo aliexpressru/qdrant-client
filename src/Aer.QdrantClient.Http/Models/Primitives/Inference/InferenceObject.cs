@@ -123,7 +123,10 @@ public abstract class InferenceObject
         writer.Write(JsonSerializer.Serialize(Options, JsonSerializerConstants.DefaultSerializerOptions));
     }
 
-    private protected bool EqualsCore(InferenceObject other)
+    /// <inheritdoc/>
+    public abstract override bool Equals(object other);
+
+    private protected bool EqualsCore(InferenceObject other, bool isCompareOptions = true)
     {
         if (other is null)
         {
@@ -140,36 +143,39 @@ public abstract class InferenceObject
             return false;
         }
 
-        if (Options == null && other.Options == null)
+        if (isCompareOptions)
         {
-            return true;
-        }
+            if (Options == null && other.Options == null)
+            {
+                return true;
+            }
 
-        if (Options == null && other.Options != null)
-        {
-            return false;
-        }
-
-        if (Options.Count == 0 && other.Options.Count == 0)
-        {
-            return true;
-        }
-
-        if (Options.Count != other.Options.Count)
-        {
-            return false;
-        }
-
-        foreach (var option in Options)
-        {
-            if (!other.Options.TryGetValue(option.Key, out var otherValue))
+            if (Options == null && other.Options != null)
             {
                 return false;
             }
 
-            if (!otherValue.Equals(option.Value))
+            if (Options.Count == 0 && other.Options.Count == 0)
+            {
+                return true;
+            }
+
+            if (Options.Count != other.Options.Count)
             {
                 return false;
+            }
+
+            foreach (var option in Options)
+            {
+                if (!other.Options.TryGetValue(option.Key, out var otherValue))
+                {
+                    return false;
+                }
+
+                if (!otherValue.Equals(option.Value))
+                {
+                    return false;
+                }
             }
         }
 
@@ -177,20 +183,22 @@ public abstract class InferenceObject
     }
 
     /// <inheritdoc/>
-    public abstract override bool Equals(object other);
-
-    /// <inheritdoc/>
     public abstract override int GetHashCode();
 
-    private protected int GetHashCodeCore()
+    private protected int GetHashCodeCore(bool isComputeOptionsHashCode = true)
     {
         HashCode hashCode = new();
 
         hashCode.Add(Model);
 
-        if (Options is not null)
+        if (isComputeOptionsHashCode
+            && Options is not null)
         {
-            hashCode.Add(Options);
+            foreach (var optionKey in Options.Keys.OrderBy(k => k))
+            {
+                hashCode.Add(optionKey, StringComparer.Ordinal);
+                hashCode.Add(Options[optionKey]);
+            }
         }
 
         return hashCode.ToHashCode();

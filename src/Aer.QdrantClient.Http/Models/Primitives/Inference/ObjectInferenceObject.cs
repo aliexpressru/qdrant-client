@@ -70,7 +70,7 @@ public sealed class ObjectInferenceObject : InferenceObject, IEquatable<Inferenc
     /// <inheritdoc/>
     public override bool Equals(object obj)
     {
-        return obj is ImageInferenceObject o && Equals(o);
+        return obj is ObjectInferenceObject o && Equals(o);
     }
 
     /// <inheritdoc/>

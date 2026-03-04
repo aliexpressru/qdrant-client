@@ -1,3 +1,5 @@
+using Aer.QdrantClient.Http.Models.Primitives.Inference;
+using MoreLinq.Extensions;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
@@ -230,6 +232,13 @@ public abstract class VectorBase : IEquatable<VectorBase>
             {
                 Vectors = multiVectorComponentVectors
             };
+
+    /// <summary>
+    /// Implicitly converts an inference object to an inferred vector instance.
+    /// </summary>
+    /// <param name="inferenceObject">The inference object to create vector from.</param>
+    public static implicit operator VectorBase(InferenceObject inferenceObject) =>
+        new InferredVector(inferenceObject);
 
     #endregion
 

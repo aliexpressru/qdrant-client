@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Models.Primitives.Inference;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
@@ -480,6 +481,158 @@ internal class VectorTests : QdrantTestsBase
 
         namedVectors.GetHashCode().Should().Be(namedVectorsEqual.GetHashCode());
     }
+
+    [Test]
+    public void InferredVectorEqualityMembers()
+    {
+        InferredVector imageVector = InferenceObject.CreateFromImage(
+            "test",
+            "test-model",
+            new()
+            {
+                ["api-key"] = "test"
+            }
+        );
+
+        InferredVector imageVectorEqual = InferenceObject.CreateFromImage(
+            "test",
+            "test-model",
+            new()
+            {
+                ["api-key"] = "test"
+            }
+        );
+
+        InferredVector imageVectorNotEqual = InferenceObject.CreateFromImage(
+            "test",
+            "test-model",
+            new()
+            {
+                ["api-key"] = "test",
+                ["some-other-key"] = "some-value" // Difference
+            }
+        );
+
+        InferredVector documentVector = InferenceObject.CreateFromDocument(
+            "Test text",
+            "test-model",
+            options: new()
+            {
+                ["api-key"] = "test"
+            },
+            bm25Options: new()
+            {
+                B = 10,
+                K = 10,
+                Tokenizer = FullTextIndexTokenizerType.Prefix,
+                Stemmer = FullTextIndexStemmingAlgorithm.CreateSnowball(SnowballStemmerLanguage.English),
+                Language = "English",
+                AsciiFolding = true,
+                AvgLen = 10,
+                MaxTokenLen = 10,
+                MinTokenLen = 10,
+                Lowercase = true
+            }
+        );
+
+        InferredVector documentVectorEqual = InferenceObject.CreateFromDocument(
+            "Test text",
+            "test-model",
+            options: new()
+            {
+                ["api-key"] = "test",
+                ["some-other-key"] = "some-value" // Difference but since both vectors have bm25Options we should ignore comparing Options components
+            },
+            bm25Options: new()
+            {
+                B = 10,
+                K = 10,
+                Tokenizer = FullTextIndexTokenizerType.Prefix,
+                Stemmer = FullTextIndexStemmingAlgorithm.CreateSnowball(SnowballStemmerLanguage.English),
+                Language = "English",
+                AsciiFolding = true,
+                AvgLen = 10,
+                MaxTokenLen = 10,
+                MinTokenLen = 10,
+                Lowercase = true
+            }
+        );
+
+        InferredVector documentVectorNotEqual = InferenceObject.CreateFromDocument(
+            "Test text",
+            "test-model",
+            options: new()
+            {
+                ["api-key"] = "test" // Again, not comparing Options since Bm25 exist
+            },
+            bm25Options: new()
+            {
+                B = 10,
+                K = 10,
+                Tokenizer = FullTextIndexTokenizerType.Prefix,
+                Stemmer = FullTextIndexStemmingAlgorithm.CreateSnowball(SnowballStemmerLanguage.Italian), // Difference
+                Language = "English",
+                AsciiFolding = true,
+                AvgLen = 10,
+                MaxTokenLen = 10,
+                MinTokenLen = 10,
+                Lowercase = true
+            }
+        );
+
+        InferredVector objectVector = InferenceObject.CreateFromObject(
+            new TestObject(1), // using records since they implement equality members
+            "test-model",
+            new()
+            {
+                ["api-key"] = "test"
+            }
+        );
+
+        InferredVector objectVectorEqual = InferenceObject.CreateFromObject(
+            new TestObject(1),
+            "test-model",
+            new()
+            {
+                ["api-key"] = "test"
+            }
+        );
+
+        InferredVector objectVectorNotEqual = InferenceObject.CreateFromObject(
+            new TestObject(1),
+            "test-model",
+            new()
+            {
+                ["api-key"] = "test1" // Difference
+            }
+        );
+
+        imageVector.Equals(imageVector).Should().BeTrue();
+        imageVector.Equals(imageVectorEqual).Should().BeTrue();
+        imageVector.Equals(imageVectorNotEqual).Should().BeFalse();
+        imageVector.Equals((object)imageVectorEqual).Should().BeTrue();
+        imageVector.Equals((object)imageVectorNotEqual).Should().BeFalse();
+
+        imageVector.GetHashCode().Should().Be(imageVectorEqual.GetHashCode());
+
+        documentVector.Equals(documentVector).Should().BeTrue();
+        documentVector.Equals(documentVectorEqual).Should().BeTrue();
+        documentVector.Equals(documentVectorNotEqual).Should().BeFalse();
+        documentVector.Equals((object)documentVectorEqual).Should().BeTrue();
+        documentVector.Equals((object)documentVectorNotEqual).Should().BeFalse();
+
+        documentVector.GetHashCode().Should().Be(documentVectorEqual.GetHashCode());
+
+        objectVector.Equals(objectVector).Should().BeTrue();
+        objectVector.Equals(objectVectorEqual).Should().BeTrue();
+        objectVector.Equals(objectVectorNotEqual).Should().BeFalse();
+        objectVector.Equals((object)objectVectorEqual).Should().BeTrue();
+        objectVector.Equals((object)objectVectorNotEqual).Should().BeFalse();
+
+        objectVector.GetHashCode().Should().Be(objectVectorEqual.GetHashCode());
+    }
+
+    private record TestObject(int A);
 
     private static void AssertVectorStreamsContainsString(VectorBase vector, string expectedString)
     {
