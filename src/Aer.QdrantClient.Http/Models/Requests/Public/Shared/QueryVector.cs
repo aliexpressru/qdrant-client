@@ -68,6 +68,13 @@ public abstract class QueryVector
         new SparseQueryVector((SparseVector)sparseVectorComponents);
 
     /// <summary>
+    /// Implicitly converts inference object to an instance of <see cref="QueryVector"/>.
+    /// </summary>
+    /// <param name="inferenceObject">The value to convert.</param>
+    public static implicit operator QueryVector(InferenceObject inferenceObject) =>
+        new InferredQueryVector(inferenceObject);
+
+    /// <summary>
     /// Implicitly converts an instance of <see cref="VectorBase"/> to an instance of <see cref="QueryVector"/>.
     /// </summary>
     /// <param name="vector">The value to convert.</param>

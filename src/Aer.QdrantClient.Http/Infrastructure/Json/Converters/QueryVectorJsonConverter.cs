@@ -7,6 +7,11 @@ namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 internal sealed class QueryVectorJsonConverter : JsonConverter<QueryVector>
 {
+    private static readonly JsonSerializerOptions _serializerOptions =
+        JsonSerializerConstants.CreateSerializerOptions(
+            new InferenceObjectJsonConverter()
+        );
+
     public override QueryVector Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
         throw new NotSupportedException($"Reading {nameof(QueryVector)} instances is not supported");
 
@@ -19,12 +24,12 @@ internal sealed class QueryVectorJsonConverter : JsonConverter<QueryVector>
 
                 return;
             case QueryVector.SparseQueryVector sv:
-                JsonSerializer.Serialize(writer, sv.Vector, JsonSerializerConstants.DefaultIndentedSerializerOptions);
+                JsonSerializer.Serialize(writer, sv.Vector, JsonSerializerConstants.DefaultSerializerOptions);
 
                 return;
 
             case QueryVector.InferredQueryVector iv:
-                JsonSerializer.Serialize(writer, iv.InferenceObject, JsonSerializerConstants.DefaultIndentedSerializerOptions);
+                JsonSerializer.Serialize(writer, iv.InferenceObject, options ?? _serializerOptions);
 
                 return;
 

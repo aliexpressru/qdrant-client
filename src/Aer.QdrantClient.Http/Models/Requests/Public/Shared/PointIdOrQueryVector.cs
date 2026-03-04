@@ -1,5 +1,6 @@
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Primitives.Inference;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
@@ -65,6 +66,12 @@ public sealed class PointIdOrQueryVector
     /// </summary>
     /// <param name="queryVector">The query vector to convert.</param>
     public static implicit operator PointIdOrQueryVector(QueryVector queryVector) => new(queryVector);
+
+    /// <summary>
+    /// Implicitly converts <see cref="InferenceObject"/> to <see cref="PointIdOrQueryVector"/>.
+    /// </summary>
+    /// <param name="inferenceObject">The inference object to convert.</param>
+    public static implicit operator PointIdOrQueryVector(InferenceObject inferenceObject) => new(inferenceObject);
 
     /// <summary>
     /// Implicitly converts <see cref="float"/> dense vector components array to <see cref="PointIdOrQueryVector"/>.

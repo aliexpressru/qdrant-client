@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives.Inference;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -16,6 +17,7 @@ public sealed class InferredVector : VectorBase, IEquatable<VectorBase>, IEquata
     /// <summary>
     /// Represents an inference object from which a vector value will be obtained.
     /// </summary>
+    [JsonConverter(typeof(InferenceObjectJsonConverter))]
     public InferenceObject InferenceObject { get; }
 
     /// <inheritdoc/>

@@ -1,7 +1,7 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -24,12 +24,12 @@ internal sealed class SearchVectorJsonConverter : JsonConverter<SearchVector>
                 return;
 
             case SearchVector.SparseSearchVector usv:
-                JsonSerializer.Serialize(writer, usv.Vector, JsonSerializerConstants.DefaultIndentedSerializerOptions);
+                JsonSerializer.Serialize(writer, usv.Vector, JsonSerializerConstants.DefaultSerializerOptions);
 
                 return;
 
             case SearchVector.NamedSparseSearchVector nsv:
-                JsonSerializer.Serialize(writer, nsv, JsonSerializerConstants.DefaultIndentedSerializerOptions);
+                JsonSerializer.Serialize(writer, nsv, JsonSerializerConstants.DefaultSerializerOptions);
 
                 return;
 

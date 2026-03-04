@@ -2,6 +2,7 @@ using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Primitives.Inference;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
@@ -78,6 +79,70 @@ internal partial class PointsCrudTests
         readTestPayload.Integer.Should().Be(testPayload.Integer);
         readTestPayload.FloatingPointNumber.Should().Be(testPayload.FloatingPointNumber);
         readTestPayload.Text.Should().Be(testPayload.Text);
+    }
+
+    [Test]
+    public async Task UpsertPoint_InferredVector()
+    {
+        // Since we don't have an inference service URL configured
+        // We use this as a simple smoke test.
+        // If the request model is invalid - we should get validation error
+        // But if it is valid ve get QdrantCommunicationException with the message that inference service URL is not configured
+
+        var vectorSize = 10U;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                vectorSize,
+                isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var testPointId = PointId.NewGuid();
+
+        VectorBase testVector = InferenceObject.CreateFromDocument(
+            "test",
+            "test",
+            options: new()
+            {
+                ["api-key"] = "test",
+                ["some-other-value"] = "test2",
+            },
+            bm25Options: new()
+            {
+                B = 10,
+                K = 10,
+                Tokenizer = FullTextIndexTokenizerType.Prefix,
+                Stemmer = FullTextIndexStemmingAlgorithm.CreateSnowball(SnowballStemmerLanguage.English),
+                Language = "English",
+                AsciiFolding = true,
+                AvgLen = 10,
+                MaxTokenLen = 10,
+                MinTokenLen = 10,
+                Lowercase = true
+            }
+        );
+
+        TestPayload testPayload = "test";
+
+        var upsertPointsAct
+            = async () => await _qdrantHttpClient.UpsertPoints(
+                TestCollectionName,
+                new UpsertPointsRequest()
+                {
+                    Points =
+                    [
+                        new(testPointId, testVector, testPayload)
+                    ]
+                },
+                CancellationToken.None);
+
+        await upsertPointsAct.Should().ThrowAsync<QdrantCommunicationException>()
+            .Where(e => e.Message.Contains("InferenceService URL not configured"));
     }
 
     [Test]

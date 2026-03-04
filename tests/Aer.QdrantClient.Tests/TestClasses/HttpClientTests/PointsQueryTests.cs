@@ -1,7 +1,9 @@
 using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Formulas.Builders;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Primitives.Inference;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints.RelevanceFeedback;
@@ -60,6 +62,58 @@ internal class PointsQueryTests : QdrantTestsBase
         nearestPointsResponse.Status.IsSuccess.Should().BeFalse();
         nearestPointsResponse.Status.GetErrorMessage().Should().Contain(
             "A query is needed to merge the prefetches. Can't have prefetches without defining a query.");
+    }
+
+    [Test]
+    public async Task FindNearestPoints_InferredVector()
+    {
+        // Since we don't have an inference service URL configured
+        // We use this as a simple smoke test.
+        // If the request model is invalid - we should get validation error
+        // But if it is valid ve get QdrantCommunicationException with the message that inference service URL is not configured
+
+        var (_, upsertPointsByPointIds, _) =
+            await PrepareCollection(
+                _qdrantHttpClient,
+                TestCollectionName);
+
+        var nearestPointsByDocumentVectorAct = async () => await _qdrantHttpClient.QueryPoints(
+            TestCollectionName,
+            new QueryPointsRequest(
+                PointsQuery.CreateFindNearestPointsQuery(
+                    InferenceObject.CreateFromDocument(
+                        "test",
+                        "test",
+                        options: new()
+                        {
+                            ["api-key"] = "test",
+                            ["some-other-value"] = "test2",
+                        },
+                        bm25Options: new()
+                        {
+                            B = 10,
+                            K = 10,
+                            Tokenizer = FullTextIndexTokenizerType.Prefix,
+                            Stemmer = FullTextIndexStemmingAlgorithm.CreateSnowball(SnowballStemmerLanguage.English),
+                            Language = "English",
+                            AsciiFolding = true,
+                            AvgLen = 10,
+                            MaxTokenLen = 10,
+                            MinTokenLen = 10,
+                            Lowercase = true
+                        }
+                    )
+                )
+            )
+            {
+                WithPayload = true,
+                WithVector = true,
+                Limit = 2
+            },
+            CancellationToken.None);
+
+        await nearestPointsByDocumentVectorAct.Should().ThrowAsync<QdrantCommunicationException>()
+            .Where(e => e.Message.Contains("InferenceService URL not configured"));
     }
 
     [Test]

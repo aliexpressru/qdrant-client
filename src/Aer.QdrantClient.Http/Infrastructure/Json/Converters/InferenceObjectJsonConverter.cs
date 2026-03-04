@@ -8,6 +8,11 @@ namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 internal class InferenceObjectJsonConverter : JsonConverter<InferenceObject>
 {
+    private static readonly JsonSerializerOptions _serializerOptions =
+        JsonSerializerConstants.CreateSerializerOptions(
+            new FullTextIndexStemmingAlgorithmJsonConverter()
+        );
+
     public override InferenceObject Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
     throw new NotSupportedException($"Reading {typeof(InferenceObject)} instances is not supported");
 
@@ -41,7 +46,7 @@ internal class InferenceObjectJsonConverter : JsonConverter<InferenceObject>
                         JsonSerializer.Serialize(
                         writer,
                         optionsObject,
-                        JsonSerializerConstants.DefaultSerializerOptions);
+                        _serializerOptions);
                     }
                 }
 

@@ -10,6 +10,11 @@ namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 internal sealed class VectorJsonConverter : JsonConverter<VectorBase>
 {
+    private static readonly JsonSerializerOptions _serializerOptions =
+        JsonSerializerConstants.CreateSerializerOptions(
+            new InferenceObjectJsonConverter()
+        );
+
     public override VectorBase Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         switch (reader.TokenType)
@@ -150,6 +155,10 @@ internal sealed class VectorJsonConverter : JsonConverter<VectorBase>
                     }
                 }
 
+                return;
+
+            case InferredVector iv:
+                JsonSerializer.Serialize(writer, iv.InferenceObject, _serializerOptions);
                 return;
 
             default:
