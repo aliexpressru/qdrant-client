@@ -237,8 +237,8 @@ internal class CollectionOptimizerTests : QdrantTestsBase
 
         progress = finishedCollectionOptimizationProgressResponse.Result;
 
-        progress.Running.Length.Should().BeGreaterThanOrEqualTo(0);
-        progress.Completed.Length.Should().NotBe(0);
+        progress.Running.Length.Should().Be(0, $"Running optimizations {progress.Running.Length}");
+        progress.Completed.Length.Should().NotBe(0, $"Completed optimizations {progress.Completed.Length}");
 
         var completedOptimisation = progress.Completed.First();
 
