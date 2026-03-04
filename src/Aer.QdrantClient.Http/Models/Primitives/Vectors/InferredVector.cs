@@ -55,11 +55,9 @@ public sealed class InferredVector : VectorBase, IEquatable<VectorBase>, IEquata
 
         sb.AppendLine("{");
 
-        sb.AppendLine("\"InferenceObject\": {");
+        sb.AppendLine("\"InferenceObject\":");
 
         sb.AppendLine(InferenceObject.ToString());
-
-        sb.AppendLine("}");
 
         sb.AppendLine("}");
 
@@ -74,11 +72,15 @@ public sealed class InferredVector : VectorBase, IEquatable<VectorBase>, IEquata
             throw new ArgumentNullException(nameof(writer));
         }
 
-        writer.Write("{\"InferenceObject\": {");
+        writer.Write("{\"InferenceObject\":");
+
+        writer.Flush();
 
         InferenceObject.WriteToStream(writer);
 
-        writer.Write("}}");
+        writer.Flush();
+
+        writer.Write("}");
     }
 
     /// <summary>

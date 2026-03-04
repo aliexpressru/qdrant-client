@@ -1,6 +1,5 @@
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -30,41 +29,12 @@ public sealed class DocumentInferenceObject : InferenceObject, IEquatable<Infere
     public Bm25Config Bm25Options { get; init; }
 
     /// <inheritdoc/>
-    public override string ToString()
-    {
-        StringBuilder sb = new();
-
-        sb.AppendLine($$"""
-            {
-            Text: {{Text}}
-            """);
-
-        sb.AppendLine("Bm25Options:");
-
-        sb.AppendLine(JsonSerializer.Serialize(Bm25Options, _serializerOptions));
-
-        sb.AppendLine(ToStringCore());
-
-        sb.Append('}');
-
-        return sb.ToString();
-    }
+    public override string ToString() => JsonSerializer.Serialize(this, _serializerOptions);
 
     /// <inheritdoc/>
     public override void WriteToStream(StreamWriter writer)
     {
-        writer.WriteLine($$"""
-            {
-            Text: {{Text}}
-            """);
-
-        writer.WriteLine("Bm25Options:");
-
-        writer.WriteLine(JsonSerializer.Serialize(Bm25Options, _serializerOptions));
-
-        WriteToStreamCore(writer);
-
-        writer.Write('}');
+        JsonSerializer.Serialize(writer.BaseStream, this, _serializerOptions);
     }
 
     /// <inheritdoc/>

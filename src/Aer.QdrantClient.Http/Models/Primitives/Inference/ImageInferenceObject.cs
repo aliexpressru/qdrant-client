@@ -1,4 +1,5 @@
-using System.Text;
+using Aer.QdrantClient.Http.Infrastructure.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Inference;
@@ -18,33 +19,12 @@ public sealed class ImageInferenceObject : InferenceObject, IEquatable<Inference
     public required string Image { get; init; }
 
     /// <inheritdoc/>
-    public override string ToString()
-    {
-        StringBuilder sb = new();
-
-        sb.AppendLine($$"""
-            {
-            Image: {{Image}}
-            """);
-
-        sb.AppendLine(ToStringCore());
-
-        sb.Append('}');
-
-        return sb.ToString();
-    }
+    public override string ToString() => JsonSerializer.Serialize(this, JsonSerializerConstants.DefaultSerializerOptions);
 
     /// <inheritdoc/>
     public override void WriteToStream(StreamWriter writer)
     {
-        writer.WriteLine($$"""
-            {
-            Image: {{Image}}
-            """);
-
-        WriteToStreamCore(writer);
-
-        writer.Write('}');
+        JsonSerializer.Serialize(writer.BaseStream, this, JsonSerializerConstants.DefaultSerializerOptions);
     }
 
     /// <inheritdoc/>

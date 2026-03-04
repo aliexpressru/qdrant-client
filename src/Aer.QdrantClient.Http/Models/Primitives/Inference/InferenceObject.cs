@@ -1,6 +1,3 @@
-using Aer.QdrantClient.Http.Infrastructure.Json;
-using System.Text;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Inference;
@@ -85,43 +82,11 @@ public abstract class InferenceObject
     /// <inheritdoc/>
     public abstract override string ToString();
 
-    private protected string ToStringCore()
-    {
-        StringBuilder sb = new();
-
-        sb.AppendLine($"Model: \"{Model}\"");
-
-        if (Options is null or { Count: 0 })
-        {
-            return sb.ToString();
-        }
-
-        sb.AppendLine("Options:");
-
-        sb.Append(JsonSerializer.Serialize(Options, JsonSerializerConstants.DefaultSerializerOptions));
-
-        return sb.ToString();
-    }
-
     /// <summary>
     /// Writes the string inference object representation to the provided <see cref="StreamWriter"/>.
     /// </summary>
     /// <param name="writer">The writer to write inference object representation to.</param>
     public abstract void WriteToStream(StreamWriter writer);
-
-    private protected void WriteToStreamCore(StreamWriter writer)
-    {
-        writer.WriteLine($"Model: \"{Model}\"");
-
-        if (Options is null or { Count: 0 })
-        {
-            return;
-        }
-
-        writer.WriteLine("Options:");
-
-        writer.Write(JsonSerializer.Serialize(Options, JsonSerializerConstants.DefaultSerializerOptions));
-    }
 
     /// <inheritdoc/>
     public abstract override bool Equals(object other);

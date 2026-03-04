@@ -1,4 +1,5 @@
-using System.Text;
+using Aer.QdrantClient.Http.Infrastructure.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Inference;
@@ -19,33 +20,12 @@ public sealed class ObjectInferenceObject : InferenceObject, IEquatable<Inferenc
     public required object Object { get; init; }
 
     /// <inheritdoc/>
-    public override string ToString()
-    {
-        StringBuilder sb = new();
-
-        sb.AppendLine($$"""
-            {
-            Object: {{Object}}
-            """);
-
-        sb.AppendLine(ToStringCore());
-
-        sb.Append('}');
-
-        return sb.ToString();
-    }
+    public override string ToString() => JsonSerializer.Serialize(this, JsonSerializerConstants.DefaultSerializerOptions);
 
     /// <inheritdoc/>
     public override void WriteToStream(StreamWriter writer)
     {
-        writer.WriteLine($$"""
-            {
-            Object: {{Object}}
-            """);
-
-        WriteToStreamCore(writer);
-
-        writer.Write('}');
+        JsonSerializer.Serialize(writer.BaseStream, this, JsonSerializerConstants.DefaultSerializerOptions);
     }
 
     /// <inheritdoc/>
