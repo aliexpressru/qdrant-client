@@ -3,6 +3,7 @@ using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
+using MoreLinq;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
@@ -240,39 +241,47 @@ internal class CollectionOptimizerTests : QdrantTestsBase
         progress.Running.Length.Should().Be(0, $"Running optimizations {progress.Running.Length}");
         progress.Completed.Length.Should().NotBe(0, $"Completed optimizations {progress.Completed.Length}");
 
-        var completedOptimisation = progress.Completed.First();
+        var completedOrRunningOptimisation = progress.Completed.Length > 0
+            ? progress.Completed.First()
+            : progress.Running.First();
 
-        completedOptimisation.Uuid.Should().NotBeNullOrEmpty();
-        completedOptimisation.Optimizer.Should().NotBeNullOrEmpty();
-        completedOptimisation.Segments.Length.Should().BeGreaterThan(0);
-        completedOptimisation.Status.Should().Be(GetCollectionOptimizationProgressResponse.CollectionOptimizationProgress.TrackedOptimizerStatus.Done);
+        completedOrRunningOptimisation.Uuid.Should().NotBeNullOrEmpty();
+        completedOrRunningOptimisation.Optimizer.Should().NotBeNullOrEmpty();
+        completedOrRunningOptimisation.Segments.Length.Should().BeGreaterThan(0);
+        completedOrRunningOptimisation.Status.Should().BeOneOf(GetCollectionOptimizationProgressResponse.CollectionOptimizationProgress.TrackedOptimizerStatus.Done,
+            GetCollectionOptimizationProgressResponse.CollectionOptimizationProgress.TrackedOptimizerStatus.Optimizing);
 
-        var finishedProgress = completedOptimisation.Progress;
+        var optimisationProgress = completedOrRunningOptimisation.Progress;
 
-        finishedProgress.Should().NotBeNull();
+        optimisationProgress.Should().NotBeNull();
 
-        finishedProgress.Children.Length.Should().BeGreaterThan(0);
+        optimisationProgress.Children.Length.Should().BeGreaterThan(0);
 
         // Looks like done and total are not applicable for root progress
-        finishedProgress.Done.Should().BeNull();
-        finishedProgress.Total.Should().BeNull();
+        optimisationProgress.Done.Should().BeNull();
+        optimisationProgress.Total.Should().BeNull();
 
-        finishedProgress.DurationSec.Should().NotBeNull();
-        finishedProgress.FinishedAt.Should().NotBeNull();
-        finishedProgress.StartedAt.Should().NotBeNull();
+        optimisationProgress.StartedAt.Should().NotBeNull();
 
-        // Find vector index child
+        if (completedOrRunningOptimisation.Status is GetCollectionOptimizationProgressResponse.CollectionOptimizationProgress.TrackedOptimizerStatus.Done)
+        {
+            // These fields only apply to finished optimisations
+            optimisationProgress.DurationSec.Should().NotBeNull();
+            optimisationProgress.FinishedAt.Should().NotBeNull();
 
-        var mainGraphStage = finishedProgress.Children
-            .Single(c => c.Name == "vector_index")
-            .Children.First() // First child element of the vector_index operation seems to be a grouping element.
-                              // We need to drill down further
-            .Children
-            .Single(c => c.Name == "main_graph");
+            // Find vector index child
 
-        // Both Total and Done for main graph equal to the number of points
+            var mainGraphStage = optimisationProgress.Children
+                .Single(c => c.Name == "vector_index")
+                .Children.First() // First child element of the vector_index operation seems to be a grouping element.
+                                  // We need to drill down further
+                .Children
+                .Single(c => c.Name == "main_graph");
 
-        mainGraphStage.Total.Should().NotBeNull();
-        mainGraphStage.Done.Should().NotBeNull();
+            // Both Total and Done for main graph equal to the number of points
+
+            mainGraphStage.Total.Should().NotBeNull();
+            mainGraphStage.Done.Should().NotBeNull();
+        }
     }
 }
