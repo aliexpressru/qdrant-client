@@ -54,6 +54,10 @@ public partial interface IQdrantHttpClient
     /// <param name="isRangeEnabled">
     /// For <see cref="PayloadIndexedFieldType.Integer"/> index only. If <c>true</c> - support ranges filters. Default and if not set is <c>true</c>.
     /// </param>
+    /// <param name="isHnswEnabled">
+    /// Enable HNSW graph building for this payload field.
+    /// If <c>true</c>, builds additional HNSW links (Needs payload_m to be > 0). Default: <c>true</c>.
+    /// </param>
     /// 
     /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
@@ -74,6 +78,8 @@ public partial interface IQdrantHttpClient
 
         bool? isLookupEnabled = null,
         bool? isRangeEnabled = null,
+
+        bool? isHnswEnabled = null,
 
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
@@ -105,6 +111,10 @@ public partial interface IQdrantHttpClient
     /// If true, normalize tokens by folding accented characters to ASCII (e.g., “ação” -> “acao”).
     /// If not set defaults to <c>false</c>.
     /// </param>
+    /// <param name="isHnswEnabled">
+    /// Enable HNSW graph building for this payload field.
+    /// If <c>true</c>, builds additional HNSW links (Needs payload_m to be > 0). Default: <c>true</c>.
+    /// </param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
@@ -129,6 +139,8 @@ public partial interface IQdrantHttpClient
         FullTextIndexStopwords stopwords = null,
 
         bool? isAsciiFoldingEnabled = null,
+
+        bool? isHnswEnabled = null,
 
         bool isWaitForResult = false,
         uint retryCount = 3,

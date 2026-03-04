@@ -1,7 +1,8 @@
+using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
+using Aer.QdrantClient.Http.Models.Shared;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Aer.QdrantClient.Http.Exceptions;
-using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -54,7 +55,7 @@ internal sealed class QuantizationConfigurationJsonConverter : JsonConverter<Qua
             return;
         }
 
-        writer.WriteStartObject();
+        using (writer.WriteObject())
         {
             switch (value)
             {
@@ -81,6 +82,5 @@ internal sealed class QuantizationConfigurationJsonConverter : JsonConverter<Qua
                         "Unable to serialize Qdrant collection quantization configuration value");
             }
         }
-        writer.WriteEndObject();
     }
 }

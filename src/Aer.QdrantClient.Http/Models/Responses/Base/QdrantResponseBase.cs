@@ -1,7 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Responses.Base;
 
@@ -30,6 +31,21 @@ public abstract class QdrantResponseBase
     public UsageReport Usage { get; set; }
 
     /// <summary>
+    /// Ensures that the <see cref="Status"/> indicates successful response and returns.
+    /// Throws <see cref="QdrantUnsuccessfulResponseStatusException"/> if it does not.
+    /// </summary>
+    /// <exception cref="QdrantUnsuccessfulResponseStatusException">Occurs when <see cref="Status"/> does not indicate success.</exception>
+    public void EnsureSuccess()
+    {
+        if (Status.IsSuccess)
+        {
+            return;
+        }
+
+        throw new QdrantUnsuccessfulResponseStatusException(GetType(), Status);
+    }
+
+    /// <summary>
     /// Represents the resource usage report if <c>service.hardware_reporting</c> config setting is set to <c>true</c>.
     /// <c>null</c> if it is <c>false</c> or missing.
     /// </summary>
@@ -39,6 +55,11 @@ public abstract class QdrantResponseBase
         /// The hardware resources usage report. 
         /// </summary>
         public HardwareUsageReport Hardware { get; init; }
+
+        /// <summary>
+        /// The inference model resources usage report.
+        /// </summary>
+        public InferenceUsageReport Inference { get; init; }
 
         /// <summary>
         /// CPU usage to execute request.
@@ -134,6 +155,28 @@ public abstract class QdrantResponseBase
             /// Vector IO write operations.
             /// </summary>
             public long VectorIoWrite { get; init; }
+        }
+
+        /// <summary>
+        /// Represents AllowNullAttribute inference model usage report.
+        /// </summary>
+        public class InferenceUsageReport
+        {
+            /// <summary>
+            /// Model usage by model name.
+            /// </summary>
+            public Dictionary<string, ModelUsage> Models { get; init; }
+
+            /// <summary>
+            /// Represents a specific model usage report.
+            /// </summary>
+            public class ModelUsage
+            {
+                /// <summary>
+                /// The number of used tokens.
+                /// </summary>
+                public ulong Tokens { get; init; }
+            }
         }
     }
 }

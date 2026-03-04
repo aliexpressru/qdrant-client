@@ -1,6 +1,7 @@
-using System.Text.Json;
 using Aer.QdrantClient.Http.Filters.Introspection;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
@@ -16,30 +17,29 @@ internal sealed class FieldRangeDoubleCondition(
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
-        jsonWriter.WritePropertyName("range");
-        jsonWriter.WriteStartObject();
 
-        if (lt is not null)
+        using (jsonWriter.WriteObject("range"))
         {
-            jsonWriter.WriteNumber("lt", lt.Value);
-        }
+            if (lt is not null)
+            {
+                jsonWriter.WriteNumber("lt", lt.Value);
+            }
 
-        if (lte is not null)
-        {
-            jsonWriter.WriteNumber("lte", lte.Value);
-        }
+            if (lte is not null)
+            {
+                jsonWriter.WriteNumber("lte", lte.Value);
+            }
 
-        if (gt is not null)
-        {
-            jsonWriter.WriteNumber("gt", gt.Value);
-        }
+            if (gt is not null)
+            {
+                jsonWriter.WriteNumber("gt", gt.Value);
+            }
 
-        if (gte is not null)
-        {
-            jsonWriter.WriteNumber("gte", gte.Value);
+            if (gte is not null)
+            {
+                jsonWriter.WriteNumber("gte", gte.Value);
+            }
         }
-
-        jsonWriter.WriteEndObject();
     }
 
     internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldRangeDoubleCondition(this);

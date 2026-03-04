@@ -1,6 +1,6 @@
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using JsonConverter = System.Text.Json.Serialization.JsonConverter;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json;

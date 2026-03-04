@@ -1,10 +1,11 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Formulas;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
+using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints.RelevanceFeedback;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 
@@ -20,6 +21,7 @@ namespace Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 [JsonDerivedType(typeof(RrfQuery))]
 [JsonDerivedType(typeof(SampleQuery))]
 [JsonDerivedType(typeof(FormulaQuery))]
+[JsonDerivedType(typeof(RelevanceFeedbackQuery))]
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public abstract class PointsQuery
 {
@@ -178,14 +180,22 @@ public abstract class PointsQuery
     {
         public RrfParameters Rrf { get; }
 
-        internal RrfQuery(uint? k)
+        internal RrfQuery(
+            uint? k = null,
+            double[] weights = null)
         {
-            Rrf = new RrfParameters() { K = k };
+            Rrf = new RrfParameters()
+            {
+                K = k,
+                Weights = weights
+            };
         }
 
         internal sealed class RrfParameters
         {
-            public required uint? K { get; init; }
+            public uint? K { get; init; }
+
+            public double[] Weights { get; init; }
         }
     }
 
@@ -193,6 +203,30 @@ public abstract class PointsQuery
     {
         [SuppressMessage("ReSharper", "UnusedMember.Global", Justification = "Required for serialization")]
         public string Sample { get; } = "random";
+    }
+
+    internal sealed class RelevanceFeedbackQuery : PointsQuery
+    {
+        public RelevanceFeedbackQueryUnit RelevanceFeedback { get; init; }
+
+        internal sealed class RelevanceFeedbackQueryUnit
+        {
+            [JsonConverter(typeof(PointIdOrQueryVectorJsonConverter))]
+            public required PointIdOrQueryVector Target { get; init; }
+
+            public required IEnumerable<FeedbackExample> Feedback { get; init; }
+
+            [JsonConverter(typeof(FeedbackStrategyJsonConverter))]
+            public required FeedbackStrategy Strategy { get; init; }
+        }
+
+        internal sealed class FeedbackExample
+        {
+            [JsonConverter(typeof(PointIdOrQueryVectorJsonConverter))]
+            public required PointIdOrQueryVector Example { get; init; }
+
+            public required double Score { get; init; }
+        }
     }
 
     internal sealed class FormulaQuery : PointsQuery
@@ -275,7 +309,14 @@ public abstract class PointsQuery
     /// Creates a parametrized Reciprocal Rank Fusion query.
     /// </summary>
     /// <param name="k">K parameter for reciprocal rank fusion.</param>
-    public static PointsQuery CreateRrfQuery(uint? k) => new RrfQuery(k);
+    /// <param name="weights">
+    /// Weights for each prefetch source. Higher weight gives more influence on the final ranking.
+    /// If not specified, all prefetches are weighted equally.
+    /// The number of weights should match the number of prefetches.
+    /// Available as of v1.17.0
+    /// </param>
+    public static PointsQuery CreateRrfQuery(uint? k = null, double[] weights = null) =>
+        new RrfQuery(k, weights);
 
     /// <summary>
     /// Creates a "random sample" query.
@@ -292,6 +333,35 @@ public abstract class PointsQuery
     /// </param>
     public static PointsQuery CreateFormulaQuery(QdrantFormula formula, Dictionary<string, object> defaults = null) =>
         new FormulaQuery(formula, defaults);
+
+    /// <summary>
+    /// Creates a relevance feedback query.
+    /// </summary>
+    /// <param name="target">The relevance feedback target.</param>
+    /// <param name="feedbackExamples">
+    /// The relevance feedback example.
+    /// Each example should be a vector or a vector id or an inference object with corresponding relevance feedback score.
+    /// </param>
+    /// <param name="feedbackStrategy">The relevance feedback strategy.</param>
+    public static PointsQuery CreateRelevanceFeedback(
+        PointIdOrQueryVector target,
+        IEnumerable<(PointIdOrQueryVector Example, double Score)> feedbackExamples,
+        FeedbackStrategy feedbackStrategy)
+    {
+        return new RelevanceFeedbackQuery()
+        {
+            RelevanceFeedback = new RelevanceFeedbackQuery.RelevanceFeedbackQueryUnit()
+            {
+                Target = target,
+                Feedback = feedbackExamples.Select(e => new RelevanceFeedbackQuery.FeedbackExample()
+                {
+                    Example = e.Example,
+                    Score = e.Score
+                }),
+                Strategy = feedbackStrategy
+            }
+        };
+    }
 
     /// <summary>
     /// Implicitly converts query vector to an instance of <see cref="PointsQuery"/>.

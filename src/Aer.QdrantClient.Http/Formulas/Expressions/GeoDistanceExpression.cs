@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Formulas.Expressions;
@@ -9,29 +10,18 @@ internal sealed class GeoDistanceExpression(double originLongitude, double origi
 {
     public override void WriteExpressionJson(Utf8JsonWriter jsonWriter)
     {
-        jsonWriter.WriteStartObject();
+        using (jsonWriter.WriteObject())
         {
-            jsonWriter.WritePropertyName("geo_distance");
-
-            jsonWriter.WriteStartObject();
+            using (jsonWriter.WriteObject("geo_distance"))
             {
-                jsonWriter.WritePropertyName("origin");
-
-                jsonWriter.WriteStartObject();
+                using (jsonWriter.WriteObject("origin"))
                 {
-                    jsonWriter.WritePropertyName("lon");
-                    jsonWriter.WriteNumberValue(originLongitude);
-
-                    jsonWriter.WritePropertyName("lat");
-                    jsonWriter.WriteNumberValue(originLatitude);
+                    jsonWriter.WriteNumber("lon", originLongitude);
+                    jsonWriter.WriteNumber("lat", originLatitude);
                 }
-                jsonWriter.WriteEndObject();
 
-                jsonWriter.WritePropertyName("to");
-                jsonWriter.WriteStringValue(toPayloadFieldName);
+                jsonWriter.WriteString("to", toPayloadFieldName);
             }
-            jsonWriter.WriteEndObject();
         }
-        jsonWriter.WriteEndObject();
     }
 }

@@ -1,8 +1,8 @@
+using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Serialization;
-using Aer.QdrantClient.Http.Exceptions;
-using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 
 namespace Aer.QdrantClient.Http.Models.Primitives.Vectors;
 
@@ -35,6 +35,61 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
 
             throw new QdrantDefaultVectorNotFoundException(DefaultVectorName);
         }
+    }
+
+    /// <summary>
+    /// Creates a <see cref="NamedVectors"/> instance from provided sequence of vectors with names.
+    /// </summary>
+    /// <param name="vectors">The source vectors with names.</param>
+    public static NamedVectors Create(
+        params IEnumerable<KeyValuePair<string, VectorBase>> vectors)
+    {
+        if (vectors is null)
+        {
+            throw new ArgumentNullException(nameof(vectors));
+        }
+
+        NamedVectors ret = new()
+        {
+            Vectors = []
+        };
+
+        foreach (var (vectorName, vector) in vectors)
+        {
+            // If vectors param contains more than one vector with the same name - we fail
+            ret.Vectors.Add(vectorName, vector);
+        }
+
+        return ret;
+    }
+
+    /// <summary>
+    /// Creates a <see cref="NamedVectors"/> instance from provided single vector with name.
+    /// </summary>
+    /// <param name="vectorName">The source vector name.</param>
+    /// <param name="vector">The source vector.</param>
+    public static NamedVectors Create(string vectorName, VectorBase vector)
+    {
+        // We check only for null since empty string is a valid vector name
+        if (vectorName is null)
+        {
+            throw new ArgumentNullException(nameof(vectorName));
+        }
+
+        if (vector is null)
+        {
+            throw new ArgumentNullException(nameof(vector));
+        }
+
+        NamedVectors ret = new()
+        {
+            Vectors = new()
+            {
+                [vectorName] = vector
+            }
+        };
+
+        return ret;
     }
 
     /// <inheritdoc/>
@@ -113,97 +168,6 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
     }
 
     /// <inheritdoc/>
-    public override void WriteToStream(BinaryWriter writer)
-    {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
-        writer.Write('{');
-
-        writer.Write(Vectors.Count);
-
-        int vectorNumber = 0;
-        foreach (var (name, vector) in Vectors)
-        {
-            if (vectorNumber > 0)
-            {
-                writer.Write(',');
-            }
-
-            writer.Write($"\"{name}\":");
-
-            writer.Write(vector.VectorKind.ToString());
-
-            vector.WriteToStream(writer);
-
-            vectorNumber++;
-        }
-
-        writer.Write('}');
-    }
-
-    /// <summary>
-    /// Reads a <see cref="DenseVector"/> instance from a binary stream.
-    /// </summary>
-    /// <param name="reader">The reader to read vector from.</param>
-    public static VectorBase ReadFromStream(BinaryReader reader)
-    {
-        if (reader == null)
-        {
-            throw new ArgumentNullException(nameof(reader));
-        }
-
-        // "{"
-        reader.ReadChar();
-
-        int vectorCount = reader.ReadInt32();
-
-        var vectors = new Dictionary<string, VectorBase>(vectorCount);
-
-        for (int i = 0; i < vectorCount; i++)
-        {
-            if (i > 0)
-            {
-                // ","
-                reader.ReadChar();
-            }
-
-            // "\"name\":"
-            var namePart = reader.ReadString();
-
-            var name = namePart[1..^2]; // Remove quotes and colon
-
-            var vectorKindString = reader.ReadString();
-
-            if (!Enum.TryParse<VectorKind>(vectorKindString, out var vectorKind))
-            {
-                throw new InvalidOperationException($"Vector kind '{vectorKindString}' is not supported");
-            }
-
-            VectorBase vector = vectorKind switch
-            {
-                VectorKind.Dense => DenseVector.ReadFromStream(reader),
-                VectorKind.Sparse => SparseVector.ReadFromStream(reader),
-                VectorKind.Multi => MultiVector.ReadFromStream(reader),
-                VectorKind.Named => ReadFromStream(reader),
-                _ => throw new InvalidOperationException($"Vector kind '{vectorKind}' is not supported")
-            };
-
-            vectors.Add(name, vector);
-        }
-
-        // "}"
-        reader.ReadChar();
-
-        return new NamedVectors()
-        {
-            Vectors = vectors
-        };
-    }
-
-    /// <inheritdoc/>
     public override VectorBase this[string vectorName]
     {
         get {
@@ -251,7 +215,7 @@ public sealed class NamedVectors : VectorBase, IEquatable<VectorBase>, IEquatabl
         }
 
         return ReferenceEquals(this, obj)
-            || obj is NamedVectors other && Equals(other);
+            || (obj is NamedVectors other && Equals(other));
     }
 
     /// <inheritdoc/>

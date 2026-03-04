@@ -1,5 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Requests;
 
@@ -15,9 +15,11 @@ internal sealed class CreatePayloadIndexRequest
         bool onDisk,
         bool? isTenant,
         bool? isPrincipal,
-        
+
         bool? isLookupEnabled,
-        bool? isRangeEnabled)
+        bool? isRangeEnabled,
+
+        bool? isHnswEnabled)
     {
         /// <summary>
         /// The type of the indexed payload field.
@@ -36,10 +38,22 @@ internal sealed class CreatePayloadIndexRequest
 
         /// Set to <c>true</c> to enable principal index for specified payload field.
         public bool? IsPrincipal { get; } = isPrincipal;
-        
+
+        /// <summary>
+        /// If true - support direct lookups. Default is true.
+        /// </summary>
         public bool? Lookup { get; } = isLookupEnabled;
-        
+
+        /// <summary>
+        /// If true - support ranges filters. Default is true.
+        /// </summary>
         public bool? Range { get; } = isRangeEnabled;
+
+        /// <summary>
+        /// Enable HNSW graph building for this payload field.
+        /// If true, builds additional HNSW links (Need payload_m > 0). Default: true.
+        /// </summary>
+        public bool? EnableHnsw { get; } = isHnswEnabled;
     }
 
     /// <summary>
@@ -64,27 +78,39 @@ internal sealed class CreatePayloadIndexRequest
     /// The principal index is used to optimize storage for faster search,
     /// assuming that the search request is primarily filtered by the principal field.
     /// </param>
-    /// <param name="isLookupEnabled">For integer index only. If true - support direct lookups. Default and if not set is <c>true</c>.</param>
-    /// <param name="isRangeFilterEnabled">For integer index only. If true - support ranges filters. Default and if not set is <c>true</c>.</param>
+    /// <param name="isLookupEnabled">
+    /// For integer index only. If true - support direct lookups. Default and if not set is <c>true</c>.
+    /// </param>
+    /// <param name="isRangeFilterEnabled">
+    /// For integer index only. If true - support ranges filters. Default and if not set is <c>true</c>.
+    /// </param>
+    /// <param name="isHnswEnabled">Enable HNSW graph building for this payload field.
+    /// If <c>true</c>, builds additional HNSW links (Needs payload_m to be > 0). Default: <c>true</c>.
+    /// </param>
     public CreatePayloadIndexRequest(
         string payloadFieldName,
         PayloadIndexedFieldType payloadFieldType,
         bool onDisk,
         bool? isTenant = null,
         bool? isPrincipal = null,
+
         bool? isLookupEnabled = null,
-        bool? isRangeFilterEnabled = null)
+        bool? isRangeFilterEnabled = null,
+
+        bool? isHnswEnabled = null)
     {
         FieldName = payloadFieldName;
         FieldSchema = new FieldSchemaUnit(
             type: payloadFieldType.ToString().ToLowerInvariant(),
             onDisk: onDisk,
-            
+
             isTenant: isTenant,
             isPrincipal: isPrincipal,
-            
+
             isLookupEnabled: isLookupEnabled,
-            isRangeEnabled: isRangeFilterEnabled
+            isRangeEnabled: isRangeFilterEnabled,
+
+            isHnswEnabled: isHnswEnabled
         );
     }
 }

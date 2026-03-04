@@ -1,4 +1,5 @@
 using Aer.QdrantClient.Http.Filters.Introspection;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
@@ -65,19 +66,16 @@ internal sealed class MustNotCondition : FilterGroupConditionBase
 
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
-        jsonWriter.WritePropertyName("must_not");
-        jsonWriter.WriteStartArray();
-
-        foreach (var condition in Conditions)
+        using (jsonWriter.WriteArray("must_not"))
         {
-            jsonWriter.WriteStartObject();
-
-            condition.WriteJson(jsonWriter);
-
-            jsonWriter.WriteEndObject();
+            foreach (var condition in Conditions)
+            {
+                using (jsonWriter.WriteObject())
+                {
+                    condition.WriteJson(jsonWriter);
+                }
+            }
         }
-
-        jsonWriter.WriteEndArray();
     }
 
     internal override void Accept(FilterConditionVisitor visitor)

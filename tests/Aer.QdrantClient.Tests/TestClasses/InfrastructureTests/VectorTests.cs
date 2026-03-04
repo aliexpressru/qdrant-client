@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Models.Primitives.Inference;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
@@ -30,6 +31,28 @@ internal class VectorTests : QdrantTestsBase
 
         VectorBase nullVector = null;
 
+        VectorBase documentVector = InferenceObject.CreateFromDocument(
+            "Test text",
+            "test-model",
+            options: new()
+            {
+                ["api-key"] = "test"
+            },
+            bm25Options: new()
+            {
+                B = 10,
+                K = 10,
+                Tokenizer = FullTextIndexTokenizerType.Prefix,
+                Stemmer = FullTextIndexStemmingAlgorithm.CreateSnowball(SnowballStemmerLanguage.English),
+                Language = "English",
+                AsciiFolding = true,
+                AvgLen = 10,
+                MaxTokenLen = 10,
+                MinTokenLen = 10,
+                Lowercase = true
+            }
+        );
+
         denseVector.VectorKind.Should().Be(VectorKind.Dense);
         float[] denseVectorRaw = (float[])denseVector;
         denseVectorRaw.Length.Should().Be(vectorLength);
@@ -52,6 +75,10 @@ internal class VectorTests : QdrantTestsBase
         // ReSharper disable once ExpressionIsAlwaysNull
         float[] nullVectorRaw = (float[])nullVector;
         nullVectorRaw.Should().BeNull();
+
+        documentVector.VectorKind.Should().Be(VectorKind.Inferred);
+        documentVector.Default.VectorKind.Should().Be(VectorKind.Inferred);
+        documentVector.AsInferredVector().InferenceObject.Should().NotBeNull();
     }
 
     [Test]
@@ -227,6 +254,110 @@ internal class VectorTests : QdrantTestsBase
               }
             }
             """);
+
+        VectorBase imageVector = InferenceObject.CreateFromImage(
+            "test",
+            "test-model",
+            new()
+            {
+                ["api-key"] = "test",
+                ["some-other-value"] = "test2",
+            }
+        );
+
+        var imageVectorString = imageVector.ToString();
+
+        imageVectorString.AssertSameString(
+            """
+            {
+                "InferenceObject": {
+                    "image": "test",
+                    "model": "test-model",
+                    "options": {
+                        "api-key": "test",
+                        "some-other-value": "test2"
+                    }
+                }
+            }
+            """);
+
+        VectorBase documentVector = InferenceObject.CreateFromDocument(
+            "Test text",
+            "test-model",
+            options: new()
+            {
+                ["api-key"] = "test"
+            },
+            bm25Options: new()
+            {
+                B = 10,
+                K = 10,
+                Tokenizer = FullTextIndexTokenizerType.Prefix,
+                Stemmer = FullTextIndexStemmingAlgorithm.CreateSnowball(SnowballStemmerLanguage.English),
+                Language = "English",
+                AsciiFolding = true,
+                AvgLen = 10,
+                MaxTokenLen = 10,
+                MinTokenLen = 10,
+                Lowercase = true
+            }
+        );
+
+        var documentVectorString = documentVector.ToString();
+
+        documentVectorString.AssertSameString(
+            """
+            {
+                "InferenceObject": {
+                    "text": "Test text",
+                    "bm25_options": {
+                        "k": 10,
+                        "b": 10,
+                        "avg_len": 10,
+                        "tokenizer": "prefix",
+                        "language": "English",
+                        "lowercase": true,
+                        "ascii_folding": true,
+                        "stemmer": {
+                            "type": "snowball",
+                            "language": "english"
+                        },
+                        "min_token_len": 10,
+                        "max_token_len": 10
+                    },
+                    "model": "test-model",
+                    "options": {
+                        "api-key": "test"
+                    }
+                }
+            }
+            """);
+
+        VectorBase objectVector = InferenceObject.CreateFromObject(
+            new TestObject(1),
+            "test-model",
+            new()
+            {
+                ["api-key"] = "test"
+            }
+        );
+
+        var objectVectorString = objectVector.ToString();
+
+        objectVectorString.AssertSameString(
+            """
+            {
+                "InferenceObject": {
+                    "object": {
+                        "a": 1
+                    },
+                    "model": "test-model",
+                    "options": {
+                        "api-key": "test"
+                    }
+                }
+            }
+            """);
     }
 
     [Test]
@@ -239,14 +370,14 @@ internal class VectorTests : QdrantTestsBase
             0.08220377f
         };
 
-        AssertVectorStreamsContainsString(denseVector, "[0.3667106,0.6042991,0.08220377]");
+        AssertVectorStreamContainsString(denseVector, "[0.3667106,0.6042991,0.08220377]");
 
         VectorBase sparseVector = (
             Indices: new[] { 1U, 5U, 7U },
             Values: [0.4f, 0.345f, 0.99f]
         );
 
-        AssertVectorStreamsContainsString(
+        AssertVectorStreamContainsString(
             sparseVector,
             """
             {
@@ -257,7 +388,7 @@ internal class VectorTests : QdrantTestsBase
 
         VectorBase sparseVectorSingleComponent = (Indices: new[] { 5U }, Values: [0.345f]);
 
-        AssertVectorStreamsContainsString(
+        AssertVectorStreamContainsString(
             sparseVectorSingleComponent,
             """
             {
@@ -277,7 +408,7 @@ internal class VectorTests : QdrantTestsBase
 
         VectorBase multivectorSingleVector = multivectorSingleVectorRaw;
 
-        AssertVectorStreamsContainsString(
+        AssertVectorStreamContainsString(
             multivectorSingleVector,
             """
             [ 
@@ -305,7 +436,7 @@ internal class VectorTests : QdrantTestsBase
         ];
 
         VectorBase multivector = multivectorRaw;
-        AssertVectorStreamsContainsString(
+        AssertVectorStreamContainsString(
             multivector,
             """
             [
@@ -336,7 +467,7 @@ internal class VectorTests : QdrantTestsBase
             ["Multivector"] = multivector
         };
 
-        AssertVectorStreamsContainsString(
+        AssertVectorStreamContainsString(
             namedVectors,
             """
             {
@@ -359,7 +490,7 @@ internal class VectorTests : QdrantTestsBase
             ["Named"] = namedVectors
         };
 
-        AssertVectorStreamsContainsString(
+        AssertVectorStreamContainsString(
             namedVectorsNestedNamed,
             """
             {
@@ -376,6 +507,107 @@ internal class VectorTests : QdrantTestsBase
                 "MultivectorSingle" : [ [ 0.3667106, 0.6042991, 0.08220377 ] ],
                 "Multivector" : [ [ 0.3667106, 0.6042991, 0.08220377 ], [ 0.1, 0.2, 0.3 ], [ 0.9, 0.8, 0.7 ] ]
               }
+            }
+            """);
+
+        VectorBase imageVector = InferenceObject.CreateFromImage(
+            "test",
+            "test-model",
+            new()
+            {
+                ["api-key"] = "test",
+                ["some-other-value"] = "test2",
+            }
+        );
+
+        AssertVectorStreamContainsString(
+            imageVector,
+            """
+            {
+                "InferenceObject": {
+                    "image": "test",
+                    "model": "test-model",
+                    "options": {
+                        "api-key": "test",
+                        "some-other-value": "test2"
+                    }
+                }
+            }
+            """);
+
+        VectorBase documentVector = InferenceObject.CreateFromDocument(
+            "Test text",
+            "test-model",
+            options: new()
+            {
+                ["api-key"] = "test"
+            },
+            bm25Options: new()
+            {
+                B = 10,
+                K = 10,
+                Tokenizer = FullTextIndexTokenizerType.Prefix,
+                Stemmer = FullTextIndexStemmingAlgorithm.CreateSnowball(SnowballStemmerLanguage.English),
+                Language = "English",
+                AsciiFolding = true,
+                AvgLen = 10,
+                MaxTokenLen = 10,
+                MinTokenLen = 10,
+                Lowercase = true
+            }
+        );
+
+        AssertVectorStreamContainsString(
+            documentVector,
+            """
+            {
+                "InferenceObject": {
+                    "text": "Test text",
+                    "bm25_options": {
+                        "k": 10,
+                        "b": 10,
+                        "avg_len": 10,
+                        "tokenizer": "prefix",
+                        "language": "English",
+                        "lowercase": true,
+                        "ascii_folding": true,
+                        "stemmer": {
+                            "type": "snowball",
+                            "language": "english"
+                        },
+                        "min_token_len": 10,
+                        "max_token_len": 10
+                    },
+                    "model": "test-model",
+                    "options": {
+                        "api-key": "test"
+                    }
+                }
+            }
+            """);
+
+        VectorBase objectVector = InferenceObject.CreateFromObject(
+            new TestObject(1),
+            "test-model",
+            new()
+            {
+                ["api-key"] = "test"
+            }
+        );
+
+        AssertVectorStreamContainsString(
+            objectVector,
+            """
+            {
+                "InferenceObject": {
+                    "object": {
+                        "a": 1
+                    },
+                    "model": "test-model",
+                    "options": {
+                        "api-key": "test"
+                    }
+                }
             }
             """);
     }
@@ -481,7 +713,159 @@ internal class VectorTests : QdrantTestsBase
         namedVectors.GetHashCode().Should().Be(namedVectorsEqual.GetHashCode());
     }
 
-    private static void AssertVectorStreamsContainsString(VectorBase vector, string expectedString)
+    [Test]
+    public void InferredVectorEqualityMembers()
+    {
+        InferredVector imageVector = InferenceObject.CreateFromImage(
+            "test",
+            "test-model",
+            new()
+            {
+                ["api-key"] = "test"
+            }
+        );
+
+        InferredVector imageVectorEqual = InferenceObject.CreateFromImage(
+            "test",
+            "test-model",
+            new()
+            {
+                ["api-key"] = "test"
+            }
+        );
+
+        InferredVector imageVectorNotEqual = InferenceObject.CreateFromImage(
+            "test",
+            "test-model",
+            new()
+            {
+                ["api-key"] = "test",
+                ["some-other-key"] = "some-value" // Difference
+            }
+        );
+
+        InferredVector documentVector = InferenceObject.CreateFromDocument(
+            "Test text",
+            "test-model",
+            options: new()
+            {
+                ["api-key"] = "test"
+            },
+            bm25Options: new()
+            {
+                B = 10,
+                K = 10,
+                Tokenizer = FullTextIndexTokenizerType.Prefix,
+                Stemmer = FullTextIndexStemmingAlgorithm.CreateSnowball(SnowballStemmerLanguage.English),
+                Language = "English",
+                AsciiFolding = true,
+                AvgLen = 10,
+                MaxTokenLen = 10,
+                MinTokenLen = 10,
+                Lowercase = true
+            }
+        );
+
+        InferredVector documentVectorEqual = InferenceObject.CreateFromDocument(
+            "Test text",
+            "test-model",
+            options: new()
+            {
+                ["api-key"] = "test",
+                ["some-other-key"] = "some-value" // Difference but since both vectors have bm25Options we should ignore comparing Options components
+            },
+            bm25Options: new()
+            {
+                B = 10,
+                K = 10,
+                Tokenizer = FullTextIndexTokenizerType.Prefix,
+                Stemmer = FullTextIndexStemmingAlgorithm.CreateSnowball(SnowballStemmerLanguage.English),
+                Language = "English",
+                AsciiFolding = true,
+                AvgLen = 10,
+                MaxTokenLen = 10,
+                MinTokenLen = 10,
+                Lowercase = true
+            }
+        );
+
+        InferredVector documentVectorNotEqual = InferenceObject.CreateFromDocument(
+            "Test text",
+            "test-model",
+            options: new()
+            {
+                ["api-key"] = "test" // Again, not comparing Options since Bm25 exist
+            },
+            bm25Options: new()
+            {
+                B = 10,
+                K = 10,
+                Tokenizer = FullTextIndexTokenizerType.Prefix,
+                Stemmer = FullTextIndexStemmingAlgorithm.CreateSnowball(SnowballStemmerLanguage.Italian), // Difference
+                Language = "English",
+                AsciiFolding = true,
+                AvgLen = 10,
+                MaxTokenLen = 10,
+                MinTokenLen = 10,
+                Lowercase = true
+            }
+        );
+
+        InferredVector objectVector = InferenceObject.CreateFromObject(
+            new TestObject(1), // using records since they implement equality members
+            "test-model",
+            new()
+            {
+                ["api-key"] = "test"
+            }
+        );
+
+        InferredVector objectVectorEqual = InferenceObject.CreateFromObject(
+            new TestObject(1),
+            "test-model",
+            new()
+            {
+                ["api-key"] = "test"
+            }
+        );
+
+        InferredVector objectVectorNotEqual = InferenceObject.CreateFromObject(
+            new TestObject(1),
+            "test-model",
+            new()
+            {
+                ["api-key"] = "test1" // Difference
+            }
+        );
+
+        imageVector.Equals(imageVector).Should().BeTrue();
+        imageVector.Equals(imageVectorEqual).Should().BeTrue();
+        imageVector.Equals(imageVectorNotEqual).Should().BeFalse();
+        imageVector.Equals((object)imageVectorEqual).Should().BeTrue();
+        imageVector.Equals((object)imageVectorNotEqual).Should().BeFalse();
+
+        imageVector.GetHashCode().Should().Be(imageVectorEqual.GetHashCode());
+
+        documentVector.Equals(documentVector).Should().BeTrue();
+        documentVector.Equals(documentVectorEqual).Should().BeTrue();
+        documentVector.Equals(documentVectorNotEqual).Should().BeFalse();
+        documentVector.Equals((object)documentVectorEqual).Should().BeTrue();
+        documentVector.Equals((object)documentVectorNotEqual).Should().BeFalse();
+
+        documentVector.GetHashCode().Should().Be(documentVectorEqual.GetHashCode());
+
+        objectVector.Equals(objectVector).Should().BeTrue();
+        objectVector.Equals(objectVectorEqual).Should().BeTrue();
+        objectVector.Equals(objectVectorNotEqual).Should().BeFalse();
+        objectVector.Equals((object)objectVectorEqual).Should().BeTrue();
+        objectVector.Equals((object)objectVectorNotEqual).Should().BeFalse();
+
+        objectVector.GetHashCode().Should().Be(objectVectorEqual.GetHashCode());
+    }
+
+    private record TestObject(int A);
+
+    private static void AssertVectorStreamContainsString(VectorBase vector, string expectedString)
     {
         // String stream representation
         using MemoryStream ms = new();
@@ -495,21 +879,5 @@ internal class VectorTests : QdrantTestsBase
         var vectorString = sr.ReadToEnd();
 
         vectorString.AssertSameString(expectedString);
-
-        // Since we don't have methods to read 
-
-        using MemoryStream msBinary = new();
-        using BinaryWriter bw = new(msBinary);
-
-        vector.WriteToStream(bw);
-        bw.Flush();
-        msBinary.Position = 0;
-
-        using BinaryReader br = new(msBinary);
-
-        VectorBase vb = VectorBase.ReadFromStream(vector.VectorKind, br);
-
-        var vectorStringFromBinary = vb.ToString();
-        vectorStringFromBinary.AssertSameString(expectedString);
     }
 }

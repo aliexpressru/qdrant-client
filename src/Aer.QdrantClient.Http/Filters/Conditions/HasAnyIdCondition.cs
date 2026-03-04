@@ -1,8 +1,9 @@
-using System.Text.Json;
 using Aer.QdrantClient.Http.Filters.Introspection;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
@@ -34,15 +35,13 @@ internal sealed class HasAnyIdCondition : FilterConditionBase
 
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
-        jsonWriter.WritePropertyName("has_id");
-        jsonWriter.WriteStartArray();
-
-        foreach (var pointId in _pointIds)
+        using (jsonWriter.WriteArray("has_id"))
         {
-            JsonSerializer.Serialize(jsonWriter, pointId.ObjectId, JsonSerializerConstants.DefaultSerializerOptions);
+            foreach (var pointId in _pointIds)
+            {
+                JsonSerializer.Serialize(jsonWriter, pointId.ObjectId, JsonSerializerConstants.DefaultSerializerOptions);
+            }
         }
-
-        jsonWriter.WriteEndArray();
     }
 
     internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitHasAnyIdCondition(this);

@@ -1,7 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
+using Aer.QdrantClient.Http.Models.Shared;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http;
 
@@ -280,5 +281,69 @@ public partial class QdrantHttpClient
             retryCount: 0);
 
         return response;
+    }
+
+    /// <inheritdoc/>
+    public async Task<GetCollectionOptimizationProgressResponse> GetCollectionOptimizationProgress(
+        string collectionName,
+        CancellationToken cancellationToken,
+        OptimizationProgressOptionalInfoFields with = OptimizationProgressOptionalInfoFields.None,
+        int completedLimit = 16)
+    {
+        var queryParameters = with == OptimizationProgressOptionalInfoFields.None
+            ? ""
+            : $"?with={GetWithQueryParameter(with)}&completed_limit={completedLimit}";
+
+        var url =
+            $"/collections/{collectionName}/optimizations/{queryParameters}";
+
+        var response = await ExecuteRequest<GetCollectionOptimizationProgressResponse>(
+            url,
+            HttpMethod.Get,
+            collectionName,
+            cancellationToken,
+            retryCount: 0);
+
+        return response;
+
+        static string GetWithQueryParameter(OptimizationProgressOptionalInfoFields with)
+        {
+            const string queued = "queued";
+            const string completed = "completed";
+            const string idleSegments = "idle_segments";
+
+            if (with.HasFlag(OptimizationProgressOptionalInfoFields.All))
+            {
+                return $"{queued},{completed},{idleSegments}";
+            }
+
+            // 3 possible values
+            List<string> selectedWithFields = new(3);
+
+            if (with.HasFlag(OptimizationProgressOptionalInfoFields.Queued))
+            {
+                selectedWithFields.Add(queued);
+            }
+
+            if (with.HasFlag(OptimizationProgressOptionalInfoFields.Completed))
+
+            {
+                selectedWithFields.Add(completed);
+            }
+
+            if (with.HasFlag(OptimizationProgressOptionalInfoFields.IdleSegments))
+            {
+                selectedWithFields.Add(idleSegments);
+            }
+
+            if (selectedWithFields.Count == 0)
+            {
+                return "";
+            }
+            else
+            {
+                return $"{string.Join(",", selectedWithFields)}";
+            }
+        }
     }
 }

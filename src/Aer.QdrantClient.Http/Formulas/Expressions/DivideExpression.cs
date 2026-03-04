@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Formulas.Expressions;
@@ -13,11 +14,9 @@ internal sealed class DivideExpression(ExpressionBase left, ExpressionBase right
 
     public override void WriteExpressionJson(Utf8JsonWriter jsonWriter)
     {
-        jsonWriter.WriteStartObject();
+        using (jsonWriter.WriteObject())
         {
-            jsonWriter.WritePropertyName("div");
-
-            jsonWriter.WriteStartObject();
+            using (jsonWriter.WriteObject("div"))
             {
                 jsonWriter.WritePropertyName("left");
 
@@ -27,12 +26,9 @@ internal sealed class DivideExpression(ExpressionBase left, ExpressionBase right
 
                 _right.WriteExpressionJson(jsonWriter);
 
-                jsonWriter.WritePropertyName("by_zero_default");
-
-                jsonWriter.WriteNumberValue(_divideByZeroDefaultValue);
+                jsonWriter.WriteNumber(
+                    "by_zero_default", _divideByZeroDefaultValue);
             }
-            jsonWriter.WriteEndObject();
         }
-        jsonWriter.WriteEndObject();
     }
 }

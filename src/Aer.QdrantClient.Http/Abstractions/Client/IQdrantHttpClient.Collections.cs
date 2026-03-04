@@ -1,5 +1,6 @@
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Abstractions;
 
@@ -186,4 +187,25 @@ public partial interface IQdrantHttpClient
     Task<CheckCollectionExistsResponse> CheckCollectionExists(
         string collectionName,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Get progress of ongoing and completed optimizations for a collection.
+    /// </summary>
+    /// <param name="collectionName">
+    /// The name of the collection to get optimisations for.
+    /// </param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="with">
+    /// The optional selection of of optional fields to include in the response.
+    /// Default value is <see cref="OptimizationProgressOptionalInfoFields.None"/>
+    /// </param>
+    /// <param name="completedLimit">
+    /// Maximum number of completed optimizations to return.
+    /// Ignored if <see cref="OptimizationProgressOptionalInfoFields.Completed"/> is not in the <paramref name="with"/> parameter.</param>
+    Task<GetCollectionOptimizationProgressResponse> GetCollectionOptimizationProgress(
+        string collectionName,
+        CancellationToken cancellationToken,
+        OptimizationProgressOptionalInfoFields with = OptimizationProgressOptionalInfoFields.None,
+        int completedLimit = 16
+    );
 }

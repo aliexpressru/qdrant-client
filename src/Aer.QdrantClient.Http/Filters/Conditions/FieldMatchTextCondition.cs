@@ -1,4 +1,5 @@
 using Aer.QdrantClient.Http.Filters.Introspection;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Models.Shared;
 using System.Text.Json;
 using static Aer.QdrantClient.Http.Filters.Conditions.FieldMatchTextCondition;
@@ -33,8 +34,8 @@ internal sealed class FieldMatchTextCondition(
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
-        jsonWriter.WritePropertyName("match");
-        jsonWriter.WriteStartObject();
+
+        using (jsonWriter.WriteObject("match"))
         {
             jsonWriter.WritePropertyName(
                 matchType switch
@@ -47,7 +48,6 @@ internal sealed class FieldMatchTextCondition(
             );
             jsonWriter.WriteStringValue(query);
         }
-        jsonWriter.WriteEndObject();
     }
 
     internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldMatchTextCondition(this);

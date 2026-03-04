@@ -1,6 +1,7 @@
-using System.Text.Json;
 using Aer.QdrantClient.Http.Filters.Introspection;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
@@ -10,12 +11,10 @@ internal sealed class FieldIsNullCondition(string payloadFieldName) : FilterCond
 
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
-        jsonWriter.WritePropertyName("is_null");
-        jsonWriter.WriteStartObject();
-
-        WritePayloadFieldName(jsonWriter);
-
-        jsonWriter.WriteEndObject();
+        using (jsonWriter.WriteObject("is_null"))
+        {
+            WritePayloadFieldName(jsonWriter);
+        }
     }
 
     internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldIsNullCondition(this);

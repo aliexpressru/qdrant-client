@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Formulas.Expressions;
@@ -8,15 +9,14 @@ namespace Aer.QdrantClient.Http.Formulas.Expressions;
 internal sealed class PowerExpression(ExpressionBase baseExpression, ExpressionBase exponentExpression) : ExpressionBase
 {
     private readonly ExpressionBase _base = baseExpression ?? throw new ArgumentNullException(nameof(baseExpression));
+
     private readonly ExpressionBase _exponent = exponentExpression ?? throw new ArgumentNullException(nameof(exponentExpression));
 
     public override void WriteExpressionJson(Utf8JsonWriter jsonWriter)
     {
-        jsonWriter.WriteStartObject();
+        using (jsonWriter.WriteObject())
         {
-            jsonWriter.WritePropertyName("pow");
-
-            jsonWriter.WriteStartObject();
+            using (jsonWriter.WriteObject("pow"))
             {
                 jsonWriter.WritePropertyName("base");
 
@@ -26,8 +26,6 @@ internal sealed class PowerExpression(ExpressionBase baseExpression, ExpressionB
 
                 _exponent.WriteExpressionJson(jsonWriter);
             }
-            jsonWriter.WriteEndObject();
         }
-        jsonWriter.WriteEndObject();
     }
 }

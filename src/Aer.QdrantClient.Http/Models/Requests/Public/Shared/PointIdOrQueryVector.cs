@@ -1,13 +1,20 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Primitives;
+using Aer.QdrantClient.Http.Models.Primitives.Inference;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 /// <summary>
 /// Represents a point id or a search vector - dense or sparse.
+/// Can't be created manually, use implicit conversions from
+/// <see cref="PointId"/>,
+/// <see cref="QueryVector"/>,
+/// array of floats,
+/// <see cref="VectorBase"/>,
+/// indices and values arrays for sparse vectors.
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 public sealed class PointIdOrQueryVector
@@ -59,6 +66,12 @@ public sealed class PointIdOrQueryVector
     /// </summary>
     /// <param name="queryVector">The query vector to convert.</param>
     public static implicit operator PointIdOrQueryVector(QueryVector queryVector) => new(queryVector);
+
+    /// <summary>
+    /// Implicitly converts <see cref="InferenceObject"/> to <see cref="PointIdOrQueryVector"/>.
+    /// </summary>
+    /// <param name="inferenceObject">The inference object to convert.</param>
+    public static implicit operator PointIdOrQueryVector(InferenceObject inferenceObject) => new(inferenceObject);
 
     /// <summary>
     /// Implicitly converts <see cref="float"/> dense vector components array to <see cref="PointIdOrQueryVector"/>.

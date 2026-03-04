@@ -1,8 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http;
 
@@ -36,6 +36,8 @@ public partial class QdrantHttpClient
 
         bool? isLookupEnabled = null,
         bool? isRangeEnabled = null,
+
+        bool? isHnswEnabled = null,
 
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
@@ -94,7 +96,9 @@ public partial class QdrantHttpClient
                 : null,
             isRangeFilterEnabled: payloadFieldType == PayloadIndexedFieldType.Integer
                 ? isRangeEnabled ?? true
-                : null
+                : null,
+
+            isHnswEnabled: isHnswEnabled
         );
 
         var url = $"/collections/{collectionName}/index?wait={ToUrlQueryString(isWaitForResult)}";
@@ -131,6 +135,8 @@ public partial class QdrantHttpClient
 
         bool? isAsciiFoldingEnabled = null,
 
+        bool? isHnswEnabled = null,
+
         bool isWaitForResult = false,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
@@ -151,7 +157,8 @@ public partial class QdrantHttpClient
                 PhraseMatching = enablePhraseMatching,
                 Stemmer = stemmer,
                 Stopwords = stopwords,
-                AsciiFolding = isAsciiFoldingEnabled
+                AsciiFolding = isAsciiFoldingEnabled,
+                EnableHnsw = isHnswEnabled
             });
 
         var url = $"/collections/{collectionName}/index?wait={ToUrlQueryString(isWaitForResult)}";

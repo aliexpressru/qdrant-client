@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Formulas.Expressions;
@@ -8,28 +9,25 @@ namespace Aer.QdrantClient.Http.Formulas.Expressions;
 internal sealed class CollectionExpression(string collectionOperator, params ICollection<ExpressionBase> expressions) : ExpressionBase
 {
     private readonly string _collectionOperator = collectionOperator ?? throw new ArgumentNullException(nameof(collectionOperator));
+
     private readonly ICollection<ExpressionBase> _expressions = expressions ?? throw new ArgumentNullException(nameof(expressions));
 
     public override void WriteExpressionJson(Utf8JsonWriter jsonWriter)
     {
-        jsonWriter.WriteStartObject();
-
-        jsonWriter.WritePropertyName(_collectionOperator);
-
-        jsonWriter.WriteStartArray();
-
-        foreach (var expression in _expressions)
+        using (jsonWriter.WriteObject())
         {
-            if (expression is null)
+            using (jsonWriter.WriteArray(_collectionOperator))
             {
-                throw new InvalidOperationException("Expression cannot be null.");
+                foreach (var expression in _expressions)
+                {
+                    if (expression is null)
+                    {
+                        throw new InvalidOperationException("Expression cannot be null.");
+                    }
+
+                    expression.WriteExpressionJson(jsonWriter);
+                }
             }
-
-            expression.WriteExpressionJson(jsonWriter);
         }
-
-        jsonWriter.WriteEndArray();
-
-        jsonWriter.WriteEndObject();
     }
 }

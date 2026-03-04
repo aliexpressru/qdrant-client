@@ -4,14 +4,15 @@ log_level: DEBUG
 # Qdrant logs to stdout. You may configure to also write logs to a file on disk.
 # Be aware that this file may grow indefinitely.
 logger:
-  # Logging format, supports `text` and `json`
+#  # Logging format, supports `text` and `json`
   format: text
-  # on_disk:
-  #   enabled: true
-  #   log_file: path/to/log/file.log
-  #   log_level: INFO
-  #   # Logging format, supports `text` and `json`
-  #   format: text
+# on_disk:
+#   enabled: true
+#   log_file: path/to/log/file.log
+#   log_level: INFO
+#   # Logging format, supports `text` and `json`
+#   format: text
+#   buffer_size_bytes: 1024
 
 storage:
   # Where to store all the data
@@ -38,7 +39,7 @@ storage:
   # It will be read from the disk every time it is requested.
   # This setting saves RAM by (slightly) increasing the response time.
   # Note: those payload values that are involved in filtering and are indexed - remain in RAM.
-  # 
+  #
   # Default: true
   on_disk_payload: true
 
@@ -64,11 +65,6 @@ storage:
   performance:
     # Number of parallel threads used for search operations. If 0 - auto selection.
     max_search_threads: 0
-
-    # Max number of threads (jobs) for running optimizations across all collections, each thread runs one job.
-    # If 0 - have no limit and choose dynamically to saturate CPU.
-    # Note: each optimization job will also use `max_indexing_threads` threads by itself for index building.
-    max_optimization_threads: 0
 
     # CPU budget, how many CPUs (threads) to allocate for an optimization job.
     # If 0 - auto selection, keep 1 or more CPUs unallocated depending on CPU size
@@ -97,8 +93,15 @@ storage:
     # Enable async scorer which uses io_uring when rescoring.
     # Only supported on Linux, must be enabled in your kernel.
     # See: <https://qdrant.tech/articles/io_uring/#and-what-about-qdrant>
-    #async_scorer: true
-    
+    #async_scorer: false
+
+    # Maximum number of collections to load concurrently.
+    #max_concurrent_collection_loads: 1
+    # Maximum number of local shards to load concurrently when loading a collection.
+    #max_concurrent_shard_loads: 1
+    # Maximum number of segments to load concurrently when loading a local shard.
+    #max_concurrent_segment_loads: 8
+
   optimizers:
     # The minimal fraction of deleted vectors in a segment, required to perform segment optimization
     deleted_threshold: 0.2
@@ -126,30 +129,13 @@ storage:
     # If not set, will be automatically selected considering the number of available CPUs.
     max_segment_size_kb: null
 
-    # Maximum size (in KiloBytes) of vectors to store in-memory per segment.
-    # Segments larger than this threshold will be stored as read-only memmaped file.
-    # To enable memmap storage, lower the threshold
-    # Note: 1Kb = 1 vector of size 256
-
-    # Maximum size (in KiloBytes) of vectors to store in-memory per segment.
-    # Segments larger than this threshold will be stored as read-only memmapped file.
-    # To enable memmap storage, lower the threshold
-    # Note: 1Kb = 1 vector of size 256
-    # To explicitly disable mmap optimization, set to `0`.
-    # If not set, will be disabled by default.
-    # Set to 1 to switch memory loading off
-    # if you have a balanced use scenario - set mmap threshold the same as indexing_threshold (default is 20000).
-    #   In this case the optimizer will not make any extra runs and will optimize all thresholds at once.
-    # if you have a high write load and low RAM - set mmap threshold lower than indexing_threshold to e.g. 10000.
-    #   In this case the optimizer will convert the segments to mmap storage first and will only apply indexing after that.
-    memmap_threshold_kb: 5000000
-
     # Maximum size (in KiloBytes) of vectors allowed for plain index.
-    # Default value based on https://github.com/google-research/google-research/blob/master/scann/docs/algorithms.md
+    # Default value based on experiments and observations.
+    # https://github.com/google-research/google-research/blob/master/scann/docs/algorithms.md
     # Note: 1Kb = 1 vector of size 256
     # To explicitly disable vector indexing, set to `0`.
     # If not set, the default value will be used.
-    indexing_threshold_kb: 20000
+    indexing_threshold_kb: 10000
 
     # Interval between forced flushes.
     flush_interval_sec: 5
@@ -158,7 +144,7 @@ storage:
     # Note: each optimization job will also use `max_indexing_threads` threads by itself for index building.
     # If null - have no limit and choose dynamically to saturate CPU.
     # If 0 - no optimization threads, optimizations will be disabled.
-    max_optimization_threads: 1
+    max_optimization_threads: null
 
   # This section has the same options as 'optimizers' above. All values specified here will overwrite the collections
   # optimizers configs regardless of the config above and the options specified at collection creation.
@@ -167,8 +153,7 @@ storage:
   #  vacuum_min_vector_number: 1000
   #  default_segment_number: 0
   #  max_segment_size_kb: null
-  #  memmap_threshold_kb: null
-  #  indexing_threshold_kb: 20000
+  #  indexing_threshold_kb: 10000
   #  flush_interval_sec: 5
   #  max_optimization_threads: null
 
@@ -176,11 +161,15 @@ storage:
   hnsw_index:
     # Number of edges per node in the index graph. Larger the value - more accurate the search, more space required.
     m: 16
+
     # Number of neighbours to consider during the index building. Larger the value - more accurate the search, more time required to build index.
-    ef_construct: 256
-    # Minimal size (in KiloBytes) of vectors for additional payload-based indexing.
-    # If payload chunk is smaller than `full_scan_threshold_kb` additional indexing won't be used -
-    # in this case full-scan search should be preferred by query planner and additional indexing is not required.
+    ef_construct: 100
+
+    # Minimal size threshold (in KiloBytes) below which full-scan is preferred over HNSW search.
+    # This measures the total size of vectors being queried against.
+    # When the maximum estimated amount of points that a condition satisfies is smaller than
+    # `full_scan_threshold_kb`, the query planner will use full-scan search instead of HNSW index
+    # traversal for better performance.
     # Note: 1Kb = 1 vector of size 256
     full_scan_threshold_kb: 10000
 
@@ -189,8 +178,10 @@ storage:
     # Best to keep between 8 and 16 to prevent likelihood of building broken/inefficient HNSW graphs.
     # On small CPUs, less threads are used.
     max_indexing_threads: 0
+
     # Store HNSW index on disk. If set to false, index will be stored in RAM. Default: false
-    on_disk: true
+    on_disk: false
+
     # Custom M param for hnsw graph built for payload index. If not set, default M will be used.
     payload_m: null
 
@@ -244,6 +235,10 @@ storage:
 
       # Max oversampling value allowed in search.
       search_max_oversampling: null
+
+  # Maximum number of collections allowed to be created
+  # If null - no limit.
+  max_collections: null
 
 service:
   # Maximum size of POST data in a single request in megabytes
@@ -307,8 +302,14 @@ service:
   # Hardware reporting adds information to the API responses with a
   # hint on how many resources were used to execute the request.
   #
+  # Warning: experimental, this feature is still under development and is not supported yet.
+  #
   # Uncomment to enable.
   hardware_reporting: true
+  #
+  # Uncomment to enable.
+  # Prefix for the names of metrics in the /metrics API.
+  # metrics_prefix: qdrant_
 
 cluster:
   # Use `enabled: true` to run Qdrant in distributed deployment mode
@@ -364,3 +365,18 @@ tls:
   # Only works for HTTPS endpoints. Does not support gRPC (and intra-cluster communication).
   # If `null` - TTL is disabled.
   cert_ttl: 3600
+
+# Audit logging configuration.
+# When enabled, Qdrant writes structured JSON audit log entries for every
+# access-checked API request.
+#
+# audit:
+#   enabled: false
+#   dir: ./storage/audit
+#   rotation: daily
+#   max_log_files: 7
+#   # If true, use X-Forwarded-For header to determine client IP in audit logs.
+#   # Only enable this when running behind a trusted reverse proxy or load balancer.
+#   # WARNING: Enabling this without a trusted proxy allows clients to spoof their IP.
+#   # Default: false
+#   trust_forwarded_headers: false

@@ -23,5 +23,10 @@ public enum VectorKind
     /// <summary>
     /// A multivector : vector of vectors.
     /// </summary>
-    Multi
+    Multi,
+
+    /// <summary>
+    /// An inferred vector obtained from an inference object after processing by the specified model.
+    /// </summary>
+    Inferred
 }

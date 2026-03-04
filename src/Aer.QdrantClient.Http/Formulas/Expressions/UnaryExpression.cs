@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Formulas.Expressions;
@@ -9,12 +10,11 @@ internal sealed class UnaryExpression(string unaryOperator, ExpressionBase opera
 {
     public override void WriteExpressionJson(Utf8JsonWriter jsonWriter)
     {
-        jsonWriter.WriteStartObject();
+        using (jsonWriter.WriteObject())
         {
             jsonWriter.WritePropertyName(unaryOperator);
 
             operand.WriteExpressionJson(jsonWriter);
         }
-        jsonWriter.WriteEndObject();
     }
 }

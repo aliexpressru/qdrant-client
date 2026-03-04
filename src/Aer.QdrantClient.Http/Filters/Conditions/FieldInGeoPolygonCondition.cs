@@ -1,7 +1,8 @@
-using System.Text.Json;
 using Aer.QdrantClient.Http.Filters.Introspection;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Filters.Conditions;
 
@@ -15,64 +16,50 @@ internal sealed class FieldInGeoPolygonCondition(
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
         WritePayloadFieldName(jsonWriter);
-        jsonWriter.WritePropertyName("geo_polygon");
 
-        jsonWriter.WriteStartObject();
+        using (jsonWriter.WriteObject("geo_polygon"))
         {
-            jsonWriter.WritePropertyName("exterior");
-            jsonWriter.WriteStartObject();
+            using (jsonWriter.WriteObject("exterior"))
             {
-                jsonWriter.WritePropertyName("points");
-                jsonWriter.WriteStartArray();
+                using (jsonWriter.WriteArray("points"))
                 {
                     foreach (var exteriorPolygonPoint in exteriorPolygonPoints)
                     {
-                        jsonWriter.WriteStartObject();
+                        using (jsonWriter.WriteObject())
                         {
                             jsonWriter.WriteNumber("lat", exteriorPolygonPoint.Latitude);
+
                             jsonWriter.WriteNumber("lon", exteriorPolygonPoint.Longitude);
                         }
-                        jsonWriter.WriteEndObject();
                     }
                 }
-                jsonWriter.WriteEndArray();
             }
-            jsonWriter.WriteEndObject();
 
-            jsonWriter.WritePropertyName("interiors");
-
-            jsonWriter.WriteStartArray();
-
-            if (interiorPolygonsPoints is { Length: > 0 })
+            using (jsonWriter.WriteArray("interiors"))
             {
-
-                foreach (var interiorPolygonPoints in interiorPolygonsPoints)
+                if (interiorPolygonsPoints is { Length: > 0 })
                 {
-                    jsonWriter.WriteStartObject();
+                    foreach (var interiorPolygonPoints in interiorPolygonsPoints)
                     {
-                        jsonWriter.WritePropertyName("points");
-                        jsonWriter.WriteStartArray();
+                        using (jsonWriter.WriteObject())
                         {
-                            foreach (var interiorPolygonPoint in interiorPolygonPoints)
+                            using (jsonWriter.WriteArray("points"))
                             {
-                                jsonWriter.WriteStartObject();
+                                foreach (var interiorPolygonPoint in interiorPolygonPoints)
                                 {
-                                    jsonWriter.WriteNumber("lat", interiorPolygonPoint.Latitude);
-                                    jsonWriter.WriteNumber("lon", interiorPolygonPoint.Longitude);
+                                    using (jsonWriter.WriteObject())
+                                    {
+                                        jsonWriter.WriteNumber("lat", interiorPolygonPoint.Latitude);
+
+                                        jsonWriter.WriteNumber("lon", interiorPolygonPoint.Longitude);
+                                    }
                                 }
-                                jsonWriter.WriteEndObject();
                             }
                         }
-                        jsonWriter.WriteEndArray();
                     }
-                    jsonWriter.WriteEndObject();
                 }
             }
-
-            jsonWriter.WriteEndArray();
         }
-
-        jsonWriter.WriteEndObject();
     }
 
     internal override void Accept(FilterConditionVisitor visitor) => visitor.VisitFieldInGeoPolygonCondition(this);

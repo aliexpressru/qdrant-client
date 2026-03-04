@@ -1,5 +1,6 @@
-using System.Text.Json;
 using Aer.QdrantClient.Http.Filters.Conditions;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
+using System.Text.Json;
 
 namespace Aer.QdrantClient.Http.Formulas.Expressions;
 
@@ -10,10 +11,9 @@ internal sealed class FilterConditionExpression(FilterConditionBase condition) :
 {
     public override void WriteExpressionJson(Utf8JsonWriter jsonWriter)
     {
-        jsonWriter.WriteStartObject();
-
-        condition.WriteConditionJson(jsonWriter);
-
-        jsonWriter.WriteEndObject();
+        using (jsonWriter.WriteObject())
+        {
+            condition.WriteConditionJson(jsonWriter);
+        }
     }
 }

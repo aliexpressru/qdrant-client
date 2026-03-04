@@ -1,5 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Models.Responses.Base;
+using Aer.QdrantClient.Http.Models.Responses.Shared;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
 
@@ -53,7 +54,7 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
         /// <summary>
         /// Information about current consensus thread status.
         /// </summary>
-        public ConsensusThreadStatusUnit ConsensusThreadStatus { init; get; }
+        public ConsensusThreadState ConsensusThreadStatus { init; get; }
 
         /// <summary>
         /// Consequent failures of message send operations in consensus by peer address.
@@ -81,28 +82,6 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
         /// The latest error timestamp.
         /// </summary>
         public DateTime LatestErrorTimestamp { init; get; }
-    }
-
-    /// <summary>
-    /// Represents a consensus status information.
-    /// </summary>
-    public sealed class ConsensusThreadStatusUnit
-    {
-        /// <summary>
-        /// The consensus thread status.
-        /// TODO: convert to enum
-        /// </summary>
-        public string ConsensusThreadStatus { init; get; }
-
-        /// <summary>
-        /// The consensus status last update.
-        /// </summary>
-        public DateTime LastUpdate { init; get; }
-
-        /// <summary>
-        /// The consensus status error.
-        /// </summary>
-        public string Err { init; get; }
     }
 
     /// <summary>
@@ -144,7 +123,7 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
         /// <summary>
         /// This node role.
         /// </summary>
-        public string Role { init; get; }
+        public PeerRole Role { init; get; }
 
         /// <summary>
         /// Is this peer a voter or a learner.

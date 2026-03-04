@@ -1,5 +1,6 @@
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using System.Text.Json;
@@ -59,35 +60,30 @@ internal sealed class VectorsBatchJsonConverter : JsonConverter<UpsertPointsBatc
         {
             // Means that the request contains only unnamed dense/multi vectors
 
-            writer.WriteStartArray();
-
-            foreach (var vector in value.Vectors)
+            using (writer.WriteArray())
             {
-                JsonSerializer.Serialize(writer, vector, _serializerOptions);
-            }
-
-            writer.WriteEndArray();
-        }
-        else if (value.NamedVectors is {Count: > 0})
-        {
-            writer.WriteStartObject();
-
-            // Vectors of each type are grouped by their names in the batch
-            foreach (var vectorBatch in value.NamedVectors)
-            {
-                writer.WritePropertyName(vectorBatch.Key);
-
-                writer.WriteStartArray();
-
-                foreach (var vector in vectorBatch.Value)
+                foreach (var vector in value.Vectors)
                 {
                     JsonSerializer.Serialize(writer, vector, _serializerOptions);
                 }
-
-                writer.WriteEndArray();
             }
-
-            writer.WriteEndObject();
+        }
+        else if (value.NamedVectors is { Count: > 0 })
+        {
+            using (writer.WriteObject())
+            {
+                // Vectors of each type are grouped by their names in the batch
+                foreach (var vectorBatch in value.NamedVectors)
+                {
+                    using (writer.WriteArray(vectorBatch.Key))
+                    {
+                        foreach (var vector in vectorBatch.Value)
+                        {
+                            JsonSerializer.Serialize(writer, vector, _serializerOptions);
+                        }
+                    }
+                }
+            }
         }
         else
         {
@@ -95,7 +91,7 @@ internal sealed class VectorsBatchJsonConverter : JsonConverter<UpsertPointsBatc
         }
     }
 
-    private bool HasVectors(IEnumerable<VectorBase> vectors)
+    private static bool HasVectors(IEnumerable<VectorBase> vectors)
     {
         if (vectors is null)
         {

@@ -1,6 +1,6 @@
+using Aer.QdrantClient.Http.Exceptions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Aer.QdrantClient.Http.Exceptions;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -34,7 +34,7 @@ internal sealed class ObjectPayloadJsonConverter : JsonConverter<object>
                 return;
 
             default:
-                JsonSerializer.Serialize(writer, value, JsonSerializerConstants.DefaultIndentedSerializerOptions);
+                JsonSerializer.Serialize(writer, value, JsonSerializerConstants.DefaultSerializerOptions);
                 return;
         }
     }

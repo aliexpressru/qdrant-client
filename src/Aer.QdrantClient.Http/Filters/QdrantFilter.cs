@@ -3,6 +3,7 @@ using Aer.QdrantClient.Http.Filters.Conditions;
 using Aer.QdrantClient.Http.Filters.Conditions.GroupConditions;
 using Aer.QdrantClient.Http.Filters.Introspection;
 using Aer.QdrantClient.Http.Filters.Optimization;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
@@ -304,14 +305,13 @@ public sealed class QdrantFilter
         Optimize(_conditions);
 #endif
 
-        jsonWriter.WriteStartObject();
-
-        foreach (var condition in _conditions)
+        using (jsonWriter.WriteObject())
         {
-            condition.WriteJson(jsonWriter);
+            foreach (var condition in _conditions)
+            {
+                condition.WriteJson(jsonWriter);
+            }
         }
-
-        jsonWriter.WriteEndObject();
     }
 
     /// <summary>

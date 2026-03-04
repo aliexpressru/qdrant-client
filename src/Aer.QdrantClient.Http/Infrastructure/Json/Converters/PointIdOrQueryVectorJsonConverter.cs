@@ -1,6 +1,6 @@
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -9,7 +9,8 @@ internal sealed class PointIdOrQueryVectorJsonConverter : JsonConverter<PointIdO
     private static readonly JsonSerializerOptions _serializerOptions =
         JsonSerializerConstants.CreateSerializerOptions(
             new PointIdJsonConverter(),
-            new QueryVectorJsonConverter()
+            new QueryVectorJsonConverter(),
+            new InferenceObjectJsonConverter()
         );
 
     public override PointIdOrQueryVector Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>

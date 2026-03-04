@@ -1,7 +1,8 @@
+using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Infrastructure.Helpers;
+using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Aer.QdrantClient.Http.Exceptions;
-using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -19,23 +20,21 @@ internal sealed class PayloadPropertiesSelectorJsonConverter : JsonConverter<Pay
 
                 return;
             case PayloadPropertiesSelector.IncludePayloadPropertiesSelector ips:
-                writer.WriteStartObject();
+                using (writer.WriteObject())
+                {
+                    writer.WritePropertyName("include");
 
-                writer.WritePropertyName("include");
-
-                JsonSerializer.Serialize(writer, ips.IncludedPayloadProperties, JsonSerializerConstants.DefaultSerializerOptions);
-
-                writer.WriteEndObject();
+                    JsonSerializer.Serialize(writer, ips.IncludedPayloadProperties, JsonSerializerConstants.DefaultSerializerOptions);
+                }
 
                 return;
             case PayloadPropertiesSelector.ExcludePayloadPropertiesSelector eps:
-                writer.WriteStartObject();
+                using (writer.WriteObject())
+                {
+                    writer.WritePropertyName("exclude");
 
-                writer.WritePropertyName("exclude");
-
-                JsonSerializer.Serialize(writer, eps.ExcludedPayloadProperties, JsonSerializerConstants.DefaultSerializerOptions);
-
-                writer.WriteEndObject();
+                    JsonSerializer.Serialize(writer, eps.ExcludedPayloadProperties, JsonSerializerConstants.DefaultSerializerOptions);
+                }
 
                 return;
             default:
