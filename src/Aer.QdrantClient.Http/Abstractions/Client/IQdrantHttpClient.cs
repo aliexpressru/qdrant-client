@@ -47,7 +47,6 @@ public partial interface IQdrantHttpClient
     /// Performs a single check of whether the collection status is <see cref="QdrantCollectionStatus.Green"/>
     /// and collection optimizer status is <see cref="QdrantOptimizerStatus.Ok"/>.
     /// Returns <c>true</c> in <see cref="Models.Responses.Base.QdrantResponseBase{TResult}.Result"/> if the collection is ready, <c>false</c> otherwise.
-    /// Unlike <see cref="EnsureCollectionReady"/>, this method does not poll and does not throw on non-ready status.
     /// </summary>
     /// <param name="collectionName">The name of the collection to check status for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
