@@ -15,6 +15,7 @@ using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 
 using Aer.QdrantClient.Http.Infrastructure.Json;
 using Aer.QdrantClient.Http.Models.Requests;
+using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Shared;
 using Microsoft.Extensions.Logging;
@@ -253,6 +254,70 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         }
 
         return handler;
+    }
+
+    /// <inheritdoc/>
+    public async Task<DefaultOperationResponse> CheckCollectionReady(
+        string collectionName,
+        CancellationToken cancellationToken,
+        uint requiredNumberOfGreenCollectionResponses = 1,
+        bool isCheckShardTransfersCompleted = false)
+    {
+        var requiredCollectionIsReadyResponsesLeft = requiredNumberOfGreenCollectionResponses;
+        var stopwatch = Stopwatch.StartNew();
+
+        while (requiredCollectionIsReadyResponsesLeft > 0)
+        {
+            var collectionInfo = await GetCollectionInfo(collectionName, cancellationToken);
+
+            if (!collectionInfo.Status.IsSuccess)
+            {
+                return new DefaultOperationResponse(collectionInfo)
+                {
+                    Result = false
+                };
+            }
+
+            bool isCollectionShardTransfersCompleted = true;
+
+            if (isCheckShardTransfersCompleted)
+            {
+                var collectionClusteringInfo = await GetCollectionClusteringInfo(collectionName, cancellationToken);
+
+                if (!collectionClusteringInfo.Status.IsSuccess)
+                {
+                    return new DefaultOperationResponse(collectionClusteringInfo)
+                    {
+                        Result = false
+                    };
+                }
+
+                isCollectionShardTransfersCompleted = collectionClusteringInfo.Result.ShardTransfers.Length == 0;
+            }
+
+            if (collectionInfo.Result.Status is QdrantCollectionStatus.Green
+                && collectionInfo.Result.OptimizerStatus.IsOk
+                && isCollectionShardTransfersCompleted)
+            {
+                requiredCollectionIsReadyResponsesLeft--;
+            }
+            else
+            {
+                return new DefaultOperationResponse()
+                {
+                    Result = false,
+                    Status = QdrantStatus.Success(),
+                    Time = stopwatch.Elapsed.TotalSeconds
+                };
+            }
+        }
+
+        return new DefaultOperationResponse()
+        {
+            Result = true,
+            Status = QdrantStatus.Success(),
+            Time = stopwatch.Elapsed.TotalSeconds
+        };
     }
 
     /// <inheritdoc/>

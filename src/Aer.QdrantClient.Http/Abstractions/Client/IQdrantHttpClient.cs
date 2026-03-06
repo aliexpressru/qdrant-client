@@ -1,5 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http.Abstractions;
 
@@ -39,6 +40,26 @@ public partial interface IQdrantHttpClient
         CancellationToken cancellationToken,
         TimeSpan? pollingInterval = null,
         TimeSpan? timeout = null,
+        uint requiredNumberOfGreenCollectionResponses = 1,
+        bool isCheckShardTransfersCompleted = false);
+
+    /// <summary>
+    /// Performs a single check of whether the collection status is <see cref="QdrantCollectionStatus.Green"/>
+    /// and collection optimizer status is <see cref="QdrantOptimizerStatus.Ok"/>.
+    /// Returns <c>true</c> in <see cref="Models.Responses.Base.QdrantResponseBase{TResult}.Result"/> if the collection is ready, <c>false</c> otherwise.
+    /// Unlike <see cref="EnsureCollectionReady"/>, this method does not poll and does not throw on non-ready status.
+    /// </summary>
+    /// <param name="collectionName">The name of the collection to check status for.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="requiredNumberOfGreenCollectionResponses">The number of consecutive green status responses required
+    /// for the collection to be considered ready. All checks must pass; if any check is not green, returns <c>false</c> immediately.</param>
+    /// <param name="isCheckShardTransfersCompleted">
+    /// If set to <c>true</c> check that all collection shard transfers are completed.
+    /// The collection is not considered ready until all shard transfers are completed.
+    /// </param>
+    Task<DefaultOperationResponse> CheckCollectionReady(
+        string collectionName,
+        CancellationToken cancellationToken,
         uint requiredNumberOfGreenCollectionResponses = 1,
         bool isCheckShardTransfersCompleted = false);
 }

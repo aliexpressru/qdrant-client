@@ -176,6 +176,70 @@ internal class ServiceMethodsTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task CheckCollectionReady_CollectionDoesNotExist()
+    {
+        var result = await _qdrantHttpClient.CheckCollectionReady(
+            TestCollectionName,
+            CancellationToken.None);
+
+        result.Status.IsSuccess.Should().BeTrue();
+        result.Result.Should().BeFalse();
+    }
+
+    [Test]
+    public async Task CheckCollectionReady_CollectionExists_IsReady()
+    {
+        var vectorSize = 10U;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                vectorSize,
+                isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        var result = await _qdrantHttpClient.CheckCollectionReady(
+            TestCollectionName,
+            CancellationToken.None);
+
+        result.Status.IsSuccess.Should().BeTrue();
+        result.Result.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task CheckCollectionReady_CollectionExists_IsReady_RequiredResponsesParameter()
+    {
+        var vectorSize = 10U;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                vectorSize,
+                isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        var result = await _qdrantHttpClient.CheckCollectionReady(
+            TestCollectionName,
+            CancellationToken.None,
+            requiredNumberOfGreenCollectionResponses: 3);
+
+        result.Status.IsSuccess.Should().BeTrue();
+        result.Result.Should().BeTrue();
+    }
+
+    [Test]
     public async Task StorageLock()
     {
         OnlyIfVersionBefore("1.16.0", "lock API is removed in 1.16.0");
