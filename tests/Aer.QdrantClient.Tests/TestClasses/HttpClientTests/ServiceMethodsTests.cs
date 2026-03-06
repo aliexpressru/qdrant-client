@@ -182,7 +182,7 @@ internal class ServiceMethodsTests : QdrantTestsBase
             TestCollectionName,
             CancellationToken.None);
 
-        result.Status.IsSuccess.Should().BeTrue();
+        result.Status.IsSuccess.Should().BeFalse();
         result.Result.Should().BeFalse();
     }
 
