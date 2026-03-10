@@ -36,7 +36,7 @@ public class ShardReplicator
     public bool ShardsNeedReplication => _shardReplicationsToExecute is { Count: > 0 };
 
     /// <summary>
-    /// Returns the planned shard replications.
+    /// Returns the planned shard replications. If no replication required returns an empty collection.
     /// </summary>
     public IReadOnlyCollection<ScheduledShardReplication> ReplicationPlan => _shardReplicationsToExecute ?? [];
 
