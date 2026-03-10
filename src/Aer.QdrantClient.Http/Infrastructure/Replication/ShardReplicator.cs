@@ -38,7 +38,7 @@ public class ShardReplicator
     /// <summary>
     /// Returns the planned shard replications.
     /// </summary>
-    public IReadOnlyCollection<ScheduledShardReplication> ReplicationPlan => _shardReplicationsToExecute;
+    public IReadOnlyCollection<ScheduledShardReplication> ReplicationPlan => _shardReplicationsToExecute ?? [];
 
     internal ShardReplicator(QdrantHttpClient qdrantClient, ILogger logger, string collectionName)
     {
