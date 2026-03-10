@@ -1,10 +1,10 @@
+using System.Runtime.CompilerServices;
 using Aer.QdrantClient.Http.Collections;
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Microsoft.Extensions.Logging;
-using System.Runtime.CompilerServices;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Replication;
 
@@ -14,7 +14,8 @@ namespace Aer.QdrantClient.Http.Infrastructure.Replication;
 /// Calculates which shards require additional replicas and coordinates
 /// their replication to achieve the target replication factor across peers.
 /// </summary>
-/// <remarks>Use this class to ensure that all shards in a collection
+/// <remarks>
+/// Use this class to ensure that all shards in a collection
 /// are replicated according to the configured or inferred replication factor.
 /// The class provides methods to determine replication needs
 /// and to perform asynchronous replication operations.
@@ -24,44 +25,44 @@ public class ShardReplicator
     private readonly QdrantHttpClient _qdrantClient;
     private readonly ILogger _logger;
     private readonly string _collectionName;
-    private readonly GetCollectionInfoResponse.CollectionInfo _collectionInfo;
-    private readonly GetCollectionClusteringInfoResponse.CollectionClusteringInfo _collectionClusteringInfo;
     private int _targetReplicationFactor;
 
-    private List<(uint ShardId, int NumberOfReplicasToAdd)> _shardsToReplicate;
+    private Stack<ScheduledShardReplication> _shardReplicationsToExecute;
 
     /// <summary>
     /// Returns <c>true</c> if not sufficiently replicated shards detected.
     /// Use <see cref="ExecuteReplications(CancellationToken, ShardTransferMethod, TimeSpan?)"/> to perform the replication sequence.
     /// </summary>
-    public bool ShardsNeedReplication => _shardsToReplicate is { Count: > 0 };
+    public bool ShardsNeedReplication => _shardReplicationsToExecute is { Count: > 0 };
 
-    internal ShardReplicator(
-        QdrantHttpClient qdrantClient,
-        ILogger logger,
-        string collectionName,
-        GetCollectionInfoResponse.CollectionInfo collectionInfo,
-        GetCollectionClusteringInfoResponse.CollectionClusteringInfo collectionClusteringInfo)
+    /// <summary>
+    /// Returns the planned shard replications.
+    /// </summary>
+    public IReadOnlyCollection<ScheduledShardReplication> ReplicationPlan => _shardReplicationsToExecute;
+
+    internal ShardReplicator(QdrantHttpClient qdrantClient, ILogger logger, string collectionName)
     {
         _qdrantClient = qdrantClient;
         _logger = logger;
         _collectionName = collectionName;
-        _collectionInfo = collectionInfo;
-        _collectionClusteringInfo = collectionClusteringInfo;
     }
 
-    internal void Calculate()
+    internal void Calculate(
+        GetClusterInfoResponse.ClusterInfo clusterInfo,
+        GetCollectionInfoResponse.CollectionInfo collectionInfo,
+        GetCollectionClusteringInfoResponse.CollectionClusteringInfo collectionClusteringInfo
+    )
     {
-        _targetReplicationFactor = GetCollectionReplicationFactor();
+        _targetReplicationFactor = GetCollectionReplicationFactor(collectionInfo, collectionClusteringInfo);
 
         // Check that each shard is replicated no fewer than targetCollectionReplicationFactor of times
         // If it is replicated fewer times - replicate to the peers that have the least number of replicas
 
-        _shardsToReplicate = new(_collectionClusteringInfo.PeersByShards.Count);
+        List<(uint ShardId, int NumberOfReplicasToAdd)> shardsToReplicate = new(collectionClusteringInfo.PeersByShards.Count);
 
         // Collect shards with unbalanced replicas
 
-        foreach (var (shardId, peerIds) in _collectionClusteringInfo.PeersByShards)
+        foreach (var (shardId, peerIds) in collectionClusteringInfo.PeersByShards)
         {
             switch (peerIds.Count.CompareTo(_targetReplicationFactor))
             {
@@ -77,14 +78,14 @@ public class ShardReplicator
 
                 case < 0:
                     // shard is replicated fewer times than expected
-                    _shardsToReplicate.Add((shardId, _targetReplicationFactor - peerIds.Count));
+                    shardsToReplicate.Add((shardId, _targetReplicationFactor - peerIds.Count));
                     break;
             }
         }
 
         if (_logger?.IsEnabled(LogLevel.Information) == true)
         {
-            if (ShardsNeedReplication)
+            if (shardsToReplicate is { Count: > 0 })
             {
                 // Not enough replicas
 
@@ -92,7 +93,7 @@ public class ShardReplicator
                     "Collection {CollectionName} replication factor : {ReplicationFactor}. {ShardsToReplicateUpCount} to additionally replicate",
                     _collectionName,
                     _targetReplicationFactor,
-                    _shardsToReplicate.Count
+                    shardsToReplicate.Count
                 );
             }
             else
@@ -104,6 +105,42 @@ public class ShardReplicator
                     _collectionName,
                     _targetReplicationFactor
                 );
+            }
+        }
+
+        // Plan shard replications
+
+        if (shardsToReplicate is { Count: > 0 })
+        {
+            _shardReplicationsToExecute = new(capacity: shardsToReplicate.Sum(s => s.NumberOfReplicasToAdd));
+
+            foreach (var (shardId, replicasToAdd) in shardsToReplicate)
+            {
+                // select target peers which do not have specified shard replica
+                var targetPeerIds = collectionClusteringInfo
+                    .ShardsByPeers.Where(kv => !kv.Value.Contains(shardId))
+                    .Select(kv => kv.Key)
+                    .ToArray();
+
+                HashSet<ulong> sourcePeerIds = collectionClusteringInfo.PeersByShards[shardId];
+
+                CircularEnumerable<ulong> sourcePeers = new(sourcePeerIds);
+                CircularEnumerable<ulong> targetPeers = new(targetPeerIds);
+
+                int replicasLeftToAdd = replicasToAdd;
+
+                while (replicasLeftToAdd > 0)
+                {
+                    var sourcePeerId = sourcePeers.GetNext();
+                    var sourcePeerUri = clusterInfo.ParsedPeers[sourcePeerId].Uri;
+
+                    var targetPeerId = targetPeers.GetNext();
+                    var targetPeerUri = clusterInfo.ParsedPeers[targetPeerId].Uri;
+
+                    _shardReplicationsToExecute.Push(new(shardId, sourcePeerId, sourcePeerUri, targetPeerId, targetPeerUri));
+
+                    replicasLeftToAdd--;
+                }
             }
         }
     }
@@ -133,100 +170,94 @@ public class ShardReplicator
     public async IAsyncEnumerable<ReplicateShardsToPeerResponse> ExecuteReplications(
         [EnumeratorCancellation] CancellationToken cancellationToken,
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null
+    )
     {
-        foreach (var (shardId, replicasToAdd) in _shardsToReplicate)
+        if (_shardReplicationsToExecute is null or { Count: 0 })
         {
-            // select target peers which do not have specified shard replica
-            var targetPeerIds = _collectionClusteringInfo
-                .ShardsByPeers.Where(kv => !kv.Value.Contains(shardId))
-                .Select(kv => kv.Key)
-                .ToArray();
+            yield break;
+        }
 
-            HashSet<ulong> sourcePeerIds = _collectionClusteringInfo.PeersByShards[shardId];
+        while (_shardReplicationsToExecute.Count > 0)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
 
-            CircularEnumerable<ulong> sourcePeers = new(sourcePeerIds);
-            CircularEnumerable<ulong> targetPeers = new(targetPeerIds);
+            var (shardId, sourcePeerId, _, targetPeerId, _) = _shardReplicationsToExecute.Pop();
 
-            int replicasLeftToAdd = replicasToAdd;
+            var replicateShardStartResponse = await _qdrantClient.UpdateCollectionClusteringSetup(
+                _collectionName,
+                UpdateCollectionClusteringSetupRequest.CreateReplicateShardRequest(
+                    shardId,
+                    sourcePeerId,
+                    targetPeerId,
+                    shardTransferMethod
+                ),
+                cancellationToken,
+                timeout
+            );
 
-            while (replicasLeftToAdd > 0)
+            ReplicateShardsToPeerResponse replicateShardResponse;
+
+            if (replicateShardStartResponse.Status.IsSuccess)
             {
-                var sourcePeerId = sourcePeers.GetNext();
-                var targetPeerId = targetPeers.GetNext();
-
-                var replicateShardStartResponse = await _qdrantClient.UpdateCollectionClusteringSetup(
-                    _collectionName,
-                    UpdateCollectionClusteringSetupRequest.CreateReplicateShardRequest(
-                        shardId,
-                        sourcePeerId,
-                        targetPeerId,
-                        shardTransferMethod
+                replicateShardResponse = new ReplicateShardsToPeerResponse()
+                {
+                    Result = new(
+                        ReplicatedShards:
+                        [
+                            new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
+                                IsSuccess: true,
+                                ShardId: shardId,
+                                SourcePeerId: sourcePeerId,
+                                TargetPeerId: targetPeerId,
+                                _collectionName
+                            ),
+                        ],
+                        AlreadyReplicatedShards: []
                     ),
-                    cancellationToken,
-                    timeout
-                );
-
-                ReplicateShardsToPeerResponse replicateShardResponse;
-
-                if (replicateShardStartResponse.Status.IsSuccess)
-                {
-                    replicateShardResponse = new ReplicateShardsToPeerResponse()
-                    {
-                        Result = new(
-                            ReplicatedShards: [
-                                new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
-                                    IsSuccess: true,
-                                    ShardId: shardId,
-                                    SourcePeerId: sourcePeerId,
-                                    TargetPeerId: targetPeerId,
-                                    _collectionName
-                                )
-                            ],
-                            AlreadyReplicatedShards: []
-                        ),
-                        Status = QdrantStatus.Success(),
-                        Time = replicateShardStartResponse.Time
-                    };
-                }
-                else
-                {
-                    replicateShardResponse = new ReplicateShardsToPeerResponse(replicateShardStartResponse)
-                    {
-                        Result = new(
-                            ReplicatedShards: [
-                                new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
-                                    IsSuccess: false,
-                                    ShardId: shardId,
-                                    SourcePeerId: sourcePeerId,
-                                    TargetPeerId: targetPeerId,
-                                    _collectionName
-                                )
-                            ],
-                            AlreadyReplicatedShards: []
-                        )
-                    };
-                }
-
-                replicasLeftToAdd--;
-
-                yield return replicateShardResponse;
+                    Status = QdrantStatus.Success(),
+                    Time = replicateShardStartResponse.Time,
+                };
             }
+            else
+            {
+                replicateShardResponse = new ReplicateShardsToPeerResponse(replicateShardStartResponse)
+                {
+                    Result = new(
+                        ReplicatedShards:
+                        [
+                            new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
+                                IsSuccess: false,
+                                ShardId: shardId,
+                                SourcePeerId: sourcePeerId,
+                                TargetPeerId: targetPeerId,
+                                _collectionName
+                            ),
+                        ],
+                        AlreadyReplicatedShards: []
+                    ),
+                };
+            }
+
+            yield return replicateShardResponse;
         }
     }
 
-    private int GetCollectionReplicationFactor()
+    private static int GetCollectionReplicationFactor(
+        GetCollectionInfoResponse.CollectionInfo collectionInfo,
+        GetCollectionClusteringInfoResponse.CollectionClusteringInfo collectionClusteringInfo
+    )
     {
-        if (_collectionInfo.Config.Params.ReplicationFactor.HasValue)
+        if (collectionInfo.Config.Params.ReplicationFactor.HasValue)
         {
-            return (int)_collectionInfo.Config.Params.ReplicationFactor.Value;
+            return (int)collectionInfo.Config.Params.ReplicationFactor.Value;
         }
 
         // If no replication factor returned from collectionInfo - assume the largest number of replicas across all collection shards is target replication factor
 
         int selectedReplicationFactor = 0;
 
-        foreach (var (shardId, peerIds) in _collectionClusteringInfo.PeersByShards)
+        foreach (var (shardId, peerIds) in collectionClusteringInfo.PeersByShards)
         {
             if (peerIds.Count > selectedReplicationFactor)
             {

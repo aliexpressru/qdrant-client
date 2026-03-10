@@ -622,6 +622,10 @@ public partial class QdrantHttpClient
 
         try
         {
+            var clusterInfo = (
+                await GetClusterInfo(cancellationToken, clusterName)
+            ).EnsureSuccess();
+
             var collectionInfo = (
                 await GetCollectionInfo(collectionName, cancellationToken, clusterName: clusterName)
             ).EnsureSuccess();
@@ -637,11 +641,10 @@ public partial class QdrantHttpClient
             var shardReplicator = new ShardReplicator(
                 this,
                 logger,
-                collectionName,
-                collectionInfo,
-                collectionClusteringInfo);
+                collectionName
+            );
 
-            shardReplicator.Calculate();
+            shardReplicator.Calculate(clusterInfo, collectionInfo, collectionClusteringInfo);
 
             sw.Stop();
 
