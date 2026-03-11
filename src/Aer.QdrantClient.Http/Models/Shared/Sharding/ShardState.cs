@@ -53,5 +53,10 @@ public enum ShardState
     /// <summary>
     /// Shard is active and read-only.
     /// </summary>
-    ActiveRead
+    ActiveRead,
+
+    /// <summary>
+    /// Shard is in manual recovery state. This state is not documented yet.
+    /// </summary>
+    ManualRecovery
 }
