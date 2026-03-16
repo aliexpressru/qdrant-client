@@ -1,3 +1,5 @@
+using static Aer.QdrantClient.Http.Infrastructure.Replication.ScheduledShardReplication;
+
 namespace Aer.QdrantClient.Http.Infrastructure.Replication;
 
 /// <summary>
@@ -6,12 +8,44 @@ namespace Aer.QdrantClient.Http.Infrastructure.Replication;
 /// <param name="ShardId">The id of the shard to replicate.</param>
 /// <param name="SourcePeerId">The source peer id to replicate shard from.</param>
 /// <param name="SourcePeerUri">The source peer uri to replicate shard from.</param>
-/// <param name="TargetPeerId">The target peer id to replicate shard to.</param>
-/// <param name="TargetPeerUri">The target peer uri to replicate shard to.</param>
+/// <param name="TargetPeerId">
+/// The target peer id to replicate shard to.
+/// If the shard is scheduled for deletion from the <paramref name="SourcePeerId"/> peer,
+/// this property will be <c>null</c>.
+/// </param>
+/// <param name="TargetPeerUri">
+/// The target peer uri to replicate shard to.
+/// If the shard is scheduled for deletion from the <paramref name="SourcePeerId"/> peer,
+/// this property will be <c>null</c>.
+/// </param>
+/// <param name="Action">The planned replicator action.</param>
 public record ScheduledShardReplication(
     uint ShardId,
     ulong SourcePeerId,
     string SourcePeerUri,
-    ulong TargetPeerId,
-    string TargetPeerUri
-);
+    ulong? TargetPeerId,
+    string TargetPeerUri,
+    ReplicatorAction Action
+)
+{
+    /// <summary>
+    /// The action that the replicator will perform on selected shard.
+    /// </summary>
+    public enum ReplicatorAction
+    {
+        /// <summary>
+        /// Add shard replica.
+        /// </summary>
+        AddReplica,
+
+        /// <summary>
+        /// Delete shard replica
+        /// </summary>
+        DeleteReplica,
+
+        /// <summary>
+        /// Move shard replica.
+        /// </summary>
+        MoveReplica
+    }
+}
