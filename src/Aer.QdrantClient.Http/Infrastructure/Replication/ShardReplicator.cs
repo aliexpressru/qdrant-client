@@ -117,32 +117,68 @@ public class ShardReplicator
         PlanReplications(shardsToReplicate, shardsToDrop, clusterInfo, collectionClusteringInfo);
     }
 
-    private void PlanReplications(List<(uint ShardId, int NumberOfReplicasToAdd)> shardsToReplicate,
+    private void PlanReplications(
+        List<(uint ShardId, int NumberOfReplicasToAdd)> shardsToReplicate,
         List<(uint ShardId, int NumberOfReplicasToDrop)> shardsToDrop,
         GetClusterInfoResponse.ClusterInfo clusterInfo,
-        GetCollectionClusteringInfoResponse.CollectionClusteringInfo collectionClusteringInfo)
+        GetCollectionClusteringInfoResponse.CollectionClusteringInfo collectionClusteringInfo
+    )
     {
         // Here we should consider shards with more \ less replicas as well as placement of all the shards across the cluster
 
-        _shardReplicationsToExecute = new(capacity:
-            shardsToReplicate.Sum(s => s.NumberOfReplicasToAdd)
-            + shardsToDrop.Sum(s => s.NumberOfReplicasToDrop));
+        _shardReplicationsToExecute = new(
+            capacity: shardsToReplicate.Sum(s => s.NumberOfReplicasToAdd) + shardsToDrop.Sum(s => s.NumberOfReplicasToDrop)
+        );
 
         var collectionClusteringState = new CollectionClusteringState(clusterInfo, collectionClusteringInfo);
 
-        // Calculate how many shard replicas should a peer normally hold
-
-        // First we just drop extra replicas
+        // 0. Drop extra replicas
 
         if (shardsToDrop is { Count: > 0 })
         {
             foreach (var (shardId, replicasToDrop) in shardsToDrop)
             {
                 // Find all shard replicas
+
+                int replicasLeftToDrop = replicasToDrop;
+
+                while (replicasLeftToDrop > 0)
+                {
+                    var allShardPeers = collectionClusteringState.PeersByShards[shardId];
+
+                    int peerReplicas = 0;
+                    ulong selectedPeerId = 0;
+
+                    foreach (var peerId in allShardPeers)
+                    {
+                        // Select the peer with most replicas of any shards on it
+                        var peerReplicaCount = collectionClusteringState.ShardsByPeers[peerId].Count;
+                        if (peerReplicaCount > peerReplicas)
+                        {
+                            peerReplicas = peerReplicaCount;
+                            selectedPeerId = peerId;
+                        }
+                    }
+
+                    // Here target peer uri and url are null since we are dropping the replica
+
+                    _shardReplicationsToExecute.Enqueue(
+                        new(
+                            shardId,
+                            SourcePeerId: selectedPeerId,
+                            SourcePeerUri: collectionClusteringState.KnownPeers[selectedPeerId].Uri,
+                            TargetPeerId: null,
+                            TargetPeerUri: null,
+                            ScheduledShardReplication.ReplicatorAction.DropReplica
+                        )
+                    );
+
+                    collectionClusteringState.DropShardReplica(shardId, selectedPeerId);
+                }
             }
         }
 
-        // Then we replicate shards that don't have enough replicas
+        // 1. Replicate shards that don't have enough replicas
 
         if (shardsToReplicate is { Count: > 0 })
         {
@@ -151,6 +187,9 @@ public class ShardReplicator
                 // select target peers which do not have specified shard replica
                 var targetPeerIds = collectionClusteringState
                     .ShardsByPeers.Where(kv => !kv.Value.Contains(shardId))
+                    // Order by the number of replicas already on the shard.
+                    // We need to fill up the peers with least replicas first
+                    .OrderBy(kv => kv.Value.Count)
                     .Select(kv => kv.Key)
                     .ToArray();
 
@@ -187,7 +226,35 @@ public class ShardReplicator
             }
         }
 
-        // Then we move 
+        // 2. Move shards around until collection is balanced
+
+        // Calculate how many shard replicas should a peer normally hold
+
+        var expectedNumberOfReplicasPerPeer =
+            (double)_targetReplicationFactor * collectionClusteringState.ShardCount / collectionClusteringState.KnownPeers.Count;
+
+        var maxNumberOfReplicasPerPeer = Math.Ceiling(expectedNumberOfReplicasPerPeer);
+        var minNumberOfReplicasPerPeer = Math.Floor(expectedNumberOfReplicasPerPeer);
+
+        var unbalancedPeers = collectionClusteringState
+            .ShardsByPeers.Where(peerWithShards =>
+                peerWithShards.Value.Count > maxNumberOfReplicasPerPeer || peerWithShards.Value.Count < minNumberOfReplicasPerPeer
+            )
+            .ToArray();
+
+        if (unbalancedPeers.Length == 0)
+        {
+            // No unbalanced peers - nothing to move
+            return;
+        }
+
+        // Find peers with maximum an minimum replicas
+        var maxReplicasPeer = collectionClusteringState.ShardsByPeers.MaxBy(p => p.Value.Count);
+        var minReplicasPeer = collectionClusteringState.ShardsByPeers.MinBy(p => p.Value.Count);
+
+        // Find all peers with enough
+
+        // Then we select two peers - one with more replicas than needed, and one with less replicas than needed
     }
 
     /// <summary>
@@ -254,12 +321,12 @@ public class ShardReplicator
                                 ReplicatedShards:
                                 [
                                     new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
-                                IsSuccess: true,
-                                ShardId: shardId,
-                                SourcePeerId: sourcePeerId,
-                                TargetPeerId: targetPeerId,
-                                _collectionName
-                            ),
+                                        IsSuccess: true,
+                                        ShardId: shardId,
+                                        SourcePeerId: sourcePeerId,
+                                        TargetPeerId: targetPeerId,
+                                        _collectionName
+                                    ),
                                 ],
                                 AlreadyReplicatedShards: []
                             ),
@@ -275,12 +342,12 @@ public class ShardReplicator
                                 ReplicatedShards:
                                 [
                                     new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
-                                IsSuccess: false,
-                                ShardId: shardId,
-                                SourcePeerId: sourcePeerId,
-                                TargetPeerId: targetPeerId,
-                                _collectionName
-                            ),
+                                        IsSuccess: false,
+                                        ShardId: shardId,
+                                        SourcePeerId: sourcePeerId,
+                                        TargetPeerId: targetPeerId,
+                                        _collectionName
+                                    ),
                                 ],
                                 AlreadyReplicatedShards: []
                             ),
@@ -290,7 +357,7 @@ public class ShardReplicator
                     yield return replicateShardResponse;
 
                     break;
-                case ScheduledShardReplication.ReplicatorAction.DeleteReplica:
+                case ScheduledShardReplication.ReplicatorAction.DropReplica:
                     throw new NotImplementedException();
                     break;
                 case ScheduledShardReplication.ReplicatorAction.MoveReplica:

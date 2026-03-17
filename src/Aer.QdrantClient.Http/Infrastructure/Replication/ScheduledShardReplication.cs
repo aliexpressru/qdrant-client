@@ -41,7 +41,7 @@ public record ScheduledShardReplication(
         /// <summary>
         /// Delete shard replica
         /// </summary>
-        DeleteReplica,
+        DropReplica,
 
         /// <summary>
         /// Move shard replica.

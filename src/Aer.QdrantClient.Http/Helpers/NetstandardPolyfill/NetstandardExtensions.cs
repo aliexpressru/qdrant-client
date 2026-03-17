@@ -8,17 +8,207 @@ internal static class HttpResponseMessageExtensions
 {
     private const string STATUS_CODE_KEY_NAME = "StatusCode";
 
-    extension<T>(IEnumerable<T> collection)
+    extension<TSource>(IEnumerable<TSource> source)
     {
         public bool TryGetNonEnumeratedCount(out int count)
         {
-            if (collection is null)
+            if (source is null)
             {
-                throw new ArgumentNullException(nameof(collection));
+                throw new ArgumentNullException(nameof(source));
             }
 
             count = 0;
             return false;
+        }
+
+        public TSource MaxBy<TKey>(Func<TSource, TKey> keySelector, IComparer<TKey> comparer = null)
+        {
+            if (source is null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (keySelector is null)
+            {
+                throw new ArgumentNullException(nameof(keySelector));
+            }
+
+            comparer ??= Comparer<TKey>.Default;
+
+            using IEnumerator<TSource> e = source.GetEnumerator();
+
+            if (!e.MoveNext())
+            {
+                if (default(TSource) is null)
+                {
+                    return default;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Sequence contains no elements");
+                }
+            }
+
+            TSource value = e.Current;
+            TKey key = keySelector(value);
+
+            if (default(TKey) is null)
+            {
+                if (key is null)
+                {
+                    TSource firstValue = value;
+
+                    do
+                    {
+                        if (!e.MoveNext())
+                        {
+                            // All keys are null, surface the first element.
+                            return firstValue;
+                        }
+
+                        value = e.Current;
+                        key = keySelector(value);
+                    }
+                    while (key is null);
+                }
+
+                while (e.MoveNext())
+                {
+                    TSource nextValue = e.Current;
+                    TKey nextKey = keySelector(nextValue);
+                    if (nextKey is not null && comparer.Compare(nextKey, key) > 0)
+                    {
+                        key = nextKey;
+                        value = nextValue;
+                    }
+                }
+            }
+            else
+            {
+                if (comparer == Comparer<TKey>.Default)
+                {
+                    while (e.MoveNext())
+                    {
+                        TSource nextValue = e.Current;
+                        TKey nextKey = keySelector(nextValue);
+                        if (Comparer<TKey>.Default.Compare(nextKey, key) > 0)
+                        {
+                            key = nextKey;
+                            value = nextValue;
+                        }
+                    }
+                }
+                else
+                {
+                    while (e.MoveNext())
+                    {
+                        TSource nextValue = e.Current;
+                        TKey nextKey = keySelector(nextValue);
+                        if (comparer.Compare(nextKey, key) > 0)
+                        {
+                            key = nextKey;
+                            value = nextValue;
+                        }
+                    }
+                }
+            }
+
+            return value;
+        }
+
+        public TSource MinBy<TKey>(Func<TSource, TKey> keySelector, IComparer<TKey> comparer = null)
+        {
+            if (source is null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (keySelector is null)
+            {
+                throw new ArgumentNullException(nameof(keySelector));
+            }
+
+            comparer ??= Comparer<TKey>.Default;
+
+            using IEnumerator<TSource> e = source.GetEnumerator();
+
+            if (!e.MoveNext())
+            {
+                if (default(TSource) is null)
+                {
+                    return default;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Sequence contains no elements");
+                }
+            }
+
+            TSource value = e.Current;
+            TKey key = keySelector(value);
+
+            if (default(TKey) is null)
+            {
+                if (key is null)
+                {
+                    TSource firstValue = value;
+
+                    do
+                    {
+                        if (!e.MoveNext())
+                        {
+                            // All keys are null, surface the first element.
+                            return firstValue;
+                        }
+
+                        value = e.Current;
+                        key = keySelector(value);
+                    }
+                    while (key is null);
+                }
+
+                while (e.MoveNext())
+                {
+                    TSource nextValue = e.Current;
+                    TKey nextKey = keySelector(nextValue);
+                    if (nextKey is not null && comparer.Compare(nextKey, key) < 0)
+                    {
+                        key = nextKey;
+                        value = nextValue;
+                    }
+                }
+            }
+            else
+            {
+                if (comparer == Comparer<TKey>.Default)
+                {
+                    while (e.MoveNext())
+                    {
+                        TSource nextValue = e.Current;
+                        TKey nextKey = keySelector(nextValue);
+                        if (Comparer<TKey>.Default.Compare(nextKey, key) < 0)
+                        {
+                            key = nextKey;
+                            value = nextValue;
+                        }
+                    }
+                }
+                else
+                {
+                    while (e.MoveNext())
+                    {
+                        TSource nextValue = e.Current;
+                        TKey nextKey = keySelector(nextValue);
+                        if (comparer.Compare(nextKey, key) < 0)
+                        {
+                            key = nextKey;
+                            value = nextValue;
+                        }
+                    }
+                }
+            }
+
+            return value;
         }
     }
 

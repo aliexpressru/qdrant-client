@@ -26,6 +26,11 @@ internal class CollectionClusteringState
     /// </summary>
     public Dictionary<ulong, Peer> KnownPeers { get; internal set; }
 
+    /// <summary>
+    /// Number of shards a collection has.
+    /// </summary>
+    public int ShardCount { get; internal set; }
+
     public CollectionClusteringState(
         GetClusterInfoResponse.ClusterInfo clusterInfo,
         GetCollectionClusteringInfoResponse.CollectionClusteringInfo collectionClusteringInfo
@@ -46,6 +51,8 @@ internal class CollectionClusteringState
         ShardsByPeers = [];
         PeersByShards = [];
 
+        HashSet<uint> allShardIds = [];
+
         foreach (var shardsByPeer in collectionClusteringInfo.ShardsByPeers)
         {
             ulong peerId = shardsByPeer.Key;
@@ -60,7 +67,11 @@ internal class CollectionClusteringState
             var peers = peersByShard.Value;
 
             PeersByShards.Add(shardId, [.. peers]);
+
+            allShardIds.Add(shardId);
         }
+
+        ShardCount = allShardIds.Count;
     }
 
     public bool AddShardReplica(uint shardId, ulong newPeerId)
@@ -86,7 +97,7 @@ internal class CollectionClusteringState
         return wasStateModified;
     }
 
-    public bool RemoveShardReplica(uint shardId, ulong removeFromPeerId)
+    public bool DropShardReplica(uint shardId, ulong removeFromPeerId)
     {
         bool wasStateModified = false;
 
@@ -112,7 +123,7 @@ internal class CollectionClusteringState
     {
         bool wasStateModified = false;
 
-        wasStateModified |= RemoveShardReplica(shardId, sourcePeerId);
+        wasStateModified |= DropShardReplica(shardId, sourcePeerId);
         wasStateModified |= AddShardReplica(shardId, targetPeerId);
 
         if (wasStateModified)
