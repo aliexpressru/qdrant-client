@@ -65,7 +65,7 @@ public abstract class QueryVector
     /// </summary>
     /// <param name="sparseVectorComponents">The value to convert.</param>
     public static implicit operator QueryVector((uint[] Indices, float[] Values) sparseVectorComponents) =>
-        new SparseQueryVector((SparseVector)sparseVectorComponents);
+        new SparseQueryVector((SparseVector)(VectorBase)sparseVectorComponents);
 
     /// <summary>
     /// Implicitly converts inference object to an instance of <see cref="QueryVector"/>.
