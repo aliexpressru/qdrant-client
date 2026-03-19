@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Aer.QdrantClient.Http.Collections;
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
@@ -27,7 +28,8 @@ public class ShardReplicator
     private readonly string _collectionName;
     private int _targetReplicationFactor;
 
-    private Queue<ScheduledShardReplication> _shardReplicationsToExecute;
+    // Probably concurrent queue is an overkill here
+    private ConcurrentQueue<ScheduledShardReplication> _shardReplicationsToExecute;
 
     // Internal for testing purposes
     internal CollectionClusteringState _targetCollectionClusteringState;
@@ -143,9 +145,7 @@ public class ShardReplicator
         // Here we should consider shards with more \ less replicas as well as placement of all the shards across the cluster.
         // On every step of the algorithm we perform sanity checks and throw InvalidOperationException if something does not look right
 
-        _shardReplicationsToExecute = new(
-            capacity: shardsToReplicate.Sum(s => s.NumberOfReplicasToAdd) + shardsToDrop.Sum(s => s.NumberOfReplicasToDrop)
-        );
+        _shardReplicationsToExecute = new();
 
         // This is a snapshot of the collection clustering state before we start replication process.
         // We modify this snapshot on each step of the planning process to always keep
@@ -177,7 +177,10 @@ public class ShardReplicator
         return collectionClusteringState;
     }
 
-    private void PlanExtraReplicaDrops(List<(uint ShardId, int NumberOfReplicasToDrop)> shardsToDrop, CollectionClusteringState collectionClusteringState)
+    private void PlanExtraReplicaDrops(
+        List<(uint ShardId, int NumberOfReplicasToDrop)> shardsToDrop,
+        CollectionClusteringState collectionClusteringState
+    )
     {
         if (shardsToDrop is { Count: > 0 })
         {
@@ -237,8 +240,10 @@ public class ShardReplicator
         }
     }
 
-    private void PlanAddingReplicas(List<(uint ShardId, int NumberOfReplicasToAdd)> shardsToReplicate,
-        CollectionClusteringState collectionClusteringState)
+    private void PlanAddingReplicas(
+        List<(uint ShardId, int NumberOfReplicasToAdd)> shardsToReplicate,
+        CollectionClusteringState collectionClusteringState
+    )
     {
         if (shardsToReplicate is { Count: > 0 })
         {
@@ -432,16 +437,18 @@ public class ShardReplicator
         TimeSpan? timeout = null
     )
     {
-        if (_shardReplicationsToExecute is null or { Count: 0 })
+        if (_shardReplicationsToExecute is null or { IsEmpty: true })
         {
             yield break;
         }
 
-        while (_shardReplicationsToExecute.Count > 0)
+        while (!_shardReplicationsToExecute.IsEmpty)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var (shardId, sourcePeerId, _, targetPeerId, _, replicatorAction, _) = _shardReplicationsToExecute.Dequeue();
+            _shardReplicationsToExecute.TryDequeue(out var nextReplicationStep);
+
+            var (shardId, sourcePeerId, _, targetPeerId, _, replicatorAction, _) = nextReplicationStep;
 
             switch (replicatorAction)
             {
