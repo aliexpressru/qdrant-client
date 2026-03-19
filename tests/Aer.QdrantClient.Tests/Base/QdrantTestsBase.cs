@@ -47,6 +47,7 @@ public class QdrantTestsBase
     protected const string TestShardKey1 = "shard1";
     protected const string TestPartialShardKey = "partial";
     protected const string TestShardKey2 = "shard2";
+    protected const string TestShardKey3 = "shard3";
     protected const int TestShardKeyInt1 = 1;
 
     protected const string TestCollectionName2 = "test_collection_2";
@@ -376,9 +377,9 @@ public class QdrantTestsBase
     }
 
     /// <summary>
-    /// Returns <see cref="QdrantHttpClient"/> for first node of the 2-node cluster.
+    /// Returns <see cref="QdrantHttpClient"/> selected node of the 2-node cluster.
     /// </summary>
-    protected static QdrantHttpClient GetClusterClient(ClusterNode requiredClusterNode) =>
+    protected static QdrantHttpClient Get2NodeClusterClient(ClusterNode requiredClusterNode) =>
         new(
             "localhost",
             apiKey: "test",
@@ -386,6 +387,26 @@ public class QdrantTestsBase
             {
                 ClusterNode.First => 6343,
                 ClusterNode.Second => 6353,
+                _ => throw new ArgumentOutOfRangeException(
+                    nameof(requiredClusterNode),
+                    requiredClusterNode,
+                    "Unknown cluster node")
+            },
+            useHttps: false,
+            enableCompression: true);
+
+    /// <summary>
+    /// Returns <see cref="QdrantHttpClient"/> selected node of the 2-node cluster.
+    /// </summary>
+    protected static QdrantHttpClient Get3NodeClusterClient(ClusterNode requiredClusterNode) =>
+        new(
+            "localhost",
+            apiKey: "test",
+            port: requiredClusterNode switch
+            {
+                ClusterNode.First => 6373,
+                ClusterNode.Second => 6383,
+                ClusterNode.Third => 6393,
                 _ => throw new ArgumentOutOfRangeException(
                     nameof(requiredClusterNode),
                     requiredClusterNode,
@@ -406,12 +427,17 @@ public class QdrantTestsBase
             QuantizationConfiguration quantizationConfig = null,
             StrictModeConfiguration strictModeConfig = null,
             List<UpsertPointsRequest.UpsertPoint> upsertPoints = null,
-            bool isWaitForCollectionReady = true)
+            bool isWaitForCollectionReady = true,
+            int? shardCount = null,
+            int? replicationFactor = null)
     {
         await qdrantHttpClient.CreateCollection(
             collectionName,
             new CreateCollectionRequest(distanceMetric, vectorSize, isServeVectorsFromDisk: true)
             {
+                ShardNumber = shardCount.HasValue ? (uint)shardCount.Value : null,
+                ReplicationFactor = replicationFactor.HasValue ? (uint)replicationFactor.Value : null,
+
                 OnDiskPayload = true,
                 QuantizationConfig = quantizationConfig,
                 StrictModeConfig = strictModeConfig,
@@ -474,7 +500,7 @@ public class QdrantTestsBase
 
         if (isWaitForCollectionReady)
         {
-            await qdrantHttpClient.EnsureCollectionReady(collectionName, CancellationToken.None);
+            await qdrantHttpClient.EnsureCollectionReady(collectionName, CancellationToken.None, isCheckShardTransfersCompleted: true);
         }
 
         return (pointsToUpsert, upsertPointsByPointIds, upsertPointIds);
@@ -595,7 +621,7 @@ public class QdrantTestsBase
                                     : CreateTestNamedVector(vectorSize, vectorName),
                                 new TestPayload()
                                 {
-                                        Text = "test"
+                                    Text = "test"
                                 }
                             ),
                         ],
@@ -641,6 +667,101 @@ public class QdrantTestsBase
         await qdrantHttpClient.EnsureCollectionReady(collectionName, cancellationToken: CancellationToken.None);
 
         await Task.Delay(TimeSpan.FromSeconds(1));
+    }
+
+    protected static async Task CreateTestShardedCollection(
+        QdrantHttpClient qdrantHttpClient,
+        string collectionName,
+        uint vectorSize,
+        string[] shardKeys,
+        uint replicationFactor = 1,
+        uint shardNumber = 2,
+        int vectorCount = 1,
+        string vectorName = null)
+    {
+        if (vectorCount == 0)
+        {
+            throw new InvalidOperationException("The logic of this method does not expect vector count of 0");
+        }
+
+        // Create collection
+
+        (await qdrantHttpClient.CreateCollection(
+            collectionName,
+            new CreateCollectionRequest(
+                VectorDistanceMetric.Dot,
+                vectorSize,
+                isServeVectorsFromDisk: true,
+                namedVectorNames: vectorName is null
+                ? null
+                : [vectorName]
+            )
+            {
+                OptimizersConfig = new OptimizersConfiguration()
+                {
+                    IndexingThreshold = 1 // 1kB means that sufficiently many points will trigger optimisation
+                },
+                OnDiskPayload = true,
+                WriteConsistencyFactor = 2,
+                ReplicationFactor = replicationFactor,
+                ShardNumber = shardNumber,
+                ShardingMethod = ShardingMethod.Custom
+            },
+            CancellationToken.None)).EnsureSuccess();
+
+        // configure collection manual sharding to ensure consistent results
+
+        var allPeers = (await qdrantHttpClient.GetClusterInfo(CancellationToken.None))
+            .EnsureSuccess().AllPeerIds;
+
+        foreach (var shardKey in shardKeys)
+        {
+            (await qdrantHttpClient.CreateShardKey(
+                collectionName,
+                shardKey,
+                CancellationToken.None,
+                shardsNumber: (uint)Math.Ceiling((double)shardNumber / allPeers.Count),
+                replicationFactor: replicationFactor,
+                placement: [.. allPeers]
+            )).EnsureSuccess();
+        }
+
+        // Upsert points
+
+        foreach (var shardKey in shardKeys)
+        {
+            List<UpsertPointsRequest.UpsertPoint> upsertPoints = new(vectorCount);
+
+            for (int i = 0; i < vectorCount; i++)
+            {
+                UpsertPointsRequest.UpsertPoint upsertPoint =
+                    new(
+                            PointId.NewGuid(),
+                            vectorName is null
+                                ? CreateTestVector(vectorSize)
+                                : CreateTestNamedVector(vectorSize, vectorName),
+                            new TestPayload()
+                            {
+                                Text = $"test_{i}",
+                                Integer = i
+                            }
+                    );
+
+                upsertPoints.Add(upsertPoint);
+            }
+
+            (await qdrantHttpClient.UpsertPoints(
+                collectionName,
+                new UpsertPointsRequest()
+                {
+                    Points = upsertPoints,
+                    ShardKey = shardKey
+                },
+                CancellationToken.None)).EnsureSuccess();
+
+        }
+
+        await qdrantHttpClient.EnsureCollectionReady(collectionName, cancellationToken: CancellationToken.None);
     }
 
     private void AddTestLogger(ServiceCollection services)

@@ -19,8 +19,8 @@ internal class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
     {
         Initialize();
 
-        _qdrantHttpClientClusterNode1 = GetClusterClient(ClusterNode.First);
-        _qdrantHttpClientClusterNode2 = GetClusterClient(ClusterNode.Second);
+        _qdrantHttpClientClusterNode1 = Get2NodeClusterClient(ClusterNode.First);
+        _qdrantHttpClientClusterNode2 = Get2NodeClusterClient(ClusterNode.Second);
     }
 
     [SetUp]

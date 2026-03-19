@@ -19,13 +19,15 @@ namespace Aer.QdrantClient.Http.Infrastructure.Replication;
 /// this property will be <c>null</c>.
 /// </param>
 /// <param name="Action">The planned replicator action.</param>
+/// <param name="StepNumber">The number of this replication operation in overall replication plan.</param>
 public record ScheduledShardReplication(
     uint ShardId,
     ulong SourcePeerId,
     string SourcePeerUri,
     ulong? TargetPeerId,
     string TargetPeerUri,
-    ReplicatorAction Action
+    ReplicatorAction Action,
+    int StepNumber
 )
 {
     /// <summary>
@@ -34,17 +36,17 @@ public record ScheduledShardReplication(
     public enum ReplicatorAction
     {
         /// <summary>
-        /// Add shard replica.
+        /// Replicate shard from one peer to another.
         /// </summary>
         AddReplica,
 
         /// <summary>
-        /// Delete shard replica
+        /// Delete shard replica from a peer.
         /// </summary>
         DropReplica,
 
         /// <summary>
-        /// Move shard replica.
+        /// Move shard replica from one peer to another.
         /// </summary>
         MoveReplica
     }

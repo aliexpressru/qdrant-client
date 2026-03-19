@@ -25,7 +25,7 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
     public void Setup()
     {
         Initialize();
-        _qdrantHttpClient = GetClusterClient(ClusterNode.First);
+        _qdrantHttpClient = Get2NodeClusterClient(ClusterNode.First);
 
         _logger = ServiceProvider.GetRequiredService<ILogger<ClusterCompoundOperationsTests>>();
     }
@@ -563,121 +563,6 @@ internal class ClusterCompoundOperationsTests : QdrantTestsBase
 
         equalizeShardReplicationResponse.Status.IsSuccess.Should().BeFalse();
         equalizeShardReplicationResponse.Status.GetErrorMessage().Contains("The source peer should have more than 1 shards for equalization").Should().BeTrue();
-    }
-
-    [Test]
-    public async Task RestoreShardReplicationFactor()
-    {
-        /*
-        This test checks whether the following transition happens when RestoreShardReplicationFactor is called:
-
-        Node 1   Node 2
-        S1 S4     S2 S1
-        S3 S2     S4 S3
-        --------------- Drop replicas until this state
-        S1        S2 S1
-        S3        S4
-        --------------- Call RestoreShardReplicationFactor, the initial state should be recovered
-        S1 S4     S2 S1
-        S3 S2     S4 S3
-        */
-
-        await CreateTestShardedCollection(
-            _qdrantHttpClient,
-            TestCollectionName,
-            10U,
-            replicationFactor: 2,
-            shardNumber: 4);
-
-        var firstPeerInfo =
-            (await _qdrantHttpClient.GetPeerInfo("http://qdrant-1", CancellationToken.None))
-            .EnsureSuccess();
-
-        var secondPeerInfo =
-            (await _qdrantHttpClient.GetPeerInfo("http://qdrant-2", CancellationToken.None))
-            .EnsureSuccess();
-
-        // Prepare initial unbalanced cluster state
-        // Drop shards 2 and 4 from peer1
-        // Drop shard 3 from peer2
-
-        uint[] shardsToDropFromFirstPeer = [2, 4];
-        uint[] shardsToDropFromSecondPeer = [3];
-
-        var dropShardsResponse1 = await _qdrantHttpClient.DropCollectionShardsFromPeer(
-            TestCollectionName,
-            firstPeerInfo.PeerId,
-            shardsToDropFromFirstPeer,
-            CancellationToken.None
-        );
-
-        dropShardsResponse1.Status.IsSuccess.Should().BeTrue();
-        dropShardsResponse1.Result.DroppedShardIds.Should().BeEquivalentTo(shardsToDropFromFirstPeer);
-
-        var dropShardsResponse2 = await _qdrantHttpClient.DropCollectionShardsFromPeer(
-            TestCollectionName,
-            secondPeerInfo.PeerId,
-            shardsToDropFromSecondPeer,
-            CancellationToken.None
-        );
-
-        dropShardsResponse2.Status.IsSuccess.Should().BeTrue();
-        dropShardsResponse2.Result.DroppedShardIds.Should().BeEquivalentTo(shardsToDropFromSecondPeer);
-
-        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None, isCheckShardTransfersCompleted: true);
-
-        // Restore replication factor
-
-        var restoreReplicationFactorResponse = await _qdrantHttpClient.RestoreShardReplicationFactor(TestCollectionName, CancellationToken.None);
-
-        restoreReplicationFactorResponse.Status.IsSuccess.Should().BeTrue();
-
-        var shardReplicator = restoreReplicationFactorResponse.Result;
-
-        shardReplicator.ShardsNeedReplication.Should().BeTrue();
-
-        shardReplicator.ReplicationPlan.Should().NotBeEmpty();
-
-        shardReplicator.ReplicationPlan.Count.Should().Be(3); // 3 replications to restore replication factor
-
-        await foreach (var shardReplicationResult in shardReplicator.ExecuteReplications(CancellationToken.None))
-        {
-            shardReplicationResult.Status.IsSuccess.Should().BeTrue();
-
-            shardReplicationResult.Result.ReplicatedShards.Count.Should().Be(1);
-
-            var singleShardReplicationResult = shardReplicationResult.Result.ReplicatedShards[0];
-
-            singleShardReplicationResult.CollectionName.Should().Be(TestCollectionName);
-
-            if (singleShardReplicationResult.TargetPeerId == firstPeerInfo.PeerId)
-            {
-                singleShardReplicationResult.ShardId.Should().BeOneOf(shardsToDropFromFirstPeer);
-            }
-
-            if (singleShardReplicationResult.TargetPeerId == secondPeerInfo.PeerId)
-            {
-                singleShardReplicationResult.ShardId.Should().BeOneOf(shardsToDropFromSecondPeer);
-            }
-
-            singleShardReplicationResult.IsSuccess.Should().BeTrue();
-
-            // Wait for replication to complete before moving to the next shard
-            await _qdrantHttpClient.EnsureCollectionReady(
-            TestCollectionName, CancellationToken.None, isCheckShardTransfersCompleted: true);
-        }
-
-        var collectionClusteringInfo = (
-            await _qdrantHttpClient.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None, isTranslatePeerIdsToUris: true)
-        ).EnsureSuccess();
-
-        collectionClusteringInfo.LocalShards.Length.Should().Be(4);
-        collectionClusteringInfo.RemoteShards.Length.Should().Be(4);
-
-        foreach (var (_, peerIds) in collectionClusteringInfo.PeersByShards)
-        {
-            peerIds.Count.Should().Be(2); // 2 nodes per cluster
-        }
     }
 
     [Test]

@@ -17,7 +17,7 @@ internal class CollectionClusteringState
     /// <param name="Uri">The peer URI.</param>
     internal record Peer(ulong Id, string Uri);
 
-    private int _version;
+    //private int _version;
     private readonly int _targetReplicationFactor;
 
     /// <summary>
@@ -43,6 +43,12 @@ internal class CollectionClusteringState
     public int MaxNumberOfReplicasPerPeer { get; }
 
     public int MinNumberOfReplicasPerPeer { get; }
+
+    /// <summary>
+    /// Represents number of times this state was modified from the initial creation.
+    /// We use this property as a replication operation number in replication plan.
+    /// </summary>
+    public int Version { get; private set; } = -1;
 
     public CollectionClusteringState(
         GetClusterInfoResponse.ClusterInfo clusterInfo,
@@ -97,7 +103,7 @@ internal class CollectionClusteringState
         MinNumberOfReplicasPerPeer = (int)Math.Floor(expectedNumberOfReplicasPerPeer);
     }
 
-    public bool AddShardReplica(uint shardId, ulong newPeerId)
+    public bool AddShardReplica(uint shardId, ulong newPeerId, bool shouldUpdateVersion = true)
     {
         bool wasStateModified = false;
 
@@ -115,12 +121,15 @@ internal class CollectionClusteringState
 
         wasStateModified |= ShardsByPeers[newPeerId].Add(shardId);
 
-        _version++;
+        if (wasStateModified && shouldUpdateVersion)
+        {
+            Version++;
+        }
 
         return wasStateModified;
     }
 
-    public bool DropShardReplica(uint shardId, ulong removeFromPeerId)
+    public bool DropShardReplica(uint shardId, ulong removeFromPeerId, bool shouldUpdateVersion = true)
     {
         bool wasStateModified = false;
 
@@ -134,9 +143,9 @@ internal class CollectionClusteringState
             wasStateModified |= ShardsByPeers[removeFromPeerId].Remove(shardId);
         }
 
-        if (wasStateModified)
+        if (wasStateModified && shouldUpdateVersion)
         {
-            _version++;
+            Version++;
         }
 
         return wasStateModified;
@@ -146,12 +155,14 @@ internal class CollectionClusteringState
     {
         bool wasStateModified = false;
 
-        wasStateModified |= DropShardReplica(shardId, sourcePeerId);
-        wasStateModified |= AddShardReplica(shardId, targetPeerId);
+        // We are passing `shouldUpdateVersion: false` to each of the operations to only update version once
+
+        wasStateModified |= DropShardReplica(shardId, sourcePeerId, shouldUpdateVersion: false);
+        wasStateModified |= AddShardReplica(shardId, targetPeerId, shouldUpdateVersion: false);
 
         if (wasStateModified)
         {
-            _version++;
+            Version++;
         }
 
         return wasStateModified;
@@ -165,6 +176,16 @@ internal class CollectionClusteringState
         var minReplicasPeer = ShardsByPeers.MinBy(p => p.Value.Count);
 
         return (minReplicasPeer.Key, minReplicasPeer.Value);
+    }
+
+    /// <summary>
+    /// Gets the id of the peer with maximum number of replicas.
+    /// </summary>
+    public (ulong PeerId, HashSet<uint> ShardIds) GetMaxReplicasPeer()
+    {
+        var maxReplicasPeer = ShardsByPeers.MaxBy(p => p.Value.Count);
+
+        return (maxReplicasPeer.Key, maxReplicasPeer.Value);
     }
 
     /// <summary>
@@ -184,6 +205,22 @@ internal class CollectionClusteringState
         }
 
         return (overpopulatedPeer.Key, overpopulatedPeer.Value);
+    }
+
+    public (ulong PeerId, HashSet<uint> ShardIds)? GetMostUnderpopulatedPeer()
+    {
+        var underpopulatedPeer = ShardsByPeers
+                .Where(peerWithShards => peerWithShards.Value.Count < MinNumberOfReplicasPerPeer)
+                .OrderBy(p => p.Value.Count)
+                .FirstOrDefault();
+
+        if (underpopulatedPeer.Key == 0 && underpopulatedPeer.Value == null)
+        {
+            // Means no underpopulated peers left
+            return null;
+        }
+
+        return (underpopulatedPeer.Key, underpopulatedPeer.Value);
     }
 }
 
