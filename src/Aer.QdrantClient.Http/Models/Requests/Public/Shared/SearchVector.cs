@@ -106,7 +106,7 @@ public abstract class SearchVector
     /// </summary>
     /// <param name="sparseVectorComponents">The value to convert.</param>
     public static implicit operator SearchVector((uint[] Indices, float[] Values) sparseVectorComponents) =>
-        new SparseSearchVector((SparseVector)sparseVectorComponents);
+        new SparseSearchVector((SparseVector)(VectorBase)sparseVectorComponents);
 
     /// <summary>
     /// Implicitly converts an instance of <see cref="VectorBase"/> to an instance of <see cref="SearchVector"/>.

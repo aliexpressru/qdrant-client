@@ -22,7 +22,7 @@ internal partial class ClusterTests : QdrantTestsBase
     public void Setup()
     {
         Initialize();
-        _qdrantHttpClient = GetClusterClient(ClusterNode.First);
+        _qdrantHttpClient = Get2NodeClusterClient(ClusterNode.First);
     }
 
     [SetUp]

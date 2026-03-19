@@ -8,7 +8,8 @@ namespace Aer.QdrantClient.Http.Models.Responses;
 /// Note that successful response status does not indicate that
 /// the replications actually took place. It only
 /// indicates that all the preparation work had been done.
-/// Use <see cref="ShardReplicator"/> from the result property to execute required replication sequence.
+/// Use <see cref="ShardReplicator"/> from the result property to execute required replication queue.
+/// You can check the planned replications by inspecting <see cref="ShardReplicator.ReplicationPlan"/>.
 /// </summary>
 public sealed class RestoreShardReplicationFactorResponse : QdrantResponseBase<ShardReplicator>
 {

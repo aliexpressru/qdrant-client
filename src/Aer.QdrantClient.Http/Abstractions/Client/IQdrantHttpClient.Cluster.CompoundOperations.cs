@@ -138,9 +138,11 @@ public partial interface IQdrantHttpClient
         params string[] collectionNamesToReplicate);
 
     /// <summary>
-    /// Restores shard replica count to be no fewer than configured replication factor for a specified collection.
-    /// The final result will be replicating shards until replication factor for each shard is restored.
-    /// If shard has number of replicas greater than configured replication factor for collection - it will not be altered.
+    /// Restores shard replica count to be no fewer and no more than the
+    /// configured replication factor for a specified collection.
+    /// The final result will be adding \ dropping \ moving shard replicas until replication factor for each shard is restored.
+    /// Also ensures that all shards are properly balanced and no peers have
+    /// significantly more shard replicas than the others.
     /// </summary>
     /// <param name="collectionName">Collection name to balance shard replication for.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
