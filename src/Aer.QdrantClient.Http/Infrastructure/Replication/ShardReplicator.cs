@@ -123,7 +123,12 @@ public class ShardReplicator
 
         // Plan shard replications
 
-        var targetCollectionClusteringState = PlanReplications(shardsToReplicate, shardsToDrop, clusterInfo, collectionClusteringInfo);
+        var targetCollectionClusteringState = PlanReplications(
+            shardsToReplicate,
+            shardsToDrop,
+            clusterInfo,
+            collectionClusteringInfo
+        );
 
         _targetCollectionClusteringState = targetCollectionClusteringState;
     }
@@ -141,7 +146,11 @@ public class ShardReplicator
             capacity: shardsToReplicate.Sum(s => s.NumberOfReplicasToAdd) + shardsToDrop.Sum(s => s.NumberOfReplicasToDrop)
         );
 
-        var collectionClusteringState = new CollectionClusteringState(clusterInfo, collectionClusteringInfo, _targetReplicationFactor);
+        var collectionClusteringState = new CollectionClusteringState(
+            clusterInfo,
+            collectionClusteringInfo,
+            _targetReplicationFactor
+        );
 
         // 0. Drop extra replicas
 
@@ -174,12 +183,16 @@ public class ShardReplicator
                     if (selectedPeerId == 0)
                     {
                         // Means no peer was selected since peer ids are all >0
-                        throw new InvalidOperationException($"Invalid algorithm state. A peer for the shard {shardIdToDrop} to drop was not found");
+                        throw new InvalidOperationException(
+                            $"Invalid algorithm state. A peer for the shard {shardIdToDrop} to drop was not found"
+                        );
                     }
 
                     if (!collectionClusteringState.DropShardReplica(shardIdToDrop, selectedPeerId))
                     {
-                        throw new InvalidOperationException($"Invalid algorithm state. Shard {shardIdToDrop} drop from peer {selectedPeerId}() can't be performed");
+                        throw new InvalidOperationException(
+                            $"Invalid algorithm state. Shard {shardIdToDrop} drop from peer {selectedPeerId}() can't be performed"
+                        );
                     }
 
                     // Here target peer uri and url are null since we are dropping the replica
@@ -232,7 +245,9 @@ public class ShardReplicator
 
                     if (!collectionClusteringState.AddShardReplica(shardIdToReplicate, targetPeerId))
                     {
-                        throw new InvalidOperationException($"Invalid algorithm state. Shard {shardIdToReplicate} replication from peer {sourcePeerId} to {targetPeerId} can't be performed");
+                        throw new InvalidOperationException(
+                            $"Invalid algorithm state. Shard {shardIdToReplicate} replication from peer {sourcePeerId} to {targetPeerId} can't be performed"
+                        );
                     }
 
                     _shardReplicationsToExecute.Enqueue(
@@ -273,20 +288,22 @@ public class ShardReplicator
 
                     if (!collectionClusteringState.MoveShardReplica(shardIdToMove, sourcePeerId, targetPeerId))
                     {
-                        throw new InvalidOperationException($"Invalid algorithm state. Shard {shardIdToMove} replica move from peer {sourcePeerId} to {targetPeerId} can't be performed");
+                        throw new InvalidOperationException(
+                            $"Invalid algorithm state. Shard {shardIdToMove} replica move from peer {sourcePeerId} to {targetPeerId} can't be performed"
+                        );
                     }
 
                     _shardReplicationsToExecute.Enqueue(
-                            new(
-                                shardIdToMove,
-                                sourcePeerId,
-                                collectionClusteringState.KnownPeers[sourcePeerId].Uri,
-                                targetPeerId,
-                                collectionClusteringState.KnownPeers[targetPeerId].Uri,
-                                ScheduledShardReplication.ReplicatorAction.MoveReplica,
-                                collectionClusteringState.Version
-                            )
-                        );
+                        new(
+                            shardIdToMove,
+                            sourcePeerId,
+                            collectionClusteringState.KnownPeers[sourcePeerId].Uri,
+                            targetPeerId,
+                            collectionClusteringState.KnownPeers[targetPeerId].Uri,
+                            ScheduledShardReplication.ReplicatorAction.MoveReplica,
+                            collectionClusteringState.Version
+                        )
+                    );
 
                     foundShardToMove = true;
 
@@ -298,7 +315,9 @@ public class ShardReplicator
             if (!foundShardToMove)
             {
                 // We should never get here
-                throw new InvalidOperationException("Invalid algorithm state. The overpopulated peer depopulation failed : no shard found to move from the overpopulated peer");
+                throw new InvalidOperationException(
+                    "Invalid algorithm state. The overpopulated peer depopulation failed : no shard found to move from the overpopulated peer"
+                );
             }
 
             overpopulatedPeer = collectionClusteringState.GetMostOverpopulatedPeer();
@@ -325,20 +344,22 @@ public class ShardReplicator
 
                     if (!collectionClusteringState.MoveShardReplica(shardIdToMove, sourcePeerId, targetPeerId))
                     {
-                        throw new InvalidOperationException($"Invalid algorithm state. Shard {shardIdToMove} replica move from peer {sourcePeerId} to {targetPeerId} can't be performed");
+                        throw new InvalidOperationException(
+                            $"Invalid algorithm state. Shard {shardIdToMove} replica move from peer {sourcePeerId} to {targetPeerId} can't be performed"
+                        );
                     }
 
                     _shardReplicationsToExecute.Enqueue(
-                            new(
-                                shardIdToMove,
-                                sourcePeerId,
-                                collectionClusteringState.KnownPeers[sourcePeerId].Uri,
-                                targetPeerId,
-                                collectionClusteringState.KnownPeers[targetPeerId].Uri,
-                                ScheduledShardReplication.ReplicatorAction.MoveReplica,
-                                collectionClusteringState.Version
-                            )
-                        );
+                        new(
+                            shardIdToMove,
+                            sourcePeerId,
+                            collectionClusteringState.KnownPeers[sourcePeerId].Uri,
+                            targetPeerId,
+                            collectionClusteringState.KnownPeers[targetPeerId].Uri,
+                            ScheduledShardReplication.ReplicatorAction.MoveReplica,
+                            collectionClusteringState.Version
+                        )
+                    );
 
                     foundShardToMove = true;
 
@@ -350,7 +371,9 @@ public class ShardReplicator
             if (!foundShardToMove)
             {
                 // We should never get here
-                throw new InvalidOperationException("Invalid algorithm state. The underpopulated peer population failed : no shard found to move to the underpopulated peer");
+                throw new InvalidOperationException(
+                    "Invalid algorithm state. The underpopulated peer population failed : no shard found to move to the underpopulated peer"
+                );
             }
 
             underpopulatedPeer = collectionClusteringState.GetMostUnderpopulatedPeer();
@@ -466,10 +489,7 @@ public class ShardReplicator
                 {
                     var dropShardReplicaStartResponse = await _qdrantClient.UpdateCollectionClusteringSetup(
                         _collectionName,
-                        UpdateCollectionClusteringSetupRequest.CreateDropShardReplicaRequest(
-                            shardId,
-                            sourcePeerId
-                        ),
+                        UpdateCollectionClusteringSetupRequest.CreateDropShardReplicaRequest(shardId, sourcePeerId),
                         cancellationToken,
                         timeout
                     );

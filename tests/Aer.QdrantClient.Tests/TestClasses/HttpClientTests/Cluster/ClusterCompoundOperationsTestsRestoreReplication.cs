@@ -39,18 +39,12 @@ internal class ClusterCompoundOperationsTestsRestoreReplication : QdrantTestsBas
     [Test]
     public async Task RestoreShardReplicationFactor_NoReplicationRequired()
     {
-        await PrepareCollection(
-            _qdrantHttpClient1,
-            TestCollectionName,
-            replicationFactor: 2,
-            vectorCount: 100,
-            shardCount: 6
-        );
+        await PrepareCollection(_qdrantHttpClient1, TestCollectionName, replicationFactor: 2, vectorCount: 100, shardCount: 6);
 
         var restoreReplicationFactorResponse = await _qdrantHttpClient1.RestoreShardReplicationFactor(
-           TestCollectionName,
-           CancellationToken.None
-       );
+            TestCollectionName,
+            CancellationToken.None
+        );
 
         restoreReplicationFactorResponse.Status.IsSuccess.Should().BeTrue();
 
