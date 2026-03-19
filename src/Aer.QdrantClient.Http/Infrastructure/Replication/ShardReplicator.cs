@@ -140,12 +140,16 @@ public class ShardReplicator
         GetCollectionClusteringInfoResponse.CollectionClusteringInfo collectionClusteringInfo
     )
     {
-        // Here we should consider shards with more \ less replicas as well as placement of all the shards across the cluster
+        // Here we should consider shards with more \ less replicas as well as placement of all the shards across the cluster.
+        // On every step of the algorithm we perform sanity checks and throw InvalidOperationException if something does not look right
 
         _shardReplicationsToExecute = new(
             capacity: shardsToReplicate.Sum(s => s.NumberOfReplicasToAdd) + shardsToDrop.Sum(s => s.NumberOfReplicasToDrop)
         );
 
+        // This is a snapshot of the collection clustering state before we start replication process.
+        // We modify this snapshot on each step of the planning process to always keep
+        // the current state of the collection clustering. We return it only for testing purposes
         var collectionClusteringState = new CollectionClusteringState(
             clusterInfo,
             collectionClusteringInfo,
@@ -154,12 +158,31 @@ public class ShardReplicator
 
         // 0. Drop extra replicas
 
+        PlanExtraReplicaDrops(shardsToDrop, collectionClusteringState);
+
+        // 1. Replicate shards that don't have enough replicas
+
+        PlanAddingReplicas(shardsToReplicate, collectionClusteringState);
+
+        // 2. Move shards until collection is balanced. I.e. there are no overpopulated or underpopulated peers.
+
+        // 2.1 - check overpopulated peers and depopulate them
+
+        PlanOverpopulationFix(collectionClusteringState);
+
+        // 2.2 - check underpopulated peers and populate them
+
+        PlanUnderpopulationFix(collectionClusteringState);
+
+        return collectionClusteringState;
+    }
+
+    private void PlanExtraReplicaDrops(List<(uint ShardId, int NumberOfReplicasToDrop)> shardsToDrop, CollectionClusteringState collectionClusteringState)
+    {
         if (shardsToDrop is { Count: > 0 })
         {
             foreach (var (shardIdToDrop, replicasToDrop) in shardsToDrop)
             {
-                // Find all shard replicas
-
                 int replicasLeftToDrop = replicasToDrop;
 
                 while (replicasLeftToDrop > 0)
@@ -212,14 +235,16 @@ public class ShardReplicator
                 }
             }
         }
+    }
 
-        // 1. Replicate shards that don't have enough replicas
-
+    private void PlanAddingReplicas(List<(uint ShardId, int NumberOfReplicasToAdd)> shardsToReplicate,
+        CollectionClusteringState collectionClusteringState)
+    {
         if (shardsToReplicate is { Count: > 0 })
         {
             foreach (var (shardIdToReplicate, replicasToAdd) in shardsToReplicate)
             {
-                // select target peers which do not have specified shard replica
+                // Select target peers which do not have specified shard replica
                 var targetPeerIds = collectionClusteringState
                     .ShardsByPeers.Where(kv => !kv.Value.Contains(shardIdToReplicate))
                     // Order by the number of replicas already on the shard.
@@ -230,6 +255,7 @@ public class ShardReplicator
 
                 HashSet<ulong> sourcePeerIds = collectionClusteringState.PeersByShards[shardIdToReplicate];
 
+                // Round-robin both source and target peers
                 CircularEnumerable<ulong> sourcePeers = new(sourcePeerIds);
                 CircularEnumerable<ulong> targetPeers = new(targetPeerIds);
 
@@ -266,11 +292,10 @@ public class ShardReplicator
                 }
             }
         }
+    }
 
-        // 2. Move shards around until collection is balanced. I.e. there are no overpopulated peers.
-
-        // 2.1 - check overpopulated peers and depopulate them
-
+    private void PlanOverpopulationFix(CollectionClusteringState collectionClusteringState)
+    {
         var overpopulatedPeer = collectionClusteringState.GetMostOverpopulatedPeer();
 
         while (overpopulatedPeer.HasValue)
@@ -307,14 +332,13 @@ public class ShardReplicator
 
                     foundShardToMove = true;
 
-                    // We move one shard at a time to not overcomplicate things
+                    // Since this is not a performance-critical section, we move one shard at a time to not overcomplicate things
                     break;
                 }
             }
 
             if (!foundShardToMove)
             {
-                // We should never get here
                 throw new InvalidOperationException(
                     "Invalid algorithm state. The overpopulated peer depopulation failed : no shard found to move from the overpopulated peer"
                 );
@@ -322,9 +346,10 @@ public class ShardReplicator
 
             overpopulatedPeer = collectionClusteringState.GetMostOverpopulatedPeer();
         }
+    }
 
-        // 2.2 - check underpopulated peers and populate them
-
+    private void PlanUnderpopulationFix(CollectionClusteringState collectionClusteringState)
+    {
         var underpopulatedPeer = collectionClusteringState.GetMostUnderpopulatedPeer();
 
         while (underpopulatedPeer.HasValue)
@@ -363,14 +388,13 @@ public class ShardReplicator
 
                     foundShardToMove = true;
 
-                    // We move one shard at a time to not overcomplicate things
+                    // Since this is not a performance-critical section, we move one shard at a time to not overcomplicate things
                     break;
                 }
             }
 
             if (!foundShardToMove)
             {
-                // We should never get here
                 throw new InvalidOperationException(
                     "Invalid algorithm state. The underpopulated peer population failed : no shard found to move to the underpopulated peer"
                 );
@@ -378,8 +402,6 @@ public class ShardReplicator
 
             underpopulatedPeer = collectionClusteringState.GetMostUnderpopulatedPeer();
         }
-
-        return collectionClusteringState;
     }
 
     /// <summary>
