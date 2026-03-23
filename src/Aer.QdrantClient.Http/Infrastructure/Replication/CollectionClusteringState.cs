@@ -17,9 +17,6 @@ internal class CollectionClusteringState
     /// <param name="Uri">The peer URI.</param>
     internal record Peer(ulong Id, string Uri);
 
-    //private int _version;
-    private readonly int _targetReplicationFactor;
-
     /// <summary>
     /// Gets the mapping of peer identifiers to the list of shard identifiers replicated on them .
     /// </summary>
@@ -40,8 +37,14 @@ internal class CollectionClusteringState
     /// </summary>
     public int ShardCount { get; }
 
+    /// <summary>
+    /// Maximal allowed number of replicas per shard.
+    /// </summary>
     public int MaxNumberOfReplicasPerPeer { get; }
 
+    /// <summary>
+    /// Minimal allowed number of replicas per shard.
+    /// </summary>
     public int MinNumberOfReplicasPerPeer { get; }
 
     /// <summary>
@@ -94,8 +97,6 @@ internal class CollectionClusteringState
         }
 
         ShardCount = allShardIds.Count;
-
-        _targetReplicationFactor = targetReplicationFactor;
 
         var expectedNumberOfReplicasPerPeer = (double)targetReplicationFactor * ShardCount / KnownPeers.Count;
 
