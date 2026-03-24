@@ -638,34 +638,20 @@ public partial class QdrantHttpClient
                 )
             ).EnsureSuccess();
 
-            if (collectionClusteringInfo.ShardTransfers.Length > 0)
-            {
-                // We don't allow starting any replication-related operations while there are any ongoing shard transfers
-
-                return new RestoreShardReplicationFactorResponse()
-                {
-                    Result = null,
-                    Status = QdrantStatus.Fail($"Can't restore shard replication factor while there are ongoing shard transfers. Found {collectionClusteringInfo.ShardTransfers} ongoing shard transfers, wait for them to finish and start again"),
-                    Time = sw.Elapsed.TotalSeconds
-                };
-            }
-
             var shardReplicator = new ShardReplicator(
                 this,
                 logger,
-                collectionName
+                collectionName,
+                clusterName
             );
 
-            shardReplicator.Calculate(clusterInfo, collectionInfo, collectionClusteringInfo);
+            var ret = shardReplicator.Calculate(clusterInfo, collectionInfo, collectionClusteringInfo);
 
             sw.Stop();
 
-            return new RestoreShardReplicationFactorResponse()
-            {
-                Result = shardReplicator,
-                Status = QdrantStatus.Success(),
-                Time = sw.Elapsed.TotalSeconds
-            };
+            ret.Time = sw.Elapsed.TotalSeconds;
+
+            return ret;
         }
         catch (QdrantUnsuccessfulResponseStatusException qex)
         {

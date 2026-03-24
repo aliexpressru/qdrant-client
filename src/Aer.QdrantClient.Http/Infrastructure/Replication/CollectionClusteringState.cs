@@ -8,7 +8,7 @@ namespace Aer.QdrantClient.Http.Infrastructure.Replication;
 /// <summary>
 /// Represents a collection clustering state, either current, in the past or in the future.
 /// </summary>
-internal class CollectionClusteringState
+internal class CollectionClusteringState : IEquatable<CollectionClusteringState>
 {
     /// <summary>
     /// Represents a cluster peer.
@@ -104,6 +104,20 @@ internal class CollectionClusteringState
         MinNumberOfReplicasPerPeer = (int)Math.Floor(expectedNumberOfReplicasPerPeer);
     }
 
+    private CollectionClusteringState(CollectionClusteringState source)
+    {
+        KnownPeers = new Dictionary<ulong, Peer>(source.KnownPeers);
+
+        ShardsByPeers = source.ShardsByPeers.ToDictionary(kvp => kvp.Key, kvp => new HashSet<uint>(kvp.Value));
+
+        PeersByShards = source.PeersByShards.ToDictionary(kvp => kvp.Key, kvp => new HashSet<ulong>(kvp.Value));
+
+        ShardCount = source.ShardCount;
+        MaxNumberOfReplicasPerPeer = source.MaxNumberOfReplicasPerPeer;
+        MinNumberOfReplicasPerPeer = source.MinNumberOfReplicasPerPeer;
+        Version = source.Version;
+    }
+
     public bool AddShardReplica(uint shardId, ulong newPeerId, bool shouldUpdateVersion = true)
     {
         bool wasStateModified = false;
@@ -159,6 +173,7 @@ internal class CollectionClusteringState
         // We are passing `shouldUpdateVersion: false` to each of the operations to only update version once
 
         wasStateModified |= DropShardReplica(shardId, sourcePeerId, shouldUpdateVersion: false);
+
         wasStateModified |= AddShardReplica(shardId, targetPeerId, shouldUpdateVersion: false);
 
         if (wasStateModified)
@@ -195,9 +210,9 @@ internal class CollectionClusteringState
     public (ulong PeerId, HashSet<uint> ShardIds)? GetMostOverpopulatedPeer()
     {
         var overpopulatedPeer = ShardsByPeers
-                .Where(peerWithShards => peerWithShards.Value.Count > MaxNumberOfReplicasPerPeer)
-                .OrderByDescending(p => p.Value.Count)
-                .FirstOrDefault();
+            .Where(peerWithShards => peerWithShards.Value.Count > MaxNumberOfReplicasPerPeer)
+            .OrderByDescending(p => p.Value.Count)
+            .FirstOrDefault();
 
         if (overpopulatedPeer.Key == 0 && overpopulatedPeer.Value == null)
         {
@@ -211,9 +226,9 @@ internal class CollectionClusteringState
     public (ulong PeerId, HashSet<uint> ShardIds)? GetMostUnderpopulatedPeer()
     {
         var underpopulatedPeer = ShardsByPeers
-                .Where(peerWithShards => peerWithShards.Value.Count < MinNumberOfReplicasPerPeer)
-                .OrderBy(p => p.Value.Count)
-                .FirstOrDefault();
+            .Where(peerWithShards => peerWithShards.Value.Count < MinNumberOfReplicasPerPeer)
+            .OrderBy(p => p.Value.Count)
+            .FirstOrDefault();
 
         if (underpopulatedPeer.Key == 0 && underpopulatedPeer.Value == null)
         {
@@ -222,6 +237,111 @@ internal class CollectionClusteringState
         }
 
         return (underpopulatedPeer.Key, underpopulatedPeer.Value);
+    }
+
+    public CollectionClusteringState Clone() => new(this);
+
+    public bool Equals(CollectionClusteringState other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        if (
+            ShardCount != other.ShardCount
+            || MaxNumberOfReplicasPerPeer != other.MaxNumberOfReplicasPerPeer
+            || MinNumberOfReplicasPerPeer != other.MinNumberOfReplicasPerPeer
+        )
+        {
+            return false;
+        }
+
+        if (
+            KnownPeers.Count != other.KnownPeers.Count
+            || ShardsByPeers.Count != other.ShardsByPeers.Count
+            || PeersByShards.Count != other.PeersByShards.Count
+        )
+        {
+            return false;
+        }
+
+        foreach (var (peerId, peer) in KnownPeers)
+        {
+            if (!other.KnownPeers.TryGetValue(peerId, out var otherPeer) || !peer.Equals(otherPeer))
+            {
+                return false;
+            }
+        }
+
+        foreach (var (peerId, shards) in ShardsByPeers)
+        {
+            if (!other.ShardsByPeers.TryGetValue(peerId, out var otherShards) || !shards.SetEquals(otherShards))
+            {
+                return false;
+            }
+        }
+
+        foreach (var (shardId, peers) in PeersByShards)
+        {
+            if (!other.PeersByShards.TryGetValue(shardId, out var otherPeers) || !peers.SetEquals(otherPeers))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public override bool Equals(object obj) => obj is CollectionClusteringState other && Equals(other);
+
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+
+        hash.Add(ShardCount);
+        hash.Add(MaxNumberOfReplicasPerPeer);
+        hash.Add(MinNumberOfReplicasPerPeer);
+
+        foreach (var (peerId, shards) in ShardsByPeers)
+        {
+            hash.Add(peerId);
+            foreach (var shardId in shards.Order())
+            {
+                hash.Add(shardId);
+            }
+        }
+
+        foreach (var (shardId, peers) in PeersByShards)
+        {
+            hash.Add(shardId);
+            foreach (var peerId in peers.Order())
+            {
+                hash.Add(peerId);
+            }
+        }
+
+        return hash.ToHashCode();
+    }
+
+    public override string ToString()
+    {
+        var shardsByPeers = string.Join(
+            ", ",
+            ShardsByPeers.Select(kvp => $"{kvp.Key}:[{string.Join(",", kvp.Value.Order())}]")
+        );
+
+        var peersByShards = string.Join(
+            ", ",
+            PeersByShards.Select(kvp => $"{kvp.Key}:[{string.Join(",", kvp.Value.Order())}]")
+        );
+
+        return $"Shards:{ShardCount} MinReplicas:{MinNumberOfReplicasPerPeer} MaxReplicas:{MaxNumberOfReplicasPerPeer} v{Version} ShardsByPeers={{{shardsByPeers}}} PeersByShards={{{peersByShards}}}";
     }
 }
 

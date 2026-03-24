@@ -1,11 +1,11 @@
-using System.Collections.Concurrent;
-using System.Runtime.CompilerServices;
 using Aer.QdrantClient.Http.Collections;
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Replication;
 
@@ -26,6 +26,7 @@ public class ShardReplicator
     private readonly QdrantHttpClient _qdrantClient;
     private readonly ILogger _logger;
     private readonly string _collectionName;
+    private readonly string _clusterName;
     private int _targetReplicationFactor;
     // The shards that replicator is forbidden to perform any operations on
     private readonly HashSet<uint> _skippedShards = [];
@@ -49,19 +50,33 @@ public class ShardReplicator
     /// </summary>
     public IReadOnlyCollection<ScheduledShardReplication> ReplicationPlan => _shardReplicationsToExecute ?? [];
 
-    internal ShardReplicator(QdrantHttpClient qdrantClient, ILogger logger, string collectionName)
+    internal ShardReplicator(QdrantHttpClient qdrantClient, ILogger logger, string collectionName, string clusterName)
     {
         _qdrantClient = qdrantClient;
         _logger = logger;
         _collectionName = collectionName;
+        _clusterName = clusterName;
     }
 
-    internal void Calculate(
+    // We call calculate with initial collection and cluster state. We assume that it won't change by any means apart from shard treplicator itself.
+    // On each replication step we check that this invariant is held true.
+    internal RestoreShardReplicationFactorResponse Calculate(
         GetClusterInfoResponse.ClusterInfo clusterInfo,
         GetCollectionInfoResponse.CollectionInfo collectionInfo,
         GetCollectionClusteringInfoResponse.CollectionClusteringInfo collectionClusteringInfo
     )
     {
+        if (collectionClusteringInfo.ShardTransfers.Length > 0)
+        {
+            // We don't allow starting any replication-related operations while there are any ongoing shard transfers
+
+            return new RestoreShardReplicationFactorResponse()
+            {
+                Result = null,
+                Status = QdrantStatus.Fail($"Can't restore shard replication factor. Found {collectionClusteringInfo.ShardTransfers} ongoing shard transfers. To ensure that collection data is not corrupted, wait for ongoing shard transfers to finish and start restore shard replication factor process again.")
+            };
+        }
+
         _targetReplicationFactor = GetCollectionReplicationFactor(collectionInfo, collectionClusteringInfo);
 
         // Check that each shard is replicated no fewer than targetCollectionReplicationFactor of times
@@ -161,6 +176,12 @@ public class ShardReplicator
         );
 
         _targetCollectionClusteringState = targetCollectionClusteringState;
+
+        return new RestoreShardReplicationFactorResponse()
+        {
+            Result = this,
+            Status = QdrantStatus.Success()
+        };
     }
 
     private CollectionClusteringState PlanReplications(
@@ -223,6 +244,8 @@ public class ShardReplicator
                     continue;
                 }
 
+                var expectedStateBeforeReplication = collectionClusteringState.Clone();
+
                 if (!collectionClusteringState.DropShardReplica(shardIdToDrop, peerToDropShardFrom))
                 {
                     throw new InvalidOperationException(
@@ -241,6 +264,9 @@ public class ShardReplicator
                         ScheduledShardReplication.ReplicatorAction.DropReplica,
                         collectionClusteringState.Version
                     )
+                    {
+                        ExpectedInitialState = expectedStateBeforeReplication
+                    }
                 );
             }
         }
@@ -288,6 +314,8 @@ public class ShardReplicator
                         );
                     }
 
+                    var expectedStateBeforeReplication = collectionClusteringState.Clone();
+
                     if (!collectionClusteringState.DropShardReplica(shardIdToDrop, selectedPeerId))
                     {
                         throw new InvalidOperationException(
@@ -306,6 +334,9 @@ public class ShardReplicator
                             ScheduledShardReplication.ReplicatorAction.DropReplica,
                             collectionClusteringState.Version
                         )
+                        {
+                            ExpectedInitialState = expectedStateBeforeReplication
+                        }
                     );
 
                     replicasLeftToDrop--;
@@ -353,6 +384,8 @@ public class ShardReplicator
                     var targetPeerId = targetPeers.GetNext();
                     var targetPeerUri = collectionClusteringState.KnownPeers[targetPeerId].Uri;
 
+                    var expectedStateBeforeReplication = collectionClusteringState.Clone();
+
                     if (!collectionClusteringState.AddShardReplica(shardIdToReplicate, targetPeerId))
                     {
                         throw new InvalidOperationException(
@@ -370,6 +403,9 @@ public class ShardReplicator
                             ScheduledShardReplication.ReplicatorAction.AddReplica,
                             collectionClusteringState.Version
                         )
+                        {
+                            ExpectedInitialState = expectedStateBeforeReplication
+                        }
                     );
 
                     replicasLeftToAdd--;
@@ -395,6 +431,8 @@ public class ShardReplicator
                     var sourcePeerId = overpopulatedPeer.Value.PeerId;
                     var targetPeerId = minReplicasPeerId;
 
+                    var expectedStateBeforeReplication = collectionClusteringState.Clone();
+
                     if (!collectionClusteringState.MoveShardReplica(shardIdToMove, sourcePeerId, targetPeerId))
                     {
                         throw new InvalidOperationException(
@@ -412,6 +450,9 @@ public class ShardReplicator
                             ScheduledShardReplication.ReplicatorAction.MoveReplica,
                             collectionClusteringState.Version
                         )
+                        {
+                            ExpectedInitialState = expectedStateBeforeReplication
+                        }
                     );
 
                     foundShardToMove = true;
@@ -451,6 +492,8 @@ public class ShardReplicator
                     var sourcePeerId = maxReplicasPeerId;
                     var targetPeerId = underpopulatedPeer.Value.PeerId;
 
+                    var expectedStateBeforeReplication = collectionClusteringState.Clone();
+
                     if (!collectionClusteringState.MoveShardReplica(shardIdToMove, sourcePeerId, targetPeerId))
                     {
                         throw new InvalidOperationException(
@@ -468,6 +511,9 @@ public class ShardReplicator
                             ScheduledShardReplication.ReplicatorAction.MoveReplica,
                             collectionClusteringState.Version
                         )
+                        {
+                            ExpectedInitialState = expectedStateBeforeReplication
+                        }
                     );
 
                     foundShardToMove = true;
@@ -580,6 +626,13 @@ public class ShardReplicator
     )
     {
         var (shardId, sourcePeerId, _, targetPeerId, _, replicatorAction, _) = nextReplicationStep;
+
+        var (canCommenceReplication, errorResponse) = await CheckCanCommenceReplication(nextReplicationStep, cancellationToken);
+
+        if (!canCommenceReplication)
+        {
+            return errorResponse;
+        }
 
         switch (replicatorAction)
         {
@@ -760,6 +813,87 @@ public class ShardReplicator
 
             default:
                 throw new InvalidOperationException($"Unknown replicator action {replicatorAction}");
+        }
+    }
+
+    private async Task<(bool CanCommenceReplication, ReplicateShardsToPeerResponse ErrorResponse)> CheckCanCommenceReplication(
+        ScheduledShardReplication nextReplicationStep,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Get current cluster state and compare that the expected cluster state in the replication step
+            // is the same as the obtained current state
+
+            var currentClusterInfo = (
+                    await _qdrantClient.GetClusterInfo(cancellationToken, _clusterName)
+                ).EnsureSuccess();
+
+            var currentCollectionClusteringInfo = (
+                   await _qdrantClient.GetCollectionClusteringInfo(
+                       _collectionName,
+                       cancellationToken,
+                       clusterName: _clusterName
+                   )
+               ).EnsureSuccess();
+
+            var currentCollectionClusteringState = new CollectionClusteringState(
+                currentClusterInfo,
+                currentCollectionClusteringInfo,
+                _targetReplicationFactor
+            );
+
+            var ongoingShardTransfersCount = currentCollectionClusteringInfo.ShardTransfers.Length;
+
+            if (ongoingShardTransfersCount != 0)
+            {
+                // We don't allow performing any replication-related operations while there are any ongoing shard transfers
+
+                // Clear the plan to force user to retry operation from the beginning
+                _shardReplicationsToExecute.Clear();
+
+                return (
+                    false,
+                    new ReplicateShardsToPeerResponse()
+                    {
+                        Result = null,
+                        Status = QdrantStatus.Fail($"Can't restore shard replication factor. Found {ongoingShardTransfersCount} ongoing shard transfers. To ensure that collection data is not corrupted, wait for ongoing shard transfers to finish and start restore shard replication factor process again.")
+                    }
+                );
+            }
+
+            if (!currentCollectionClusteringState.Equals(nextReplicationStep.ExpectedInitialState))
+            {
+                // We don't allow performing any replication-related when cluster is in unexpected state
+
+                // Clear the plan to force user to retry operation from the beginning
+                _shardReplicationsToExecute.Clear();
+
+                return (
+                    false,
+                    new ReplicateShardsToPeerResponse()
+                    {
+                        Result = null,
+                        Status = QdrantStatus.Fail($"Can't restore shard replication factor. Looks like collection clustering was changed parallel to the replication process by ShardReplicator. To ensure that collection data is not corrupted, restart restore shard replication factor process.")
+                    }
+                );
+            }
+
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            // Clear the plan to force user to retry operation from the beginning
+            _shardReplicationsToExecute.Clear();
+
+            return (
+                false,
+                new ReplicateShardsToPeerResponse()
+                {
+                    Result = null,
+                    Status = QdrantStatus.Fail($"Can't restore shard replication factor. An exception happened : {ex}.")
+                }
+            );
         }
     }
 
