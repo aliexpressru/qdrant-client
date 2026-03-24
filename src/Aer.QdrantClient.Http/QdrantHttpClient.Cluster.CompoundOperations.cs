@@ -641,20 +641,17 @@ public partial class QdrantHttpClient
             var shardReplicator = new ShardReplicator(
                 this,
                 logger,
-                collectionName
+                collectionName,
+                clusterName
             );
 
-            shardReplicator.Calculate(clusterInfo, collectionInfo, collectionClusteringInfo);
+            var ret = shardReplicator.Calculate(clusterInfo, collectionInfo, collectionClusteringInfo);
 
             sw.Stop();
 
-            return new RestoreShardReplicationFactorResponse()
-            {
-                Result = shardReplicator,
-                Status = QdrantStatus.Success(),
-                Time = sw.Elapsed.TotalSeconds
-            };
+            ret.Time = sw.Elapsed.TotalSeconds;
 
+            return ret;
         }
         catch (QdrantUnsuccessfulResponseStatusException qex)
         {

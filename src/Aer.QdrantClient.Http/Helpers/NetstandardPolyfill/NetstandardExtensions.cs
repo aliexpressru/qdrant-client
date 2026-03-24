@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 
 namespace Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
@@ -10,6 +11,11 @@ internal static class HttpResponseMessageExtensions
 
     extension<TSource>(IEnumerable<TSource> source)
     {
+        public IOrderedEnumerable<TSource> Order()
+        {
+            return source.OrderBy(x => x);
+        }
+
         public bool TryGetNonEnumeratedCount(out int count)
         {
             if (source is null)
@@ -209,6 +215,17 @@ internal static class HttpResponseMessageExtensions
             }
 
             return value;
+        }
+    }
+
+    extension<T>(ConcurrentQueue<T> source)
+    {
+        public void Clear()
+        {
+            while (!source.IsEmpty)
+            {
+                source.TryDequeue(out _);
+            }
         }
     }
 

@@ -30,6 +30,8 @@ public record ScheduledShardReplication(
     int StepNumber
 )
 {
+    internal CollectionClusteringState ExpectedInitialState { get; set; }
+
     /// <summary>
     /// The action that the replicator will perform on selected shard.
     /// </summary>

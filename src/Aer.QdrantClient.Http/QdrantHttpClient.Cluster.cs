@@ -121,6 +121,8 @@ public partial class QdrantHttpClient
             // Assume each peer has the same number of shard replicas
             var peersByShards = new Dictionary<uint, HashSet<ulong>>(collectionShardingInfo.Result.LocalShards.Length);
 
+            var shardStates = new Dictionary<uint, Dictionary<ulong, ShardState>>();
+
             var answeringPeerId = collectionShardingInfo.Result.PeerId;
 
             // Collect local shards
@@ -130,6 +132,13 @@ public partial class QdrantHttpClient
             foreach (var shard in collectionShardingInfo.Result.LocalShards)
             {
                 var shardId = shard.ShardId;
+
+                var shardState = shard.State;
+
+                shardStates.Add(shardId, new Dictionary<ulong, ShardState>()
+                {
+                    [answeringPeerId] = shardState
+                });
 
                 shardsByPeers[answeringPeerId].Add(shardId);
 
@@ -149,6 +158,19 @@ public partial class QdrantHttpClient
             {
                 var shardPeer = shard.PeerId;
                 var shardId = shard.ShardId;
+                var shardState = shard.State;
+
+                if (!shardStates.TryGetValue(shardId, out var existingPeerStates))
+                {
+                    shardStates.Add(shardId, new Dictionary<ulong, ShardState>()
+                    {
+                        [shardPeer] = shardState
+                    });
+                }
+                else
+                {
+                    existingPeerStates.Add(shardPeer, shardState);
+                }
 
 #pragma warning disable CA1854 // Justification: we intend to check and then add key-value pair to avoid allocating new list
                 if (!shardsByPeers.ContainsKey(shardPeer))
@@ -171,6 +193,7 @@ public partial class QdrantHttpClient
 
             collectionShardingInfo.Result.ShardsByPeers = shardsByPeers;
             collectionShardingInfo.Result.PeersByShards = peersByShards;
+            collectionShardingInfo.Result.ShardStates = shardStates;
         }
 
         return collectionShardingInfo;

@@ -90,14 +90,20 @@ public sealed class GetCollectionClusteringInfoResponse
         public ReshardingOperationInfo[] ReshardingOperations { init; get; }
 
         /// <summary>
-        /// Gets the mapping of peer identifiers to the list of shard identifiers replicated on them .
+        /// Gets the mapping of peer identifiers to the collection of shard identifiers replicated on them .
         /// </summary>
         public Dictionary<ulong, HashSet<uint>> ShardsByPeers { internal set; get; }
 
         /// <summary>
-        /// Gets the mapping of shard identifiers to the list of peer identifiers they are replicated on.
+        /// Gets the mapping of shard identifiers to the collection of peer identifiers they are replicated on.
         /// </summary>
         public Dictionary<uint, HashSet<ulong>> PeersByShards { internal set; get; }
+
+        /// <summary>
+        /// Gets the mapping of shard identifiers to the mapping from peers identifiers to the states the replicas on those peers.
+        /// First key - shard id, second key - peer id, value - shard state.
+        /// </summary>
+        public Dictionary<uint, Dictionary<ulong, ShardState>> ShardStates { internal set; get; }
     }
 
     /// <summary>
