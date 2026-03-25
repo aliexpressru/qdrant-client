@@ -32,7 +32,7 @@ public class ShardReplicator
     private readonly HashSet<uint> _skippedShards = [];
 
     // Probably concurrent queue is an overkill here
-    private ConcurrentQueue<ScheduledShardReplication> _shardReplicationsToExecute;
+    private ConcurrentQueue<ScheduledShardReplication> _replicationPlan;
 
     // Internal for testing purposes
     internal CollectionClusteringState _targetCollectionClusteringState;
@@ -41,14 +41,14 @@ public class ShardReplicator
     /// Returns <c>true</c> if not sufficiently replicated shards detected.
     /// Use <see cref="ExecuteReplications(CancellationToken, ShardTransferMethod, TimeSpan?)"/> to perform the replication sequence.
     /// </summary>
-    public bool ShardsNeedReplication => _shardReplicationsToExecute is { Count: > 0 };
+    public bool ShardsNeedReplication => _replicationPlan is { Count: > 0 };
 
     /// <summary>
     /// Returns the planned shard replications. If no replication required returns an empty collection.
     /// Since the ordering of this collection is not guaranteed, sort the resulting collection by
     /// <see cref="ScheduledShardReplication.StepNumber"/> to obtain the actual order of operations.
     /// </summary>
-    public IReadOnlyCollection<ScheduledShardReplication> ReplicationPlan => _shardReplicationsToExecute ?? [];
+    public IReadOnlyCollection<ScheduledShardReplication> ReplicationPlan => _replicationPlan ?? [];
 
     internal ShardReplicator(QdrantHttpClient qdrantClient, ILogger logger, string collectionName, string clusterName)
     {
@@ -58,7 +58,7 @@ public class ShardReplicator
         _clusterName = clusterName;
     }
 
-    // We call calculate with initial collection and cluster state. We assume that it won't change by any means apart from shard treplicator itself.
+    // We call calculate with initial collection and cluster state. We assume that it won't change by any means apart from shard replicator itself.
     // On each replication step we check that this invariant is held true.
     internal RestoreShardReplicationFactorResponse Calculate(
         GetClusterInfoResponse.ClusterInfo clusterInfo,
@@ -119,7 +119,11 @@ public class ShardReplicator
                 continue;
             }
 
-            switch ((peerIds.Count - inactiveReplicaCount).CompareTo(_targetReplicationFactor))
+            // This is a total number of peers having specified shard replica with inactive replica count subtracted
+            // (if any active replicas for that shard present at all)
+            var activeReplicaCount = peerIds.Count - inactiveReplicaCount;
+
+            switch (activeReplicaCount.CompareTo(_targetReplicationFactor))
             {
                 case 0:
                     // shard is replicated expected number of times
@@ -128,12 +132,12 @@ public class ShardReplicator
 
                 case > 0:
                     // shard is replicated more times than expected - drop extra replicas
-                    shardsToDrop.Add((shardId, peerIds.Count - _targetReplicationFactor));
+                    shardsToDrop.Add((shardId, activeReplicaCount - _targetReplicationFactor));
                     break;
 
                 case < 0:
                     // shard is replicated fewer times than expected - add more replicas
-                    shardsToReplicate.Add((shardId, _targetReplicationFactor - peerIds.Count));
+                    shardsToReplicate.Add((shardId, _targetReplicationFactor - activeReplicaCount));
                     break;
             }
         }
@@ -195,7 +199,7 @@ public class ShardReplicator
         // Here we should consider shards with more \ less replicas as well as placement of all the shards across the cluster.
         // On every step of the algorithm we perform sanity checks and throw InvalidOperationException if something does not look right
 
-        _shardReplicationsToExecute = new();
+        _replicationPlan = new();
 
         // This is a snapshot of the collection clustering state before we start replication process.
         // We modify this snapshot on each step of the planning process to always keep
@@ -205,6 +209,8 @@ public class ShardReplicator
             collectionClusteringInfo,
             _targetReplicationFactor
         );
+
+        // ------------------ Restore replication factor
 
         // 0. Drop inactive replicas. We consider replica inactive if it is not Active.
 
@@ -217,6 +223,12 @@ public class ShardReplicator
         // 2. Replicate shards that don't have enough replicas
 
         PlanAddingReplicas(shardsToReplicate, collectionClusteringState);
+
+        // Here we need to check whether all the shards in current version of collectionClusteringState have expected number of replicas
+        // If not - throw algorithm state exception - means we have forgotten to replicate \ drop something on previous steps
+        CheckReplicationFactorRestored(collectionClusteringState);
+
+        // ------------------ Restore shard balance
 
         // 3. Move shards until collection is balanced. I.e. there are no overpopulated or underpopulated peers.
 
@@ -254,11 +266,11 @@ public class ShardReplicator
                 }
 
                 // Here target peer uri and url are null since we are dropping the replica
-                _shardReplicationsToExecute.Enqueue(
+                _replicationPlan.Enqueue(
                     new(
                         shardIdToDrop,
-                        SourcePeerId: shardIdToDrop,
-                        SourcePeerUri: collectionClusteringState.KnownPeers[shardIdToDrop].Uri,
+                        SourcePeerId: peerToDropShardFrom,
+                        SourcePeerUri: collectionClusteringState.KnownPeers[peerToDropShardFrom].Uri,
                         TargetPeerId: null,
                         TargetPeerUri: null,
                         ScheduledShardReplication.ReplicatorAction.DropReplica,
@@ -324,7 +336,7 @@ public class ShardReplicator
                     }
 
                     // Here target peer uri and url are null since we are dropping the replica
-                    _shardReplicationsToExecute.Enqueue(
+                    _replicationPlan.Enqueue(
                         new(
                             shardIdToDrop,
                             SourcePeerId: selectedPeerId,
@@ -393,7 +405,7 @@ public class ShardReplicator
                         );
                     }
 
-                    _shardReplicationsToExecute.Enqueue(
+                    _replicationPlan.Enqueue(
                         new(
                             shardIdToReplicate,
                             sourcePeerId,
@@ -412,6 +424,11 @@ public class ShardReplicator
                 }
             }
         }
+    }
+
+    private void CheckReplicationFactorRestored(CollectionClusteringState collectionClusteringState)
+    {
+
     }
 
     private void PlanOverpopulationFix(CollectionClusteringState collectionClusteringState)
@@ -440,7 +457,7 @@ public class ShardReplicator
                         );
                     }
 
-                    _shardReplicationsToExecute.Enqueue(
+                    _replicationPlan.Enqueue(
                         new(
                             shardIdToMove,
                             sourcePeerId,
@@ -481,11 +498,11 @@ public class ShardReplicator
         {
             var underpopulatedPeerShards = underpopulatedPeer.Value.ShardIds;
 
-            var (maxReplicasPeerId, maxReplicasPeerShardIds) = collectionClusteringState.GetMaxReplicasPeer();
+            var (maxReplicasPeerId, candidateShardIdsToMove) = collectionClusteringState.GetMaxReplicasPeer();
 
             bool foundShardToMove = false;
 
-            foreach (var shardIdToMove in maxReplicasPeerShardIds)
+            foreach (var shardIdToMove in candidateShardIdsToMove)
             {
                 if (!underpopulatedPeerShards.Contains(shardIdToMove))
                 {
@@ -501,7 +518,7 @@ public class ShardReplicator
                         );
                     }
 
-                    _shardReplicationsToExecute.Enqueue(
+                    _replicationPlan.Enqueue(
                         new(
                             shardIdToMove,
                             sourcePeerId,
@@ -558,7 +575,7 @@ public class ShardReplicator
         TimeSpan? timeout = null
     )
     {
-        if (_shardReplicationsToExecute is null or { IsEmpty: true })
+        if (_replicationPlan is null or { IsEmpty: true })
         {
             return Task.FromResult(
                 ReplicateShardsToPeerResponse.Fail(
@@ -568,7 +585,7 @@ public class ShardReplicator
             );
         }
 
-        _shardReplicationsToExecute.TryDequeue(out var nextReplicationStep);
+        _replicationPlan.TryDequeue(out var nextReplicationStep);
 
         return ExecuteNextReplicationInternal(nextReplicationStep, shardTransferMethod, timeout, cancellationToken);
     }
@@ -601,16 +618,16 @@ public class ShardReplicator
         TimeSpan? timeout = null
     )
     {
-        if (_shardReplicationsToExecute is null or { IsEmpty: true })
+        if (_replicationPlan is null or { IsEmpty: true })
         {
             yield break;
         }
 
-        while (!_shardReplicationsToExecute.IsEmpty)
+        while (!_replicationPlan.IsEmpty)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            _shardReplicationsToExecute.TryDequeue(out var nextReplicationStep);
+            _replicationPlan.TryDequeue(out var nextReplicationStep);
 
             var shardReplicationResult = await ExecuteNextReplicationInternal(nextReplicationStep, shardTransferMethod, timeout, cancellationToken);
 
@@ -850,7 +867,7 @@ public class ShardReplicator
                 // We don't allow performing any replication-related operations while there are any ongoing shard transfers
 
                 // Clear the plan to force user to retry operation from the beginning
-                _shardReplicationsToExecute.Clear();
+                _replicationPlan.Clear();
 
                 return (
                     false,
@@ -867,7 +884,7 @@ public class ShardReplicator
                 // We don't allow performing any replication-related when cluster is in unexpected state
 
                 // Clear the plan to force user to retry operation from the beginning
-                _shardReplicationsToExecute.Clear();
+                _replicationPlan.Clear();
 
                 return (
                     false,
@@ -884,7 +901,7 @@ public class ShardReplicator
         catch (Exception ex)
         {
             // Clear the plan to force user to retry operation from the beginning
-            _shardReplicationsToExecute.Clear();
+            _replicationPlan.Clear();
 
             return (
                 false,

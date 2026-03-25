@@ -12,7 +12,7 @@ namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
         + "GitHub actions so these tests will run only locally"
 )]
 #endif
-internal class ClusterCompoundOperationsTestsRestoreReplication : QdrantTestsBase
+internal class RestoreShardReplicationFactorTests : QdrantTestsBase
 {
     private QdrantHttpClient _qdrantHttpClient1;
     private QdrantHttpClient _qdrantHttpClient2;
@@ -402,4 +402,10 @@ internal class ClusterCompoundOperationsTestsRestoreReplication : QdrantTestsBas
             .Contain("Can't restore shard replication factor")
             .And.Contain("collection clustering was changed");
     }
+
+    //[Test]
+    //public async Task RestoreShardReplicationFactor_UnderpopulationEdgeCase(int replicationFactor, int shardCount)
+    //{
+
+    //}
 }
