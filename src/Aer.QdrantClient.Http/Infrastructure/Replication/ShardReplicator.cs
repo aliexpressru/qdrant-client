@@ -1,11 +1,11 @@
+using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using Aer.QdrantClient.Http.Collections;
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
-using System.Runtime.CompilerServices;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Replication;
 
@@ -28,6 +28,7 @@ public class ShardReplicator
     private readonly string _collectionName;
     private readonly string _clusterName;
     private int _targetReplicationFactor;
+
     // The shards that replicator is forbidden to perform any operations on
     private readonly HashSet<uint> _skippedShards = [];
 
@@ -73,7 +74,9 @@ public class ShardReplicator
             return new RestoreShardReplicationFactorResponse()
             {
                 Result = null,
-                Status = QdrantStatus.Fail($"Can't restore shard replication factor. Found {collectionClusteringInfo.ShardTransfers} ongoing shard transfers. To ensure that collection data is not corrupted, wait for ongoing shard transfers to finish and start restore shard replication factor process again.")
+                Status = QdrantStatus.Fail(
+                    $"Can't restore shard replication factor. Found {collectionClusteringInfo.ShardTransfers} ongoing shard transfers. To ensure that collection data is not corrupted, wait for ongoing shard transfers to finish and start restore shard replication factor process again."
+                ),
             };
         }
 
@@ -181,11 +184,7 @@ public class ShardReplicator
 
         _targetCollectionClusteringState = targetCollectionClusteringState;
 
-        return new RestoreShardReplicationFactorResponse()
-        {
-            Result = this,
-            Status = QdrantStatus.Success()
-        };
+        return new RestoreShardReplicationFactorResponse() { Result = this, Status = QdrantStatus.Success() };
     }
 
     private CollectionClusteringState PlanReplications(
@@ -230,22 +229,29 @@ public class ShardReplicator
 
         // ------------------ Restore shard balance
 
+        // Calculate maximum number of shard moves we need to restore shard balance.
+        // This number will be a limiting factor for loops in both overpopulation and underpopulation fix planning stages
+        // so that we won't end up moving shards to and fro forever.
+
+        var maxNumberOfShardMoves = CalculateMaximumNumberOfShardMovesForPopulationDepopulation(collectionClusteringState);
+
         // 3. Move shards until collection is balanced. I.e. there are no overpopulated or underpopulated peers.
 
         // 3.1 - check overpopulated peers and depopulate them
 
-        PlanOverpopulationFix(collectionClusteringState);
+        PlanOverpopulationFix(collectionClusteringState, maxNumberOfShardMoves);
 
         // 3.2 - check underpopulated peers and populate them
 
-        PlanUnderpopulationFix(collectionClusteringState);
+        PlanUnderpopulationFix(collectionClusteringState, maxNumberOfShardMoves);
 
         return collectionClusteringState;
     }
 
     private void PlanInactiveReplicaDrops(
         List<(uint ShardId, ulong PeerId)> inactiveShardReplicasToDrop,
-        CollectionClusteringState collectionClusteringState)
+        CollectionClusteringState collectionClusteringState
+    )
     {
         if (inactiveShardReplicasToDrop is { Count: > 0 })
         {
@@ -260,8 +266,8 @@ public class ShardReplicator
 
                 if (!collectionClusteringState.DropShardReplica(shardIdToDrop, peerToDropShardFrom))
                 {
-                    throw new InvalidOperationException(
-                        $"Invalid algorithm state. Shard {shardIdToDrop} inactive replica drop from peer {peerToDropShardFrom} can't be performed"
+                    throw new ShardReplicatorAlgorithmException(
+                        $"Shard {shardIdToDrop} inactive replica drop from peer {peerToDropShardFrom} can't be performed"
                     );
                 }
 
@@ -277,7 +283,7 @@ public class ShardReplicator
                         collectionClusteringState.Version
                     )
                     {
-                        ExpectedInitialState = expectedStateBeforeReplication
+                        ExpectedInitialState = expectedStateBeforeReplication,
                     }
                 );
             }
@@ -321,8 +327,8 @@ public class ShardReplicator
                     if (selectedPeerId == 0)
                     {
                         // Means no peer was selected since peer ids are all >0
-                        throw new InvalidOperationException(
-                            $"Invalid algorithm state. A peer for the shard {shardIdToDrop} to drop was not found"
+                        throw new ShardReplicatorAlgorithmException(
+                            $"A peer for the shard {shardIdToDrop} to drop was not found"
                         );
                     }
 
@@ -330,8 +336,8 @@ public class ShardReplicator
 
                     if (!collectionClusteringState.DropShardReplica(shardIdToDrop, selectedPeerId))
                     {
-                        throw new InvalidOperationException(
-                            $"Invalid algorithm state. Shard {shardIdToDrop} drop from peer {selectedPeerId} can't be performed"
+                        throw new ShardReplicatorAlgorithmException(
+                            $"Shard {shardIdToDrop} drop from peer {selectedPeerId} can't be performed"
                         );
                     }
 
@@ -347,7 +353,7 @@ public class ShardReplicator
                             collectionClusteringState.Version
                         )
                         {
-                            ExpectedInitialState = expectedStateBeforeReplication
+                            ExpectedInitialState = expectedStateBeforeReplication,
                         }
                     );
 
@@ -400,8 +406,8 @@ public class ShardReplicator
 
                     if (!collectionClusteringState.AddShardReplica(shardIdToReplicate, targetPeerId))
                     {
-                        throw new InvalidOperationException(
-                            $"Invalid algorithm state. Shard {shardIdToReplicate} replication from peer {sourcePeerId} to {targetPeerId} can't be performed"
+                        throw new ShardReplicatorAlgorithmException(
+                            $"Shard {shardIdToReplicate} replication from peer {sourcePeerId} to {targetPeerId} can't be performed"
                         );
                     }
 
@@ -416,7 +422,7 @@ public class ShardReplicator
                             collectionClusteringState.Version
                         )
                         {
-                            ExpectedInitialState = expectedStateBeforeReplication
+                            ExpectedInitialState = expectedStateBeforeReplication,
                         }
                     );
 
@@ -428,15 +434,81 @@ public class ShardReplicator
 
     private void CheckReplicationFactorRestored(CollectionClusteringState collectionClusteringState)
     {
-
+        foreach (var (shardIdToCheck, peerIds) in collectionClusteringState.PeersByShards)
+        {
+            if (peerIds.Count != _targetReplicationFactor)
+            {
+                throw new ShardReplicatorAlgorithmException(
+                    $"Shard {shardIdToCheck} replication factor was not restored after restoration planning. Expected {_targetReplicationFactor}, found {peerIds.Count}. It might indicate a bug in shard replication planning steps prior to this point"
+                );
+            }
+        }
     }
 
-    private void PlanOverpopulationFix(CollectionClusteringState collectionClusteringState)
+    private static int CalculateMaximumNumberOfShardMovesForPopulationDepopulation(CollectionClusteringState collectionClusteringState)
     {
+        int shardsToMoveCount = 0;
+
+        // Check overpopulated peers and collect number of shards to move
+
+        HashSet<ulong> alreadyCheckedPeers = [];
+
+        foreach (var (peerId, peerShards) in collectionClusteringState.ShardsByPeers)
+        {
+            if (peerShards.Count > collectionClusteringState.MaxNumberOfReplicasPerPeer)
+            {
+                alreadyCheckedPeers.Add(peerId);
+                var extraReplicas = peerShards.Count - collectionClusteringState.MaxNumberOfReplicasPerPeer;
+
+                shardsToMoveCount += extraReplicas;
+            }
+        }
+
+        int maxReplicaMoves = shardsToMoveCount;
+
+        // Check underpopulated peers and populate them with available replicas to move until MaxNumberOfReplicasPerPeer
+
+        foreach (var (peerId, peerShards) in collectionClusteringState.ShardsByPeers)
+        {
+            if (alreadyCheckedPeers.Contains(peerId))
+            {
+                // Skip already checked overpopulated peers
+                continue;
+            }
+
+            if (peerShards.Count < collectionClusteringState.MaxNumberOfReplicasPerPeer)
+            {
+                var requiredReplicas = collectionClusteringState.MaxNumberOfReplicasPerPeer - peerShards.Count;
+
+                shardsToMoveCount -= requiredReplicas;
+            }
+        }
+
+        // We might end up requiring more nodes than we already had initially shaven off the overpopulated nodes
+        maxReplicaMoves += Math.Abs(shardsToMoveCount);
+
+        // This number is theoretical upper bound count of moves required for *both* overpopulation *and* underpopulation fix.
+        // We use this upper bound for both operations thus doubling allowed number of moves.
+        // Since it's a sanity check calculation this doubling is allowable.
+
+        return maxReplicaMoves;
+    }
+
+    private void PlanOverpopulationFix(CollectionClusteringState collectionClusteringState, int maxShardMovesNumber)
+    {
+        var movesLeft = maxShardMovesNumber;
+
         var overpopulatedPeer = collectionClusteringState.GetMostOverpopulatedPeer();
 
         while (overpopulatedPeer.HasValue)
         {
+            if (movesLeft == 0)
+            {
+                throw new ShardReplicatorAlgorithmException(
+                    $"The overpopulated peer depopulation failed : calculated maximal number of shard moves {maxShardMovesNumber} exceeded. This might indicate an infinite loop or an unexpected edge case"
+                );
+            }
+
             var (minReplicasPeerId, minReplicasPeerShardIds) = collectionClusteringState.GetMinReplicasPeer();
 
             bool foundShardToMove = false;
@@ -452,8 +524,8 @@ public class ShardReplicator
 
                     if (!collectionClusteringState.MoveShardReplica(shardIdToMove, sourcePeerId, targetPeerId))
                     {
-                        throw new InvalidOperationException(
-                            $"Invalid algorithm state. Shard {shardIdToMove} replica move from peer {sourcePeerId} to {targetPeerId} can't be performed"
+                        throw new ShardReplicatorAlgorithmException(
+                            $"Shard {shardIdToMove} replica move from peer {sourcePeerId} to {targetPeerId} can't be performed"
                         );
                     }
 
@@ -468,11 +540,13 @@ public class ShardReplicator
                             collectionClusteringState.Version
                         )
                         {
-                            ExpectedInitialState = expectedStateBeforeReplication
+                            ExpectedInitialState = expectedStateBeforeReplication,
                         }
                     );
 
                     foundShardToMove = true;
+
+                    movesLeft--;
 
                     // Since this is not a performance-critical section, we move one shard at a time to not overcomplicate things
                     break;
@@ -481,8 +555,8 @@ public class ShardReplicator
 
             if (!foundShardToMove)
             {
-                throw new InvalidOperationException(
-                    "Invalid algorithm state. The overpopulated peer depopulation failed : no shard found to move from the overpopulated peer"
+                throw new ShardReplicatorAlgorithmException(
+                    "The overpopulated peer depopulation failed : no shard found to move from the overpopulated peer"
                 );
             }
 
@@ -490,12 +564,21 @@ public class ShardReplicator
         }
     }
 
-    private void PlanUnderpopulationFix(CollectionClusteringState collectionClusteringState)
+    private void PlanUnderpopulationFix(CollectionClusteringState collectionClusteringState, int maxShardMovesNumber)
     {
+        var movesLeft = maxShardMovesNumber;
+
         var underpopulatedPeer = collectionClusteringState.GetMostUnderpopulatedPeer();
 
         while (underpopulatedPeer.HasValue)
         {
+            if (movesLeft == 0)
+            {
+                throw new ShardReplicatorAlgorithmException(
+                    $"The underpopulated peer population failed : calculated maximal number of shard moves {maxShardMovesNumber} exceeded. This might indicate an infinite loop or an unexpected edge case"
+                );
+            }
+
             var underpopulatedPeerShards = underpopulatedPeer.Value.ShardIds;
 
             var (maxReplicasPeerId, candidateShardIdsToMove) = collectionClusteringState.GetMaxReplicasPeer();
@@ -513,8 +596,8 @@ public class ShardReplicator
 
                     if (!collectionClusteringState.MoveShardReplica(shardIdToMove, sourcePeerId, targetPeerId))
                     {
-                        throw new InvalidOperationException(
-                            $"Invalid algorithm state. Shard {shardIdToMove} replica move from peer {sourcePeerId} to {targetPeerId} can't be performed"
+                        throw new ShardReplicatorAlgorithmException(
+                            $"Shard {shardIdToMove} replica move from peer {sourcePeerId} to {targetPeerId} can't be performed"
                         );
                     }
 
@@ -529,11 +612,13 @@ public class ShardReplicator
                             collectionClusteringState.Version
                         )
                         {
-                            ExpectedInitialState = expectedStateBeforeReplication
+                            ExpectedInitialState = expectedStateBeforeReplication,
                         }
                     );
 
                     foundShardToMove = true;
+
+                    movesLeft--;
 
                     // Since this is not a performance-critical section, we move one shard at a time to not overcomplicate things
                     break;
@@ -542,8 +627,8 @@ public class ShardReplicator
 
             if (!foundShardToMove)
             {
-                throw new InvalidOperationException(
-                    "Invalid algorithm state. The underpopulated peer population failed : no shard found to move to the underpopulated peer"
+                throw new ShardReplicatorAlgorithmException(
+                    "The underpopulated peer population failed : no shard found to move to the underpopulated peer"
                 );
             }
 
@@ -577,12 +662,7 @@ public class ShardReplicator
     {
         if (_replicationPlan is null or { IsEmpty: true })
         {
-            return Task.FromResult(
-                ReplicateShardsToPeerResponse.Fail(
-                    QdrantStatus.Fail("No replications to execute"),
-                    time: 0
-                )
-            );
+            return Task.FromResult(ReplicateShardsToPeerResponse.Fail(QdrantStatus.Fail("No replications to execute"), time: 0));
         }
 
         _replicationPlan.TryDequeue(out var nextReplicationStep);
@@ -629,7 +709,12 @@ public class ShardReplicator
 
             _replicationPlan.TryDequeue(out var nextReplicationStep);
 
-            var shardReplicationResult = await ExecuteNextReplicationInternal(nextReplicationStep, shardTransferMethod, timeout, cancellationToken);
+            var shardReplicationResult = await ExecuteNextReplicationInternal(
+                nextReplicationStep,
+                shardTransferMethod,
+                timeout,
+                cancellationToken
+            );
 
             yield return shardReplicationResult;
         }
@@ -677,12 +762,12 @@ public class ShardReplicator
                             ReplicatedShards:
                             [
                                 new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
-                                        IsSuccess: true,
-                                        ShardId: shardId,
-                                        SourcePeerId: sourcePeerId,
-                                        TargetPeerId: targetPeerId,
-                                        _collectionName
-                                    ),
+                                    IsSuccess: true,
+                                    ShardId: shardId,
+                                    SourcePeerId: sourcePeerId,
+                                    TargetPeerId: targetPeerId,
+                                    _collectionName
+                                ),
                             ],
                             AlreadyReplicatedShards: []
                         ),
@@ -698,12 +783,12 @@ public class ShardReplicator
                             ReplicatedShards:
                             [
                                 new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
-                                        IsSuccess: false,
-                                        ShardId: shardId,
-                                        SourcePeerId: sourcePeerId,
-                                        TargetPeerId: targetPeerId,
-                                        _collectionName
-                                    ),
+                                    IsSuccess: false,
+                                    ShardId: shardId,
+                                    SourcePeerId: sourcePeerId,
+                                    TargetPeerId: targetPeerId,
+                                    _collectionName
+                                ),
                             ],
                             AlreadyReplicatedShards: []
                         ),
@@ -732,12 +817,12 @@ public class ShardReplicator
                             ReplicatedShards:
                             [
                                 new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
-                                        IsSuccess: true,
-                                        ShardId: shardId,
-                                        SourcePeerId: sourcePeerId,
-                                        TargetPeerId: null,
-                                        _collectionName
-                                    ),
+                                    IsSuccess: true,
+                                    ShardId: shardId,
+                                    SourcePeerId: sourcePeerId,
+                                    TargetPeerId: null,
+                                    _collectionName
+                                ),
                             ],
                             AlreadyReplicatedShards: []
                         ),
@@ -753,12 +838,12 @@ public class ShardReplicator
                             ReplicatedShards:
                             [
                                 new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
-                                        IsSuccess: false,
-                                        ShardId: shardId,
-                                        SourcePeerId: sourcePeerId,
-                                        TargetPeerId: null,
-                                        _collectionName
-                                    ),
+                                    IsSuccess: false,
+                                    ShardId: shardId,
+                                    SourcePeerId: sourcePeerId,
+                                    TargetPeerId: null,
+                                    _collectionName
+                                ),
                             ],
                             AlreadyReplicatedShards: []
                         ),
@@ -792,12 +877,12 @@ public class ShardReplicator
                             ReplicatedShards:
                             [
                                 new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
-                                        IsSuccess: true,
-                                        ShardId: shardId,
-                                        SourcePeerId: sourcePeerId,
-                                        TargetPeerId: targetPeerId,
-                                        _collectionName
-                                    ),
+                                    IsSuccess: true,
+                                    ShardId: shardId,
+                                    SourcePeerId: sourcePeerId,
+                                    TargetPeerId: targetPeerId,
+                                    _collectionName
+                                ),
                             ],
                             AlreadyReplicatedShards: []
                         ),
@@ -813,12 +898,12 @@ public class ShardReplicator
                             ReplicatedShards:
                             [
                                 new ReplicateShardsToPeerResponse.ReplicateShardToPeerResult(
-                                        IsSuccess: false,
-                                        ShardId: shardId,
-                                        SourcePeerId: sourcePeerId,
-                                        TargetPeerId: targetPeerId,
-                                        _collectionName
-                                    ),
+                                    IsSuccess: false,
+                                    ShardId: shardId,
+                                    SourcePeerId: sourcePeerId,
+                                    TargetPeerId: targetPeerId,
+                                    _collectionName
+                                ),
                             ],
                             AlreadyReplicatedShards: []
                         ),
@@ -835,24 +920,19 @@ public class ShardReplicator
 
     private async Task<(bool CanCommenceReplication, ReplicateShardsToPeerResponse ErrorResponse)> CheckCanCommenceReplication(
         ScheduledShardReplication nextReplicationStep,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         try
         {
             // Get current cluster state and compare that the expected cluster state in the replication step
             // is the same as the obtained current state
 
-            var currentClusterInfo = (
-                    await _qdrantClient.GetClusterInfo(cancellationToken, _clusterName)
-                ).EnsureSuccess();
+            var currentClusterInfo = (await _qdrantClient.GetClusterInfo(cancellationToken, _clusterName)).EnsureSuccess();
 
             var currentCollectionClusteringInfo = (
-                   await _qdrantClient.GetCollectionClusteringInfo(
-                       _collectionName,
-                       cancellationToken,
-                       clusterName: _clusterName
-                   )
-               ).EnsureSuccess();
+                await _qdrantClient.GetCollectionClusteringInfo(_collectionName, cancellationToken, clusterName: _clusterName)
+            ).EnsureSuccess();
 
             var currentCollectionClusteringState = new CollectionClusteringState(
                 currentClusterInfo,
@@ -874,7 +954,9 @@ public class ShardReplicator
                     new ReplicateShardsToPeerResponse()
                     {
                         Result = null,
-                        Status = QdrantStatus.Fail($"Can't restore shard replication factor. Found {ongoingShardTransfersCount} ongoing shard transfers. To ensure that collection data is not corrupted, wait for ongoing shard transfers to finish and start restore shard replication factor process again.")
+                        Status = QdrantStatus.Fail(
+                            $"Can't restore shard replication factor. Found {ongoingShardTransfersCount} ongoing shard transfers. To ensure that collection data is not corrupted, wait for ongoing shard transfers to finish and start restore shard replication factor process again."
+                        ),
                     }
                 );
             }
@@ -891,7 +973,9 @@ public class ShardReplicator
                     new ReplicateShardsToPeerResponse()
                     {
                         Result = null,
-                        Status = QdrantStatus.Fail($"Can't restore shard replication factor. Looks like collection clustering was changed parallel to the replication process by ShardReplicator. To ensure that collection data is not corrupted, restart restore shard replication factor process.")
+                        Status = QdrantStatus.Fail(
+                            $"Can't restore shard replication factor. Looks like collection clustering was changed parallel to the replication process by ShardReplicator. To ensure that collection data is not corrupted, restart restore shard replication factor process."
+                        ),
                     }
                 );
             }
@@ -908,7 +992,7 @@ public class ShardReplicator
                 new ReplicateShardsToPeerResponse()
                 {
                     Result = null,
-                    Status = QdrantStatus.Fail($"Can't restore shard replication factor. An exception happened : {ex}.")
+                    Status = QdrantStatus.Fail($"Can't restore shard replication factor. An exception happened : {ex}."),
                 }
             );
         }

@@ -402,10 +402,4 @@ internal class RestoreShardReplicationFactorTests : QdrantTestsBase
             .Contain("Can't restore shard replication factor")
             .And.Contain("collection clustering was changed");
     }
-
-    //[Test]
-    //public async Task RestoreShardReplicationFactor_UnderpopulationEdgeCase(int replicationFactor, int shardCount)
-    //{
-
-    //}
 }
