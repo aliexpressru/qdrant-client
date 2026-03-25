@@ -2,7 +2,6 @@ using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Model;
-using Microsoft.Extensions.Logging;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
@@ -17,7 +16,6 @@ internal class RestoreShardReplicationFactorTests : QdrantTestsBase
     private QdrantHttpClient _qdrantHttpClient1;
     private QdrantHttpClient _qdrantHttpClient2;
     private QdrantHttpClient _qdrantHttpClient3;
-    private ILogger _logger;
 
     [OneTimeSetUp]
     public void Setup()
@@ -26,8 +24,6 @@ internal class RestoreShardReplicationFactorTests : QdrantTestsBase
         _qdrantHttpClient1 = Get3NodeClusterClient(ClusterNode.First);
         _qdrantHttpClient2 = Get3NodeClusterClient(ClusterNode.Second);
         _qdrantHttpClient3 = Get3NodeClusterClient(ClusterNode.Third);
-
-        _logger = ServiceProvider.GetRequiredService<ILogger<ClusterCompoundOperationsTests>>();
     }
 
     [SetUp]
