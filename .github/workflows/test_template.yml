@@ -63,7 +63,7 @@ jobs:
             QDRANT_VERSION: ${{ inputs.qdrant_version }}
 
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v6.0.2
 
             - name: Display current qdrant version and image
               run: |
