@@ -59,7 +59,7 @@ jobs:
         QDRANT_VERSION: 1.17.0
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6.0.2
 
     - name: Display current qdrant version and image
       run: |
