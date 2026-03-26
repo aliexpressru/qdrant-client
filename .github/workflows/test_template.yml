@@ -63,7 +63,7 @@ jobs:
             QDRANT_VERSION: ${{ inputs.qdrant_version }}
 
         steps:
-            - uses: actions/checkout@v6.0.2
+            - uses: actions/checkout@v6
 
             - name: Display current qdrant version and image
               run: |
@@ -71,17 +71,17 @@ jobs:
                   echo "Qdrant version: ${{ inputs.qdrant_version }}"
 
             - name: Setup .NET 8
-              uses: actions/setup-dotnet@v3
+              uses: actions/setup-dotnet@v5
               with:
                   dotnet-version: 8.0.x
 
             - name: Setup .NET 9
-              uses: actions/setup-dotnet@v3
+              uses: actions/setup-dotnet@v5
               with:
                   dotnet-version: 9.0.x
 
             - name: Setup .NET 10
-              uses: actions/setup-dotnet@v3
+              uses: actions/setup-dotnet@v5
               with:
                   dotnet-version: 10.0.x
 
