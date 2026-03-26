@@ -1,16 +1,16 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Models.Primitives;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 internal sealed class PointIdCollectionJsonConverter : JsonConverter<IReadOnlyList<PointId>>
 {
-    private static readonly JsonSerializerOptions _serializerOptions =
-        JsonSerializerConstants.CreateSerializerOptions(new PointIdJsonConverter());
+    private static readonly JsonSerializerOptions _serializerOptions = JsonSerializerConstants.CreateSerializerOptions(
+        new PointIdJsonConverter()
+    );
 
     public override IReadOnlyList<PointId> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
@@ -21,22 +21,24 @@ internal sealed class PointIdCollectionJsonConverter : JsonConverter<IReadOnlyLi
 
         if (reader.TokenType != JsonTokenType.StartArray)
         {
-            throw new QdrantJsonParsingException($"Can't deserialize value {reader.GetString()} as {typeof(IReadOnlyList<PointId>)}");
+            throw new QdrantJsonParsingException(
+                $"Can't deserialize value {reader.GetString()} as {typeof(IReadOnlyList<PointId>)}"
+            );
         }
 
-        JsonNode array = JsonNode.Parse(ref reader);
+        var array = JsonElement.ParseValue(ref reader);
 
         List<PointId> collection = [];
 
-        foreach (var arrayJElement in array!.AsArray())
+        foreach (var arrayJElement in array!.EnumerateArray())
         {
-            var valueKind = arrayJElement.GetValueKind();
+            var valueKind = arrayJElement.ValueKind;
 
             switch (valueKind)
             {
                 case JsonValueKind.Number:
                 {
-                    var ulongValue = arrayJElement.GetValue<ulong>();
+                    var ulongValue = arrayJElement.GetUInt64();
                     var pointId = PointId.Integer(ulongValue);
 
                     collection.Add(pointId);
@@ -44,15 +46,15 @@ internal sealed class PointIdCollectionJsonConverter : JsonConverter<IReadOnlyLi
                 }
                 case JsonValueKind.String:
                 {
-                    var pointIdValueString = arrayJElement.GetValue<string>();
+                    var pointIdValueString = arrayJElement.GetString();
 
                     // try parse as Guid then try parse as ulong
                     var parsedPointId = Guid.TryParse(pointIdValueString, out Guid parsedIdGuid)
                         ? PointId.Guid(parsedIdGuid)
 #if NETSTANDARD2_0
-                            : PointId.Integer(ulong.Parse(pointIdValueString));
+                        : PointId.Integer(ulong.Parse(pointIdValueString));
 #else
-                : PointId.Integer(ulong.Parse((ReadOnlySpan<char>)pointIdValueString));
+                        : PointId.Integer(ulong.Parse((ReadOnlySpan<char>)pointIdValueString));
 #endif
                     collection.Add(parsedPointId);
                     break;

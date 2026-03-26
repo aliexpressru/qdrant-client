@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Nodes;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -10,10 +9,12 @@ internal sealed class VectorConfigurationJsonConverter : JsonConverter<VectorCon
 {
     public override VectorConfigurationBase Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var configurationObject = JsonNode.Parse(ref reader);
-
-        if (configurationObject is null || configurationObject.AsObject().Count == 0)
-        { 
+        if (
+            !JsonElement.TryParseValue(ref reader, out var configurationObject)
+            || !configurationObject.HasValue
+            || configurationObject.Value.GetPropertyCount() == 0
+        )
+        {
             return null;
         }
 
@@ -23,8 +24,9 @@ internal sealed class VectorConfigurationJsonConverter : JsonConverter<VectorCon
             // since this method is never expected to be on the hot path - we use try-catch here to
             // determine which vector configuration we are reading
 
-            var namedVectorsConfigurations = configurationObject.Deserialize<
-                Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration>>(JsonSerializerConstants.DefaultSerializerOptions);
+            var namedVectorsConfigurations = configurationObject.Value.Deserialize<
+                Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration>
+            >(JsonSerializerConstants.DefaultSerializerOptions);
 
             return new VectorConfigurationBase.NamedVectorsConfiguration(namedVectorsConfigurations);
         }
@@ -35,8 +37,9 @@ internal sealed class VectorConfigurationJsonConverter : JsonConverter<VectorCon
             try
             {
                 var singleVectorConfiguration =
-                    configurationObject.Deserialize<VectorConfigurationBase.SingleVectorConfiguration>(
-                        JsonSerializerConstants.DefaultSerializerOptions);
+                    configurationObject.Value.Deserialize<VectorConfigurationBase.SingleVectorConfiguration>(
+                        JsonSerializerConstants.DefaultSerializerOptions
+                    );
 
                 return singleVectorConfiguration;
             }
@@ -58,7 +61,9 @@ internal sealed class VectorConfigurationJsonConverter : JsonConverter<VectorCon
                 JsonSerializer.Serialize(writer, nv.NamedVectors, JsonSerializerConstants.DefaultSerializerOptions);
                 return;
             default:
-                throw new QdrantJsonSerializationException($"Can't serialize {value} vector configuration of type {value.GetType()}");
+                throw new QdrantJsonSerializationException(
+                    $"Can't serialize {value} vector configuration of type {value.GetType()}"
+                );
         }
     }
 }

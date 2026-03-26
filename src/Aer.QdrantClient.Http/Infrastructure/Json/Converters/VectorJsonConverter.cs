@@ -3,7 +3,6 @@ using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 using Aer.QdrantClient.Http.Infrastructure.Helpers;
 using Aer.QdrantClient.Http.Models.Primitives.Vectors;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
@@ -21,9 +20,13 @@ internal sealed class VectorJsonConverter : JsonConverter<VectorBase>
         {
             case JsonTokenType.StartArray:
 
-                var vectorValuesJArray = JsonNode.Parse(ref reader)?.AsArray();
+                if (!JsonElement.TryParseValue(ref reader, out var vectorValuesArray))
+                {
+                    throw new QdrantJsonParsingException(
+                $"Unable to deserialize Qdrant vector value as {typeToConvert}. The vector value is missing");
+                }
 
-                return ReadSingleOrMultiVectorFromJArray(vectorValuesJArray, typeToConvert);
+                return ReadSingleOrMultiVectorFromJArray(vectorValuesArray, typeToConvert);
 
             case JsonTokenType.StartObject:
 
@@ -37,26 +40,26 @@ internal sealed class VectorJsonConverter : JsonConverter<VectorBase>
                 // or a multivector
                 // "vector1" : [[0.0, 0.1, 0.2],[0.02, 0.12, 0.22],[0.03, 0.13, 0.23]]
 
-                var namedVectorsJObject = JsonNode.Parse(ref reader);
+                var namedVectorsJObject = JsonElement.ParseValue(ref reader);
 
                 var namedVectorsObject = namedVectorsJObject
-                    .Deserialize<Dictionary<string, JsonNode>>(JsonSerializerConstants.DefaultSerializerOptions);
+                    .Deserialize<Dictionary<string, JsonElement>>(JsonSerializerConstants.DefaultSerializerOptions);
 
                 var vectors = new Dictionary<string, VectorBase>();
 
-                foreach (var (vectorName, vector) in namedVectorsObject)
+                foreach (var (vectorName, vectorElement) in namedVectorsObject)
                 {
-                    switch (vector)
+                    switch (vectorElement.ValueKind)
                     {
-                        case JsonArray singleOrMultiVectorValues:
+                        case JsonValueKind.Array:
 
-                            var readVector = ReadSingleOrMultiVectorFromJArray(singleOrMultiVectorValues, typeToConvert);
+                            var readVector = ReadSingleOrMultiVectorFromJArray(vectorElement, typeToConvert);
 
                             vectors.Add(vectorName, readVector);
                             break;
 
-                        case JsonObject sparseVectorValues:
-                            var sparseVector = sparseVectorValues
+                        case JsonValueKind.Object:
+                            var sparseVector = vectorElement
                                 .Deserialize<SparseVector>(JsonSerializerConstants.DefaultSerializerOptions);
 
                             vectors.Add(vectorName, sparseVector);
@@ -64,7 +67,7 @@ internal sealed class VectorJsonConverter : JsonConverter<VectorBase>
 
                         default:
                             throw new QdrantJsonParsingException(
-                                $"Unable to deserialize Qdrant vector value. Unexpected vector representation : {vector.GetType()}");
+                                $"Unable to deserialize Qdrant vector value. Unexpected vector representation : {vectorElement.GetType()}");
                     }
                 }
 
@@ -177,11 +180,11 @@ internal sealed class VectorJsonConverter : JsonConverter<VectorBase>
         }
     }
 
-    private static VectorBase ReadSingleOrMultiVectorFromJArray(JsonArray vectorValuesJArray, Type typeToConvert)
+    private static VectorBase ReadSingleOrMultiVectorFromJArray(JsonElement? vectorValuesJArray, Type typeToConvert)
     {
         // vectorValuesJArray can either contain a multivector or a single vector
 
-        if (vectorValuesJArray is null or { Count: 0 })
+        if (!vectorValuesJArray.HasValue || vectorValuesJArray.Value.GetArrayLength() == 0)
         {
             throw new QdrantJsonParsingException(
                 $"Unable to deserialize Qdrant vector value as {typeToConvert}. The vector value is missing");
@@ -190,19 +193,21 @@ internal sealed class VectorJsonConverter : JsonConverter<VectorBase>
         // check first array value - if it is JArray itself - we are dealing with multivector
         // if it is a number value - we are deserializing a single vector
 
-        var firstJArrayValueKind = vectorValuesJArray[0]!.GetValueKind();
+        var firstArrayElement = vectorValuesJArray.Value.EnumerateArray().First();
+
+        var firstJArrayValueKind = firstArrayElement.ValueKind;
 
         switch (firstJArrayValueKind)
         {
             case JsonValueKind.Number:
                 var vectorValuesArray =
-                    vectorValuesJArray.Deserialize<float[]>(JsonSerializerConstants.DefaultSerializerOptions);
+                    vectorValuesJArray.Value.Deserialize<float[]>(JsonSerializerConstants.DefaultSerializerOptions);
 
                 return new DenseVector(vectorValuesArray);
 
             case JsonValueKind.Array:
                 var multiVectorValuesArray =
-                    vectorValuesJArray.Deserialize<float[][]>(JsonSerializerConstants.DefaultSerializerOptions);
+                    vectorValuesJArray.Value.Deserialize<float[][]>(JsonSerializerConstants.DefaultSerializerOptions);
 
                 return new MultiVector()
                 {

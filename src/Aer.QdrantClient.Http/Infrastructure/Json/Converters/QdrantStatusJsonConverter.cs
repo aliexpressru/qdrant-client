@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Shared;
@@ -22,10 +21,7 @@ internal sealed class QdrantStatusJsonConverter : JsonConverter<QdrantStatus>
                 }
 
                 // means string with some unknown content
-                return new QdrantStatus(QdrantOperationStatusType.Unknown)
-                {
-                    RawStatusString = statusStringValue
-                };
+                return new QdrantStatus(QdrantOperationStatusType.Unknown) { RawStatusString = statusStringValue };
             }
 
             case JsonTokenType.StartObject:
@@ -35,22 +31,22 @@ internal sealed class QdrantStatusJsonConverter : JsonConverter<QdrantStatus>
                 //      "error":"Wrong input: Collection `test_collection` already exists!"
                 //  },
 
-                var statusObject = JsonNode.Parse(ref reader);
+                string errorMessage = null;
 
-                var errorMessage = statusObject?["error"]?.GetValue<string>();
+                if (
+                    JsonElement.TryParseValue(ref reader, out var statusObject)
+                    && statusObject.Value.TryGetProperty("error", out var errorProperty)
+                )
+                {
+                    errorMessage = errorProperty.GetString();
+                }
 
                 if (errorMessage is not null)
                 {
-                    return new QdrantStatus(QdrantOperationStatusType.Error)
-                    {
-                        Error = errorMessage
-                    };
+                    return new QdrantStatus(QdrantOperationStatusType.Error) { Error = errorMessage };
                 }
 
-                return new QdrantStatus(QdrantOperationStatusType.Unknown)
-                {
-                    RawStatusString = statusObject?.ToJsonString(JsonSerializerConstants.DefaultIndentedSerializerOptions)
-                };
+                return new QdrantStatus(QdrantOperationStatusType.Unknown) { RawStatusString = statusObject.Value.GetRawText() };
             }
 
             default:

@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Responses;
@@ -7,9 +6,14 @@ using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
-internal sealed class QdrantCollectionOptimizerStatusJsonConverter : JsonConverter<GetCollectionInfoResponse.QdrantOptimizerStatusUint>
+internal sealed class QdrantCollectionOptimizerStatusJsonConverter
+    : JsonConverter<GetCollectionInfoResponse.QdrantOptimizerStatusUint>
 {
-    public override GetCollectionInfoResponse.QdrantOptimizerStatusUint Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override GetCollectionInfoResponse.QdrantOptimizerStatusUint Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options
+    )
     {
         switch (reader.TokenType)
         {
@@ -19,15 +23,13 @@ internal sealed class QdrantCollectionOptimizerStatusJsonConverter : JsonConvert
 
                 if (statusStringValue == "ok")
                 {
-                    return new GetCollectionInfoResponse.QdrantOptimizerStatusUint(
-                        QdrantOptimizerStatus.Ok);
+                    return new GetCollectionInfoResponse.QdrantOptimizerStatusUint(QdrantOptimizerStatus.Ok);
                 }
 
                 // means string with some unknown content
-                return new GetCollectionInfoResponse.QdrantOptimizerStatusUint(
-                    QdrantOptimizerStatus.Unknown)
+                return new GetCollectionInfoResponse.QdrantOptimizerStatusUint(QdrantOptimizerStatus.Unknown)
                 {
-                    RawStatusString = statusStringValue
+                    RawStatusString = statusStringValue,
                 };
             }
 
@@ -38,23 +40,27 @@ internal sealed class QdrantCollectionOptimizerStatusJsonConverter : JsonConvert
                 //      "error":"Some error message"
                 //  },
 
-                var statusObject = JsonNode.Parse(ref reader);
+                string errorMessage = null;
 
-                var errorMessage = statusObject?["error"]?.GetValue<string>();
+                if (
+                    JsonElement.TryParseValue(ref reader, out var statusObject)
+                    && statusObject.Value.TryGetProperty("error", out var errorProperty)
+                )
+                {
+                    errorMessage = errorProperty.GetString();
+                }
 
                 if (errorMessage is not null)
                 {
-                    return new GetCollectionInfoResponse.QdrantOptimizerStatusUint(
-                        QdrantOptimizerStatus.Error)
+                    return new GetCollectionInfoResponse.QdrantOptimizerStatusUint(QdrantOptimizerStatus.Error)
                     {
-                        Error = errorMessage
+                        Error = errorMessage,
                     };
                 }
 
-                return new GetCollectionInfoResponse.QdrantOptimizerStatusUint(
-                    QdrantOptimizerStatus.Unknown)
+                return new GetCollectionInfoResponse.QdrantOptimizerStatusUint(QdrantOptimizerStatus.Unknown)
                 {
-                    RawStatusString = statusObject?.ToJsonString(JsonSerializerConstants.DefaultIndentedSerializerOptions)
+                    RawStatusString = statusObject.Value.GetRawText(),
                 };
             }
 
@@ -63,6 +69,9 @@ internal sealed class QdrantCollectionOptimizerStatusJsonConverter : JsonConvert
         }
     }
 
-    public override void Write(Utf8JsonWriter writer, GetCollectionInfoResponse.QdrantOptimizerStatusUint value, JsonSerializerOptions options) =>
-        JsonSerializer.Serialize(writer, value, JsonSerializerConstants.DefaultSerializerOptions);
+    public override void Write(
+        Utf8JsonWriter writer,
+        GetCollectionInfoResponse.QdrantOptimizerStatusUint value,
+        JsonSerializerOptions options
+    ) => JsonSerializer.Serialize(writer, value, JsonSerializerConstants.DefaultSerializerOptions);
 }
