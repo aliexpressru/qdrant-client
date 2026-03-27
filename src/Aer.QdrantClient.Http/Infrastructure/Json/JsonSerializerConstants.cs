@@ -11,7 +11,7 @@ internal static class JsonSerializerConstants
 
     public static JsonNamingPolicy NamingStrategy => JsonNamingPolicy.SnakeCaseLower;
 
-    public static JsonConverter EnumConverter { get; } = new JsonStringEnumConverter(NamingStrategy);
+    public static JsonConverter EnumConverter { get; } = new JsonStringSnakeCaseLowerEnumConverter();
 
     public static JsonSerializerOptions DefaultSerializerOptions { get; } = CreateSerializerOptions();
 
@@ -37,7 +37,9 @@ internal static class JsonSerializerConstants
             IncludeFields = false,
             PropertyNameCaseInsensitive = true,
             UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
-            UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
+
+            TypeInfoResolver = SourceGenerationContext.Default
         };
 
         configure?.Invoke(options);

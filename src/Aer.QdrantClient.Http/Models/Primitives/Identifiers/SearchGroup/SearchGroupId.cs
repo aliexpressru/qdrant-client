@@ -4,7 +4,7 @@ using Aer.QdrantClient.Http.Exceptions;
 namespace Aer.QdrantClient.Http.Models.Primitives;
 
 /// <summary>
-/// Represents integer or string point identifier.
+/// Represents a search group identifier.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public abstract class SearchGroupId : IEquatable<SearchGroupId>
@@ -14,7 +14,7 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
     /// <summary>
     /// Integer search group identifier.
     /// </summary>
-    private sealed class IntegerSearchGroupId : SearchGroupId
+    internal sealed class IntegerSearchGroupId : SearchGroupId
     {
         /// <summary>
         /// The identifier value.
@@ -71,7 +71,7 @@ public abstract class SearchGroupId : IEquatable<SearchGroupId>
     /// <summary>
     /// string search group identifier.
     /// </summary>
-    private sealed class StringSearchGroupId : SearchGroupId
+    internal sealed class StringSearchGroupId : SearchGroupId
     {
         /// <summary>
         /// The identifier value.
