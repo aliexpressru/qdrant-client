@@ -212,6 +212,7 @@ public abstract class UpdateCollectionClusteringSetupRequest
         /// <summary>
         /// The shard transfer method. If not set, <see cref="ShardTransferMethod.StreamRecords"/> will be used.
         /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<ShardTransferMethod>))]
         public ShardTransferMethod? Method { set; get; }
     }
 
@@ -247,6 +248,7 @@ public abstract class UpdateCollectionClusteringSetupRequest
         /// <summary>
         /// Resharding direction, scale up or down in number of shards.
         /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<ReshardingOperationDirection>))]
         public ReshardingOperationDirection Direction { set; get; }
 
         /// <summary>

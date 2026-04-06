@@ -57,6 +57,7 @@ public sealed class CreateCollectionRequest
     /// In this mode, the <see cref="ShardNumber"/> means the number of shards per shard key,
     /// where points will be distributed evenly.
     /// </remarks>
+    [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<ShardingMethod>))]
     public ShardingMethod? ShardingMethod { set; get; }
 
     /// <summary>

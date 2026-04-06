@@ -27,6 +27,7 @@ public class RecommendPointsRequest
     /// <summary>
     /// How to use positive and negative examples to find the results.
     /// </summary>
+    [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<RecommendStrategy>))]
     public RecommendStrategy? Strategy { set; get; }
 
     /// <summary>

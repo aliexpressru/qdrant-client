@@ -13,6 +13,7 @@ public sealed class ReshardingOperationInfo
     /// <summary>
     /// Resharding direction, scale up or down in number of shards.
     /// </summary>
+    [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<ReshardingOperationDirection>))]
     public ReshardingOperationDirection Direction { init; get; }
 
     /// <summary>

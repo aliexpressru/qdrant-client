@@ -89,11 +89,13 @@ public sealed class GetClusterTelemetryResponse : QdrantResponseBase<ClusterTele
                 /// <summary>
                 /// State of the single shard within a replica set.
                 /// </summary>
+                [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<ShardState>))]
                 public ShardState State { get; set; }
 
                 /// <summary>
                 /// Health status of this local shard.
                 /// </summary>
+                [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<QdrantCollectionStatus>))]
                 public QdrantCollectionStatus Status { get; set; }
 
                 /// <summary>
@@ -233,6 +235,7 @@ public sealed class GetClusterTelemetryResponse : QdrantResponseBase<ClusterTele
                 /// <summary>
                 /// The Raft role this node is currently playing (<c>null</c> when role is not yet determined).
                 /// </summary>
+                [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<PeerRole>))]
                 public PeerRole Role { get; set; }
 
                 /// <summary>

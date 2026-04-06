@@ -1,5 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 
@@ -18,6 +20,7 @@ public sealed class CollectionPayloadIndexDefinition
     /// <summary>
     /// The type of the indexed payload property.
     /// </summary>
+    [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<PayloadIndexedFieldType>))]
     public PayloadIndexedFieldType PayloadIndexedFieldSchema { get; }
 
     /// <summary>

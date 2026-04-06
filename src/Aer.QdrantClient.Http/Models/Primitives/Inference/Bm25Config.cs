@@ -29,6 +29,7 @@ public sealed class Bm25Config : IEquatable<Bm25Config>
     /// <summary>
     /// The tokenizer to be used.
     /// </summary>
+    [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<FullTextIndexTokenizerType>))]
     public FullTextIndexTokenizerType Tokenizer { get; init; }
 
     /// <summary>

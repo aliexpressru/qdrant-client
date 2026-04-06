@@ -1,6 +1,8 @@
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Responses.Shared;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
 
@@ -123,6 +125,7 @@ public sealed class GetClusterInfoResponse : QdrantResponseBase<GetClusterInfoRe
         /// <summary>
         /// This node role.
         /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<PeerRole>))]
         public PeerRole Role { init; get; }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
@@ -18,6 +18,7 @@ public sealed class OrderBySelector
     /// <summary>
     /// Direction of ordering: ascending or descending. Default is ascending.
     /// </summary>
+    [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<OrderByDirection>))]
     public OrderByDirection Direction { get; }
 
     /// <summary>

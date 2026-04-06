@@ -59,6 +59,7 @@ public abstract class VectorConfigurationBase
         /// <summary>
         /// Defines which datatype should be used to represent vectors in the storage.
         /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<VectorDataType>))]
         public VectorDataType Datatype { get; init; }
 
         /// <summary>

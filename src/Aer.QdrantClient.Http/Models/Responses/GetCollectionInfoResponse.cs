@@ -25,6 +25,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// Yellow - optimization is running,
         /// Red - some operations failed and were not recovered.
         /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<QdrantCollectionStatus>))]
         public QdrantCollectionStatus Status { get; init; }
 
         /// <summary>
@@ -180,6 +181,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// In this mode, the <see cref="ShardNumber"/> means the number of shards per shard key,
             /// where points will be distributed evenly.
             /// </remarks>
+            [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<ShardingMethod>))]
             public ShardingMethod? ShardingMethod { init; get; }
 
             /// <summary>
@@ -240,6 +242,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// <summary>
         /// The payload field data type.
         /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<PayloadIndexedFieldType>))]
         public PayloadIndexedFieldType DataType { init; get; }
 
         /// <summary>
@@ -265,6 +268,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// <summary>
             /// The tokenizer type. For full-text index only.
             /// </summary>
+            [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<FullTextIndexTokenizerType>))]
             public FullTextIndexTokenizerType? Tokenizer { init; get; }
 
             /// <summary>

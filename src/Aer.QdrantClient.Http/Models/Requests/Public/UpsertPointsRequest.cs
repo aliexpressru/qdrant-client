@@ -81,5 +81,6 @@ public sealed class UpsertPointsRequest
     /// <summary>
     /// Mode of the upsert operation.
     /// </summary>
+    [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<PointsUpdateMode>))]
     public PointsUpdateMode? UpdateMode { get; set; } = PointsUpdateMode.Upsert;
 }

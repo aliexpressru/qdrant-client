@@ -1,4 +1,6 @@
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Requests;
 
@@ -24,6 +26,7 @@ internal sealed class RecoverEntityFromSnapshotRequest(Uri location, SnapshotPri
     /// If set to <see cref="SnapshotPriority.Replica"/>, the current state will be used
     /// as a source of truth, and after recovery it will be synchronized with the snapshot.
     /// </summary>
+    [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<SnapshotPriority>))]
     public SnapshotPriority? Priority { set; get; } = priority;
 
     /// <summary>

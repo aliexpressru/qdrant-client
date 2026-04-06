@@ -9,6 +9,11 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 public sealed class QdrantStatus
 {
     /// <summary>
+    /// Gets the string indicating that qdrant response was successful.
+    /// </summary>
+    public static string OkStatusString => "ok";
+
+    /// <summary>
     /// The qdrant status type.
     /// </summary>
     public QdrantOperationStatusType Type { get; }

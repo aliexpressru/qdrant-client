@@ -1,4 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Shared;
 
@@ -12,13 +14,14 @@ public sealed class SparseVectorConfiguration
     /// <summary>
     /// Configures additional value modifications for sparse vectors.
     /// </summary>
+    [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<SparseVectorModifier>))]
     public SparseVectorModifier Modifier { set; get; } = SparseVectorModifier.None;
-    
+
     /// <summary>
     /// Custom params for index. If none - values from collection configuration are used.
     /// </summary>
     public SparseVectorIndexConfiguration Index { set; get; } = new();
-    
+
     /// <summary>
     /// Custom sparse vector index parameters.
     /// </summary>
@@ -40,6 +43,7 @@ public sealed class SparseVectorConfiguration
         /// <summary>
         /// Defines which datatype should be used for the index.
         /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<VectorDataType>))]
         public VectorDataType Datatype { set; get; } = VectorDataType.Float32;
     }
 

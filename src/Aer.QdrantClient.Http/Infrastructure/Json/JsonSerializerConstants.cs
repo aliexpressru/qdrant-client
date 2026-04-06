@@ -28,7 +28,10 @@ internal static class JsonSerializerConstants
         JsonSerializerOptions options = new()
         {
             WriteIndented = false,
-            Converters = { EnumConverter, _jTokenJsonConverter },
+            Converters = {
+                EnumConverter,
+                _jTokenJsonConverter
+            },
             PropertyNamingPolicy = NamingStrategy,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             NumberHandling = JsonNumberHandling.Strict,
@@ -37,9 +40,7 @@ internal static class JsonSerializerConstants
             IncludeFields = false,
             PropertyNameCaseInsensitive = true,
             UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
-            UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
-
-            TypeInfoResolver = SourceGenerationContext.Default
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip
         };
 
         configure?.Invoke(options);

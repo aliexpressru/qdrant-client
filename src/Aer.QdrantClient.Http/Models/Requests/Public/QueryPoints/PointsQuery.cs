@@ -98,6 +98,7 @@ public abstract class PointsQuery
             /// <summary>
             /// How to use positive and negative examples to find the results.
             /// </summary>
+            [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<RecommendStrategy>))]
             public RecommendStrategy? Strategy { set; get; }
         }
 
@@ -168,6 +169,7 @@ public abstract class PointsQuery
 
     internal sealed class FusionQuery : PointsQuery
     {
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<FusionAlgorithm>))]
         public FusionAlgorithm Fusion { get; }
 
         internal FusionQuery(FusionAlgorithm fusionAlgorithm)

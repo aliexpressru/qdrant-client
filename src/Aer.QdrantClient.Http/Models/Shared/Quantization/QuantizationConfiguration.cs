@@ -1,4 +1,6 @@
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Shared;
 
@@ -88,6 +90,7 @@ public abstract class QuantizationConfiguration
         /// Compression ratio. Compression ratio represents the size of the quantized vector in bytes
         /// divided by the size of the original vector in bytes.
         /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<ProductQuantizationCompressionRatio>))]
         public ProductQuantizationCompressionRatio Compression { set; get; }
 
         /// <summary>
@@ -162,6 +165,7 @@ public abstract class QuantizationConfiguration
         /// <summary>
         /// The bit depth of the quantized vector components.
         /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<BinaryQuantizationEncoding>))]
         public BinaryQuantizationEncoding? Encoding { set; get; }
 
         /// <summary>
@@ -169,6 +173,7 @@ public abstract class QuantizationConfiguration
         /// Asymmetric quantization configuration allows a query to have different quantization than stored vectors.
         /// It can increase the accuracy of search at the cost of performance.
         /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<BinaryQuantizationQueryEncoding>))]
         public BinaryQuantizationQueryEncoding? QueryEncoding { set; get; }
     }
 

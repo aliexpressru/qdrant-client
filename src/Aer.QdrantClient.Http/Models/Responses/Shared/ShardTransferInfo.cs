@@ -1,4 +1,6 @@
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Shared;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Responses.Shared;
 
@@ -31,6 +33,7 @@ public sealed class ShardTransferInfo
     /// <summary>
     /// The method used to transfer shards.
     /// </summary>
+    [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<ShardTransferMethod>))]
     public ShardTransferMethod Method { init; get; }
 
     /// <summary>

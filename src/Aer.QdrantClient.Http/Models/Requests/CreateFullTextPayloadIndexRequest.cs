@@ -27,6 +27,7 @@ internal sealed class CreateFullTextPayloadIndexRequest
         /// <summary>
         /// The type of the payload text tokenizer.
         /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<FullTextIndexTokenizerType>))]
         public FullTextIndexTokenizerType Tokenizer { get; set; }
 
         /// <summary>

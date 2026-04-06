@@ -124,6 +124,7 @@ public sealed class GetCollectionClusteringInfoResponse
         /// <summary>
         /// State of the single shard within a replica set.
         /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<ShardState>))]
         public ShardState State { init; get; }
 
         /// <summary>
@@ -156,6 +157,7 @@ public sealed class GetCollectionClusteringInfoResponse
         /// <summary>
         /// State of the single shard within a replica set.
         /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<ShardState>))]
         public ShardState State { init; get; }
 
         /// <summary>

@@ -1,3 +1,6 @@
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
+using System.Text.Json.Serialization;
+
 namespace Aer.QdrantClient.Http.Models.Responses.Shared;
 
 /// <summary>
@@ -8,6 +11,7 @@ public sealed class ConsensusThreadState
     /// <summary>
     /// The consensus thread status.
     /// </summary>
+    [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<ConsensusThreadStatus>))]
     public ConsensusThreadStatus ConsensusThreadStatus { init; get; }
 
     /// <summary>

@@ -15,7 +15,7 @@ internal sealed class QdrantStatusJsonConverter : JsonConverter<QdrantStatus>
             {
                 var statusStringValue = reader.GetString();
 
-                if (statusStringValue == "ok")
+                if (statusStringValue == QdrantStatus.OkStatusString)
                 {
                     return new QdrantStatus(QdrantOperationStatusType.Ok);
                 }

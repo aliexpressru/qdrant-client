@@ -1,4 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Aer.QdrantClient.Http.Models.Shared;
 
@@ -12,6 +14,7 @@ public sealed class MultivectorConfiguration
     /// <summary>
     /// The comparator to be used while comparing multivectors.
     /// </summary>
+    [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<MultivectorComparator>))]
     public required MultivectorComparator Comparator { set; get; }
 
     /// <summary>
