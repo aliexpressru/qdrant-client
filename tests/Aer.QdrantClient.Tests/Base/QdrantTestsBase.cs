@@ -459,7 +459,6 @@ public class QdrantTestsBase
         }
         else
         {
-
             pointsToUpsert = [];
 
             for (int i = 0; i < vectorCount; i++)

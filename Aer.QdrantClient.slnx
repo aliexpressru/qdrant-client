@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/Aer.QdrantClient.Http.Benchmarks/Aer.QdrantClient.Http.Benchmarks.csproj" Id="d3da5325-7037-41eb-9dc6-56576af1a729" />
+  </Folder>
   <Folder Name="/common/">
     <File Path=".env" />
   </Folder>

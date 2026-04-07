@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <!--<LangVersion>preview</LangVersion>-->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+    <PropertyGroup>
+        <DefineConstants>$(DefineConstants);DISABLE_PROFILER_AGENT_CONFIG</DefineConstants>
+    </PropertyGroup>
+
+  <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.3" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.3" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.2" />
+    <PackageReference Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.3.36812.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Aer.QdrantClient.Http\Aer.QdrantClient.Http.csproj" />
+    <ProjectReference Include="..\..\tests\Aer.QdrantClient.Tests\Aer.QdrantClient.Tests.csproj" />
+  </ItemGroup>
+</Project>

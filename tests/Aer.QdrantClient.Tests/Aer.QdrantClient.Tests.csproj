@@ -62,4 +62,10 @@
     <ProjectReference Include="..\..\src\Aer.QdrantClient.Http\Aer.QdrantClient.Http.csproj" />
   </ItemGroup>
 
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+            <_Parameter1>Aer.QdrantClient.Http.Benchmarks</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+
 </Project>
