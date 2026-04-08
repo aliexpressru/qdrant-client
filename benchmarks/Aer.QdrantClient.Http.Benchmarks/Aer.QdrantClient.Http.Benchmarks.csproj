@@ -4,6 +4,7 @@
     <TargetFrameworks>net10.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <!--<LangVersion>preview</LangVersion>-->
+      <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +26,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Aer.QdrantClient.Http\Aer.QdrantClient.Http.csproj" />
-    <ProjectReference Include="..\..\tests\Aer.QdrantClient.Tests\Aer.QdrantClient.Tests.csproj" />
+    <!--<ProjectReference Include="..\..\tests\Aer.QdrantClient.Tests\Aer.QdrantClient.Tests.csproj" />-->
   </ItemGroup>
 </Project>

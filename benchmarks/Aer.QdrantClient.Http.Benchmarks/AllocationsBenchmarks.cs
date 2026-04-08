@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using Aer.QdrantClient.Http.Abstractions;
+using Aer.QdrantClient.Http.Benchmarks.Model;
 using Aer.QdrantClient.Http.DependencyInjection;
 using Aer.QdrantClient.Http.Filters.Builders;
 using Aer.QdrantClient.Http.Models.Primitives;
@@ -11,8 +7,6 @@ using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.QueryPoints;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Shared;
-using Aer.QdrantClient.Tests.Base;
-using Aer.QdrantClient.Tests.Model;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,8 +49,8 @@ public class AllocationsBenchmarks
     {
         Setup_CollectionCreateUpsertIndex();
 
-        var (_, upsertPointsByPointIds, _) = QdrantTestsBase
-            .PrepareCollection(
+        var (_, upsertPointsByPointIds, _) =
+            PrepareCollection(
                 _qdrantClient,
                 TestCollectionName,
                 vectorCount: 100,
@@ -141,7 +135,7 @@ public class AllocationsBenchmarks
                 Text = i.ToString(),
             };
 
-            pointsToUpsert.Add(new(pointId, QdrantTestsBase.CreateTestFloat32Vector((uint)vectorSize), payload));
+            pointsToUpsert.Add(new(pointId, CreateTestFloat32Vector((uint)vectorSize), payload));
         }
 
         (
@@ -220,5 +214,98 @@ public class AllocationsBenchmarks
         var collectionInfo = collectionInfoResponse.EnsureSuccess();
 
         GC.KeepAlive(collectionInfo);
+    }
+
+    private static float[] CreateTestFloat32Vector(uint vectorLength) =>
+        [.. Enumerable.Range(0, (int)vectorLength).Select(_ => float.CreateTruncating(Random.Shared.NextDouble()))];
+
+    private static async Task<(IReadOnlyList<UpsertPointsRequest.UpsertPoint> Points,
+            Dictionary<ulong, UpsertPointsRequest.UpsertPoint> PointsByPointIds,
+            IReadOnlyList<PointId> PointIds)> PrepareCollection(
+            IQdrantHttpClient qdrantHttpClient,
+            string collectionName,
+            VectorDistanceMetric distanceMetric = VectorDistanceMetric.Dot,
+            uint vectorSize = 10U,
+            int vectorCount = 10,
+            Func<int, object> payloadInitializerFunction = null,
+            QuantizationConfiguration quantizationConfig = null,
+            StrictModeConfiguration strictModeConfig = null,
+            List<UpsertPointsRequest.UpsertPoint> upsertPoints = null,
+            bool isWaitForCollectionReady = true,
+            int? shardCount = null,
+            int? replicationFactor = null)
+    {
+        await qdrantHttpClient.CreateCollection(
+            collectionName,
+            new CreateCollectionRequest(distanceMetric, vectorSize, isServeVectorsFromDisk: true)
+            {
+                ShardNumber = shardCount.HasValue ? (uint)shardCount.Value : null,
+                ReplicationFactor = replicationFactor.HasValue ? (uint)replicationFactor.Value : null,
+
+                OnDiskPayload = true,
+                QuantizationConfig = quantizationConfig,
+                StrictModeConfig = strictModeConfig,
+                OptimizersConfig = new OptimizersConfiguration() { IndexingThreshold = 10 }
+            },
+            CancellationToken.None);
+
+        List<UpsertPointsRequest.UpsertPoint> pointsToUpsert;
+        List<PointId> upsertPointIds = [];
+
+        if (upsertPoints != null)
+        {
+            pointsToUpsert = upsertPoints;
+
+            foreach (var point in upsertPoints)
+            {
+                upsertPointIds.Add(point.Id);
+            }
+        }
+        else
+        {
+            pointsToUpsert = [];
+
+            for (int i = 0; i < vectorCount; i++)
+            {
+                var pointId = PointId.Integer((ulong)i);
+
+                object payload = payloadInitializerFunction is null
+                    ? new TestPayload()
+                    {
+                        Integer = i
+                    }
+                    : payloadInitializerFunction(i);
+
+                pointsToUpsert.Add(
+                    new(
+                        pointId,
+                        CreateTestFloat32Vector(vectorSize),
+                        payload
+                    )
+                );
+
+                upsertPointIds.Add(pointId);
+            }
+        }
+
+        Dictionary<ulong, UpsertPointsRequest.UpsertPoint> upsertPointsByPointIds =
+            pointsToUpsert.ToDictionary(p => ((IntegerPointId)p.Id).Id);
+
+        var upsertPointsResult = await qdrantHttpClient.UpsertPoints(
+            collectionName,
+            new UpsertPointsRequest()
+            {
+                Points = pointsToUpsert
+            },
+            CancellationToken.None);
+
+        upsertPointsResult.EnsureSuccess();
+
+        if (isWaitForCollectionReady)
+        {
+            await qdrantHttpClient.EnsureCollectionReady(collectionName, CancellationToken.None, isCheckShardTransfersCompleted: true);
+        }
+
+        return (pointsToUpsert, upsertPointsByPointIds, upsertPointIds);
     }
 }
