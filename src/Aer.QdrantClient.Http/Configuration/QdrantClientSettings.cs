@@ -38,6 +38,11 @@ public sealed class QdrantClientSettings
     public bool DisableTracing { set; get; }
 
     /// <summary>
+    /// If set to <c>true</c> open telemetry metrics will not be written.
+    /// </summary>
+    public bool DisableMetrics { set; get; }
+
+    /// <summary>
     /// If set to <c>true</c> enables request \ response compression. Default is <c>false</c>.
     /// </summary>
     public bool EnableCompression { set; get; }

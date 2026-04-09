@@ -21,6 +21,7 @@ using Aer.QdrantClient.Http.Models.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Polly;
+using Microsoft.Extensions.Options;
 
 namespace Aer.QdrantClient.Http;
 
@@ -43,6 +44,9 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     private const DecompressionMethods SUPPORTED_DECOMPRESSION_METHODS = DecompressionMethods.Deflate | DecompressionMethods.GZip;
 
     private readonly HttpClient _defaultHttpClient;
+
+    private bool _isDisableTracing;
+    private bool _isDisableMetrics;
 
     // Forbidden status code was issued until qdrant 1.9
     // from 1.9 Unauthorized is issued
@@ -117,7 +121,11 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     /// </summary>
     /// <param name="apiClient">The http client to use.</param>
     /// <param name="logger">The optional logger to log internal messages.</param>
-    public QdrantHttpClient(HttpClient apiClient, ILogger logger = null)
+    /// <param name="disableTracing">If set to <c>true</c>, qdrant http client activity tracing is disabled.</param>
+    /// <param name="disableMetrics">If set to <c>true</c> open telemetry metrics are disabled for this client.</param>
+    public QdrantHttpClient(HttpClient apiClient, ILogger logger = null,
+        bool disableTracing = false,
+        bool disableMetrics = false)
     {
         _defaultHttpClient = apiClient;
 
@@ -125,6 +133,51 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         {
             Logger = customLogger;
         }
+
+        _isDisableTracing = disableTracing;
+        _isDisableMetrics = disableMetrics;
+    }
+
+    /// <summary>
+    /// Initializes a new Qdrant HTTP client instance.
+    /// </summary>
+    /// <param name="apiClient">The http client to use.</param>
+    /// <param name="clientSettings">The qdrant client settings.</param>
+    /// <param name="logger">The optional logger to log internal messages.</param>
+    public QdrantHttpClient(HttpClient apiClient,
+        IOptions<QdrantClientSettings> clientSettings,
+        ILogger logger = null)
+    {
+        _defaultHttpClient = apiClient;
+
+        if (logger is { } customLogger)
+        {
+            Logger = customLogger;
+        }
+
+        _isDisableTracing = clientSettings?.Value.DisableTracing ?? false;
+        _isDisableMetrics = clientSettings?.Value.DisableMetrics ?? false;
+    }
+
+    /// <summary>
+    /// Initializes a new Qdrant HTTP client instance.
+    /// </summary>
+    /// <param name="apiClient">The http client to use.</param>
+    /// <param name="clientSettings">The qdrant client settings.</param>
+    /// <param name="logger">The optional logger to log internal messages.</param>
+    public QdrantHttpClient(HttpClient apiClient,
+        QdrantClientSettings clientSettings,
+        ILogger logger = null)
+    {
+        _defaultHttpClient = apiClient;
+
+        if (logger is { } customLogger)
+        {
+            Logger = customLogger;
+        }
+
+        _isDisableTracing = clientSettings?.DisableTracing ?? false;
+        _isDisableMetrics = clientSettings?.DisableMetrics ?? false;
     }
 
     /// <summary>
@@ -136,8 +189,9 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     /// <param name="apiKey">The Qdrant api key value.</param>
     /// <param name="httpClientTimeout">Http client timeout. Default value is <c>100 seconds</c>.</param>
     /// <param name="logger">The optional logger to log internal messages.</param>
-    /// <param name="disableTracing">If set to <c>true</c>, http client activity tracing is disabled.</param>
+    /// <param name="disableTracing">If set to <c>true</c>, http client and broader qdrant http client activity tracing is disabled.</param>
     /// <param name="enableCompression">If set to <c>true</c> enables request \ response compression.</param>
+    /// <param name="disableMetrics">If set to <c>true</c> open telemetry metrics are disabled for this client.</param>
     public QdrantHttpClient(
         string host,
         int port = 6334,
@@ -146,7 +200,8 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         TimeSpan? httpClientTimeout = null,
         ILogger logger = null,
         bool disableTracing = false,
-        bool enableCompression = false) : this(
+        bool enableCompression = false,
+        bool disableMetrics = false) : this(
         new UriBuilder(
             useHttps
                 ? "https"
@@ -168,15 +223,17 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     /// <param name="apiKey">The Qdrant api key value.</param>
     /// <param name="httpClientTimeout">Http client timeout. Default value is <c>100 seconds</c>.</param>
     /// <param name="logger">The optional logger to log internal messages.</param>
-    /// <param name="disableTracing">If set to <c>true</c>, http client activity tracing is disabled.</param>
+    /// <param name="disableTracing">If set to <c>true</c>, http client and broader qdrant http client activity tracing is disabled.</param>
     /// <param name="enableCompression">If set to <c>true</c> enables request \ response compression.</param>
+    /// <param name="disableMetrics">If set to <c>true</c> open telemetry metrics are disabled for this client.</param>
     public QdrantHttpClient(
         Uri httpAddress,
         string apiKey = null,
         TimeSpan? httpClientTimeout = null,
         ILogger logger = null,
         bool disableTracing = false,
-        bool enableCompression = false)
+        bool enableCompression = false,
+        bool disableMetrics = false)
     {
         if (logger is { } customLogger)
         {
@@ -191,6 +248,9 @@ public partial class QdrantHttpClient : IQdrantHttpClient
             enableCompression: enableCompression);
 
         _defaultHttpClient = apiClient;
+
+        _isDisableTracing = disableTracing;
+        _isDisableMetrics = disableMetrics;
     }
 
     internal static HttpClient CreateApiClient(Uri httpAddress,
