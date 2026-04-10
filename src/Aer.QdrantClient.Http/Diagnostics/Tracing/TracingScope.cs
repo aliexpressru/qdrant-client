@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Models.Responses.Base;
 using OpenTelemetry.Trace;
 
 namespace Aer.QdrantClient.Http.Diagnostics.Tracing;
@@ -9,6 +10,14 @@ internal sealed class TracingScope : IDisposable
 {
     private readonly TelemetrySpan _span;
     private bool _disposed;
+    private readonly bool _isDisabled;
+
+    public static TracingScope Disabled { get; } = new TracingScope(isDisabled: true);
+
+    private TracingScope(bool isDisabled)
+    {
+        _isDisabled = isDisabled;
+    }
 
     internal TracingScope(TelemetrySpan span)
     {
@@ -22,7 +31,7 @@ internal sealed class TracingScope : IDisposable
     /// <param name="errorMessage">Optional error message if operation failed.</param>
     public void SetResult(bool success, string errorMessage = null)
     {
-        if (_disposed)
+        if (_disposed || _isDisabled)
         {
             return;
         }
@@ -39,11 +48,33 @@ internal sealed class TracingScope : IDisposable
     }
 
     /// <summary>
+    /// Sets the result status on the span form a result of qdrant operation.
+    /// </summary>
+    /// <param name="qdrantResponse">The qdrant operation response.</param>
+    public void SetResult(QdrantResponseBase qdrantResponse)
+    {
+        if (_disposed || _isDisabled)
+        {
+            return;
+        }
+
+        try
+        {
+            _span.SetStatus(qdrantResponse.Status.IsSuccess ? Status.Ok : Status.Error.WithDescription(qdrantResponse.Status.GetErrorMessage() ?? "Operation failed"));
+        }
+        catch
+        {
+            // Tracing should never break the application
+            // Silently ignore any exceptions from tracing operations
+        }
+    }
+
+    /// <summary>
     /// Sets an error status on the span based on an exception.
     /// </summary>
     public void SetError(Exception exception)
     {
-        if (_disposed)
+        if (_disposed || _isDisabled)
         {
             return;
         }
@@ -65,7 +96,7 @@ internal sealed class TracingScope : IDisposable
     /// </summary>
     public void Dispose()
     {
-        if (_disposed)
+        if (_disposed || _isDisabled)
         {
             return;
         }

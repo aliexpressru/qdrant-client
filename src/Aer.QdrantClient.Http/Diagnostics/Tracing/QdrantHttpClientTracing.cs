@@ -1,7 +1,7 @@
-using Microsoft.Extensions.Logging;
 using System.Diagnostics;
-using OpenTelemetry.Trace;
 using Aer.QdrantClient.Http.Configuration;
+using Microsoft.Extensions.Logging;
+using OpenTelemetry.Trace;
 
 namespace Aer.QdrantClient.Http.Diagnostics.Tracing;
 
@@ -14,7 +14,7 @@ internal static class QdrantHttpClientTracing
     private const string DbSystemAttribute = "db.system";
     private const string DbOperationNameAttribute = "db.operation.name";
 
-    private const string ServerAddressAttribute = "server.address";
+    //private const string ServerAddressAttribute = "server.address";
 
     /// <summary>
     /// Creates a tracing scope for a qdrant request.
@@ -23,30 +23,26 @@ internal static class QdrantHttpClientTracing
     public static TracingScope CreateRequestScope(
         Tracer tracer,
         string methodName,
-        HttpClient qdrantHttpClient,
         bool enableTracing,
         ILogger logger = null,
-        TracingOptions tracingOptions = null)
+        TracingOptions tracingOptions = null
+    )
     {
         if (!ShouldEnableTracing(tracingOptions, enableTracing))
         {
-            return null;
+            return TracingScope.Disabled;
         }
-
-        var dbNode = qdrantHttpClient.BaseAddress.ToString();
 
         try
         {
             // Create span following OpenTelemetry semantic conventions
-            var span = tracer.StartActiveSpan(
-                    $"{SpanNamePrefix}{methodName}",
-                    SpanKind.Client,
-                    Tracer.CurrentSpan)
+            var span = tracer
+                .StartActiveSpan($"{SpanNamePrefix}{methodName}", SpanKind.Client, Tracer.CurrentSpan)
                 // Database semantic conventions
                 .SetAttribute(DbSystemAttribute, DbSystemValue)
-                .SetAttribute(DbOperationNameAttribute, methodName)
-                // Network semantic conventions
-                .SetAttribute(ServerAddressAttribute, dbNode);
+                .SetAttribute(DbOperationNameAttribute, methodName);
+            // Network semantic conventions
+            //.SetAttribute(ServerAddressAttribute, serverAddress ?? "N/A");
 
             return new TracingScope(span);
         }
@@ -56,10 +52,13 @@ internal static class QdrantHttpClientTracing
             // Common cases:
             // - ObjectDisposedException: Activity source disposed when request completed
             // - NullReferenceException: HTTP context disposed during fire-and-forget operations
-            logger?.LogWarning(ex,
-                "Failed to create tracing scope for operation {RequestEndpoint} on node {Node}. Tracing will be disabled for this operation.",
-                methodName, dbNode);
-            return null;
+            logger?.LogWarning(
+                ex,
+                "Failed to create tracing scope for qdrant method {MethodName}. Tracing will be disabled for this operation.",
+                methodName
+            );
+
+            return TracingScope.Disabled;
         }
     }
 

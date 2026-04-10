@@ -48,7 +48,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
 
     private readonly Tracer _tracer;
 
-    private bool _isDisableTracing;
+    private bool _enableTracing;
 
     // Forbidden status code was issued until qdrant 1.9
     // from 1.9 Unauthorized is issued
@@ -139,7 +139,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
 
         _tracer = tracer;
 
-        _isDisableTracing = clientSettings?.DisableTracing ?? false;
+        _enableTracing = !clientSettings.DisableTracing;
     }
 
     /// <summary>
@@ -214,7 +214,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         _defaultHttpClient = apiClient;
         _tracer = tracer;
 
-        _isDisableTracing = disableTracing;
+        _enableTracing = !disableTracing;
     }
 
     internal static HttpClient CreateApiClient(Uri httpAddress,

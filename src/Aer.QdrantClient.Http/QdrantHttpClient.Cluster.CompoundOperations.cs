@@ -1,5 +1,6 @@
 using Aer.QdrantClient.Http.Collections;
 using Aer.QdrantClient.Http.Diagnostics.Helpers;
+using Aer.QdrantClient.Http.Diagnostics.Tracing;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Helpers;
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
@@ -30,6 +31,12 @@ public partial class QdrantHttpClient
         uint[] shardIdsToReplicate = null,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ReplicateShards),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ReplicateShards), clusterName);
 
         var sourcePeerInfo = await GetPeerInfo(
@@ -53,6 +60,8 @@ public partial class QdrantHttpClient
             shardIdsToReplicate ?? [],
             isMoveShards,
             clusterName: clusterName);
+
+        tracingScope.SetResult(ret);
 
         if (ret.Status.IsSuccess)
         {
@@ -1873,6 +1882,12 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(GetPeerInfo),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(GetPeerInfo), clusterName);
 
         Stopwatch sw = Stopwatch.StartNew();
@@ -1881,10 +1896,14 @@ public partial class QdrantHttpClient
 
         if (!clusterInfo.ParsedPeers.TryGetValue(peerId, out GetClusterInfoResponse.PeerInfoUint peerInfo))
         {
-            throw new QdrantNoPeersFoundException(
+            var exceptionToThrow = new QdrantNoPeersFoundException(
                 peerId,
                 clusterInfo.ParsedPeers.Keys
             );
+
+            tracingScope.SetError(exceptionToThrow);
+
+            throw exceptionToThrow;
         }
 
         var otherPeerIds = clusterInfo.ParsedPeers
@@ -1913,6 +1932,7 @@ public partial class QdrantHttpClient
         sw.Stop();
 
         diagnostic.SetSuccess();
+        tracingScope.SetResult(true);
 
         return new GetPeerResponse()
         {
