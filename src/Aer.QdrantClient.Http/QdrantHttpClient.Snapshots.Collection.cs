@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Diagnostics.Helpers;
 
 #if  NETSTANDARD2_0
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
@@ -18,6 +19,8 @@ public partial class QdrantHttpClient
         string collectionName,
         CancellationToken cancellationToken)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(ListCollectionSnapshots), null);
+
         var url =
             $"/collections/{collectionName}/snapshots";
 
@@ -36,6 +39,11 @@ public partial class QdrantHttpClient
             }
         }
 
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -45,6 +53,8 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         bool isWaitForResult = true)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(CreateCollectionSnapshot), null);
+
         var url =
             $"/collections/{collectionName}/snapshots?wait={ToUrlQueryString(isWaitForResult)}";
 
@@ -56,6 +66,11 @@ public partial class QdrantHttpClient
             retryCount: 0);
 
         response.Result?.SnapshotType = SnapshotType.Collection;
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }
@@ -69,15 +84,19 @@ public partial class QdrantHttpClient
         SnapshotPriority? snapshotPriority = null,
         string snapshotChecksum = null)
     {
+        // We are calling another overload here so no diagnostic timer
+
         var localSnapshotUri = new Uri($"file:///qdrant/snapshots/{collectionName}/{snapshotName}");
 
-        return await RecoverCollectionFromSnapshot(
+        var response = await RecoverCollectionFromSnapshot(
             collectionName,
             localSnapshotUri,
             cancellationToken,
             isWaitForResult,
             snapshotPriority,
             snapshotChecksum);
+
+        return response;
     }
 
     /// <inheritdoc/>
@@ -89,6 +108,8 @@ public partial class QdrantHttpClient
         SnapshotPriority? snapshotPriority = null,
         string snapshotChecksum = null)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(RecoverCollectionFromSnapshot), null);
+
         var url =
             $"/collections/{collectionName}/snapshots/recover?wait={ToUrlQueryString(isWaitForResult)}";
 
@@ -101,6 +122,11 @@ public partial class QdrantHttpClient
             collectionName,
             cancellationToken,
             retryCount: 0);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }
@@ -115,6 +141,8 @@ public partial class QdrantHttpClient
         string snapshotChecksum = null
     )
     {
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(RecoverCollectionFromUploadedSnapshot), null);
+
         var url =
             $"/collections/{collectionName}/snapshots/upload?wait={ToUrlQueryString(isWaitForResult)}";
 
@@ -128,13 +156,18 @@ public partial class QdrantHttpClient
             url += $"&checksum={snapshotChecksum}";
         }
 
-        var result = await RecoverFromUploadedSnapshot(
+        var response = await RecoverFromUploadedSnapshot(
             url,
             collectionName,
             snapshotContent,
             cancellationToken);
 
-        return result;
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
+        return response;
     }
 
     /// <inheritdoc/>
@@ -143,20 +176,27 @@ public partial class QdrantHttpClient
         string snapshotName,
         CancellationToken cancellationToken)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DownloadCollectionSnapshot), null);
+
         var url =
             $"/collections/{collectionName}/snapshots/{snapshotName}";
 
         HttpRequestMessage message = new(HttpMethod.Get, url);
 
-        var result = await DownloadSnapshot(
+        var response = await DownloadSnapshot(
             collectionName,
             snapshotName,
             message,
             cancellationToken);
 
-        result.Result?.SnapshotType = SnapshotType.Collection;
+        response.Result?.SnapshotType = SnapshotType.Collection;
 
-        return result;
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
+        return response;
     }
 
     /// <inheritdoc/>
@@ -167,6 +207,8 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true
     )
     {
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteCollectionSnapshot), null);
+
         var url =
             $"/collections/{collectionName}/snapshots/{snapshotName}?wait={ToUrlQueryString(isWaitForResult)}";
 
@@ -176,6 +218,11 @@ public partial class QdrantHttpClient
             collectionName,
             cancellationToken,
             retryCount: 0);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }

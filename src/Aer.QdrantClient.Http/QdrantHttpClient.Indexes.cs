@@ -1,3 +1,4 @@
+using Aer.QdrantClient.Http.Diagnostics.Helpers;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
@@ -43,6 +44,8 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(CreatePayloadIndex), null);
+
         EnsureQdrantNameCorrect(collectionName);
         EnsureQdrantNameCorrect(payloadFieldName);
 
@@ -113,6 +116,11 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -142,6 +150,8 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(CreateFullTextPayloadIndex), null);
+
         EnsureQdrantNameCorrect(collectionName);
         EnsureQdrantNameCorrect(payloadTextFieldName);
 
@@ -173,6 +183,11 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -186,6 +201,8 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeletePayloadIndex), null);
+
         EnsureQdrantNameCorrect(collectionName);
         EnsureQdrantNameCorrect(fieldName);
 
@@ -199,6 +216,11 @@ public partial class QdrantHttpClient
             retryCount,
             retryDelay,
             onRetry);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }

@@ -1,4 +1,5 @@
 using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Aer.QdrantClient.Tests.Infrastructure;
@@ -13,7 +14,8 @@ internal class ThrowingQdrantHttpClient : QdrantHttpClient
     public override ValueTask<HttpClient> GetApiClient(string _) => ValueTask.FromResult(_throwingHttpClient);
 #endif
 
-    public ThrowingQdrantHttpClient(HttpClient apiClient, ILogger logger = null) : base(apiClient, logger)
+    public ThrowingQdrantHttpClient(HttpClient apiClient, ILogger logger = null)
+        : base(apiClient, new QdrantClientSettings() { DisableMetrics = false, DisableTracing = false }, logger)
     {
         _throwingHttpClient = new ThrowingHttpClient(apiClient);
     }

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Diagnostics.Helpers;
 
 #if  NETSTANDARD2_0
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
@@ -16,6 +17,8 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         string clusterName = null)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ListStorageSnapshots), clusterName);
+
         var url = "/snapshots";
 
         var response = await ExecuteRequest<ListSnapshotsResponse>(
@@ -33,6 +36,11 @@ public partial class QdrantHttpClient
             }
         }
 
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -42,6 +50,8 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         string clusterName = null)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(CreateStorageSnapshot), clusterName);
+
         var url =
             $"/snapshots?wait={ToUrlQueryString(isWaitForResult)}";
 
@@ -54,6 +64,11 @@ public partial class QdrantHttpClient
 
         response.Result?.SnapshotType = SnapshotType.Storage;
 
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -63,19 +78,21 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         string clusterName = null)
     {
+        // We are calling another overload here so no diagnostic timer
+
         var url = $"/snapshots/{snapshotName}";
 
         HttpRequestMessage message = new(HttpMethod.Get, url);
 
-        var result = await DownloadSnapshot(
+        var response = await DownloadSnapshot(
             clusterName,
             snapshotName,
             message,
             cancellationToken);
 
-        result.Result?.SnapshotType = SnapshotType.Storage;
+        response.Result?.SnapshotType = SnapshotType.Storage;
 
-        return result;
+        return response;
     }
 
     /// <inheritdoc/>
@@ -85,6 +102,8 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         string clusterName = null)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteStorageSnapshot), clusterName);
+
         var url = $"/snapshots/{snapshotName}?wait={ToUrlQueryString(isWaitForResult)}";
 
         var response = await ExecuteRequest<DefaultOperationResponse>(
@@ -93,6 +112,11 @@ public partial class QdrantHttpClient
             clusterName,
             cancellationToken,
             retryCount: 0);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }

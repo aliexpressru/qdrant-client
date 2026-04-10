@@ -1,7 +1,8 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Diagnostics.Helpers;
 
-#if  NETSTANDARD2_0
+#if NETSTANDARD2_0
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 #endif
 
@@ -16,8 +17,11 @@ public partial class QdrantHttpClient
     /// <inheritdoc/>
     public async Task<ListSnapshotsResponse> ListAllSnapshots(
         CancellationToken cancellationToken,
-        bool includeStorageSnapshots = false)
+        bool includeStorageSnapshots = false,
+        string clusterName = null)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ListAllSnapshots), clusterName);
+
         List<SnapshotInfo> allSnapshots = [];
 
         Stopwatch sw = Stopwatch.StartNew();
@@ -109,19 +113,26 @@ public partial class QdrantHttpClient
 
         sw.Stop();
 
-        return new ListSnapshotsResponse()
+        var ret = new ListSnapshotsResponse()
         {
             Result = allSnapshots,
             Status = QdrantStatus.Success(),
             Time = sw.Elapsed.TotalSeconds
         };
+
+        diagnostic.SetSuccess();
+
+        return ret;
     }
 
     /// <inheritdoc/>
     public async Task<DefaultOperationResponse> DeleteAllStorageSnapshots(
         CancellationToken cancellationToken,
-        bool isWaitForResult = true)
+        bool isWaitForResult = true,
+        string clusterName = null)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteAllStorageSnapshots), clusterName);
+
         var storageSnapshots = await ListStorageSnapshots(cancellationToken);
         storageSnapshots.EnsureSuccess();
 
@@ -134,18 +145,25 @@ public partial class QdrantHttpClient
             deleteSnapshotResult.EnsureSuccess();
         }
 
-        return new DefaultOperationResponse()
+        var ret = new DefaultOperationResponse()
         {
             Result = true,
             Status = new QdrantStatus(QdrantOperationStatusType.Ok)
         };
+
+        diagnostic.SetSuccess();
+
+        return ret;
     }
 
     /// <inheritdoc/>
     public async Task<DefaultOperationResponse> DeleteAllCollectionSnapshots(
         CancellationToken cancellationToken,
-        bool isWaitForResult = true)
+        bool isWaitForResult = true,
+        string clusterName = null)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteAllCollectionSnapshots), clusterName);
+
         var listAllCollectionsResponse = await ListCollections(cancellationToken);
         listAllCollectionsResponse.EnsureSuccess();
 
@@ -182,18 +200,25 @@ public partial class QdrantHttpClient
             }
         }
 
-        return new DefaultOperationResponse()
+        var ret = new DefaultOperationResponse()
         {
             Result = true,
             Status = new QdrantStatus(QdrantOperationStatusType.Ok)
         };
+
+        diagnostic.SetSuccess();
+
+        return ret;
     }
 
     /// <inheritdoc/>
     public async Task<DefaultOperationResponse> DeleteAllCollectionShardSnapshots(
         CancellationToken cancellationToken,
-        bool isWaitForResult = true)
+        bool isWaitForResult = true,
+        string clusterName = null)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteAllCollectionShardSnapshots), clusterName);
+
         var listAllCollectionsResponse = await ListCollections(cancellationToken);
         listAllCollectionsResponse.EnsureSuccess();
 
@@ -260,10 +285,14 @@ public partial class QdrantHttpClient
             }
         }
 
-        return new DefaultOperationResponse()
+        var ret = new DefaultOperationResponse()
         {
             Result = true,
             Status = new QdrantStatus(QdrantOperationStatusType.Ok)
         };
+
+        diagnostic.SetSuccess();
+
+        return ret;
     }
 }

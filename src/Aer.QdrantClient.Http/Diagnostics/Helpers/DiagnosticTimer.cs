@@ -2,24 +2,56 @@ using System.Diagnostics;
 
 namespace Aer.QdrantClient.Http.Diagnostics.Helpers;
 
-internal class DiagnosticTimer
+internal class DiagnosticTimer : IDisposable
 {
     private Stopwatch _stopwatch;
-    private HttpRequestMessage _request;
+    private string _methodName;
+    private string _collectionName;
+    private string _clusterName;
 
-    public static DiagnosticTimer StartNew(HttpRequestMessage request) =>
-        new() { _request = request, _stopwatch = Stopwatch.StartNew() };
+    private bool _isSuccessful = false;
 
-    public void StopAndWriteDiagnostics(bool isSuccessful)
+    // This instance gets returned if diagnostic is disabled.
+    private static readonly DiagnosticTimer _disabledTimer = new();
+
+    public static DiagnosticTimer StartNew(string collectionName, string methodName, string clusterName)
+    {
+        if (!QdrantHttpClientDiagnosticSource.Instance.IsEnabled())
+        {
+            return _disabledTimer;
+        }
+
+        var ret = new DiagnosticTimer()
+        {
+            _collectionName = collectionName,
+            _methodName = methodName,
+            _clusterName = clusterName,
+            _stopwatch = Stopwatch.StartNew(),
+        };
+
+        return ret;
+    }
+
+    public void SetSuccess()
+    {
+        _isSuccessful = true;
+    }
+
+    private void StopAndWriteDiagnostics()
     {
         if (_stopwatch == null)
         {
+            // Means we have a disabled timer
+            return;
+        }
+
+        if (!_stopwatch.IsRunning)
+        {
+            // Already stopped
             return;
         }
 
         _stopwatch.Stop();
-
-        var endpoint = _request.RequestUri.ToString();
 
         if (!QdrantHttpClientDiagnosticSource.Instance.IsEnabled())
         {
@@ -28,12 +60,26 @@ internal class DiagnosticTimer
 
         QdrantHttpClientDiagnosticSource.Instance.Write(
             QdrantHttpClientDiagnosticSource.RequestDurationDiagnosticName,
-            new { endpoint, duration = _stopwatch.Elapsed.TotalSeconds }
+            new
+            {
+                collectionName = _collectionName,
+                methodName = _methodName,
+                duration = _stopwatch.Elapsed.TotalSeconds,
+                clusterName = _clusterName,
+            }
         );
 
         QdrantHttpClientDiagnosticSource.Instance.Write(
             QdrantHttpClientDiagnosticSource.RequestsTotalDiagnosticName,
-            new { endpoint, isSuccessful = isSuccessful ? "1" : "0" }
+            new
+            {
+                collectionName = _collectionName,
+                methodName = _methodName,
+                isSuccessful = _isSuccessful ? "1" : "0",
+                clusterName = _clusterName,
+            }
         );
     }
+
+    public void Dispose() => StopAndWriteDiagnostics();
 }

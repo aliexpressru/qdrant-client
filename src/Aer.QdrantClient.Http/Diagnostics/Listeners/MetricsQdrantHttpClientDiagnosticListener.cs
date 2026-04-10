@@ -1,6 +1,5 @@
 using Aer.QdrantClient.Http.Configuration;
 using Microsoft.Extensions.DiagnosticAdapter;
-using Microsoft.Extensions.Options;
 
 namespace Aer.QdrantClient.Http.Diagnostics.Listeners;
 
@@ -11,31 +10,32 @@ internal class MetricsQdrantHttpClientDiagnosticListener
 
     public MetricsQdrantHttpClientDiagnosticListener(
         QdrantHttpClientMetricsProvider metricsProvider,
-        IOptions<QdrantClientSettings> config)
+        QdrantClientSettings qdrantClientSettings
+    )
     {
         _metricsProvider = metricsProvider;
-        _clientSettings = config.Value;
+        _clientSettings = qdrantClientSettings;
     }
 
     [DiagnosticName(QdrantHttpClientDiagnosticSource.RequestDurationDiagnosticName)]
-    public void ObserveRequestDuration(string endpoint, double duration)
+    public void ObserveRequestDuration(string collectionName, string methodName, double duration, string clusterName)
     {
         if (_clientSettings.DisableMetrics)
         {
             return;
         }
 
-        _metricsProvider.ObserveRequestDurationSeconds(endpoint, duration);
+        _metricsProvider.ObserveRequestDurationSeconds(collectionName, methodName, duration, clusterName);
     }
 
     [DiagnosticName(QdrantHttpClientDiagnosticSource.RequestsTotalDiagnosticName)]
-    public void ObserveExecutedRequest(string endpoint, string isSuccessful)
+    public void ObserveExecutedRequest(string collectionName, string methodName, string isSuccessful, string clusterName)
     {
         if (_clientSettings.DisableMetrics)
         {
             return;
         }
 
-        _metricsProvider.ObserveExecutedRequest(endpoint, isSuccessful);
+        _metricsProvider.ObserveExecutedRequest(collectionName, methodName, isSuccessful, clusterName);
     }
 }

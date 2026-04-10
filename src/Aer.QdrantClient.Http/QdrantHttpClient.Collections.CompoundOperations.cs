@@ -1,11 +1,12 @@
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Diagnostics.Helpers;
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http;
 
@@ -22,7 +23,9 @@ public partial class QdrantHttpClient
         Action<Exception, TimeSpan, int, uint> onRetry = null,
         string clusterName = null)
     {
-        var getCollectionInfoResponse = await GetCollectionInfo(
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(GetCollectionInfo), clusterName);
+
+        var response = await GetCollectionInfo(
             collectionName,
             cancellationToken,
             retryCount,
@@ -30,9 +33,9 @@ public partial class QdrantHttpClient
             onRetry,
             clusterName);
 
-        if (!getCollectionInfoResponse.Status.IsSuccess)
+        if (!response.Status.IsSuccess)
         {
-            return getCollectionInfoResponse;
+            return response;
         }
 
         if (isCountExactPointsNumber)
@@ -44,10 +47,15 @@ public partial class QdrantHttpClient
                     filter: QdrantFilter.Empty),
                 cancellationToken)).EnsureSuccess();
 
-            getCollectionInfoResponse.Result.PointsCount = countPointsResponse.Count;
+            response.Result.PointsCount = countPointsResponse.Count;
         }
 
-        return getCollectionInfoResponse;
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
+        return response;
     }
 
     /// <inheritdoc/>
@@ -59,6 +67,8 @@ public partial class QdrantHttpClient
         Action<Exception, TimeSpan, int, uint> onRetry = null,
         string clusterName = null)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ListCollectionInfo), clusterName);
+
         Stopwatch sw = Stopwatch.StartNew();
 
         var listCollectionsResponse =
@@ -91,6 +101,11 @@ public partial class QdrantHttpClient
             Time = sw.Elapsed.TotalSeconds
         };
 
+        if (ret.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return ret;
     }
 
@@ -102,8 +117,12 @@ public partial class QdrantHttpClient
             {
                 try
                 {
+                    using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(StartCreatingCollectionPayloadIndexes), null);
+
                     if (payloadIndexes is null or { Count: 0 })
                     {
+                        diagnostic.SetSuccess();
+
                         return;
                     }
 
@@ -143,6 +162,8 @@ public partial class QdrantHttpClient
                             string.Join(", ", payloadIndexes.Select(x => x.ToString()))
                         );
                     }
+
+                    diagnostic.SetSuccess();
                 }
                 catch (Exception ex)
                 {

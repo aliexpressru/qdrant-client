@@ -1,6 +1,7 @@
 using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Exceptions;
 using Microsoft.Extensions.Logging;
+using OpenTelemetry.Trace;
 
 namespace Aer.QdrantClient.Http.Abstractions;
 
@@ -18,10 +19,12 @@ public interface IQdrantClientFactory
     /// An optional logger instance for capturing diagnostic and operational logs. If null, logging is disabled for this
     /// client configuration.
     /// </param>
+    /// <param name="tracer">The optional OpenTelemetry tracer.</param>
     void AddClientConfiguration(
         string clientName,
         QdrantClientSettings settings,
-        ILogger logger = null);
+        ILogger logger = null,
+        Tracer tracer = null);
 
     /// <summary>
     /// Adds a client configuration for connecting to a remote service using the specified settings.
@@ -50,10 +53,7 @@ public interface IQdrantClientFactory
     /// Specifies whether HTTP request and response compression is enabled. Set to <c>true</c> to enable
     /// compression; otherwise, compression is disabled.
     /// </param>
-    /// <param name="disableMetrics">
-    /// Specifies whether open telemetry metrics are disabled for this client. Set to <c>true</c> to disable
-    /// metrics; otherwise, metrics are enabled.
-    /// </param>
+    /// <param name="tracer">The optional OpenTelemetry tracer.</param>
     void AddClientConfiguration(
         string clientName,
         string httpAddress,
@@ -62,7 +62,7 @@ public interface IQdrantClientFactory
         ILogger logger = null,
         bool disableTracing = false,
         bool enableCompression = false,
-        bool disableMetrics = false);
+        Tracer tracer = null);
 
     /// <summary>
     /// Adds a client configuration for connecting to a remote service using the specified settings.
@@ -91,10 +91,7 @@ public interface IQdrantClientFactory
     /// Specifies whether HTTP request and response compression is enabled. Set to <c>true</c> to enable
     /// compression; otherwise, compression is disabled.
     /// </param>
-    /// <param name="disableMetrics">
-    /// Specifies whether open telemetry metrics are disabled for this client. Set to <c>true</c> to disable
-    /// metrics; otherwise, metrics are enabled.
-    /// </param>
+    /// <param name="tracer">The optional OpenTelemetry tracer.</param>
     public void AddClientConfiguration(
         string clientName,
         Uri httpAddress,
@@ -103,7 +100,7 @@ public interface IQdrantClientFactory
         ILogger logger = null,
         bool disableTracing = false,
         bool enableCompression = false,
-        bool disableMetrics = false);
+        Tracer tracer = null);
 
     /// <summary>
     /// Adds a client configuration for connecting to a remote service endpoint with the specified settings.
@@ -131,10 +128,7 @@ public interface IQdrantClientFactory
     /// Specifies whether HTTP request and response compression is enabled. Set to <c>true</c> to enable
     /// compression; otherwise, <c>false</c>.
     /// </param>
-    /// <param name="disableMetrics">
-    /// Specifies whether open telemetry metrics are disabled for this client. Set to <c>true</c> to disable
-    /// metrics; otherwise, metrics are enabled.
-    /// </param>
+    /// <param name="tracer">The optional OpenTelemetry tracer.</param>
     void AddClientConfiguration(
         string clientName,
         string host,
@@ -145,7 +139,7 @@ public interface IQdrantClientFactory
         ILogger logger = null,
         bool disableTracing = false,
         bool enableCompression = false,
-        bool disableMetrics = false);
+        Tracer tracer = null);
 
     /// <summary>
     /// Creates a new instance of <see cref="IQdrantHttpClient"/> with the specified client name.
@@ -168,7 +162,8 @@ public interface IQdrantClientFactory
     /// </summary>
     /// <param name="settings">The client settings to use for the new client instance.</param>
     /// <param name="logger">An optional logger instance for capturing diagnostic information.</param>
-    IQdrantHttpClient CreateClient(QdrantClientSettings settings, ILogger logger = null);
+    /// <param name="tracer">The optional OpenTelemetry tracer.</param>
+    IQdrantHttpClient CreateClient(QdrantClientSettings settings, ILogger logger = null, Tracer tracer = null);
 
     /// <summary>
     /// Creates a new instance of <see cref="IQdrantHttpClient"/> with the specified client settings.
@@ -191,10 +186,7 @@ public interface IQdrantClientFactory
     /// Specifies whether HTTP request and response compression is enabled. Set to <c>true</c> to enable
     /// compression; otherwise, compression is disabled.
     /// </param>
-    /// <param name="disableMetrics">
-    /// Specifies whether open telemetry metrics are disabled for this client. Set to <c>true</c> to disable
-    /// metrics; otherwise, metrics are enabled.
-    /// </param>
+    /// <param name="tracer">The optional OpenTelemetry tracer.</param>
     IQdrantHttpClient CreateClient(
         Uri httpAddress,
         string apiKey = null,
@@ -202,7 +194,7 @@ public interface IQdrantClientFactory
         ILogger logger = null,
         bool disableTracing = false,
         bool enableCompression = false,
-        bool disableMetrics = false);
+        Tracer tracer = null);
 
     /// <summary>
     /// Creates a new instance of <see cref="IQdrantHttpClient"/> with the specified client settings.
@@ -224,10 +216,7 @@ public interface IQdrantClientFactory
     /// Specifies whether HTTP request and response compression is enabled. Set to <c>true</c> to enable
     /// compression; otherwise, <c>false</c>.
     /// </param>
-    /// <param name="disableMetrics">
-    /// Specifies whether open telemetry metrics are disabled for this client. Set to <c>true</c> to disable
-    /// metrics; otherwise, metrics are enabled.
-    /// </param>
+    /// <param name="tracer">The optional OpenTelemetry tracer.</param>
     IQdrantHttpClient CreateClient(
         string host,
         int port = 6334,
@@ -237,7 +226,7 @@ public interface IQdrantClientFactory
         ILogger logger = null,
         bool disableTracing = false,
         bool enableCompression = false,
-        bool disableMetrics = false);
+        Tracer tracer = null);
 
     /// <summary>
     /// Creates a new instance of <see cref="IQdrantHttpClient"/> with the specified client settings.
@@ -260,10 +249,7 @@ public interface IQdrantClientFactory
     /// Specifies whether HTTP request and response compression is enabled. Set to <c>true</c> to enable
     /// compression; otherwise, compression is disabled.
     /// </param>
-    /// <param name="disableMetrics">
-    /// Specifies whether open telemetry metrics are disabled for this client. Set to <c>true</c> to disable
-    /// metrics; otherwise, metrics are enabled.
-    /// </param>
+    /// <param name="tracer">The optional OpenTelemetry tracer.</param>
     IQdrantHttpClient CreateClient(
         string httpAddress,
         string apiKey = null,
@@ -271,7 +257,7 @@ public interface IQdrantClientFactory
         ILogger logger = null,
         bool disableTracing = false,
         bool enableCompression = false,
-        bool disableMetrics = false);
+        Tracer tracer = null);
 
     /// <summary>
     /// Creates a plain <see cref="HttpClient"/> instance configured for making calls to Qdrant HTTP api.

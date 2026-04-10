@@ -4,6 +4,7 @@ using Aer.QdrantClient.Http.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenTelemetry.Trace;
 
 namespace Aer.QdrantClient.Http.DependencyInjection;
 
@@ -23,11 +24,11 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
 
         public bool DisableTracing { init; get; }
 
-        public bool DisableMetrics { init; get; }
-
         public bool EnableCompression { init; get; }
 
         public ILogger Logger { init; get; }
+
+        public Tracer Tracer { init; get; }
     }
 
     readonly HashSet<string> _unregisteredClientNames = [];
@@ -35,7 +36,12 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
     readonly Dictionary<string, StoredQdrantClientSettings> _clientSettings = [];
 
     /// <inheritdoc/>
-    public void AddClientConfiguration(string clientName, QdrantClientSettings settings, ILogger logger = null)
+    public void AddClientConfiguration(
+        string clientName,
+        QdrantClientSettings settings,
+        ILogger logger = null,
+        Tracer tracer = null
+    )
     {
         _clientSettings[clientName] = new()
         {
@@ -43,9 +49,9 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
             ApiKey = settings.ApiKey,
             HttpClientTimeout = settings.HttpClientTimeout,
             DisableTracing = settings.DisableTracing,
-            DisableMetrics = settings.DisableMetrics,
             EnableCompression = settings.EnableCompression,
             Logger = logger,
+            Tracer = tracer,
         };
     }
 
@@ -58,7 +64,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
         ILogger logger = null,
         bool disableTracing = false,
         bool enableCompression = false,
-        bool disableMetrics = false
+        Tracer tracer = null
     )
     {
         var settings = new StoredQdrantClientSettings()
@@ -67,10 +73,10 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
             ApiKey = apiKey,
             HttpClientTimeout = httpClientTimeout ?? QdrantClientSettings.DefaultHttpClientTimeout,
             DisableTracing = disableTracing,
-            DisableMetrics = disableMetrics,
             EnableCompression = enableCompression,
 
             Logger = logger,
+            Tracer = tracer,
         };
 
         _clientSettings[clientName] = settings;
@@ -85,7 +91,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
         ILogger logger = null,
         bool disableTracing = false,
         bool enableCompression = false,
-        bool disableMetrics = false
+        Tracer tracer = null
     ) =>
         AddClientConfiguration(
             clientName,
@@ -95,7 +101,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
             logger,
             disableTracing: disableTracing,
             enableCompression: enableCompression,
-            disableMetrics: disableMetrics
+            tracer: tracer
         );
 
     /// <inheritdoc/>
@@ -109,7 +115,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
         ILogger logger = null,
         bool disableTracing = false,
         bool enableCompression = false,
-        bool disableMetrics = false
+        Tracer tracer = null
     ) =>
         AddClientConfiguration(
             clientName,
@@ -119,7 +125,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
             logger,
             disableTracing: disableTracing,
             enableCompression: enableCompression,
-            disableMetrics: disableMetrics
+            tracer: tracer
         );
 
     /// <inheritdoc/>
@@ -141,7 +147,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
                 settings.Logger,
                 disableTracing: settings.DisableTracing,
                 enableCompression: settings.EnableCompression,
-                disableMetrics: settings.DisableMetrics
+                tracer: settings.Tracer
             );
         }
         else
@@ -156,18 +162,32 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
                 throw new QdrantNamedQdrantClientNotFound(clientName);
             }
 
-            var settingsSnapshot = serviceProvider.GetService<IOptionsSnapshot<QdrantClientSettings>>();
-            var clientSettings = settingsSnapshot.Get(clientName);
+            var scopedServiceProvider = serviceProvider.CreateScope().ServiceProvider;
+
+            var clientSettings = scopedServiceProvider
+                .GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>()
+                .Get(clientName);
+
+            Tracer tracer = null;
+
+            if (!clientSettings.DisableTracing)
+            {
+                tracer = scopedServiceProvider.GetService<Tracer>();
+            }
+
+            var loggerFactory = scopedServiceProvider.GetService<ILoggerFactory>();
 
             return new QdrantHttpClient(
                 httpClient,
-                clientSettings
+                clientSettings,
+                logger: loggerFactory?.CreateLogger(nameof(QdrantHttpClient) + $"_{clientName}"),
+                tracer: tracer
             );
         }
     }
 
     /// <inheritdoc/>
-    public IQdrantHttpClient CreateClient(QdrantClientSettings settings, ILogger logger = null) =>
+    public IQdrantHttpClient CreateClient(QdrantClientSettings settings, ILogger logger = null, Tracer tracer = null) =>
         new QdrantHttpClient(
             new Uri(settings.HttpAddress),
             settings.ApiKey,
@@ -175,7 +195,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
             logger,
             disableTracing: settings.DisableTracing,
             enableCompression: settings.EnableCompression,
-            disableMetrics: settings.DisableMetrics
+            tracer: tracer
         );
 
     /// <inheritdoc/>
@@ -186,7 +206,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
         ILogger logger = null,
         bool disableTracing = false,
         bool enableCompression = false,
-        bool disableMetrics = false
+        Tracer tracer = null
     ) =>
         new QdrantHttpClient(
             httpAddress,
@@ -195,7 +215,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
             logger,
             disableTracing: disableTracing,
             enableCompression: enableCompression,
-            disableMetrics: disableMetrics
+            tracer: tracer
         );
 
     /// <inheritdoc/>
@@ -208,7 +228,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
         ILogger logger = null,
         bool disableTracing = false,
         bool enableCompression = false,
-        bool disableMetrics = false
+        Tracer tracer = null
     ) =>
         CreateClient(
             new UriBuilder(useHttps ? "https" : "http", host, port).Uri,
@@ -217,7 +237,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
             logger,
             disableTracing: disableTracing,
             enableCompression: enableCompression,
-            disableMetrics: disableMetrics
+            tracer: tracer
         );
 
     /// <inheritdoc/>
@@ -228,7 +248,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
         ILogger logger = null,
         bool disableTracing = false,
         bool enableCompression = false,
-        bool disableMetrics = false
+        Tracer tracer = null
     ) =>
         CreateClient(
             new Uri(httpAddress),
@@ -237,7 +257,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
             logger,
             disableTracing: disableTracing,
             enableCompression: enableCompression,
-            disableMetrics: disableMetrics
+            tracer: tracer
         );
 
     /// <inheritdoc/>
