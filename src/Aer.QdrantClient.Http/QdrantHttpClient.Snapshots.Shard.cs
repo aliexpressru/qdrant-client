@@ -121,7 +121,7 @@ public partial class QdrantHttpClient
         string snapshotChecksum = null
     )
     {
-        // We are calling another overload here so no diagnostic timer
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(RecoverShardFromUploadedSnapshot), null);
 
         var url =
             $"/collections/{collectionName}/shards/{shardId}/snapshots/upload?wait={ToUrlQueryString(isWaitForResult)}";
@@ -142,6 +142,11 @@ public partial class QdrantHttpClient
             snapshotContent,
             cancellationToken);
 
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -152,7 +157,7 @@ public partial class QdrantHttpClient
         string snapshotName,
         CancellationToken cancellationToken)
     {
-        // We are calling another overload here so no diagnostic timer
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DownloadShardSnapshot), null);
 
         var url =
             $"/collections/{collectionName}/shards/{shardId}/snapshots/{snapshotName}";
@@ -166,6 +171,11 @@ public partial class QdrantHttpClient
             cancellationToken);
 
         response.Result?.SnapshotType = SnapshotType.Shard;
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }

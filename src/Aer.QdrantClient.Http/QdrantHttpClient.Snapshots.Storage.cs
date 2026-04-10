@@ -78,7 +78,7 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         string clusterName = null)
     {
-        // We are calling another overload here so no diagnostic timer
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DownloadStorageSnapshot), clusterName);
 
         var url = $"/snapshots/{snapshotName}";
 
@@ -91,6 +91,11 @@ public partial class QdrantHttpClient
             cancellationToken);
 
         response.Result?.SnapshotType = SnapshotType.Storage;
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }

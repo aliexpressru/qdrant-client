@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Aer.QdrantClient.Http.Diagnostics.Helpers;
 using Aer.QdrantClient.Http.Exceptions;
 
 #if  NETSTANDARD2_0
@@ -21,8 +20,6 @@ public partial class QdrantHttpClient
         Stream snapshotContent,
         CancellationToken cancellationToken)
     {
-        using var diagnostic = DiagnosticTimer.StartNew(collectionOrClusterName, nameof(RecoverFromUploadedSnapshot), null);
-
         var httpMethod = HttpMethod.Post;
 
         var response = await ExecuteRequestCore<DefaultOperationResponse>(
@@ -30,11 +27,6 @@ public partial class QdrantHttpClient
             collectionOrClusterName,
             cancellationToken,
             retryCount: 0U);
-
-        if (response.Status.IsSuccess)
-        {
-            diagnostic.SetSuccess();
-        }
 
         return response;
 
@@ -57,8 +49,6 @@ public partial class QdrantHttpClient
         HttpRequestMessage message,
         CancellationToken cancellationToken)
     {
-        using var diagnostic = DiagnosticTimer.StartNew(collectionOrClusterName, nameof(DownloadSnapshot), null);
-
         var sw = Stopwatch.StartNew();
 
         try
@@ -82,8 +72,6 @@ public partial class QdrantHttpClient
                     sw.Elapsed
                 );
             }
-
-            diagnostic.SetSuccess();
 
             return new DownloadSnapshotResponse(
                 snapshotName: snapshotName,
