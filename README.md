@@ -90,7 +90,168 @@ public class MyService
 
 Be sure to call `services.AddQdrantHttpClient` for each named client and use the same `clientName` when creating the client from the factory.
 
-**!!! When using multiple named clients feature don't inject `IQdrantHttpClient` or `IQdrantHttpClientFactory` directly as it will lead to ambiguity. !!!**
+**!!! When using multiple named clients feature don't inject `IQdrantHttpClient` directly as it will lead to ambiguity. !!!**
+
+### Observability: metrics and tracing
+
+#### Tracing and compression in the constructor
+
+When creating a `QdrantHttpClient` directly you can control tracing and compression via constructor parameters:
+
+```csharp
+var client = new QdrantHttpClient(
+    host: "localhost",
+    port: 6334,
+    apiKey: "my-secret-api-key",
+    disableTracing: false,    // set to true to disable underlying HTTP client and Qdrant-specific activity tracing
+    enableCompression: true,  // set to true to enable gzip/deflate request-response compression
+    tracer: myTracer          // optional OpenTelemetry Tracer instance. If not passed telemetry spans won't be written
+);
+```
+
+The same parameters are available on the `Uri`-based overload:
+
+```csharp
+var client = new QdrantHttpClient(
+    httpAddress: new Uri("http://localhost:6334"),
+    apiKey: "my-secret-api-key",
+    disableTracing: false,
+    enableCompression: true,
+    tracer: myTracer
+);
+```
+
+#### Tracing and metrics in `QdrantClientSettings`
+
+When using dependency injection configure the following properties on `QdrantClientSettings`:
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `DisableTracing` | `bool` | `false` | When `true`, disables underlying HTTP client and Qdrant-specific activity tracing for this client. |
+| `DisableMetrics` | `bool` | `false` | When `true`, OpenTelemetry metrics will not be written. |
+| `EnableCompression` | `bool` | `false` | When `true`, enables gzip/deflate request and response compression. |
+
+```csharp
+services.AddQdrantHttpClient(options =>
+{
+    options.HttpAddress = "http://localhost:6334";
+    options.ApiKey = "my-secret-api-key";
+    options.DisableTracing = false;
+    options.DisableMetrics = false;
+    options.EnableCompression = true;
+});
+```
+
+#### Enabling diagnostics (metrics listener)
+
+Call `EnableQdrantHttpClientDiagnostics` on the application builder to wire up the OpenTelemetry metrics listener.
+Metrics are not written when `QdrantClientSettings.DisableMetrics` is `true`.
+
+```csharp
+app.EnableQdrantHttpClientDiagnostics(); // uses the default client name
+
+// or, for a named client:
+app.EnableQdrantHttpClientDiagnostics(clientName: "My client 1");
+```
+
+#### OpenTelemetry metrics
+
+The client publishes the following OpenTelemetry metrics under the meter **`Aer.QdrantClient.Http.Metrics`**:
+
+| Metric name | Instrument | Description | Labels |
+|---|---|---|---|
+| `qdrant_client_request_duration_seconds` | Histogram | Duration of each Qdrant request in seconds | `collection`, `method`, `cluster` |
+| `qdrant_client_requests_total` | Counter | Total number of executed Qdrant requests | `collection`, `method`, `cluster`, `is_successful` |
+
+Register the meter when configuring your OpenTelemetry pipeline:
+
+```csharp
+services.AddOpenTelemetry()
+    .WithMetrics(builder =>
+    {
+        builder.AddMeter(QdrantHttpClientDiagnosticConstants.MetricsMeterName);
+    });
+```
+
+#### OpenTelemetry tracing
+
+Client spans are published to the activity source **`Aer.QdrantClient.Http`**.
+Each span is named `qdrant.http <MethodName>` and carries the following attributes:
+
+| Attribute | Value |
+|---|---|
+| `db.system` | `qdrant` |
+| `db.operation.name` | Name of the `QdrantHttpClient` method that was called |
+
+Register the source when configuring your OpenTelemetry pipeline:
+
+```csharp
+services.AddOpenTelemetry()
+    .WithTracing(builder =>
+    {
+        builder.AddSource(QdrantHttpClientDiagnosticConstants.TracingActivitySourceName);
+    });
+```
+
+> Tracing only emits spans when there is an active parent `Activity` in the current execution context.
+> If `disableTracing` / `DisableTracing` is `true` **or** no `Tracer` instance is provided, tracing is skipped entirely.
+
+#### Using `IQdrantClientFactory` with tracing and compression
+
+`IQdrantClientFactory` exposes `AddClientConfiguration` and `CreateClient` overloads that accept the same `disableTracing`, `enableCompression`, and `tracer` parameters:
+
+Register the factory:
+
+```csharp
+services.AddQdrantClientFactory();
+```
+
+Add client configurations at runtime and create clients:
+
+```csharp
+public class MyService
+{
+    private readonly IQdrantHttpClient _client;
+
+    public MyService(IQdrantClientFactory factory)
+    {
+        factory.AddClientConfiguration(
+            clientName: "my-client",
+            host: "localhost",
+            port: 6334,
+            apiKey: "my-secret-api-key",
+            disableTracing: false,
+            enableCompression: true,
+            tracer: myTracer
+        );
+
+        _client = factory.CreateClient("my-client");
+    }
+}
+```
+
+You can also create a one-off client directly from `IQdrantClientFactory` without pre-registering it:
+
+```csharp
+var client = factory.CreateClient(
+    httpAddress: new Uri("http://localhost:6334"),
+    apiKey: "my-secret-api-key",
+    disableTracing: false,
+    enableCompression: true,
+    tracer: myTracer
+);
+```
+
+To obtain a raw `HttpClient` pre-configured for Qdrant (useful when overriding the default transport):
+
+```csharp
+var httpClient = factory.CreateApiClient(
+    httpAddress: new Uri("http://localhost:6334"),
+    apiKey: "my-secret-api-key",
+    disableTracing: false,
+    enableCompression: true
+);
+```
 
 ### Working with collections
 

@@ -2,7 +2,6 @@ using Aer.QdrantClient.Http.Abstractions;
 using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.Diagnostics;
 using Aer.QdrantClient.Http.Diagnostics.Listeners;
-using Aer.QdrantClient.Http.Diagnostics.Tracing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -267,12 +266,12 @@ public static class ServiceCollectionExtensions
         services.AddOpenTelemetry().WithTracing(
             builder =>
             {
-                builder.AddSource(QdrantHttpClientTracing.ActivitySourceName);
+                builder.AddSource(QdrantHttpClientDiagnosticConstants.TracingActivitySourceName);
             });
 
         // Register Tracer
 
-        services.TryAddSingleton(TracerProvider.Default.GetTracer(QdrantHttpClientTracing.ActivityServiceName));
+        services.TryAddSingleton(TracerProvider.Default.GetTracer(QdrantHttpClientDiagnosticConstants.TracingActivityServiceName));
 
         // Add open telemetry metrics dependencies
 

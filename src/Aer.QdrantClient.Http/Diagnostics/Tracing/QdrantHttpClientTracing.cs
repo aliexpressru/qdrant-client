@@ -2,7 +2,6 @@ using Aer.QdrantClient.Http.Configuration;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Trace;
 using System.Diagnostics;
-using System.Reflection;
 
 namespace Aer.QdrantClient.Http.Diagnostics.Tracing;
 
@@ -13,16 +12,6 @@ internal static class QdrantHttpClientTracing
 
     private const string DbSystemAttribute = "db.system";
     private const string DbOperationNameAttribute = "db.operation.name";
-
-    /// <summary>
-    /// The name of the tracing activity source.
-    /// </summary>
-    public static string ActivitySourceName { get; } = "Aer.QdrantClient.Http";
-
-    /// <summary>
-    /// The name of the tracing activity service.
-    /// </summary>
-    public static string ActivityServiceName { get; } = Assembly.GetEntryAssembly()?.GetName().Name ?? ActivitySourceName;
 
     //private const string ServerAddressAttribute = "server.address";
 

@@ -1,4 +1,3 @@
-using Aer.QdrantClient.Http.Abstractions;
 using Aer.QdrantClient.Http.Benchmarks.Model;
 using Aer.QdrantClient.Http.DependencyInjection;
 using Aer.QdrantClient.Http.Filters.Builders;
@@ -223,7 +222,7 @@ public class AllocationsBenchmarks
         Dictionary<ulong, UpsertPointsRequest.UpsertPoint> PointsByPointIds,
         IReadOnlyList<PointId> PointIds
     )> PrepareCollection(
-        IQdrantHttpClient qdrantHttpClient,
+        QdrantHttpClient qdrantHttpClient,
         string collectionName,
         VectorDistanceMetric distanceMetric = VectorDistanceMetric.Dot,
         uint vectorSize = 10U,

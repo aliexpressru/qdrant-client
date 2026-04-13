@@ -49,7 +49,7 @@ public partial class QdrantHttpClient : IQdrantHttpClient
 
     private readonly Tracer _tracer;
 
-    private bool _enableTracing;
+    private readonly bool _enableTracing;
 
     // Forbidden status code was issued until qdrant 1.9
     // from 1.9 Unauthorized is issued

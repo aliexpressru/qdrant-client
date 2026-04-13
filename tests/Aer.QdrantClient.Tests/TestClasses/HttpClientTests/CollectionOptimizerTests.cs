@@ -218,10 +218,7 @@ internal class CollectionOptimizerTests : QdrantTestsBase
         var runningOptimisationProgress = runningOptimisation.Progress;
 
         runningOptimisationProgress.Name.Should().NotBeNullOrEmpty();
-        if (runningOptimisationProgress.Children is not null)
-        {
-            runningOptimisationProgress.Children.Length.Should().BeGreaterThan(0);
-        }
+        runningOptimisationProgress.Children?.Length.Should().BeGreaterThan(0);
 
         runningOptimisationProgress.StartedAt.Should().NotBeNull();
         runningOptimisationProgress.FinishedAt.Should().BeNull();
