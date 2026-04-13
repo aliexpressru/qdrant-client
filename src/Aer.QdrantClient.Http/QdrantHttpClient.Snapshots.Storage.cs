@@ -1,4 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Diagnostics.Helpers;
+using Aer.QdrantClient.Http.Diagnostics.Tracing;
 
 #if  NETSTANDARD2_0
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
@@ -16,6 +18,14 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ListStorageSnapshots),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ListStorageSnapshots), clusterName);
+
         var url = "/snapshots";
 
         var response = await ExecuteRequest<ListSnapshotsResponse>(
@@ -33,6 +43,13 @@ public partial class QdrantHttpClient
             }
         }
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -42,6 +59,14 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(CreateStorageSnapshot),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(CreateStorageSnapshot), clusterName);
+
         var url =
             $"/snapshots?wait={ToUrlQueryString(isWaitForResult)}";
 
@@ -54,6 +79,13 @@ public partial class QdrantHttpClient
 
         response.Result?.SnapshotType = SnapshotType.Storage;
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -63,19 +95,34 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DownloadStorageSnapshot),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DownloadStorageSnapshot), clusterName);
+
         var url = $"/snapshots/{snapshotName}";
 
         HttpRequestMessage message = new(HttpMethod.Get, url);
 
-        var result = await DownloadSnapshot(
+        var response = await DownloadSnapshot(
             clusterName,
             snapshotName,
             message,
             cancellationToken);
 
-        result.Result?.SnapshotType = SnapshotType.Storage;
+        response.Result?.SnapshotType = SnapshotType.Storage;
 
-        return result;
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
+        return response;
     }
 
     /// <inheritdoc/>
@@ -85,6 +132,14 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DeleteStorageSnapshot),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteStorageSnapshot), clusterName);
+
         var url = $"/snapshots/{snapshotName}?wait={ToUrlQueryString(isWaitForResult)}";
 
         var response = await ExecuteRequest<DefaultOperationResponse>(
@@ -93,6 +148,13 @@ public partial class QdrantHttpClient
             clusterName,
             cancellationToken,
             retryCount: 0);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }

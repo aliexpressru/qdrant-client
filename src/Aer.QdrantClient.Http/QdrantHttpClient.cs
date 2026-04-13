@@ -21,6 +21,9 @@ using Aer.QdrantClient.Http.Models.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Polly;
+using Aer.QdrantClient.Http.Diagnostics.Helpers;
+using OpenTelemetry.Trace;
+using Aer.QdrantClient.Http.Diagnostics.Tracing;
 
 namespace Aer.QdrantClient.Http;
 
@@ -43,6 +46,10 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     private const DecompressionMethods SUPPORTED_DECOMPRESSION_METHODS = DecompressionMethods.Deflate | DecompressionMethods.GZip;
 
     private readonly HttpClient _defaultHttpClient;
+
+    private readonly Tracer _tracer;
+
+    private bool _enableTracing;
 
     // Forbidden status code was issued until qdrant 1.9
     // from 1.9 Unauthorized is issued
@@ -116,8 +123,13 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     /// Initializes a new Qdrant HTTP client instance.
     /// </summary>
     /// <param name="apiClient">The http client to use.</param>
+    /// <param name="clientSettings">The qdrant client settings.</param>
     /// <param name="logger">The optional logger to log internal messages.</param>
-    public QdrantHttpClient(HttpClient apiClient, ILogger logger = null)
+    /// <param name="tracer">The optional OpenTelemetry tracer.</param>
+    public QdrantHttpClient(HttpClient apiClient,
+        QdrantClientSettings clientSettings,
+        ILogger logger = null,
+        Tracer tracer = null)
     {
         _defaultHttpClient = apiClient;
 
@@ -125,6 +137,10 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         {
             Logger = customLogger;
         }
+
+        _tracer = tracer;
+
+        _enableTracing = !clientSettings.DisableTracing;
     }
 
     /// <summary>
@@ -136,8 +152,9 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     /// <param name="apiKey">The Qdrant api key value.</param>
     /// <param name="httpClientTimeout">Http client timeout. Default value is <c>100 seconds</c>.</param>
     /// <param name="logger">The optional logger to log internal messages.</param>
-    /// <param name="disableTracing">If set to <c>true</c>, http client activity tracing is disabled.</param>
+    /// <param name="disableTracing">If set to <c>true</c>, http client and broader qdrant http client activity tracing is disabled.</param>
     /// <param name="enableCompression">If set to <c>true</c> enables request \ response compression.</param>
+    /// <param name="tracer">The optional OpenTelemetry tracer.</param>
     public QdrantHttpClient(
         string host,
         int port = 6334,
@@ -146,18 +163,21 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         TimeSpan? httpClientTimeout = null,
         ILogger logger = null,
         bool disableTracing = false,
-        bool enableCompression = false) : this(
-        new UriBuilder(
-            useHttps
-                ? "https"
-                : "http",
-            host,
-            port).Uri,
-        apiKey,
-        httpClientTimeout,
-        logger,
-        disableTracing,
-        enableCompression)
+        bool enableCompression = false,
+        Tracer tracer = null) : this(
+            new UriBuilder(
+                useHttps
+                    ? "https"
+                    : "http",
+                host,
+                port).Uri,
+            apiKey,
+            httpClientTimeout,
+            logger,
+            disableTracing,
+            enableCompression,
+            tracer
+        )
     {
     }
 
@@ -168,15 +188,17 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     /// <param name="apiKey">The Qdrant api key value.</param>
     /// <param name="httpClientTimeout">Http client timeout. Default value is <c>100 seconds</c>.</param>
     /// <param name="logger">The optional logger to log internal messages.</param>
-    /// <param name="disableTracing">If set to <c>true</c>, http client activity tracing is disabled.</param>
+    /// <param name="disableTracing">If set to <c>true</c>, http client and broader qdrant http client activity tracing is disabled.</param>
     /// <param name="enableCompression">If set to <c>true</c> enables request \ response compression.</param>
+    /// <param name="tracer">The optional OpenTelemetry tracer.</param>
     public QdrantHttpClient(
         Uri httpAddress,
         string apiKey = null,
         TimeSpan? httpClientTimeout = null,
         ILogger logger = null,
         bool disableTracing = false,
-        bool enableCompression = false)
+        bool enableCompression = false,
+        Tracer tracer = null)
     {
         if (logger is { } customLogger)
         {
@@ -191,6 +213,9 @@ public partial class QdrantHttpClient : IQdrantHttpClient
             enableCompression: enableCompression);
 
         _defaultHttpClient = apiClient;
+        _tracer = tracer;
+
+        _enableTracing = !disableTracing;
     }
 
     internal static HttpClient CreateApiClient(Uri httpAddress,
@@ -263,6 +288,8 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         uint requiredNumberOfGreenCollectionResponses = 1,
         bool isCheckShardTransfersCompleted = false)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(CheckCollectionReady), null);
+
         var requiredCollectionIsReadyResponsesLeft = requiredNumberOfGreenCollectionResponses;
         var stopwatch = Stopwatch.StartNew();
 
@@ -312,6 +339,8 @@ public partial class QdrantHttpClient : IQdrantHttpClient
             }
         }
 
+        diagnostic.SetSuccess();
+
         return new DefaultOperationResponse()
         {
             Result = true,
@@ -329,6 +358,8 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         uint requiredNumberOfGreenCollectionResponses = 1,
         bool isCheckShardTransfersCompleted = false)
     {
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(EnsureCollectionReady), null);
+
         if (timeout is { TotalMilliseconds: 0 })
         {
             throw new InvalidOperationException(
@@ -382,6 +413,8 @@ public partial class QdrantHttpClient : IQdrantHttpClient
 
             await Task.Delay(actualPollingInterval, cancellationToken);
         }
+
+        diagnostic.SetSuccess();
     }
 
     private async Task<TResponse> ExecuteRequest<TResponse>(
@@ -729,27 +762,39 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void EnsureQdrantNameCorrect(string qdrantEntityName)
+    private static void EnsureQdrantNameCorrect(string qdrantEntityName, TracingScope tracingScope)
     {
         if (qdrantEntityName is null or { Length: 0 })
         {
-            throw new QdrantInvalidEntityNameException(
+            var ex = new QdrantInvalidEntityNameException(
                 qdrantEntityName,
                 "Entity name should not be null or empty");
+
+            tracingScope.SetError(ex);
+
+            throw ex;
         }
 
         if (qdrantEntityName.Length is 0 or > 255)
         {
-            throw new QdrantInvalidEntityNameException(
+            var ex = new QdrantInvalidEntityNameException(
                 qdrantEntityName,
                 $"Entity name should be between 1 and 255 characters long. Length of {qdrantEntityName.Length} is found.");
+
+            tracingScope.SetError(ex);
+
+            throw ex;
         }
 
         if (_invalidQdrantNameSymbols.Any(qdrantEntityName.Contains))
         {
-            throw new QdrantInvalidEntityNameException(
-                qdrantEntityName,
-                $"Entity name can't contain [{string.Join(",", _invalidQdrantNameSymbols)}] symbols");
+            var ex = new QdrantInvalidEntityNameException(
+            qdrantEntityName,
+            $"Entity name can't contain [{string.Join(",", _invalidQdrantNameSymbols)}] symbols");
+
+            tracingScope.SetError(ex);
+
+            throw ex;
         }
     }
 

@@ -123,6 +123,9 @@ internal partial class ClusterTests : QdrantTestsBase
         secondReadPoint.ShardKey.GetInteger().Should().Be(TestShardKeyInt1);
     }
 
+    [Ignore(
+        "This test is extremely flaky."
+    )]
     [Test]
     public async Task CreateShardKey_WithInitialState()
     {

@@ -1,3 +1,5 @@
+using Aer.QdrantClient.Http.Diagnostics.Helpers;
+using Aer.QdrantClient.Http.Diagnostics.Tracing;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
@@ -43,45 +45,73 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
-        EnsureQdrantNameCorrect(collectionName);
-        EnsureQdrantNameCorrect(payloadFieldName);
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(CreatePayloadIndex),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(CreatePayloadIndex), null);
+
+        EnsureQdrantNameCorrect(collectionName, tracingScope);
+        EnsureQdrantNameCorrect(payloadFieldName, tracingScope);
 
         if (isTenant.HasValue
             && isTenant.Value
             && !_allowedPayloadFieldTypesForTenantIndex.Contains(payloadFieldType))
         {
-            throw new QdrantUnsupportedFieldSchemaForIndexConfiguration(
+            var ex = new QdrantUnsupportedFieldSchemaForIndexConfiguration(
                 $"Tenant index is not supported for payload field {payloadFieldName} with type {payloadFieldType}. Supported types: [{string.Join(", ", _allowedPayloadFieldTypesForTenantIndex)}]");
+
+            tracingScope.SetError(ex);
+
+            throw ex;
         }
 
         if (isPrincipal.HasValue
             && isPrincipal.Value
             && !_allowedPayloadFieldTypesForPrincipalIndex.Contains(payloadFieldType))
         {
-            throw new QdrantUnsupportedFieldSchemaForIndexConfiguration(
+            var ex = new QdrantUnsupportedFieldSchemaForIndexConfiguration(
                 $"Principal index is not supported for payload field {payloadFieldName} with type {payloadFieldType}. Supported types: [{string.Join(", ", _allowedPayloadFieldTypesForPrincipalIndex)}]");
+
+            tracingScope.SetError(ex);
+
+            throw ex;
         }
 
         if (isLookupEnabled.HasValue
             && isLookupEnabled.Value
             && payloadFieldType != PayloadIndexedFieldType.Integer)
         {
-            throw new QdrantUnsupportedFieldSchemaForIndexConfiguration(
+            var ex = new QdrantUnsupportedFieldSchemaForIndexConfiguration(
                 $"Lookup index is only supported for payload field {payloadFieldName} with type {PayloadIndexedFieldType.Integer}");
+
+            tracingScope.SetError(ex);
+
+            throw ex;
         }
 
         if (isRangeEnabled.HasValue
             && isRangeEnabled.Value
             && payloadFieldType != PayloadIndexedFieldType.Integer)
         {
-            throw new QdrantUnsupportedFieldSchemaForIndexConfiguration(
+            var ex = new QdrantUnsupportedFieldSchemaForIndexConfiguration(
                 $"Range index is only supported for payload field {payloadFieldName} with type {PayloadIndexedFieldType.Integer}");
+
+            tracingScope.SetError(ex);
+
+            throw ex;
         }
 
         if (payloadFieldType == PayloadIndexedFieldType.Text)
         {
-            throw new InvalidOperationException(
+            var ex = new InvalidOperationException(
                 $"Direct creation of the text type indexes (fulltext search indexes) is not supported. To create fulltext index please use {nameof(CreateFullTextPayloadIndex)} method");
+
+            tracingScope.SetError(ex);
+
+            throw ex;
         }
 
         var createIndexRequest = new CreatePayloadIndexRequest(
@@ -113,6 +143,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -142,8 +179,16 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
-        EnsureQdrantNameCorrect(collectionName);
-        EnsureQdrantNameCorrect(payloadTextFieldName);
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(CreateFullTextPayloadIndex),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(CreateFullTextPayloadIndex), null);
+
+        EnsureQdrantNameCorrect(collectionName, tracingScope);
+        EnsureQdrantNameCorrect(payloadTextFieldName, tracingScope);
 
         var createIndexRequest = new CreateFullTextPayloadIndexRequest(
             payloadTextFieldName,
@@ -173,6 +218,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -186,8 +238,16 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
-        EnsureQdrantNameCorrect(collectionName);
-        EnsureQdrantNameCorrect(fieldName);
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DeletePayloadIndex),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeletePayloadIndex), null);
+
+        EnsureQdrantNameCorrect(collectionName, tracingScope);
+        EnsureQdrantNameCorrect(fieldName, tracingScope);
 
         var url = $"/collections/{collectionName}/index/{fieldName}?wait={ToUrlQueryString(isWaitForResult)}";
 
@@ -199,6 +259,13 @@ public partial class QdrantHttpClient
             retryCount,
             retryDelay,
             onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }

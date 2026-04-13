@@ -1,4 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Diagnostics.Helpers;
+using Aer.QdrantClient.Http.Diagnostics.Tracing;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Models.Primitives;
@@ -25,6 +27,14 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         OrderingType? ordering = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DeletePoints),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeletePoints), null);
+
         var points = new DeletePointsRequest()
         {
             Points = pointIds,
@@ -44,6 +54,13 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -56,6 +73,14 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         OrderingType? ordering = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DeletePoints),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeletePoints), null);
+
         var points = new DeletePointsRequest()
         {
             Filter = filter,
@@ -75,6 +100,13 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -86,6 +118,14 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         OrderingType? ordering = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(UpsertPoints),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(UpsertPoints), null);
+
         var orderingValue = (ordering ?? OrderingType.Weak).ToString().ToLowerInvariant();
 
         var url =
@@ -99,6 +139,13 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -110,6 +157,14 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         OrderingType? ordering = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(SetPointsPayload),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(SetPointsPayload), null);
+
         var orderingValue = (ordering ?? OrderingType.Weak).ToString().ToLowerInvariant();
 
         var url =
@@ -123,6 +178,13 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -134,6 +196,14 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         OrderingType? ordering = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(OverwritePointsPayload),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(OverwritePointsPayload), null);
+
         var orderingValue = (ordering ?? OrderingType.Weak).ToString().ToLowerInvariant();
 
         var url =
@@ -150,6 +220,13 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -161,6 +238,14 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         OrderingType? ordering = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DeletePointsPayloadKeys),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeletePointsPayloadKeys), null);
+
         var orderingValue = (ordering ?? OrderingType.Weak).ToString().ToLowerInvariant();
 
         var url =
@@ -174,6 +259,13 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -185,6 +277,14 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         OrderingType? ordering = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ClearPointsPayload),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(ClearPointsPayload), null);
+
         var orderingValue = (ordering ?? OrderingType.Weak).ToString().ToLowerInvariant();
 
         var url =
@@ -198,6 +298,13 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -209,6 +316,14 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         OrderingType? ordering = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(UpdatePointsVectors),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(UpdatePointsVectors), null);
+
         var orderingValue = (ordering ?? OrderingType.Weak).ToString().ToLowerInvariant();
 
         var url =
@@ -222,6 +337,13 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -233,6 +355,14 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         OrderingType? ordering = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DeletePointsVectors),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeletePointsVectors), null);
+
         var orderingValue = (ordering ?? OrderingType.Weak).ToString().ToLowerInvariant();
 
         var url =
@@ -246,6 +376,13 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -257,6 +394,14 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         OrderingType? ordering = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(BatchUpdate),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(BatchUpdate), null);
+
         if (batchUpdatePointsRequest.OperationsCount == 0)
         {
             throw new QdrantEmptyBatchRequestException(
@@ -278,6 +423,13 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -293,6 +445,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(GetPoint),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(GetPoint), null);
+
         var pointIdValue = pointId.ToString(false);
 
         var url = $"/collections/{collectionName}/points/{pointIdValue}";
@@ -305,6 +465,13 @@ public partial class QdrantHttpClient
             retryCount,
             retryDelay,
             onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }
@@ -322,6 +489,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(GetPoints),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(GetPoints), null);
+
         var getPointsRequest = new GetPointsRequest
         {
             Ids = pointIds,
@@ -344,6 +519,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -363,6 +545,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ScrollPoints),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(ScrollPoints), null);
+
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
         var scrollRequest = new ScrollPointsRequest()
@@ -388,6 +578,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -400,6 +597,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(CountPoints),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(CountPoints), null);
+
         var url = $"/collections/{collectionName}/points/count";
 
         var response = await ExecuteRequest<CountPointsRequest, CountPointsResponse>(
@@ -411,6 +616,13 @@ public partial class QdrantHttpClient
             retryCount,
             retryDelay,
             onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }
@@ -426,6 +638,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(FacetCountPoints),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(FacetCountPoints), null);
+
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
         var url =
@@ -440,6 +660,13 @@ public partial class QdrantHttpClient
             retryCount,
             retryDelay,
             onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
 
@@ -459,6 +686,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(SearchPoints),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(SearchPoints), null);
+
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
         var url = $"/collections/{collectionName}/points/search?consistency={consistencyValue}";
@@ -473,6 +708,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -486,6 +728,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(SearchPointsBatched),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(SearchPointsBatched), null);
+
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
         var url = $"/collections/{collectionName}/points/search/batch?consistency={consistencyValue}";
@@ -500,6 +750,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -513,6 +770,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(SearchPointsGrouped),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(SearchPointsGrouped), null);
+
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
         var url = $"/collections/{collectionName}/points/search/groups?consistency={consistencyValue}";
@@ -526,6 +791,13 @@ public partial class QdrantHttpClient
             retryCount,
             retryDelay,
             onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }
@@ -541,6 +813,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(SearchPointsDistanceMatrixPairs),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(SearchPointsDistanceMatrixPairs), null);
+
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
         var url =
@@ -556,6 +836,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -570,6 +857,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(SearchPointsDistanceMatrixOffsets),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(SearchPointsDistanceMatrixOffsets), null);
+
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
         var url =
@@ -586,6 +881,13 @@ public partial class QdrantHttpClient
                 retryDelay,
                 onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -599,6 +901,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(RecommendPoints),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(RecommendPoints), null);
+
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
         var url = $"/collections/{collectionName}/points/recommend?consistency={consistencyValue}";
@@ -613,6 +923,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -626,6 +943,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(RecommendPointsBatched),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(RecommendPointsBatched), null);
+
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
         var url = $"/collections/{collectionName}/points/recommend/batch?consistency={consistencyValue}";
@@ -640,6 +965,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -653,6 +985,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(RecommendPointsGrouped),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(RecommendPointsGrouped), null);
+
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
         var url = $"/collections/{collectionName}/points/recommend/groups?consistency={consistencyValue}";
@@ -666,6 +1006,13 @@ public partial class QdrantHttpClient
             retryCount,
             retryDelay,
             onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }
@@ -681,6 +1028,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DiscoverPoints),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DiscoverPoints), null);
+
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
         var url =
@@ -696,6 +1051,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -710,6 +1072,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DiscoverPointsBatched),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DiscoverPointsBatched), null);
+
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
         var url =
@@ -725,6 +1095,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -739,6 +1116,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(QueryPoints),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(QueryPoints), null);
+
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
         var url =
@@ -754,6 +1139,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -768,6 +1160,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(QueryPointsBatched),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(QueryPointsBatched), null);
+
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
         var url =
@@ -783,6 +1183,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -797,6 +1204,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(QueryPointsGrouped),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(QueryPointsGrouped), null);
+
         var consistencyValue = (consistency ?? ReadPointsConsistency.Default).ToQueryParameterValue();
 
         var url =
@@ -811,6 +1226,13 @@ public partial class QdrantHttpClient
             retryCount,
             retryDelay,
             onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }

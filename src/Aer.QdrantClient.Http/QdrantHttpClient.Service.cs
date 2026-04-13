@@ -1,6 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Diagnostics.Helpers;
+using Aer.QdrantClient.Http.Diagnostics.Tracing;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aer.QdrantClient.Http;
 
@@ -10,6 +12,14 @@ public partial class QdrantHttpClient
     /// <inheritdoc/>
     public async Task<GetInstanceDetailsResponse> GetInstanceDetails(CancellationToken cancellationToken, string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(GetInstanceDetails),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(GetInstanceDetails), clusterName);
+
         var url = "/";
 
         HttpRequestMessage message = new(HttpMethod.Get, url);
@@ -18,6 +28,10 @@ public partial class QdrantHttpClient
             message,
             clusterName,
             cancellationToken);
+
+        tracingScope.SetResult(true);
+
+        diagnostic.SetSuccess();
 
         return response;
     }
@@ -29,6 +43,14 @@ public partial class QdrantHttpClient
         bool isAnonymizeTelemetryData = true,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(GetTelemetry),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(GetTelemetry), clusterName);
+
         var url = $"/telemetry?details_level={detailsLevel}&anonymize={ToUrlQueryString(isAnonymizeTelemetryData)}";
 
         var response = await ExecuteRequest<GetTelemetryResponse>(
@@ -37,6 +59,13 @@ public partial class QdrantHttpClient
             clusterName,
             cancellationToken,
             retryCount: 0);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }
@@ -47,13 +76,25 @@ public partial class QdrantHttpClient
         bool isAnonymizeMetricsData = true,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(GetPrometheusMetrics),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(GetPrometheusMetrics), clusterName);
+
         var url = $"/metrics?anonymize={ToUrlQueryString(isAnonymizeMetricsData)}";
 
         HttpRequestMessage message = new(HttpMethod.Get, url);
 
-        var result = await ExecuteRequest<string>(message, clusterName, cancellationToken);
+        var response = await ExecuteRequest<string>(message, clusterName, cancellationToken);
 
-        return result;
+        tracingScope.SetResult(true);
+
+        diagnostic.SetSuccess();
+
+        return response;
     }
 
     /// <inheritdoc/>
@@ -64,11 +105,23 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(SetLockOptions),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(SetLockOptions), clusterName);
+
         var qdrantVersion = (await GetInstanceDetails(cancellationToken)).ParsedVersion;
 
         if (qdrantVersion.Minor >= 16)
         {
-            throw new NotSupportedException("Qdrant Lock API is deprecated and removed in v1.16");
+            var ex = new NotSupportedException("Qdrant Lock API is deprecated and removed in v1.16");
+
+            tracingScope.SetError(ex);
+
+            throw ex;
         }
 
         var url = "/locks";
@@ -85,6 +138,13 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -92,6 +152,14 @@ public partial class QdrantHttpClient
     [Obsolete("Lock API is deprecated and going to be removed in v1.16")]
     public async Task<SetLockOptionsResponse> GetLockOptions(CancellationToken cancellationToken, string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(GetLockOptions),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(GetLockOptions), clusterName);
+
         var url = "/locks";
 
         var response = await ExecuteRequest<SetLockOptionsResponse>(
@@ -101,6 +169,13 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -108,6 +183,14 @@ public partial class QdrantHttpClient
     [Experimental("QD0001")]
     public async Task<ReportIssuesResponse> ReportIssues(CancellationToken cancellationToken, string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ReportIssues),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ReportIssues), clusterName);
+
         var url = "/issues";
 
         var response = await ExecuteRequest<ReportIssuesResponse>(
@@ -117,6 +200,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        tracingScope.SetResult(response);
+
         return response;
     }
 
@@ -124,6 +209,14 @@ public partial class QdrantHttpClient
     [Experimental("QD0002")]
     public async Task<ClearReportedIssuesResponse> ClearIssues(CancellationToken cancellationToken, string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ClearIssues),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ClearIssues), clusterName);
+
         var url = "/issues";
 
         var response = await ExecuteRequest<ClearReportedIssuesResponse>(
@@ -132,6 +225,13 @@ public partial class QdrantHttpClient
             clusterName,
             cancellationToken,
             retryCount: 0);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }

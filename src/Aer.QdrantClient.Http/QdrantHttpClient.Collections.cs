@@ -1,3 +1,5 @@
+using Aer.QdrantClient.Http.Diagnostics.Helpers;
+using Aer.QdrantClient.Http.Diagnostics.Tracing;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
@@ -26,12 +28,20 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(CreateCollection),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(CreateCollection), null);
+
         if (request is null)
         {
             throw new ArgumentNullException(nameof(request));
         }
 
-        EnsureQdrantNameCorrect(collectionName);
+        EnsureQdrantNameCorrect(collectionName, tracingScope);
 
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
 
@@ -47,6 +57,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -60,12 +77,20 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(UpdateCollectionParameters),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(UpdateCollectionParameters), null);
+
         if (request is null)
         {
             throw new ArgumentNullException(nameof(request));
         }
 
-        EnsureQdrantNameCorrect(collectionName);
+        EnsureQdrantNameCorrect(collectionName, tracingScope);
 
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
 
@@ -74,13 +99,17 @@ public partial class QdrantHttpClient
         if (request.IsEmpty)
         {
             // Empty request is swapped with trigger optimizers request.
-            return await TriggerOptimizers(
+            var triggerResult = await TriggerOptimizers(
                 collectionName,
                 cancellationToken,
                 timeout,
                 retryCount,
                 retryDelay,
                 onRetry);
+
+            tracingScope.SetResult(triggerResult);
+
+            return triggerResult;
         }
 
         var response = await ExecuteRequest<UpdateCollectionParametersRequest, DefaultOperationResponse>(
@@ -92,6 +121,13 @@ public partial class QdrantHttpClient
             retryCount,
             retryDelay,
             onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }
@@ -105,7 +141,15 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
-        EnsureQdrantNameCorrect(collectionName);
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(TriggerOptimizers),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(TriggerOptimizers), null);
+
+        EnsureQdrantNameCorrect(collectionName, tracingScope);
 
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
 
@@ -121,6 +165,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -133,7 +184,15 @@ public partial class QdrantHttpClient
         Action<Exception, TimeSpan, int, uint> onRetry = null,
         string clusterName = null)
     {
-        EnsureQdrantNameCorrect(collectionName);
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(GetCollectionInfo),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(GetCollectionInfo), clusterName);
+
+        EnsureQdrantNameCorrect(collectionName, tracingScope);
 
         var url = $"/collections/{collectionName}";
 
@@ -146,12 +205,27 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
     /// <inheritdoc/>
     public async Task<ListCollectionsResponse> ListCollections(CancellationToken cancellationToken, string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ListCollections),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ListCollections), clusterName);
+
         var url = "/collections";
 
         var response = await ExecuteRequest<ListCollectionsResponse>(
@@ -160,6 +234,13 @@ public partial class QdrantHttpClient
             clusterName,
             cancellationToken,
             retryCount: 0);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }
@@ -173,7 +254,15 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
-        EnsureQdrantNameCorrect(collectionName);
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DeleteCollection),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteCollection), null);
+
+        EnsureQdrantNameCorrect(collectionName, tracingScope);
 
         var url = $"/collections/{collectionName}?timeout={GetTimeoutValueOrDefault(timeout)}";
 
@@ -186,6 +275,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -197,6 +293,14 @@ public partial class QdrantHttpClient
         Action<Exception, TimeSpan, int, uint> onRetry = null,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ListAllAliases),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteCollection), clusterName);
+
         var url = "/aliases";
 
         var response = await ExecuteRequest<ListCollectionAliasesResponse>(
@@ -207,6 +311,13 @@ public partial class QdrantHttpClient
             retryCount,
             retryDelay,
             onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }
@@ -219,6 +330,14 @@ public partial class QdrantHttpClient
         TimeSpan? retryDelay = null,
         Action<Exception, TimeSpan, int, uint> onRetry = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ListCollectionAliases),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteCollection), null);
+
         var url = $"/collections/{collectionName}/aliases";
 
         var response = await ExecuteRequest<ListCollectionAliasesResponse>(
@@ -229,6 +348,13 @@ public partial class QdrantHttpClient
             retryCount,
             retryDelay,
             onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }
@@ -243,12 +369,24 @@ public partial class QdrantHttpClient
         Action<Exception, TimeSpan, int, uint> onRetry = null,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(UpdateCollectionsAliases),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteCollection), clusterName);
+
         if (updateCollectionAliasesRequest.OperationsCount == 0)
         {
-            throw new QdrantEmptyBatchRequestException(
+            var ex = new QdrantEmptyBatchRequestException(
                 "N/A",
                 nameof(UpdateCollectionsAliases),
                 updateCollectionAliasesRequest.GetType());
+
+            tracingScope.SetError(ex);
+
+            throw ex;
         }
 
         var url = $"/collections/aliases?timeout={GetTimeoutValueOrDefault(timeout)}";
@@ -263,6 +401,13 @@ public partial class QdrantHttpClient
             retryDelay,
             onRetry);
 
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
         return response;
     }
 
@@ -271,6 +416,14 @@ public partial class QdrantHttpClient
         string collectionName,
         CancellationToken cancellationToken)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(CheckCollectionExists),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteCollection), null);
+
         var url = $"/collections/{collectionName}/exists";
 
         var response = await ExecuteRequest<CheckCollectionExistsResponse>(
@@ -279,6 +432,13 @@ public partial class QdrantHttpClient
             collectionName,
             cancellationToken,
             retryCount: 0);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
     }
@@ -290,6 +450,14 @@ public partial class QdrantHttpClient
         OptimizationProgressOptionalInfoFields with = OptimizationProgressOptionalInfoFields.None,
         int completedLimit = 16)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(GetCollectionOptimizationProgress),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteCollection), null);
+
         var queryParameters = with == OptimizationProgressOptionalInfoFields.None
             ? ""
             : $"?with={GetWithQueryParameter(with)}&completed_limit={completedLimit}";
@@ -303,6 +471,13 @@ public partial class QdrantHttpClient
             collectionName,
             cancellationToken,
             retryCount: 0);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
 
         return response;
 

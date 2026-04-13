@@ -67,7 +67,9 @@ public class QdrantTestsBase
         bool isDisableAuthorization = false,
         CircuitBreakerStrategyOptions<HttpResponseMessage> circuitBreakerOptions = null,
         TimeSpan? clientTimeout = null,
-        bool isAddMultipleQdrantClients = false)
+        bool isAddMultipleQdrantClients = false,
+        bool isDisableTracing = false,
+        bool isDisableMetrics = false)
     {
         Environment.SetEnvironmentVariable(
             "ASPNETCORE_ENVIRONMENT",
@@ -107,6 +109,9 @@ public class QdrantTestsBase
                     {
                         config.HttpClientTimeout = clientTimeout.Value;
                     }
+
+                    config.DisableMetrics = isDisableMetrics;
+                    config.DisableTracing = isDisableTracing;
                 },
                 circuitBreakerStrategyOptions: circuitBreakerOptions,
                 registerAsInterface: false
@@ -122,6 +127,9 @@ public class QdrantTestsBase
                     {
                         config.HttpClientTimeout = clientTimeout.Value;
                     }
+
+                    config.DisableMetrics = isDisableMetrics;
+                    config.DisableTracing = isDisableTracing;
                 },
                 circuitBreakerStrategyOptions: circuitBreakerOptions,
                 registerAsInterface: false
@@ -132,6 +140,16 @@ public class QdrantTestsBase
         {
             services.AddQdrantHttpClient(
                 Configuration,
+                configureQdrantClientSettings: config =>
+                {
+                    if (clientTimeout.HasValue)
+                    {
+                        config.HttpClientTimeout = clientTimeout.Value;
+                    }
+
+                    config.DisableMetrics = isDisableMetrics;
+                    config.DisableTracing = isDisableTracing;
+                },
                 registerAsInterface: true,
                 clientName: FirstClientName
             );
@@ -144,6 +162,9 @@ public class QdrantTestsBase
                     {
                         config.HttpClientTimeout = clientTimeout.Value;
                     }
+
+                    config.DisableMetrics = isDisableMetrics;
+                    config.DisableTracing = isDisableTracing;
                 },
                 clientConfigurationSectionName: "QdrantClientSettings_2",
                 circuitBreakerStrategyOptions: circuitBreakerOptions,
@@ -763,7 +784,7 @@ public class QdrantTestsBase
         await qdrantHttpClient.EnsureCollectionReady(collectionName, cancellationToken: CancellationToken.None);
     }
 
-    private void AddTestLogger(ServiceCollection services)
+    internal void AddTestLogger(ServiceCollection services)
     {
         LogEventLevel minimumEventLevel = IsCiEnvironment
             ? LogEventLevel.Warning

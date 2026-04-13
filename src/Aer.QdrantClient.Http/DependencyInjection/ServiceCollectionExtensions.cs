@@ -1,13 +1,20 @@
 using Aer.QdrantClient.Http.Abstractions;
 using Aer.QdrantClient.Http.Configuration;
+using Aer.QdrantClient.Http.Diagnostics;
+using Aer.QdrantClient.Http.Diagnostics.Listeners;
+using Aer.QdrantClient.Http.Diagnostics.Tracing;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenTelemetry.Trace;
 using Polly;
 using Polly.CircuitBreaker;
 using Polly.Telemetry;
+using System.Diagnostics;
 
 namespace Aer.QdrantClient.Http.DependencyInjection;
 
@@ -124,7 +131,38 @@ public static class ServiceCollectionExtensions
             services.AddHttpClient();
             services.TryAddSingleton<IQdrantClientFactory, DefaultQdrantClientFactory>();
 
+            AddTracingAndMetrics(services);
+
             return services;
+        }
+    }
+
+    /// <param name="applicationBuilder">The application builder instance.</param>
+    extension(IApplicationBuilder applicationBuilder)
+    {
+        /// <summary>
+        /// Enables qdrant http client diagnostics listeners for metrics and logging.
+        /// </summary>
+        /// <param name="clientName">The name of the client diagnostic should be enabled for.</param>
+        public IApplicationBuilder EnableQdrantHttpClientDiagnostics(string clientName = null)
+        {
+            var qdrantClientSettings =
+                applicationBuilder.ApplicationServices.GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>().Get(clientName ?? DefaultQdrantHttpClientName);
+
+            if (qdrantClientSettings.DisableMetrics)
+            {
+                return applicationBuilder;
+            }
+
+            var diagnosticSource = applicationBuilder.ApplicationServices.GetRequiredService<QdrantHttpClientDiagnosticSource>();
+
+            var metricsProvider = applicationBuilder.ApplicationServices.GetRequiredService<QdrantHttpClientMetricsProvider>();
+
+            var metricsListener = new MetricsQdrantHttpClientDiagnosticListener(metricsProvider, qdrantClientSettings);
+
+            diagnosticSource.SubscribeWithAdapter(metricsListener);
+
+            return applicationBuilder;
         }
     }
 
@@ -148,13 +186,36 @@ public static class ServiceCollectionExtensions
             client.Timeout = qdrantSettings.HttpClientTimeout;
         }
 
+        QdrantHttpClient ClientFactory(HttpClient client, IServiceProvider serviceProvider)
+        {
+            var serviceProviderScope = serviceProvider.CreateScope().ServiceProvider;
+
+            var qdrantClientSettings = serviceProviderScope
+                .GetRequiredService<IOptionsSnapshot<QdrantClientSettings>>()
+                .Get(clientName);
+
+            client.BaseAddress = new Uri(qdrantClientSettings.HttpAddress);
+            client.Timeout = qdrantClientSettings.HttpClientTimeout;
+
+            var tracer = qdrantClientSettings.DisableTracing
+                ? null
+                : serviceProviderScope.GetService<Tracer>();
+
+            var loggerFactory = serviceProviderScope.GetService<ILoggerFactory>();
+
+            return new QdrantHttpClient(
+                client, qdrantClientSettings, logger: loggerFactory?.CreateLogger(nameof(QdrantHttpClient) + $"_{clientName}"), tracer: tracer);
+        }
+
+        services.AddHttpClient(clientName, ConfigureClient);
+
         IHttpClientBuilder httpClientBuilder = registerInterface
             ? services.AddHttpClient<IQdrantHttpClient, QdrantHttpClient>(
                     clientName,
-                    ConfigureClient)
+                    ClientFactory)
             : services.AddHttpClient<QdrantHttpClient, QdrantHttpClient>(
                 clientName,
-                ConfigureClient);
+                ClientFactory);
 
         // We use try add to avoid multiple registrations in case of registering multiple clients
         services.TryAddSingleton<IQdrantClientFactory, DefaultQdrantClientFactory>();
@@ -196,5 +257,33 @@ public static class ServiceCollectionExtensions
         {
             resiliencePipelineBuilder.SelectPipelineByAuthority();
         }
+
+        AddTracingAndMetrics(services);
+    }
+
+    private static void AddTracingAndMetrics(
+        IServiceCollection services)
+    {
+        services.AddOpenTelemetry().WithTracing(
+            builder =>
+            {
+                builder.AddSource(QdrantHttpClientTracing.ActivitySourceName);
+            });
+
+        // Register Tracer
+
+        services.TryAddSingleton(TracerProvider.Default.GetTracer(QdrantHttpClientTracing.ActivityServiceName));
+
+        // Add open telemetry metrics dependencies
+
+        services.AddMetrics();
+
+        services.AddOpenTelemetry().WithMetrics(
+            builder =>
+            {
+                builder.AddMeter(QdrantHttpClientMetricsProvider.MeterName);
+            });
+
+        services.AddSingleton<QdrantHttpClientMetricsProvider>();
     }
 }
