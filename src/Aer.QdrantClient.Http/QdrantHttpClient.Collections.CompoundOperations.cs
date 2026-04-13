@@ -1,4 +1,5 @@
 using Aer.QdrantClient.Http.Diagnostics.Helpers;
+using Aer.QdrantClient.Http.Diagnostics.Tracing;
 using Aer.QdrantClient.Http.Filters;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Requests.Public.Shared;
@@ -23,6 +24,12 @@ public partial class QdrantHttpClient
         Action<Exception, TimeSpan, int, uint> onRetry = null,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(GetCollectionInfo),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(GetCollectionInfo), clusterName);
 
         var response = await GetCollectionInfo(
@@ -35,6 +42,7 @@ public partial class QdrantHttpClient
 
         if (!response.Status.IsSuccess)
         {
+            tracingScope.SetResult(response);
             return response;
         }
 
@@ -49,6 +57,8 @@ public partial class QdrantHttpClient
 
             response.Result.PointsCount = countPointsResponse.Count;
         }
+
+        tracingScope.SetResult(response);
 
         if (response.Status.IsSuccess)
         {
@@ -67,6 +77,12 @@ public partial class QdrantHttpClient
         Action<Exception, TimeSpan, int, uint> onRetry = null,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ListCollectionInfo),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ListCollectionInfo), clusterName);
 
         Stopwatch sw = Stopwatch.StartNew();
@@ -101,6 +117,8 @@ public partial class QdrantHttpClient
             Time = sw.Elapsed.TotalSeconds
         };
 
+        tracingScope.SetResult(ret);
+
         if (ret.Status.IsSuccess)
         {
             diagnostic.SetSuccess();
@@ -117,6 +135,7 @@ public partial class QdrantHttpClient
             {
                 try
                 {
+                    // This is a fire-and forget method, no tracing here
                     using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(StartCreatingCollectionPayloadIndexes), null);
 
                     if (payloadIndexes is null or { Count: 0 })

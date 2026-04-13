@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Diagnostics.Helpers;
+using Aer.QdrantClient.Http.Diagnostics.Tracing;
 
 #if  NETSTANDARD2_0
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
@@ -19,6 +20,12 @@ public partial class QdrantHttpClient
         string collectionName,
         CancellationToken cancellationToken)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ListCollectionSnapshots),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(ListCollectionSnapshots), null);
 
         var url =
@@ -39,6 +46,8 @@ public partial class QdrantHttpClient
             }
         }
 
+        tracingScope.SetResult(response);
+
         if (response.Status.IsSuccess)
         {
             diagnostic.SetSuccess();
@@ -53,6 +62,12 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         bool isWaitForResult = true)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(CreateCollectionSnapshot),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(CreateCollectionSnapshot), null);
 
         var url =
@@ -66,6 +81,8 @@ public partial class QdrantHttpClient
             retryCount: 0);
 
         response.Result?.SnapshotType = SnapshotType.Collection;
+
+        tracingScope.SetResult(response);
 
         if (response.Status.IsSuccess)
         {
@@ -108,6 +125,12 @@ public partial class QdrantHttpClient
         SnapshotPriority? snapshotPriority = null,
         string snapshotChecksum = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(RecoverCollectionFromSnapshot),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(RecoverCollectionFromSnapshot), null);
 
         var url =
@@ -122,6 +145,8 @@ public partial class QdrantHttpClient
             collectionName,
             cancellationToken,
             retryCount: 0);
+
+        tracingScope.SetResult(response);
 
         if (response.Status.IsSuccess)
         {
@@ -141,6 +166,12 @@ public partial class QdrantHttpClient
         string snapshotChecksum = null
     )
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(RecoverCollectionFromUploadedSnapshot),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(RecoverCollectionFromUploadedSnapshot), null);
 
         var url =
@@ -162,6 +193,8 @@ public partial class QdrantHttpClient
             snapshotContent,
             cancellationToken);
 
+        tracingScope.SetResult(response);
+
         if (response.Status.IsSuccess)
         {
             diagnostic.SetSuccess();
@@ -176,6 +209,12 @@ public partial class QdrantHttpClient
         string snapshotName,
         CancellationToken cancellationToken)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DownloadCollectionSnapshot),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DownloadCollectionSnapshot), null);
 
         var url =
@@ -190,6 +229,8 @@ public partial class QdrantHttpClient
             cancellationToken);
 
         response.Result?.SnapshotType = SnapshotType.Collection;
+
+        tracingScope.SetResult(response);
 
         if (response.Status.IsSuccess)
         {
@@ -207,6 +248,12 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true
     )
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DeleteCollectionSnapshot),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteCollectionSnapshot), null);
 
         var url =
@@ -218,6 +265,8 @@ public partial class QdrantHttpClient
             collectionName,
             cancellationToken,
             retryCount: 0);
+
+        tracingScope.SetResult(response);
 
         if (response.Status.IsSuccess)
         {

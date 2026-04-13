@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Diagnostics.Helpers;
+using Aer.QdrantClient.Http.Diagnostics.Tracing;
 
 #if NETSTANDARD2_0
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
@@ -20,6 +21,12 @@ public partial class QdrantHttpClient
         bool includeStorageSnapshots = false,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ListAllSnapshots),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ListAllSnapshots), clusterName);
 
         List<SnapshotInfo> allSnapshots = [];
@@ -48,10 +55,14 @@ public partial class QdrantHttpClient
 
             if (!collectionClusteringInfo.Status.IsSuccess)
             {
-                return new ListSnapshotsResponse(collectionClusteringInfo)
+                var earlyRet = new ListSnapshotsResponse(collectionClusteringInfo)
                 {
                     Result = null
                 };
+
+                tracingScope.SetResult(earlyRet);
+
+                return earlyRet;
             }
 
             // Local shard snapshots
@@ -76,10 +87,14 @@ public partial class QdrantHttpClient
 
                 if (!listShardSnapshotsResponse.Status.IsSuccess)
                 {
-                    return new ListSnapshotsResponse(listShardSnapshotsResponse)
+                    var earlyRet = new ListSnapshotsResponse(listShardSnapshotsResponse)
                     {
                         Result = null
                     };
+
+                    tracingScope.SetResult(earlyRet);
+
+                    return earlyRet;
                 }
 
                 foreach (var shardSnapshot in listShardSnapshotsResponse.Result)
@@ -98,10 +113,14 @@ public partial class QdrantHttpClient
 
             if (!listStorageSnapshotsResponse.Status.IsSuccess)
             {
-                return new ListSnapshotsResponse(listStorageSnapshotsResponse)
+                var earlyRet = new ListSnapshotsResponse(listStorageSnapshotsResponse)
                 {
                     Result = null
                 };
+
+                tracingScope.SetResult(earlyRet);
+
+                return earlyRet;
             }
 
             foreach (var storageSnapshot in listStorageSnapshotsResponse.Result)
@@ -120,6 +139,8 @@ public partial class QdrantHttpClient
             Time = sw.Elapsed.TotalSeconds
         };
 
+        tracingScope.SetResult(ret);
+
         diagnostic.SetSuccess();
 
         return ret;
@@ -131,6 +152,12 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DeleteAllStorageSnapshots),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteAllStorageSnapshots), clusterName);
 
         var storageSnapshots = await ListStorageSnapshots(cancellationToken);
@@ -142,6 +169,7 @@ public partial class QdrantHttpClient
                 storageSnapshot.Name,
                 cancellationToken,
                 isWaitForResult);
+
             deleteSnapshotResult.EnsureSuccess();
         }
 
@@ -150,6 +178,8 @@ public partial class QdrantHttpClient
             Result = true,
             Status = new QdrantStatus(QdrantOperationStatusType.Ok)
         };
+
+        tracingScope.SetResult(ret);
 
         diagnostic.SetSuccess();
 
@@ -162,6 +192,12 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DeleteAllCollectionSnapshots),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteAllCollectionSnapshots), clusterName);
 
         var listAllCollectionsResponse = await ListCollections(cancellationToken);
@@ -175,10 +211,14 @@ public partial class QdrantHttpClient
 
             if (!listCollectionSnapshotsResponse.Status.IsSuccess)
             {
-                return new DefaultOperationResponse(listCollectionSnapshotsResponse)
+                var earlyRet = new DefaultOperationResponse(listCollectionSnapshotsResponse)
                 {
                     Result = false
                 };
+
+                tracingScope.SetResult(earlyRet);
+
+                return earlyRet;
             }
 
             foreach (var collectionSnapshot in listCollectionSnapshotsResponse.Result)
@@ -192,10 +232,14 @@ public partial class QdrantHttpClient
 
                 if (!deleteCollectionSnapshotResponse.Status.IsSuccess)
                 {
-                    return new DefaultOperationResponse(deleteCollectionSnapshotResponse)
+                    var earlyRet = new DefaultOperationResponse(deleteCollectionSnapshotResponse)
                     {
                         Result = false
                     };
+
+                    tracingScope.SetResult(earlyRet);
+
+                    return earlyRet;
                 }
             }
         }
@@ -205,6 +249,8 @@ public partial class QdrantHttpClient
             Result = true,
             Status = new QdrantStatus(QdrantOperationStatusType.Ok)
         };
+
+        tracingScope.SetResult(ret);
 
         diagnostic.SetSuccess();
 
@@ -217,6 +263,12 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DeleteAllCollectionShardSnapshots),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteAllCollectionShardSnapshots), clusterName);
 
         var listAllCollectionsResponse = await ListCollections(cancellationToken);
@@ -230,10 +282,14 @@ public partial class QdrantHttpClient
 
             if (!collectionClusteringInfo.Status.IsSuccess)
             {
-                return new DefaultOperationResponse(collectionClusteringInfo)
+                var earlyRet = new DefaultOperationResponse(collectionClusteringInfo)
                 {
                     Result = false
                 };
+
+                tracingScope.SetResult(earlyRet);
+
+                return earlyRet;
             }
 
 #if NETSTANDARD2_0
@@ -257,11 +313,15 @@ public partial class QdrantHttpClient
 
                 if (!listCollectionSnapshotsResponse.Status.IsSuccess)
                 {
-                    return new DefaultOperationResponse()
+                    var earlyRet = new DefaultOperationResponse()
                     {
                         Result = false,
                         Status = listCollectionSnapshotsResponse.Status
                     };
+
+                    tracingScope.SetResult(earlyRet);
+
+                    return earlyRet;
                 }
 
                 foreach (var localShardSnapshot in listCollectionSnapshotsResponse.Result)
@@ -276,10 +336,14 @@ public partial class QdrantHttpClient
 
                     if (!deleteCollectionShardSnapshotResponse.Status.IsSuccess)
                     {
-                        return new DefaultOperationResponse(deleteCollectionShardSnapshotResponse)
+                        var earlyRet = new DefaultOperationResponse(deleteCollectionShardSnapshotResponse)
                         {
                             Result = false
                         };
+
+                        tracingScope.SetResult(earlyRet);
+
+                        return earlyRet;
                     }
                 }
             }
@@ -290,6 +354,8 @@ public partial class QdrantHttpClient
             Result = true,
             Status = new QdrantStatus(QdrantOperationStatusType.Ok)
         };
+
+        tracingScope.SetResult(ret);
 
         diagnostic.SetSuccess();
 

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Diagnostics.Helpers;
+using Aer.QdrantClient.Http.Diagnostics.Tracing;
 
 #if  NETSTANDARD2_0
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
@@ -20,6 +21,12 @@ public partial class QdrantHttpClient
         uint shardId,
         CancellationToken cancellationToken)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ListShardSnapshots),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(ListShardSnapshots), null);
 
         var url =
@@ -40,6 +47,8 @@ public partial class QdrantHttpClient
             }
         }
 
+        tracingScope.SetResult(response);
+
         if (response.Status.IsSuccess)
         {
             diagnostic.SetSuccess();
@@ -55,6 +64,12 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         bool isWaitForResult = true)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(CreateShardSnapshot),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(CreateShardSnapshot), null);
 
         var url =
@@ -68,6 +83,8 @@ public partial class QdrantHttpClient
             retryCount: 0);
 
         response.Result?.SnapshotType = SnapshotType.Shard;
+
+        tracingScope.SetResult(response);
 
         if (response.Status.IsSuccess)
         {
@@ -87,6 +104,12 @@ public partial class QdrantHttpClient
         SnapshotPriority? snapshotPriority = null,
         string snapshotChecksum = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(RecoverShardFromSnapshot),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(RecoverShardFromSnapshot), null);
 
         var url =
@@ -101,6 +124,8 @@ public partial class QdrantHttpClient
             collectionName,
             cancellationToken,
             retryCount: 0);
+
+        tracingScope.SetResult(response);
 
         if (response.Status.IsSuccess)
         {
@@ -121,6 +146,12 @@ public partial class QdrantHttpClient
         string snapshotChecksum = null
     )
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(RecoverShardFromUploadedSnapshot),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(RecoverShardFromUploadedSnapshot), null);
 
         var url =
@@ -142,6 +173,8 @@ public partial class QdrantHttpClient
             snapshotContent,
             cancellationToken);
 
+        tracingScope.SetResult(response);
+
         if (response.Status.IsSuccess)
         {
             diagnostic.SetSuccess();
@@ -157,6 +190,12 @@ public partial class QdrantHttpClient
         string snapshotName,
         CancellationToken cancellationToken)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DownloadShardSnapshot),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DownloadShardSnapshot), null);
 
         var url =
@@ -171,6 +210,8 @@ public partial class QdrantHttpClient
             cancellationToken);
 
         response.Result?.SnapshotType = SnapshotType.Shard;
+
+        tracingScope.SetResult(response);
 
         if (response.Status.IsSuccess)
         {
@@ -189,6 +230,12 @@ public partial class QdrantHttpClient
         bool isWaitForResult = true
     )
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DeleteShardSnapshot),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteShardSnapshot), null);
 
         var url =
@@ -200,6 +247,8 @@ public partial class QdrantHttpClient
             collectionName,
             cancellationToken,
             retryCount: 0);
+
+        tracingScope.SetResult(response);
 
         if (response.Status.IsSuccess)
         {

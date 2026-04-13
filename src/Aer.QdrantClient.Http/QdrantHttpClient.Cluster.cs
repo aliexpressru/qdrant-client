@@ -1,4 +1,5 @@
 using Aer.QdrantClient.Http.Diagnostics.Helpers;
+using Aer.QdrantClient.Http.Diagnostics.Tracing;
 using Aer.QdrantClient.Http.Models.Primitives;
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
@@ -15,6 +16,12 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(GetClusterInfo),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(GetClusterInfo), clusterName);
 
         var url = "/cluster";
@@ -25,6 +32,8 @@ public partial class QdrantHttpClient
             clusterName,
             cancellationToken,
             retryCount: 0);
+
+        tracingScope.SetResult(response);
 
         if (response.Status.IsSuccess)
         {
@@ -39,6 +48,12 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(RecoverPeerRaftState),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(RecoverPeerRaftState), clusterName);
 
         var url = "/cluster/recover";
@@ -49,6 +64,8 @@ public partial class QdrantHttpClient
             clusterName,
             cancellationToken,
             retryCount: 0);
+
+        tracingScope.SetResult(response);
 
         if (response.Status.IsSuccess)
         {
@@ -66,6 +83,12 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(RemovePeer),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(RemovePeer), clusterName);
 
         var url = $"/cluster/peer/{peerId}?force={ToUrlQueryString(isForceDropOperation)}&timeout={GetTimeoutValueOrDefault(timeout)}";
@@ -76,6 +99,8 @@ public partial class QdrantHttpClient
             clusterName,
             cancellationToken,
             retryCount: 0);
+
+        tracingScope.SetResult(response);
 
         if (response.Status.IsSuccess)
         {
@@ -92,6 +117,12 @@ public partial class QdrantHttpClient
         bool isTranslatePeerIdsToUris = false,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(GetCollectionClusteringInfo),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(GetCollectionClusteringInfo), clusterName);
 
         var url = $"/collections/{collectionName}/cluster";
@@ -220,6 +251,8 @@ public partial class QdrantHttpClient
             collectionShardingInfo.Result.ShardStates = shardStates;
         }
 
+        tracingScope.SetResult(collectionShardingInfo);
+
         if (collectionShardingInfo.Status.IsSuccess)
         {
             diagnostic.SetSuccess();
@@ -236,6 +269,12 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(UpdateCollectionClusteringSetup),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(UpdateCollectionClusteringSetup), clusterName);
 
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
@@ -249,6 +288,8 @@ public partial class QdrantHttpClient
             clusterName ?? collectionName,
             cancellationToken,
             retryCount: 0);
+
+        tracingScope.SetResult(response);
 
         if (response.Status.IsSuccess)
         {
@@ -270,6 +311,12 @@ public partial class QdrantHttpClient
         ShardState? initialState = null,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(CreateShardKey),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(CreateShardKey), clusterName);
 
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
@@ -291,6 +338,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        tracingScope.SetResult(response);
+
         if (response.Status.IsSuccess)
         {
             diagnostic.SetSuccess();
@@ -307,6 +356,12 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DeleteShardKey),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteShardKey), clusterName);
 
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
@@ -323,6 +378,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount: 0);
 
+        tracingScope.SetResult(response);
+
         if (response.Status.IsSuccess)
         {
             diagnostic.SetSuccess();
@@ -337,6 +394,12 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ListShardKeys),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteShardKey), clusterName);
 
         var url = $"/collections/{collectionName}/shards";
@@ -347,6 +410,8 @@ public partial class QdrantHttpClient
             clusterName ?? collectionName,
             cancellationToken,
             retryCount: 0);
+
+        tracingScope.SetResult(response);
 
         if (response.Status.IsSuccess)
         {
@@ -363,6 +428,12 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(GetClusterTelemetry),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteShardKey), clusterName);
 
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
@@ -375,6 +446,8 @@ public partial class QdrantHttpClient
             clusterName,
             cancellationToken,
             retryCount: 0);
+
+        tracingScope.SetResult(response);
 
         if (response.Status.IsSuccess)
         {

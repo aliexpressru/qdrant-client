@@ -23,6 +23,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Polly;
 using Aer.QdrantClient.Http.Diagnostics.Helpers;
 using OpenTelemetry.Trace;
+using Aer.QdrantClient.Http.Diagnostics.Tracing;
 
 namespace Aer.QdrantClient.Http;
 
@@ -761,27 +762,39 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void EnsureQdrantNameCorrect(string qdrantEntityName)
+    private static void EnsureQdrantNameCorrect(string qdrantEntityName, TracingScope tracingScope)
     {
         if (qdrantEntityName is null or { Length: 0 })
         {
-            throw new QdrantInvalidEntityNameException(
+            var ex = new QdrantInvalidEntityNameException(
                 qdrantEntityName,
                 "Entity name should not be null or empty");
+
+            tracingScope.SetError(ex);
+
+            throw ex;
         }
 
         if (qdrantEntityName.Length is 0 or > 255)
         {
-            throw new QdrantInvalidEntityNameException(
+            var ex = new QdrantInvalidEntityNameException(
                 qdrantEntityName,
                 $"Entity name should be between 1 and 255 characters long. Length of {qdrantEntityName.Length} is found.");
+
+            tracingScope.SetError(ex);
+
+            throw ex;
         }
 
         if (_invalidQdrantNameSymbols.Any(qdrantEntityName.Contains))
         {
-            throw new QdrantInvalidEntityNameException(
-                qdrantEntityName,
-                $"Entity name can't contain [{string.Join(",", _invalidQdrantNameSymbols)}] symbols");
+            var ex = new QdrantInvalidEntityNameException(
+            qdrantEntityName,
+            $"Entity name can't contain [{string.Join(",", _invalidQdrantNameSymbols)}] symbols");
+
+            tracingScope.SetError(ex);
+
+            throw ex;
         }
     }
 

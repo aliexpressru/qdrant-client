@@ -28,7 +28,7 @@ internal static class QdrantHttpClientTracing
         TracingOptions tracingOptions = null
     )
     {
-        if (!ShouldEnableTracing(tracingOptions, enableTracing))
+        if (!ShouldEnableTracing(tracer, tracingOptions, enableTracing))
         {
             return TracingScope.Disabled;
         }
@@ -66,8 +66,13 @@ internal static class QdrantHttpClientTracing
     /// Determines whether tracing should be enabled based on global EnableTracing configuration,
     /// current activity context, and tracing options.
     /// </summary>
-    private static bool ShouldEnableTracing(TracingOptions tracingOptions, bool enableTracing)
+    private static bool ShouldEnableTracing(Tracer tracer, TracingOptions tracingOptions, bool enableTracing)
     {
+        // Tracer is not registered
+        if (tracer is null)
+        {
+            return false;
+        }
         // Global EnableTracing = false always disables tracing, regardless of Tracer availability
         if (!enableTracing)
         {

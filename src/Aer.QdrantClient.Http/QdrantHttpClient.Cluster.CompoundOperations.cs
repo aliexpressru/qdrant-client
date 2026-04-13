@@ -84,6 +84,12 @@ public partial class QdrantHttpClient
         uint[] shardIdsToReplicate = null,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ReplicateShards),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ReplicateShards), clusterName);
 
         var sourcePeerInfo = await GetPeerInfo(
@@ -107,6 +113,8 @@ public partial class QdrantHttpClient
             shardIdsToReplicate ?? [],
             isMoveShards,
             clusterName: clusterName);
+
+        tracingScope.SetResult(ret);
 
         if (ret.Status.IsSuccess)
         {
@@ -357,6 +365,12 @@ public partial class QdrantHttpClient
         string clusterName = null,
         params string[] collectionNamesToReplicate)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ReplicateShardsToPeer),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ReplicateShardsToPeer), clusterName);
 
         var targetPeerInfo = await GetPeerInfo(
@@ -372,6 +386,8 @@ public partial class QdrantHttpClient
             isDryRun,
             clusterName,
             collectionNamesToReplicate);
+
+        tracingScope.SetResult(ret);
 
         if (ret.Status.IsSuccess)
         {
@@ -391,6 +407,12 @@ public partial class QdrantHttpClient
         string clusterName = null,
         params string[] collectionNamesToReplicate)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ReplicateShardsToPeer),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ReplicateShardsToPeer), clusterName);
 
         var targetPeerInfo = await GetPeerInfo(
@@ -406,6 +428,8 @@ public partial class QdrantHttpClient
             isDryRun,
             clusterName,
             collectionNamesToReplicate);
+
+        tracingScope.SetResult(ret);
 
         if (ret.Status.IsSuccess)
         {
@@ -664,6 +688,12 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(RestoreShardReplicationFactor),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(RestoreShardReplicationFactor), clusterName);
 
         Stopwatch sw = Stopwatch.StartNew();
@@ -699,6 +729,7 @@ public partial class QdrantHttpClient
 
             ret.Time = sw.Elapsed.TotalSeconds;
 
+            tracingScope.SetResult(ret);
             diagnostic.SetSuccess();
 
             return ret;
@@ -706,6 +737,8 @@ public partial class QdrantHttpClient
         catch (QdrantUnsuccessfulResponseStatusException qex)
         {
             sw.Stop();
+
+            tracingScope.SetError(qex);
 
             return new RestoreShardReplicationFactorResponse()
             {
@@ -727,6 +760,12 @@ public partial class QdrantHttpClient
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(EqualizeShardReplication),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(string.Join(",", collectionNamesToEqualize), nameof(EqualizeShardReplication), clusterName);
 
         GetPeerResponse sourcePeerInfo = await GetPeerInfo(
@@ -749,6 +788,8 @@ public partial class QdrantHttpClient
             logger,
             isDryRun);
 
+        tracingScope.SetResult(ret);
+
         if (ret.Status.IsSuccess)
         {
             diagnostic.SetSuccess();
@@ -768,6 +809,12 @@ public partial class QdrantHttpClient
         ShardTransferMethod shardTransferMethod = ShardTransferMethod.Snapshot,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(EqualizeShardReplication),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(EqualizeShardReplication), clusterName);
 
         GetPeerResponse sourcePeerInfo = await GetPeerInfo(
@@ -790,6 +837,8 @@ public partial class QdrantHttpClient
             logger,
             isDryRun
         );
+
+        tracingScope.SetResult(ret);
 
         if (ret.Status.IsSuccess)
         {
@@ -1019,6 +1068,12 @@ public partial class QdrantHttpClient
         params string[] collectionNamesToMove
     )
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DrainPeer),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DrainPeer), clusterName);
 
         var peerToDrainInfo = await GetPeerInfo(
@@ -1034,6 +1089,8 @@ public partial class QdrantHttpClient
             logger,
             isDryRun,
             collectionNamesToMove);
+
+        tracingScope.SetResult(ret);
 
         if (ret.Status.IsSuccess)
         {
@@ -1054,6 +1111,12 @@ public partial class QdrantHttpClient
         params string[] collectionNamesToMove
     )
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DrainPeer),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DrainPeer), clusterName);
 
         var peerToDrainInfo = await GetPeerInfo(
@@ -1069,6 +1132,8 @@ public partial class QdrantHttpClient
             logger,
             isDryRun,
             collectionNamesToMove);
+
+        tracingScope.SetResult(ret);
 
         if (ret.Status.IsSuccess)
         {
@@ -1276,6 +1341,12 @@ public partial class QdrantHttpClient
         params string[] collectionNamesToClear
     )
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ClearPeer),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ClearPeer), clusterName);
 
         var peerToDrainInfo = await GetPeerInfo(
@@ -1290,6 +1361,8 @@ public partial class QdrantHttpClient
             logger,
             isDryRun,
             collectionNamesToClear);
+
+        tracingScope.SetResult(ret);
 
         if (ret.Status.IsSuccess)
         {
@@ -1309,6 +1382,12 @@ public partial class QdrantHttpClient
         params string[] collectionNamesToClear
     )
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(ClearPeer),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ClearPeer), clusterName);
 
         var peerToDrainInfo = await GetPeerInfo(
@@ -1323,6 +1402,8 @@ public partial class QdrantHttpClient
             logger,
             isDryRun,
             collectionNamesToClear);
+
+        tracingScope.SetResult(ret);
 
         if (ret.Status.IsSuccess)
         {
@@ -1494,6 +1575,12 @@ public partial class QdrantHttpClient
         string clusterName = null
     )
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DropCollectionShardsFromPeer),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DropCollectionShardsFromPeer), clusterName);
 
         var peerToDropShardFromInfo = await GetPeerInfo(
@@ -1510,6 +1597,8 @@ public partial class QdrantHttpClient
             isDryRun,
             clusterName
         );
+
+        tracingScope.SetResult(ret);
 
         if (ret.Status.IsSuccess)
         {
@@ -1530,6 +1619,12 @@ public partial class QdrantHttpClient
         string clusterName = null
     )
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DropCollectionShardsFromPeer),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DropCollectionShardsFromPeer), clusterName);
 
         var peerToDropShardFromInfo = await GetPeerInfo(
@@ -1546,6 +1641,8 @@ public partial class QdrantHttpClient
             isDryRun,
             clusterName
         );
+
+        tracingScope.SetResult(ret);
 
         if (ret.Status.IsSuccess)
         {
@@ -1648,6 +1745,12 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(CheckIsPeerEmpty),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(CheckIsPeerEmpty), clusterName);
 
         var peerToCheckInfo = await GetPeerInfo(
@@ -1659,6 +1762,8 @@ public partial class QdrantHttpClient
             peerToCheckInfo,
             clusterName,
             cancellationToken);
+
+        tracingScope.SetResult(ret);
 
         if (ret.Status.IsSuccess)
         {
@@ -1674,6 +1779,12 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(CheckIsPeerEmpty),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(CheckIsPeerEmpty), clusterName);
 
         var peerToCheckInfo = await GetPeerInfo(
@@ -1684,6 +1795,8 @@ public partial class QdrantHttpClient
             peerToCheckInfo,
             clusterName,
             cancellationToken);
+
+        tracingScope.SetResult(ret);
 
         if (ret.Status.IsSuccess)
         {
@@ -1787,6 +1900,12 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         string clusterName = null)
     {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(GetPeerInfo),
+            _enableTracing,
+            Logger);
+
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(GetPeerInfo), clusterName);
 
         Stopwatch sw = Stopwatch.StartNew();
@@ -1816,9 +1935,13 @@ public partial class QdrantHttpClient
 
         if (duplicatePeers.Count > 0)
         {
-            throw new QdrantInvalidClusterStateException(
+            var exceptionToThrow = new QdrantInvalidClusterStateException(
                 $"Cluster contains peers with duplicated URIs [{string.Join(", ", duplicatePeers.Select(p => $"{p.Key} - {p.Value}"))}]. "
                 + $"All peers: [{string.Join(", ", clusterInfo.ParsedPeers.Select(p => $"{p.Value.Uri} - {p.Key}"))}]");
+
+            tracingScope.SetError(exceptionToThrow);
+
+            throw exceptionToThrow;
         }
 
         var candidatePeerIds = peerIdsByNodeUrls
@@ -1827,17 +1950,25 @@ public partial class QdrantHttpClient
 
         if (candidatePeerIds.Count == 0)
         {
-            throw new QdrantNoPeersFoundForUriSubstringException(
+            var exceptionToThrow = new QdrantNoPeersFoundForUriSubstringException(
                 peerUriSelectorString,
                 peerIdsByNodeUrls
             );
+
+            tracingScope.SetError(exceptionToThrow);
+
+            throw exceptionToThrow;
         }
 
         if (candidatePeerIds.Count > 1)
         {
-            throw new QdrantMoreThanOnePeerFoundForUriSubstringException(
+            var exceptionToThrow = new QdrantMoreThanOnePeerFoundForUriSubstringException(
                 peerUriSelectorString,
                 candidatePeerIds);
+
+            tracingScope.SetError(exceptionToThrow);
+
+            throw exceptionToThrow;
         }
 
         var nodePeerId = candidatePeerIds[0].Value;
@@ -1866,14 +1997,17 @@ public partial class QdrantHttpClient
 
         sw.Stop();
 
-        diagnostic.SetSuccess();
-
-        return new GetPeerResponse()
+        var response = new GetPeerResponse()
         {
             Status = QdrantStatus.Success(),
             Result = ret,
             Time = sw.Elapsed.TotalSeconds
         };
+
+        tracingScope.SetResult(response);
+        diagnostic.SetSuccess();
+
+        return response;
     }
 
     /// <inheritdoc/>
@@ -1931,15 +2065,17 @@ public partial class QdrantHttpClient
 
         sw.Stop();
 
-        diagnostic.SetSuccess();
-        tracingScope.SetResult(true);
-
-        return new GetPeerResponse()
+        var response = new GetPeerResponse()
         {
             Status = QdrantStatus.Success(),
             Result = ret,
             Time = sw.Elapsed.TotalSeconds
         };
+
+        tracingScope.SetResult(response);
+        diagnostic.SetSuccess();
+
+        return response;
     }
 
     /// <inheritdoc/>
