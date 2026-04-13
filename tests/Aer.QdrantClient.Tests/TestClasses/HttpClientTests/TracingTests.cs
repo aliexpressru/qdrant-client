@@ -2,7 +2,7 @@ using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Abstractions;
 using Aer.QdrantClient.Http.Configuration;
 using Aer.QdrantClient.Http.DependencyInjection;
-using Aer.QdrantClient.Http.Diagnostics.Tracing;
+using Aer.QdrantClient.Http.Diagnostics;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
 using Microsoft.Extensions.Configuration;
@@ -175,7 +175,7 @@ public class TracingTests : QdrantTestsBase
             return;
         }
 
-        var activityServiceName = QdrantHttpClientTracing.ActivityServiceName;
+        var activityServiceName = QdrantHttpClientDiagnosticConstants.TracingActivityServiceName;
 
         // Here source name will be the actual name of this service which is Aer.QdrantClient.Tests
         _activityListener = new ActivityListener
