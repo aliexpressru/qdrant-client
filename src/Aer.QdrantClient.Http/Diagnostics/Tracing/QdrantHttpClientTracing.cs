@@ -1,7 +1,8 @@
-using System.Diagnostics;
 using Aer.QdrantClient.Http.Configuration;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Trace;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace Aer.QdrantClient.Http.Diagnostics.Tracing;
 
@@ -10,9 +11,18 @@ internal static class QdrantHttpClientTracing
     private const string DbSystemValue = "qdrant";
     private const string SpanNamePrefix = "qdrant.http ";
 
-    // Attribute names
     private const string DbSystemAttribute = "db.system";
     private const string DbOperationNameAttribute = "db.operation.name";
+
+    /// <summary>
+    /// The name of the tracing activity source.
+    /// </summary>
+    public static string ActivitySourceName { get; } = "Aer.QdrantClient.Http";
+
+    /// <summary>
+    /// The name of the tracing activity service.
+    /// </summary>
+    public static string ActivityServiceName { get; } = Assembly.GetEntryAssembly()?.GetName().Name ?? ActivitySourceName;
 
     //private const string ServerAddressAttribute = "server.address";
 
@@ -25,7 +35,7 @@ internal static class QdrantHttpClientTracing
         string methodName,
         bool enableTracing,
         ILogger logger = null,
-        TracingOptions tracingOptions = null
+        TracingOptions tracingOptions = null // TracingOptions are not used yet, left for future extensions
     )
     {
         if (!ShouldEnableTracing(tracer, tracingOptions, enableTracing))
@@ -35,7 +45,6 @@ internal static class QdrantHttpClientTracing
 
         try
         {
-            // Create span following OpenTelemetry semantic conventions
             var span = tracer
                 .StartActiveSpan($"{SpanNamePrefix}{methodName}", SpanKind.Client, Tracer.CurrentSpan)
                 // Database semantic conventions
@@ -48,10 +57,7 @@ internal static class QdrantHttpClientTracing
         }
         catch (Exception ex)
         {
-            // Tracing should never break the application
-            // Common cases:
-            // - ObjectDisposedException: Activity source disposed when request completed
-            // - NullReferenceException: HTTP context disposed during fire-and-forget operations
+            // Tracing should never break the application - so we ignore any exceptions here
             logger?.LogWarning(
                 ex,
                 "Failed to create tracing scope for qdrant method {MethodName}. Tracing will be disabled for this operation.",
@@ -73,6 +79,7 @@ internal static class QdrantHttpClientTracing
         {
             return false;
         }
+
         // Global EnableTracing = false always disables tracing, regardless of Tracer availability
         if (!enableTracing)
         {

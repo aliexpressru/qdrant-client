@@ -1,5 +1,6 @@
 using Aer.QdrantClient.Http.Abstractions;
 using Aer.QdrantClient.Http.Configuration;
+using Aer.QdrantClient.Http.Diagnostics.Tracing;
 using Aer.QdrantClient.Http.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -140,6 +141,14 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
         // Check if we have stored settings for this client name
         if (_clientSettings.TryGetValue(clientName, out StoredQdrantClientSettings settings))
         {
+            Tracer tracer = null;
+
+            if (!settings.DisableTracing)
+            {
+                // Create tracer tracer form TracerProvider if settings.DisableTracing == false and Tracer is not set while registering client
+                tracer = settings.Tracer ?? TracerProvider.Default.GetTracer(QdrantHttpClientTracing.ActivityServiceName);
+            }
+
             return new QdrantHttpClient(
                 settings.QdrantAddress,
                 settings.ApiKey,
@@ -147,7 +156,7 @@ internal class DefaultQdrantClientFactory(IHttpClientFactory httpClientFactory, 
                 settings.Logger,
                 disableTracing: settings.DisableTracing,
                 enableCompression: settings.EnableCompression,
-                tracer: settings.Tracer
+                tracer: tracer
             );
         }
         else

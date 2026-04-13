@@ -7,7 +7,10 @@ namespace Aer.QdrantClient.Http.Diagnostics;
 /// </summary>
 public class QdrantHttpClientDiagnosticSource : DiagnosticListener
 {
-    private const string SourceName = "Aer.Diagnostics.QdrantHttp";
+    /// <summary>
+    /// The name of the diagnostic source qdrant http client writes to.
+    /// </summary>
+    public const string SourceName = "Aer.Diagnostics.QdrantHttp";
 
     /// <summary>
     /// The name of the qdrant request duration diagnostic.

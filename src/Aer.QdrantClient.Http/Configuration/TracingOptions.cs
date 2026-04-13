@@ -7,9 +7,13 @@ public class TracingOptions
 {
     /// <summary>
     /// Gets or sets a value indicating whether tracing should be manually disabled for this operation.
-    /// When set to true, no tracing spans will be created even if tracing is enabled globally.
-    /// Default is false.
+    /// When set to <c>true</c>, no tracing spans will be created even if tracing is enabled globally.
+    /// Default is <c>false</c>.
     /// </summary>
+    /// <remarks>
+    /// Note that disabling tracing for qdrant operation does not disable it
+    /// for underlying http client tracing which is instrumented by runtime and is out of our control.
+    /// </remarks>
     public bool ManualDisableTracing { get; set; }
 
     /// <summary>
@@ -18,8 +22,7 @@ public class TracingOptions
     public static TracingOptions Disabled { get; } = new() { ManualDisableTracing = true };
 
     /// <summary>
-    /// Gets a singleton instance with tracing enabled (default behavior).
+    /// Gets a singleton instance with tracing enabled.
     /// </summary>
     public static TracingOptions Enabled { get; } = new() { ManualDisableTracing = false };
 }
-
