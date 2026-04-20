@@ -59,4 +59,18 @@ public abstract class QdrantResponseBase<TResult> : QdrantResponseBase
 
         throw new QdrantUnsuccessfulResponseStatusException(GetType(), Status);
     }
+
+    /// <summary>
+    /// Returns the <see cref="Result"/> property of this instance if the result status indicates success.
+    /// If it does not - returns the provided default value.
+    /// </summary>
+    public TResult Unwrap(TResult defaultIfNotSuccess = default)
+    {
+        if (Status.IsSuccess)
+        {
+            return Result;
+        }
+
+        return defaultIfNotSuccess;
+    }
 }

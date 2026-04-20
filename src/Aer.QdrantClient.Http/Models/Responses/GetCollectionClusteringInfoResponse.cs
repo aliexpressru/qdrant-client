@@ -107,7 +107,7 @@ public sealed class GetCollectionClusteringInfoResponse
     }
 
     /// <summary>
-    /// Information about a single shard.
+    /// Information about a single shard, local to the server which answered the request.
     /// </summary>
     public sealed class LocalShardInfo
     {
@@ -135,7 +135,7 @@ public sealed class GetCollectionClusteringInfoResponse
     }
 
     /// <summary>
-    /// Information about a single remote shard.
+    /// Information about a single shard, remote to the server which answered the request.
     /// </summary>
     public sealed class RemoteShardInfo
     {

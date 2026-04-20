@@ -6,6 +6,7 @@ using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Microsoft.Extensions.Logging;
+using static Aer.QdrantClient.Http.Models.Responses.GetClusterTelemetryResponse.CollectionTelemetry.ShardInfo;
 
 namespace Aer.QdrantClient.Http.Infrastructure.Replication;
 
@@ -64,7 +65,8 @@ public class ShardReplicator
     internal RestoreShardReplicationFactorResponse Calculate(
         GetClusterInfoResponse.ClusterInfo clusterInfo,
         GetCollectionInfoResponse.CollectionInfo collectionInfo,
-        GetCollectionClusteringInfoResponse.CollectionClusteringInfo collectionClusteringInfo
+        GetCollectionClusteringInfoResponse.CollectionClusteringInfo collectionClusteringInfo,
+        GetClusterTelemetryResponse.ClusterTelemetryInfo clusterTelemetryInfo
     )
     {
         if (collectionClusteringInfo.ShardTransfers.Length > 0)
@@ -81,6 +83,15 @@ public class ShardReplicator
         }
 
         _targetReplicationFactor = GetCollectionReplicationFactor(collectionInfo, collectionClusteringInfo);
+
+        GetClusterTelemetryResponse.CollectionTelemetry.ShardInfo[] collectionShardsTelemetry = clusterTelemetryInfo
+            ?.Collections[_collectionName]
+            ?.Shards;
+
+        // This collection may or may not be filled since clusterTelemetryInfo might be null on older qdrant versions
+        Dictionary<uint, Dictionary<ulong, ReplicaInfo>> shardTelemetryInfo = collectionShardsTelemetry is null
+            ? []
+            : collectionShardsTelemetry.ToDictionary(st => st.Id, st => st.Replicas.ToDictionary(ri => ri.PeerId, ri => ri));
 
         // Check that each shard is replicated no fewer than targetCollectionReplicationFactor of times
         // If it is replicated fewer times - replicate to the peers that have the least number of replicas
@@ -104,10 +115,17 @@ public class ShardReplicator
             {
                 var peerState = collectionClusteringInfo.ShardStates[shardId][peerId];
 
+                ReplicaInfo shardReplicaTelemetry = shardTelemetryInfo?.GetValueOrDefault(shardId)?.GetValueOrDefault(peerId);
+
                 if (peerState is not (ShardState.Active or ShardState.ActiveRead))
                 {
-                    // We should add inactive replicas to the drop list only
-                    // If any other active replica exists for them
+                    // Means that the replica is not alive and active
+                    inactiveShardReplicasToDrop.Add((shardId, peerId));
+                    inactiveReplicaCount++;
+                }
+                else if (shardReplicaTelemetry is { NumVectors: 0 } or ({ PayloadsSizeBytes: 0 } and { VectorsSizeBytes: 0 }))
+                {
+                    // Means that we have replica telemetry and it indicated that the replica is empty
                     inactiveShardReplicasToDrop.Add((shardId, peerId));
                     inactiveReplicaCount++;
                 }
@@ -445,7 +463,9 @@ public class ShardReplicator
         }
     }
 
-    private static int CalculateMaximumNumberOfShardMovesForPopulationDepopulation(CollectionClusteringState collectionClusteringState)
+    private static int CalculateMaximumNumberOfShardMovesForPopulationDepopulation(
+        CollectionClusteringState collectionClusteringState
+    )
     {
         int shardsToMoveCount = 0;
 

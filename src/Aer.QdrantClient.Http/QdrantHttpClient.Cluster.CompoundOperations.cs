@@ -716,6 +716,8 @@ public partial class QdrantHttpClient
                 )
             ).EnsureSuccess();
 
+            var clusterTelemetry = await GetClusterTelemetryIfAvailable(clusterName, cancellationToken);
+
             var shardReplicator = new ShardReplicator(
                 this,
                 logger,
@@ -723,7 +725,7 @@ public partial class QdrantHttpClient
                 clusterName
             );
 
-            var ret = shardReplicator.Calculate(clusterInfo, collectionInfo, collectionClusteringInfo);
+            var ret = shardReplicator.Calculate(clusterInfo, collectionInfo, collectionClusteringInfo, clusterTelemetry);
 
             sw.Stop();
 
@@ -746,6 +748,23 @@ public partial class QdrantHttpClient
                 Status = QdrantStatus.Fail(qex.Message, qex),
                 Time = sw.Elapsed.TotalSeconds
             };
+        }
+    }
+
+    private async Task<GetClusterTelemetryResponse.ClusterTelemetryInfo> GetClusterTelemetryIfAvailable(
+        string clusterName,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var clusterTelemetry = await GetClusterTelemetry(cancellationToken, detailsLevel: 10, clusterName: clusterName);
+
+            return clusterTelemetry.Unwrap();
+        }
+        catch
+        {
+            // Means cluster telemetry is not available (e.g. due to cluster qdrant version being <1.17) - ignore and return nothing
+            return null;
         }
     }
 

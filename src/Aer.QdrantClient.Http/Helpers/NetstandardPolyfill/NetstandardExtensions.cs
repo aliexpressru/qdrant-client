@@ -285,7 +285,7 @@ internal static class Netstandard20Extensions
         public HashSet<T> ToHashSet() => [.. collection];
     }
 
-    extension<TKey, TValue>(Dictionary<TKey, TValue> dictionary)
+    extension<TKey, TValue>(IDictionary<TKey, TValue> dictionary)
     {
         public bool TryAdd(TKey key, TValue value)
         {
@@ -296,6 +296,21 @@ internal static class Netstandard20Extensions
 
             dictionary.Add(key, value);
             return true;
+        }
+
+        public TValue GetValueOrDefault(TKey key)
+        {
+            if (dictionary is null)
+            {
+                return default;
+            }
+
+            if (dictionary.ContainsKey(key))
+            {
+                return dictionary[key];
+            }
+
+            return default;
         }
     }
 
