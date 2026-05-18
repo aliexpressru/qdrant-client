@@ -10,6 +10,12 @@ on:
             - main
 
 jobs:
+    test_qdrant_1_18_x:
+        uses: ./.github/workflows/test_template.yml
+        with:
+            qdrant_image: qdrant/qdrant:v1.18.0
+            qdrant_version: 1.18.0
+
     test_qdrant_1_17_x:
         uses: ./.github/workflows/test_template.yml
         with:
@@ -21,10 +27,4 @@ jobs:
         with:
             qdrant_image: qdrant/qdrant:v1.16.3
             qdrant_version: 1.16.3
-
-    test_qdrant_1_15_x:
-        uses: ./.github/workflows/test_template.yml
-        with:
-            qdrant_image: qdrant/qdrant:v1.15.5
-            qdrant_version: 1.15.5
             
