@@ -9,6 +9,10 @@
 * Use latest .NET SDK features and APIs unless explicitly specified otherwise.
 * When emitting `Dispose` patterns emit `DisposeAsync` when possible.
 * Always use spaces for indentation. Use 4 spaces per indentation level.
+* When generating C# members always generate them with least public access modifier. E.g. don't use `public` when class can be `internal` or `private`.
+* When generating documenting comments always use a single space between a comment `///` and the word or tag next to it.
+* Never generate a `default` value for `CancellationToken` method parameter.
+* Always put `CancellationToken` method parameter last in the method parameter list, before the optional method parameters if any.
 
 ## Formatting
 
@@ -41,3 +45,4 @@
 * Do not emit "Act", "Arrange" or "Assert" comments.
 * Copy existing style in nearby files for test method names and capitalization.
 * Implement `Awaiting` and `Invoking` assertions by firstly emitting a local variable with func to call and assert and then using assertions on that func call. Always await `ThrowAsync` calls.
+* Use `CancellationToken.None` for cancellation token parameter arguments where necessary.
