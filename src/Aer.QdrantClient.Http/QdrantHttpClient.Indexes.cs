@@ -25,7 +25,7 @@ public partial class QdrantHttpClient
     ];
 
     /// <inheritdoc/>
-    public async Task<PayloadIndexOperationResponse> CreatePayloadIndex(
+    public async Task<DefaultAsyncOperationResponse> CreatePayloadIndex(
         string collectionName,
         string payloadFieldName,
         PayloadIndexedFieldType payloadFieldType,
@@ -133,7 +133,7 @@ public partial class QdrantHttpClient
 
         var url = $"/collections/{collectionName}/index?wait={ToUrlQueryString(isWaitForResult)}";
 
-        var response = await ExecuteRequest<CreatePayloadIndexRequest, PayloadIndexOperationResponse>(
+        var response = await ExecuteRequest<CreatePayloadIndexRequest, DefaultAsyncOperationResponse>(
             url,
             HttpMethod.Put,
             createIndexRequest,
@@ -154,7 +154,7 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<PayloadIndexOperationResponse> CreateFullTextPayloadIndex(
+    public async Task<DefaultAsyncOperationResponse> CreateFullTextPayloadIndex(
         string collectionName,
         string payloadTextFieldName,
         FullTextIndexTokenizerType payloadTextFieldTokenizerType,
@@ -208,7 +208,7 @@ public partial class QdrantHttpClient
 
         var url = $"/collections/{collectionName}/index?wait={ToUrlQueryString(isWaitForResult)}";
 
-        var response = await ExecuteRequest<CreateFullTextPayloadIndexRequest, PayloadIndexOperationResponse>(
+        var response = await ExecuteRequest<CreateFullTextPayloadIndexRequest, DefaultAsyncOperationResponse>(
             url,
             HttpMethod.Put,
             createIndexRequest,
@@ -229,7 +229,7 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<PayloadIndexOperationResponse> DeletePayloadIndex(
+    public async Task<DefaultAsyncOperationResponse> DeletePayloadIndex(
         string collectionName,
         string fieldName,
         CancellationToken cancellationToken,
@@ -251,7 +251,7 @@ public partial class QdrantHttpClient
 
         var url = $"/collections/{collectionName}/index/{fieldName}?wait={ToUrlQueryString(isWaitForResult)}";
 
-        var response = await ExecuteRequest<PayloadIndexOperationResponse>(
+        var response = await ExecuteRequest<DefaultAsyncOperationResponse>(
             url,
             HttpMethod.Delete,
             collectionName,

@@ -65,7 +65,7 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
-    Task<PayloadIndexOperationResponse> CreatePayloadIndex(
+    Task<DefaultAsyncOperationResponse> CreatePayloadIndex(
         string collectionName,
         string payloadFieldName,
         PayloadIndexedFieldType payloadFieldType,
@@ -122,7 +122,7 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
-    Task<PayloadIndexOperationResponse> CreateFullTextPayloadIndex(
+    Task<DefaultAsyncOperationResponse> CreateFullTextPayloadIndex(
         string collectionName,
         string payloadTextFieldName,
         FullTextIndexTokenizerType payloadTextFieldTokenizerType,
@@ -160,7 +160,7 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
-    Task<PayloadIndexOperationResponse> DeletePayloadIndex(
+    Task<DefaultAsyncOperationResponse> DeletePayloadIndex(
         string collectionName,
         string fieldName,
         CancellationToken cancellationToken,
