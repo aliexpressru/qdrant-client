@@ -454,7 +454,7 @@ public partial class QdrantHttpClient
             _enableTracing,
             Logger);
 
-        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteCollection), clusterName);
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ListAllAliases), clusterName);
 
         var url = "/aliases";
 
@@ -491,7 +491,7 @@ public partial class QdrantHttpClient
             _enableTracing,
             Logger);
 
-        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteCollection), null);
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(ListCollectionAliases), null);
 
         var url = $"/collections/{collectionName}/aliases";
 
@@ -530,7 +530,7 @@ public partial class QdrantHttpClient
             _enableTracing,
             Logger);
 
-        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteCollection), clusterName);
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(UpdateCollectionsAliases), clusterName);
 
         if (updateCollectionAliasesRequest.OperationsCount == 0)
         {
@@ -577,11 +577,43 @@ public partial class QdrantHttpClient
             _enableTracing,
             Logger);
 
-        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteCollection), null);
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(CheckCollectionExists), null);
 
         var url = $"/collections/{collectionName}/exists";
 
         var response = await ExecuteRequest<CheckCollectionExistsResponse>(
+            url,
+            HttpMethod.Get,
+            collectionName,
+            cancellationToken,
+            retryCount: 0);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
+        return response;
+    }
+
+    /// <inheritdoc/>
+    public async Task<CollectionMemoryReportResponse> GetCollectionMemoryReport(
+        string collectionName,
+        CancellationToken cancellationToken)
+    {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(GetCollectionMemoryReport),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(GetCollectionMemoryReport), null);
+
+        var url = $"/collections/{collectionName}/memory";
+
+        var response = await ExecuteRequest<CollectionMemoryReportResponse>(
             url,
             HttpMethod.Get,
             collectionName,
@@ -611,7 +643,7 @@ public partial class QdrantHttpClient
             _enableTracing,
             Logger);
 
-        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteCollection), null);
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(GetCollectionOptimizationProgress), null);
 
         var queryParameters = with == OptimizationProgressOptionalInfoFields.None
             ? ""

@@ -60,17 +60,12 @@ public abstract class FullTextIndexStopwords
     /// </summary>
     /// <param name="languages">The custom stopwords list languages.</param>
     /// <param name="custom">The custom stopwords.</param>
-    public static FullTextIndexStopwords CreateCustom(
-        ICollection<StopwordsLanguage> languages,
-        ICollection<string> custom)
-        =>
-            new CustomStopwordsSet(languages, custom);
+    public static FullTextIndexStopwords CreateCustom(ICollection<StopwordsLanguage> languages, ICollection<string> custom) =>
+        new CustomStopwordsSet(languages, custom);
 
     /// <summary>
     /// Creates a new instance of the <see cref="FullTextIndexStopwords.DefaultStopwords"/> class with the specified language.
     /// </summary>
     /// <param name="language">The default stopwords list language.</param>
-    public static FullTextIndexStopwords CreateDefault(StopwordsLanguage language)
-        =>
-            new DefaultStopwords(language);
+    public static FullTextIndexStopwords CreateDefault(StopwordsLanguage language) => new DefaultStopwords(language);
 }

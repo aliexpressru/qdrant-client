@@ -116,6 +116,15 @@ public sealed class StrictModeConfiguration
     public uint? MaxPayloadIndexCount { get; set; }
 
     /// <summary>
+    /// Reject memory-consuming update operations (e.g. upsert, set payload) when the process resident memory
+    /// exceeds this percentage of total system memory (or cgroup limit).
+    /// Value in [1, 100]. Applied uniformly to external and internal (replication) traffic —
+    /// rejection is deterministic so it does not cause replica divergence.
+    /// Delete operations are not affected, so callers can still free memory.
+    /// </summary>
+    public uint? MaxResidentMemoryPercent { get; set; }
+
+    /// <summary>
     /// Multivector configuration.
     /// </summary>
     public Dictionary<string, StrictModeMultivectorConfiguration> MultivectorConfig { get; set; }

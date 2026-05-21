@@ -189,6 +189,15 @@ public partial interface IQdrantHttpClient
         CancellationToken cancellationToken);
 
     /// <summary>
+    /// Get the memory usage report for the specified collection.
+    /// </summary>
+    /// <param name="collectionName">The name of the collection to get the memory report for.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    Task<CollectionMemoryReportResponse> GetCollectionMemoryReport(
+        string collectionName,
+        CancellationToken cancellationToken);
+
+    /// <summary>
     /// Add a new dense named vector to an existing collection.
     /// Existing points will not have values for the newly added vector until they are upserted again.
     /// </summary>

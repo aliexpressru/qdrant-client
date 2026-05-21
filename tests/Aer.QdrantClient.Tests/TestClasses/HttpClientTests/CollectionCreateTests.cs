@@ -863,6 +863,8 @@ internal class CollectionCreateTests : QdrantTestsBase
             vectorDataType: VectorDataType.Float16);
 
         addDenseVectorResult.Status.IsSuccess.Should().BeTrue();
+        addDenseVectorResult.Result.OperationId.Should().NotBe(0);
+        addDenseVectorResult.Result.Status.Should().Be(QdrantOperationStatus.Acknowledged);
 
         // add sparse named vector
 
@@ -875,6 +877,8 @@ internal class CollectionCreateTests : QdrantTestsBase
         );
 
         addSparseVectorResult.Status.IsSuccess.Should().BeTrue();
+        addSparseVectorResult.Result.OperationId.Should().NotBe(0);
+        addSparseVectorResult.Result.Status.Should().Be(QdrantOperationStatus.Acknowledged);
 
         // verify both vectors are present in collection info
 
@@ -933,6 +937,10 @@ internal class CollectionCreateTests : QdrantTestsBase
             TestCollectionName,
             vectorToDelete,
             CancellationToken.None);
+
+        deleteResult.Status.IsSuccess.Should().BeTrue();
+        deleteResult.Result.OperationId.Should().NotBe(0);
+        deleteResult.Result.Status.Should().Be(QdrantOperationStatus.Acknowledged);
 
         // check named vector parameters
 
@@ -997,6 +1005,8 @@ internal class CollectionCreateTests : QdrantTestsBase
             CancellationToken.None);
 
         deleteResult.Status.IsSuccess.Should().BeTrue();
+        deleteResult.Result.OperationId.Should().NotBe(0);
+        deleteResult.Result.Status.Should().Be(QdrantOperationStatus.Acknowledged);
 
         // verify dense vector is gone, sparse vector remains
 
@@ -1010,7 +1020,7 @@ internal class CollectionCreateTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task StrictMode()
+    public async Task StrictMode_1_15()
     {
         OnlyIfVersionAfterOrEqual("1.15.5", "MaxPayloadIndexCount is not supported before 1.15.5");
 
@@ -1100,5 +1110,67 @@ internal class CollectionCreateTests : QdrantTestsBase
                 CancellationToken.None);
 
         upsertPointsToNonExistentCollectionResult.EnsureSuccess();
+    }
+
+    [Test]
+    public async Task StrictMode_1_18()
+    {
+        OnlyIfVersionAfterOrEqual("1.18.0", "MaxResidentMemoryPercent is not supported before 1.18.0");
+
+        var strictModeConfig = new StrictModeConfiguration
+        {
+            Enabled = true,
+            MaxQueryLimit = 1000,
+            MaxTimeout = 5000,
+            UnindexedFilteringRetrieve = true,
+            UnindexedFilteringUpdate = false,
+            SearchMaxHnswEf = 200,
+            SearchAllowExact = true,
+            SearchMaxOversampling = 2.3,
+            UpsertMaxBatchsize = 10,
+            MaxCollectionVectorSizeBytes = 100,
+            ReadRateLimit = 10,
+            WriteRateLimit = 10,
+            MaxCollectionPayloadSizeBytes = 100,
+            MaxPointsCount = 10,
+            FilterMaxConditions = 3,
+            ConditionMaxSize = 2, // This setting will cause an error upon query
+            MaxPayloadIndexCount = 10,
+            MultivectorConfig = new()
+            {
+                ["Vector1"] = new()
+                {
+                    MaxVectors = 10
+                }
+            },
+            SparseConfig = new()
+            {
+                ["Vector2"] = new()
+                {
+                    MaxLength = 1000
+                }
+            },
+            MaxResidentMemoryPercent = 20
+        };
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 10, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                StrictModeConfig = strictModeConfig
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
+
+        collectionCreationResult.Should().NotBeNull();
+        collectionCreationResult.Result.Should().BeTrue();
+
+        var createdCollectionInfo =
+            (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
+
+        createdCollectionInfo.Config.StrictModeConfig.Should().BeEquivalentTo(strictModeConfig);
     }
 }
