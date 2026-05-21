@@ -736,6 +736,44 @@ internal class CollectionCreateTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task TurboQuantization()
+    {
+        OnlyIfVersionAfterOrEqual("1.18.0", "Turbo quantization is not supported before 1.18.0");
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                QuantizationConfig = QuantizationConfiguration.Turbo(
+                    isQuantizedVectorAlwaysInRam: true,
+                    bits: TurboQuantizationEncoding.Bits1_5)
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        // check quantization parameters
+
+        var createdCollectionInfo =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        createdCollectionInfo.Result.Config.QuantizationConfig.Should()
+            .BeOfType<QuantizationConfiguration.TurboQuantizationConfiguration>();
+
+        var quantizationConfig = createdCollectionInfo.Result.Config.QuantizationConfig
+            .As<QuantizationConfiguration.TurboQuantizationConfiguration>();
+
+        quantizationConfig.Method.Should()
+            .Be(QuantizationConfiguration.TurboQuantizationConfiguration.QuantizationMethodName);
+
+        quantizationConfig.AlwaysRam.Should().BeTrue();
+
+        quantizationConfig.Bits.Should().NotBeNull();
+        quantizationConfig.Bits.Should().Be(TurboQuantizationEncoding.Bits1_5);
+    }
+
+    [Test]
     public async Task VectorsParametersOverrideCollectionParameters()
     {
         var createCollectionRequest = new CreateCollectionRequest(
@@ -820,7 +858,7 @@ internal class CollectionCreateTests : QdrantTestsBase
                     MaxVectors = 10
                 }
             },
-            SparseConfig =new()
+            SparseConfig = new()
             {
                 ["Vector2"] = new()
                 {

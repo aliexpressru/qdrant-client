@@ -1,6 +1,6 @@
-using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 
 namespace Aer.QdrantClient.Http.Models.Shared;
 
@@ -73,7 +73,7 @@ public abstract class QuantizationConfiguration
         /// </li>
         /// </ul>
         /// </remarks>
-        public bool AlwaysRam { set; get; }
+        public bool? AlwaysRam { set; get; }
     }
 
     /// <summary>
@@ -120,7 +120,7 @@ public abstract class QuantizationConfiguration
         /// </li>
         /// </ul>
         /// </remarks>
-        public bool AlwaysRam { set; get; }
+        public bool? AlwaysRam { set; get; }
     }
 
     /// <summary>
@@ -160,7 +160,7 @@ public abstract class QuantizationConfiguration
         /// </li>
         /// </ul>
         /// </remarks>
-        public bool AlwaysRam { set; get; }
+        public bool? AlwaysRam { set; get; }
 
         /// <summary>
         /// The bit depth of the quantized vector components.
@@ -177,6 +177,52 @@ public abstract class QuantizationConfiguration
         public BinaryQuantizationQueryEncoding? QueryEncoding { set; get; }
     }
 
+    /// <summary>
+    /// Represents the TurboQdrant quantization configuration.
+    /// </summary>
+    public sealed class TurboQuantizationConfiguration : QuantizationConfiguration
+    {
+        internal const string QuantizationMethodName = "turbo";
+
+        /// <inheritdoc/>
+        public override string Method => QuantizationMethodName;
+
+        /// <summary>
+        /// Whether to keep quantized vectors always cached in RAM or not.
+        /// </summary>
+        /// <remarks>By default, quantized vectors are loaded in the same way as the original vectors.
+        /// However, in some setups you might want to keep quantized vectors in RAM to speed up the search process.
+        /// Then set always_ram to <c>true</c>.
+        /// <br/>
+        /// <b>There are 3 possible modes to place storage of vectors within the qdrant collection:</b>
+        /// <br/>
+        /// <ul>
+        /// <li>
+        /// <c>All in RAM</c> - all vector, original and quantized, are loaded and kept in RAM.
+        /// This is the fastest mode, but requires a lot of RAM. Enabled by default.
+        /// </li>
+        /// <li>
+        /// <c>Original on Disk</c>, quantized in RAM - this is a hybrid mode, allows to obtain a good balance between speed
+        /// and memory usage. Recommended scenario if you are aiming to shrink the memory footprint
+        /// while keeping the search speed. This mode is enabled by setting AlwaysRam to <c>true</c> in the quantization config while using memmap storage
+        /// </li>
+        /// <li>
+        /// <c>All on Disk</c> - all vectors, original and quantized, are stored on disk.
+        /// This mode allows to achieve the smallest memory footprint, but at the cost of the search speed.
+        /// It is recommended to use this mode if you have a large collection and fast storage (e.g. SSD or NVMe).
+        /// This mode is enabled by setting AlwaysRam to <c>false</c> in the quantization config while using memmap storage
+        /// </li>
+        /// </ul>
+        /// </remarks>
+        public bool? AlwaysRam { set; get; }
+
+        /// <summary>
+        /// The encoding bit depth. Defaults to <see cref="TurboQuantizationEncoding.Bits4"/>. Lower bit depths offer higher compression at the cost of accuracy.
+        /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<TurboQuantizationEncoding>))]
+        public TurboQuantizationEncoding? Bits { set; get; }
+    }
+
     #endregion
 
     /// <summary>
@@ -184,16 +230,8 @@ public abstract class QuantizationConfiguration
     /// </summary>
     /// <param name="quantile">The quantile of the quantized vector components.</param>
     /// <param name="isQuantizedVectorAlwaysInRam">Whether to keep quantized vectors always cached in RAM or not.</param>
-    public static QuantizationConfiguration Scalar(
-        float? quantile = null,
-        bool isQuantizedVectorAlwaysInRam = false
-    )
-        =>
-            new ScalarQuantizationConfiguration()
-            {
-                Quantile = quantile,
-                AlwaysRam = isQuantizedVectorAlwaysInRam
-            };
+    public static QuantizationConfiguration Scalar(float? quantile = null, bool isQuantizedVectorAlwaysInRam = false) =>
+        new ScalarQuantizationConfiguration() { Quantile = quantile, AlwaysRam = isQuantizedVectorAlwaysInRam };
 
     /// <summary>
     /// Creates a product quantization configuration.
@@ -202,13 +240,13 @@ public abstract class QuantizationConfiguration
     /// <param name="isQuantizedVectorAlwaysInRam">Whether to keep quantized vectors always cached in RAM or not.</param>
     public static QuantizationConfiguration Product(
         ProductQuantizationCompressionRatio quantizedVectorsCompressionRatio,
-        bool isQuantizedVectorAlwaysInRam = false)
-        =>
-            new ProductQuantizationConfiguration()
-            {
-                Compression = quantizedVectorsCompressionRatio,
-                AlwaysRam = isQuantizedVectorAlwaysInRam
-            };
+        bool isQuantizedVectorAlwaysInRam = false
+    ) =>
+        new ProductQuantizationConfiguration()
+        {
+            Compression = quantizedVectorsCompressionRatio,
+            AlwaysRam = isQuantizedVectorAlwaysInRam,
+        };
 
     /// <summary>
     /// Creates a binary quantization configuration.
@@ -219,12 +257,22 @@ public abstract class QuantizationConfiguration
     public static QuantizationConfiguration Binary(
         bool isQuantizedVectorAlwaysInRam = false,
         BinaryQuantizationEncoding? encoding = null,
-        BinaryQuantizationQueryEncoding? queryEncoding = null)
-        =>
-            new BinaryQuantizationConfiguration()
-            {
-                AlwaysRam = isQuantizedVectorAlwaysInRam,
-                Encoding = encoding,
-                QueryEncoding = queryEncoding
-            };
+        BinaryQuantizationQueryEncoding? queryEncoding = null
+    ) =>
+        new BinaryQuantizationConfiguration()
+        {
+            AlwaysRam = isQuantizedVectorAlwaysInRam,
+            Encoding = encoding,
+            QueryEncoding = queryEncoding,
+        };
+
+    /// <summary>
+    /// Creates a turbo quantization configuration.
+    /// </summary>
+    /// <param name="isQuantizedVectorAlwaysInRam">Whether to keep quantized vectors always cached in RAM or not.</param>
+    /// <param name="bits">The encoding bit depth.</param>
+    public static QuantizationConfiguration Turbo(
+        bool isQuantizedVectorAlwaysInRam = false,
+        TurboQuantizationEncoding? bits = null
+    ) => new TurboQuantizationConfiguration() { AlwaysRam = isQuantizedVectorAlwaysInRam, Bits = bits };
 }
