@@ -899,6 +899,117 @@ internal class CollectionCreateTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task DeleteExistingNamedVector()
+    {
+        OnlyIfVersionAfterOrEqual("1.18.0", "DeleteNamedVector API is not supported before 1.18.0");
+
+        var vectorToDelete = "Vector_1";
+
+        Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration> namedVectors = new()
+        {
+            ["Vector_1"] = new VectorConfigurationBase.SingleVectorConfiguration(
+                VectorDistanceMetric.Dot,
+                100,
+                isServeVectorsFromDisk: true),
+            ["Vector_2"] = new VectorConfigurationBase.SingleVectorConfiguration(
+                VectorDistanceMetric.Euclid,
+                5,
+                isServeVectorsFromDisk: false)
+        };
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(namedVectors)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        // Delete vector 1
+
+        var deleteResult = await _qdrantHttpClient.DeleteNamedVector(
+            TestCollectionName,
+            vectorToDelete,
+            CancellationToken.None);
+
+        // check named vector parameters
+
+        var collectionInfo =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        collectionInfo.Status.IsSuccess.Should().BeTrue();
+        collectionInfo.Result.Config.Params.Vectors.IsMultipleVectorsConfiguration.Should().BeTrue();
+
+        var multipleVectorsConfiguration = collectionInfo.Result.Config.Params.Vectors.AsMultipleVectorsConfiguration();
+
+        multipleVectorsConfiguration.NamedVectors.Count.Should().Be(1);
+
+        multipleVectorsConfiguration.NamedVectors.Should().NotContainKey(vectorToDelete);
+    }
+
+    [Test]
+    public async Task CreateDeleteNamedVector()
+    {
+        OnlyIfVersionAfterOrEqual("1.18.0", "DeleteNamedVector API is not supported before 1.18.0");
+
+        var metadata = new Dictionary<string, object>
+        {
+            ["created_by"] = "unit_test",
+            ["creation_date"] = DateTime.UtcNow.ToString("o"),
+        };
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                Metadata = metadata
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        var denseVectorName = "Dense_Vector_1";
+        var sparseVectorName = "Sparse_Vector_1";
+
+        // add dense and sparse named vectors
+
+        (await _qdrantHttpClient.AddDenseNamedVector(
+            TestCollectionName,
+            denseVectorName,
+            vectorSize: 50,
+            vectorDistanceMetric: VectorDistanceMetric.Cosine,
+            CancellationToken.None)).EnsureSuccess();
+
+        (await _qdrantHttpClient.AddSparseNamedVector(
+            TestCollectionName,
+            sparseVectorName,
+            CancellationToken.None,
+            modifier: SparseVectorModifier.Idf)).EnsureSuccess();
+
+        // delete dense named vector
+
+        var deleteResult = await _qdrantHttpClient.DeleteNamedVector(
+            TestCollectionName,
+            denseVectorName,
+            CancellationToken.None);
+
+        deleteResult.Status.IsSuccess.Should().BeTrue();
+
+        // verify dense vector is gone, sparse vector remains
+
+        var collectionInfo =
+            (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
+
+        var namedVectorsConfig = collectionInfo.Config.Params.Vectors.AsMultipleVectorsConfiguration();
+        namedVectorsConfig.NamedVectors.Should().NotContainKey(denseVectorName);
+
+        collectionInfo.Config.Params.SparseVectors.Should().ContainKey(sparseVectorName);
+    }
+
+    [Test]
     public async Task StrictMode()
     {
         OnlyIfVersionAfterOrEqual("1.15.5", "MaxPayloadIndexCount is not supported before 1.15.5");

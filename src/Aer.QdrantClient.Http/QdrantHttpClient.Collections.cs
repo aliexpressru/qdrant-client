@@ -287,6 +287,50 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
+    public async Task<DefaultAsyncOperationResponse> DeleteNamedVector(
+        string collectionName,
+        string vectorName,
+        CancellationToken cancellationToken,
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
+    {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DeleteNamedVector),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteNamedVector), null);
+
+        EnsureQdrantNameCorrect(collectionName, tracingScope);
+        EnsureQdrantNameCorrect(vectorName, tracingScope);
+
+        var timeoutValue = GetTimeoutValueOrDefault(timeout);
+
+        var url = $"/collections/{collectionName}/vectors/{vectorName}?timeout={timeoutValue}";
+
+        var response = await ExecuteRequest<DefaultAsyncOperationResponse>(
+            url,
+            HttpMethod.Delete,
+            collectionName,
+            cancellationToken,
+            retryCount,
+            retryDelay,
+            onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
+        return response;
+    }
+
+    /// <inheritdoc/>
     public async Task<GetCollectionInfoResponse> GetCollectionInfo(
         string collectionName,
         CancellationToken cancellationToken,
