@@ -176,6 +176,117 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
+    public async Task<DefaultAsyncOperationResponse> AddDenseNamedVector(
+        string collectionName,
+        string vectorName,
+        ulong vectorSize,
+        VectorDistanceMetric vectorDistanceMetric,
+        CancellationToken cancellationToken,
+        VectorDataType vectorDataType = VectorDataType.Float32,
+        MultivectorConfiguration multivectorConfiguration = null,
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
+    {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(AddDenseNamedVector),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(AddDenseNamedVector), null);
+
+        EnsureQdrantNameCorrect(collectionName, tracingScope);
+        EnsureQdrantNameCorrect(vectorName, tracingScope);
+
+        var timeoutValue = GetTimeoutValueOrDefault(timeout);
+
+        var url = $"/collections/{collectionName}/vectors/{vectorName}?timeout={timeoutValue}";
+
+        var request = new AddNamedVectorRequest(new AddNamedVectorRequest.NewDesnseVectorConfiguration()
+        {
+            Distance = vectorDistanceMetric.ToString(),
+            Size = vectorSize,
+            Datatype = vectorDataType,
+            MultivectorConfig = multivectorConfiguration
+        });
+
+        var response = await ExecuteRequest<AddNamedVectorRequest, DefaultAsyncOperationResponse>(
+            url,
+            HttpMethod.Put,
+            request,
+            collectionName,
+            cancellationToken,
+            retryCount,
+            retryDelay,
+            onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
+        return response;
+    }
+
+    /// <inheritdoc/>
+    public async Task<DefaultAsyncOperationResponse> AddSparseNamedVector(
+        string collectionName,
+        string vectorName,
+        CancellationToken cancellationToken,
+        SparseVectorModifier modifier = SparseVectorModifier.None,
+        VectorDataType vectorDataType = VectorDataType.Float32,
+        MultivectorConfiguration multivectorConfiguration = null,
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
+    {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(AddDenseNamedVector),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(AddDenseNamedVector), null);
+
+        EnsureQdrantNameCorrect(collectionName, tracingScope);
+        EnsureQdrantNameCorrect(vectorName, tracingScope);
+
+        var timeoutValue = GetTimeoutValueOrDefault(timeout);
+
+        var url = $"/collections/{collectionName}/vectors/{vectorName}?timeout={timeoutValue}";
+
+        var request = new AddNamedVectorRequest(new AddNamedVectorRequest.NewSparseVectorConfiguration()
+        {
+            Modifier = modifier,
+            Datatype = vectorDataType
+        });
+
+        var response = await ExecuteRequest<AddNamedVectorRequest, DefaultAsyncOperationResponse>(
+            url,
+            HttpMethod.Put,
+            request,
+            collectionName,
+            cancellationToken,
+            retryCount,
+            retryDelay,
+            onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
+        return response;
+    }
+
+    /// <inheritdoc/>
     public async Task<GetCollectionInfoResponse> GetCollectionInfo(
         string collectionName,
         CancellationToken cancellationToken,

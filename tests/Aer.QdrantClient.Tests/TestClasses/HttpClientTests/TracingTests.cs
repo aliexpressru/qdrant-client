@@ -91,7 +91,7 @@ public class TracingTests : QdrantTestsBase
     {
         var defaultClientConfig = GetClientSettings(disableMetrics, disableTracing);
 
-        ServiceCollection services = new ServiceCollection();
+        ServiceCollection services = new();
 
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
@@ -127,7 +127,7 @@ public class TracingTests : QdrantTestsBase
     {
         var defaultClientConfig = GetClientSettings(disableMetrics, disableTracing);
 
-        ServiceCollection services = new ServiceCollection();
+        ServiceCollection services = new();
 
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())

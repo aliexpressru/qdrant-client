@@ -828,6 +828,77 @@ internal class CollectionCreateTests : QdrantTestsBase
     }
 
     [Test]
+    public async Task AddVector()
+    {
+        OnlyIfVersionAfterOrEqual("1.18.0", "Add*Vector API is not supported before 1.18.0");
+
+        var metadata = new Dictionary<string, object>
+        {
+            ["created_by"] = "unit_test",
+            ["creation_date"] = DateTime.UtcNow.ToString("o"),
+        };
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                Metadata = metadata
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        var denseVectorName = "Dense_Vector_1";
+        var sparseVectorName = "Sparse_Vector_1";
+
+        // add dense named vector
+
+        var addDenseVectorResult = await _qdrantHttpClient.AddDenseNamedVector(
+            TestCollectionName,
+            denseVectorName,
+            vectorSize: 50,
+            vectorDistanceMetric: VectorDistanceMetric.Cosine,
+            CancellationToken.None,
+            vectorDataType: VectorDataType.Float16);
+
+        addDenseVectorResult.Status.IsSuccess.Should().BeTrue();
+
+        // add sparse named vector
+
+        var addSparseVectorResult = await _qdrantHttpClient.AddSparseNamedVector(
+            TestCollectionName,
+            sparseVectorName,
+            CancellationToken.None,
+            vectorDataType: VectorDataType.Uint8,
+            modifier: SparseVectorModifier.Idf
+        );
+
+        addSparseVectorResult.Status.IsSuccess.Should().BeTrue();
+
+        // verify both vectors are present in collection info
+
+        var collectionInfo =
+            (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
+
+        collectionInfo.Config.Params.Vectors.IsMultipleVectorsConfiguration.Should().BeTrue();
+
+        var namedVectorsConfig = collectionInfo.Config.Params.Vectors.AsMultipleVectorsConfiguration();
+        namedVectorsConfig.NamedVectors.Should().ContainKey(denseVectorName);
+
+        var addedDenseVector = namedVectorsConfig.NamedVectors[denseVectorName];
+        addedDenseVector.DistanceMetric.Should().Be(VectorDistanceMetric.Cosine);
+        addedDenseVector.Size.Should().Be(50);
+        addedDenseVector.Datatype.Should().Be(VectorDataType.Float16);
+
+        collectionInfo.Config.Params.SparseVectors.Should().ContainKey(sparseVectorName);
+
+        var addedSparseVector = collectionInfo.Config.Params.SparseVectors[sparseVectorName];
+        addedSparseVector.Index.Datatype.Should().Be(VectorDataType.Uint8);
+        addedSparseVector.Modifier.Should().Be(SparseVectorModifier.Idf);
+    }
+
+    [Test]
     public async Task StrictMode()
     {
         OnlyIfVersionAfterOrEqual("1.15.5", "MaxPayloadIndexCount is not supported before 1.15.5");

@@ -178,8 +178,15 @@ public abstract class QuantizationConfiguration
     }
 
     /// <summary>
-    /// Represents the TurboQdrant quantization configuration.
+    /// Represents the TurboQuant quantization configuration.
+    /// TurboQuant uses asymmetric quantization automatically: only stored vectors are compressed, while queries are scored in full precision.
+    /// This improves accuracy and requires no additional configuration.
     /// </summary>
+    /// <remarks>
+    /// TurboQuant fully supports Cosine, Dot, and Euclidean (L2) distance with SIMD-accelerated scoring.
+    /// Manhattan(L1) distance is supported but requires full vector reconstruction per comparison, making it significantly slower than the other metrics.
+    /// Use Cosine, Dot, or Euclidean distance for best performance with TurboQuant.
+    /// </remarks>
     public sealed class TurboQuantizationConfiguration : QuantizationConfiguration
     {
         internal const string QuantizationMethodName = "turbo";
