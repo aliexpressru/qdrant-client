@@ -176,6 +176,161 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
+    public async Task<DefaultAsyncOperationResponse> AddDenseNamedVector(
+        string collectionName,
+        string vectorName,
+        ulong vectorSize,
+        VectorDistanceMetric vectorDistanceMetric,
+        CancellationToken cancellationToken,
+        VectorDataType vectorDataType = VectorDataType.Float32,
+        MultivectorConfiguration multivectorConfiguration = null,
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
+    {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(AddDenseNamedVector),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(AddDenseNamedVector), null);
+
+        EnsureQdrantNameCorrect(collectionName, tracingScope);
+        EnsureQdrantNameCorrect(vectorName, tracingScope);
+
+        var timeoutValue = GetTimeoutValueOrDefault(timeout);
+
+        var url = $"/collections/{collectionName}/vectors/{vectorName}?timeout={timeoutValue}";
+
+        var request = new AddNamedVectorRequest(new AddNamedVectorRequest.NewDesnseVectorConfiguration()
+        {
+            Distance = vectorDistanceMetric.ToString(),
+            Size = vectorSize,
+            Datatype = vectorDataType,
+            MultivectorConfig = multivectorConfiguration
+        });
+
+        var response = await ExecuteRequest<AddNamedVectorRequest, DefaultAsyncOperationResponse>(
+            url,
+            HttpMethod.Put,
+            request,
+            collectionName,
+            cancellationToken,
+            retryCount,
+            retryDelay,
+            onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
+        return response;
+    }
+
+    /// <inheritdoc/>
+    public async Task<DefaultAsyncOperationResponse> AddSparseNamedVector(
+        string collectionName,
+        string vectorName,
+        CancellationToken cancellationToken,
+        SparseVectorModifier modifier = SparseVectorModifier.None,
+        VectorDataType vectorDataType = VectorDataType.Float32,
+        MultivectorConfiguration multivectorConfiguration = null,
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
+    {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(AddDenseNamedVector),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(AddDenseNamedVector), null);
+
+        EnsureQdrantNameCorrect(collectionName, tracingScope);
+        EnsureQdrantNameCorrect(vectorName, tracingScope);
+
+        var timeoutValue = GetTimeoutValueOrDefault(timeout);
+
+        var url = $"/collections/{collectionName}/vectors/{vectorName}?timeout={timeoutValue}";
+
+        var request = new AddNamedVectorRequest(new AddNamedVectorRequest.NewSparseVectorConfiguration()
+        {
+            Modifier = modifier,
+            Datatype = vectorDataType
+        });
+
+        var response = await ExecuteRequest<AddNamedVectorRequest, DefaultAsyncOperationResponse>(
+            url,
+            HttpMethod.Put,
+            request,
+            collectionName,
+            cancellationToken,
+            retryCount,
+            retryDelay,
+            onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
+        return response;
+    }
+
+    /// <inheritdoc/>
+    public async Task<DefaultAsyncOperationResponse> DeleteNamedVector(
+        string collectionName,
+        string vectorName,
+        CancellationToken cancellationToken,
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
+    {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(DeleteNamedVector),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteNamedVector), null);
+
+        EnsureQdrantNameCorrect(collectionName, tracingScope);
+        EnsureQdrantNameCorrect(vectorName, tracingScope);
+
+        var timeoutValue = GetTimeoutValueOrDefault(timeout);
+
+        var url = $"/collections/{collectionName}/vectors/{vectorName}?timeout={timeoutValue}";
+
+        var response = await ExecuteRequest<DefaultAsyncOperationResponse>(
+            url,
+            HttpMethod.Delete,
+            collectionName,
+            cancellationToken,
+            retryCount,
+            retryDelay,
+            onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
+        return response;
+    }
+
+    /// <inheritdoc/>
     public async Task<GetCollectionInfoResponse> GetCollectionInfo(
         string collectionName,
         CancellationToken cancellationToken,
@@ -299,7 +454,7 @@ public partial class QdrantHttpClient
             _enableTracing,
             Logger);
 
-        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteCollection), clusterName);
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ListAllAliases), clusterName);
 
         var url = "/aliases";
 
@@ -336,7 +491,7 @@ public partial class QdrantHttpClient
             _enableTracing,
             Logger);
 
-        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteCollection), null);
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(ListCollectionAliases), null);
 
         var url = $"/collections/{collectionName}/aliases";
 
@@ -375,7 +530,7 @@ public partial class QdrantHttpClient
             _enableTracing,
             Logger);
 
-        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteCollection), clusterName);
+        using var diagnostic = DiagnosticTimer.StartNew(null, nameof(UpdateCollectionsAliases), clusterName);
 
         if (updateCollectionAliasesRequest.OperationsCount == 0)
         {
@@ -422,11 +577,43 @@ public partial class QdrantHttpClient
             _enableTracing,
             Logger);
 
-        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteCollection), null);
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(CheckCollectionExists), null);
 
         var url = $"/collections/{collectionName}/exists";
 
         var response = await ExecuteRequest<CheckCollectionExistsResponse>(
+            url,
+            HttpMethod.Get,
+            collectionName,
+            cancellationToken,
+            retryCount: 0);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
+        return response;
+    }
+
+    /// <inheritdoc/>
+    public async Task<CollectionMemoryReportResponse> GetCollectionMemoryReport(
+        string collectionName,
+        CancellationToken cancellationToken)
+    {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(GetCollectionMemoryReport),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(GetCollectionMemoryReport), null);
+
+        var url = $"/collections/{collectionName}/memory";
+
+        var response = await ExecuteRequest<CollectionMemoryReportResponse>(
             url,
             HttpMethod.Get,
             collectionName,
@@ -456,7 +643,7 @@ public partial class QdrantHttpClient
             _enableTracing,
             Logger);
 
-        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteCollection), null);
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(GetCollectionOptimizationProgress), null);
 
         var queryParameters = with == OptimizationProgressOptionalInfoFields.None
             ? ""

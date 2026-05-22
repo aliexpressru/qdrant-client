@@ -19,7 +19,7 @@ public partial class QdrantHttpClient
     #region Create \ Update \ Delete operations
 
     /// <inheritdoc/>
-    public async Task<PointsOperationResponse> DeletePoints(
+    public async Task<DefaultAsyncOperationResponse> DeletePoints(
         string collectionName,
         IEnumerable<PointId> pointIds,
         CancellationToken cancellationToken,
@@ -46,7 +46,7 @@ public partial class QdrantHttpClient
         var url =
             $"/collections/{collectionName}/points/delete?wait={ToUrlQueryString(isWaitForResult)}&ordering={orderingValue}";
 
-        var response = await ExecuteRequest<DeletePointsRequest, PointsOperationResponse>(
+        var response = await ExecuteRequest<DeletePointsRequest, DefaultAsyncOperationResponse>(
             url,
             HttpMethod.Post,
             points,
@@ -65,7 +65,7 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<PointsOperationResponse> DeletePoints(
+    public async Task<DefaultAsyncOperationResponse> DeletePoints(
         string collectionName,
         QdrantFilter filter,
         CancellationToken cancellationToken,
@@ -92,7 +92,7 @@ public partial class QdrantHttpClient
         var url =
             $"/collections/{collectionName}/points/delete?wait={ToUrlQueryString(isWaitForResult)}&ordering={orderingValue}";
 
-        var response = await ExecuteRequest<DeletePointsRequest, PointsOperationResponse>(
+        var response = await ExecuteRequest<DeletePointsRequest, DefaultAsyncOperationResponse>(
             url,
             HttpMethod.Post,
             points,
@@ -111,7 +111,7 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<PointsOperationResponse> UpsertPoints(
+    public async Task<DefaultAsyncOperationResponse> UpsertPoints(
         string collectionName,
         UpsertPointsRequest upsertPoints,
         CancellationToken cancellationToken,
@@ -131,7 +131,7 @@ public partial class QdrantHttpClient
         var url =
             $"/collections/{collectionName}/points?wait={ToUrlQueryString(isWaitForResult)}&ordering={orderingValue}";
 
-        var response = await ExecuteRequest<UpsertPointsRequest, PointsOperationResponse>(
+        var response = await ExecuteRequest<UpsertPointsRequest, DefaultAsyncOperationResponse>(
             url,
             HttpMethod.Put,
             upsertPoints,
@@ -150,7 +150,7 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<PointsOperationResponse> SetPointsPayload(
+    public async Task<DefaultAsyncOperationResponse> SetPointsPayload(
         string collectionName,
         SetPointsPayloadRequest setPointsPayload,
         CancellationToken cancellationToken,
@@ -170,7 +170,7 @@ public partial class QdrantHttpClient
         var url =
             $"/collections/{collectionName}/points/payload?wait={ToUrlQueryString(isWaitForResult)}&ordering={orderingValue}";
 
-        var response = await ExecuteRequest<SetPointsPayloadRequest, PointsOperationResponse>(
+        var response = await ExecuteRequest<SetPointsPayloadRequest, DefaultAsyncOperationResponse>(
             url,
             HttpMethod.Post,
             setPointsPayload,
@@ -189,7 +189,7 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<PointsOperationResponse> OverwritePointsPayload(
+    public async Task<DefaultAsyncOperationResponse> OverwritePointsPayload(
         string collectionName,
         OverwritePointsPayloadRequest overwritePointsPayload,
         CancellationToken cancellationToken,
@@ -209,7 +209,7 @@ public partial class QdrantHttpClient
         var url =
             $"/collections/{collectionName}/points/payload?wait={ToUrlQueryString(isWaitForResult)}&ordering={orderingValue}";
 
-        var response = await ExecuteRequest<OverwritePointsPayloadRequest, PointsOperationResponse>(
+        var response = await ExecuteRequest<OverwritePointsPayloadRequest, DefaultAsyncOperationResponse>(
             url,
             // this is a hack due to update payload part not working when issuing using PUT request
             overwritePointsPayload.Key is not null
@@ -231,7 +231,7 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<PointsOperationResponse> DeletePointsPayloadKeys(
+    public async Task<DefaultAsyncOperationResponse> DeletePointsPayloadKeys(
         string collectionName,
         DeletePointsPayloadKeysRequest deletePointsPayloadKeys,
         CancellationToken cancellationToken,
@@ -251,7 +251,7 @@ public partial class QdrantHttpClient
         var url =
             $"/collections/{collectionName}/points/payload/delete?wait={ToUrlQueryString(isWaitForResult)}&ordering={orderingValue}";
 
-        var response = await ExecuteRequest<DeletePointsPayloadKeysRequest, PointsOperationResponse>(
+        var response = await ExecuteRequest<DeletePointsPayloadKeysRequest, DefaultAsyncOperationResponse>(
             url,
             HttpMethod.Post,
             deletePointsPayloadKeys,
@@ -270,7 +270,7 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<PointsOperationResponse> ClearPointsPayload(
+    public async Task<DefaultAsyncOperationResponse> ClearPointsPayload(
         string collectionName,
         ClearPointsPayloadRequest clearPointsPayload,
         CancellationToken cancellationToken,
@@ -290,7 +290,7 @@ public partial class QdrantHttpClient
         var url =
             $"/collections/{collectionName}/points/payload/clear?wait={ToUrlQueryString(isWaitForResult)}&ordering={orderingValue}";
 
-        var response = await ExecuteRequest<ClearPointsPayloadRequest, PointsOperationResponse>(
+        var response = await ExecuteRequest<ClearPointsPayloadRequest, DefaultAsyncOperationResponse>(
             url,
             HttpMethod.Post,
             clearPointsPayload,
@@ -309,7 +309,7 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<PointsOperationResponse> UpdatePointsVectors(
+    public async Task<DefaultAsyncOperationResponse> UpdatePointsVectors(
         string collectionName,
         UpdatePointsVectorsRequest updatePointsVectors,
         CancellationToken cancellationToken,
@@ -329,7 +329,7 @@ public partial class QdrantHttpClient
         var url =
             $"/collections/{collectionName}/points/vectors?wait={ToUrlQueryString(isWaitForResult)}&ordering={orderingValue}";
 
-        var response = await ExecuteRequest<UpdatePointsVectorsRequest, PointsOperationResponse>(
+        var response = await ExecuteRequest<UpdatePointsVectorsRequest, DefaultAsyncOperationResponse>(
             url,
             HttpMethod.Put,
             updatePointsVectors,
@@ -348,7 +348,7 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
-    public async Task<PointsOperationResponse> DeletePointsVectors(
+    public async Task<DefaultAsyncOperationResponse> DeletePointsVectors(
         string collectionName,
         DeletePointsVectorsRequest deletePointsVectors,
         CancellationToken cancellationToken,
@@ -368,7 +368,7 @@ public partial class QdrantHttpClient
         var url =
             $"/collections/{collectionName}/points/vectors/delete?wait={ToUrlQueryString(isWaitForResult)}&ordering={orderingValue}";
 
-        var response = await ExecuteRequest<DeletePointsVectorsRequest, PointsOperationResponse>(
+        var response = await ExecuteRequest<DeletePointsVectorsRequest, DefaultAsyncOperationResponse>(
             url,
             HttpMethod.Post,
             deletePointsVectors,

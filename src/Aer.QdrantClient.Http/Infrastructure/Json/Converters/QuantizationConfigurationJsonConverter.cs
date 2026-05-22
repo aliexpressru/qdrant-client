@@ -39,6 +39,10 @@ internal sealed class QuantizationConfigurationJsonConverter : JsonConverter<Qua
                 quantizationConfigurationObject.Deserialize<QuantizationConfiguration.BinaryQuantizationConfiguration>(
                     JsonSerializerConstants.DefaultSerializerOptions),
 
+            QuantizationConfiguration.TurboQuantizationConfiguration.QuantizationMethodName =>
+                quantizationConfigurationObject.Deserialize<QuantizationConfiguration.TurboQuantizationConfiguration>(
+                    JsonSerializerConstants.DefaultSerializerOptions),
+
             _ => throw new InvalidOperationException($"Unknown quantization method name {quantizationMethodName}"),
         };
 
@@ -59,24 +63,34 @@ internal sealed class QuantizationConfigurationJsonConverter : JsonConverter<Qua
         {
             switch (value)
             {
-                case QuantizationConfiguration.ScalarQuantizationConfiguration sc:
-                    writer.WritePropertyName(sc.Method);
+                case QuantizationConfiguration.ScalarQuantizationConfiguration config:
+                    writer.WritePropertyName(config.Method);
 
-                    JsonSerializer.Serialize(writer, sc, JsonSerializerConstants.DefaultSerializerOptions);
-
-                    break;
-                case QuantizationConfiguration.ProductQuantizationConfiguration pc:
-                    writer.WritePropertyName(pc.Method);
-
-                    JsonSerializer.Serialize(writer, pc, JsonSerializerConstants.DefaultSerializerOptions);
+                    JsonSerializer.Serialize(writer, config, JsonSerializerConstants.DefaultSerializerOptions);
 
                     break;
-                case QuantizationConfiguration.BinaryQuantizationConfiguration bc:
-                    writer.WritePropertyName(bc.Method);
 
-                    JsonSerializer.Serialize(writer, bc, JsonSerializerConstants.DefaultSerializerOptions);
+                case QuantizationConfiguration.ProductQuantizationConfiguration config:
+                    writer.WritePropertyName(config.Method);
+
+                    JsonSerializer.Serialize(writer, config, JsonSerializerConstants.DefaultSerializerOptions);
 
                     break;
+
+                case QuantizationConfiguration.BinaryQuantizationConfiguration config:
+                    writer.WritePropertyName(config.Method);
+
+                    JsonSerializer.Serialize(writer, config, JsonSerializerConstants.DefaultSerializerOptions);
+
+                    break;
+
+                case QuantizationConfiguration.TurboQuantizationConfiguration config:
+                    writer.WritePropertyName(config.Method);
+
+                    JsonSerializer.Serialize(writer, config, JsonSerializerConstants.DefaultSerializerOptions);
+
+                    break;
+
                 default:
                     throw new QdrantJsonSerializationException(
                         "Unable to serialize Qdrant collection quantization configuration value");

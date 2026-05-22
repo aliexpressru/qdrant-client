@@ -4,6 +4,7 @@ using Aer.QdrantClient.Http.Models.Responses.Base;
 using Aer.QdrantClient.Http.Models.Shared;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using static Aer.QdrantClient.Http.Models.Responses.GetCollectionInfoResponse.PayloadSchemaPropertyDefinition;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
 
@@ -58,6 +59,13 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// The indexed payload fields configurations by field names.
         /// </summary>
         public Dictionary<string, PayloadSchemaPropertyDefinition> PayloadSchema { init; get; }
+
+        /// <summary>
+        /// Warnings related to the collection.
+        /// </summary>
+        public WarningUnit[] Warnings { get; init; }
+
+        public UpdateQueueInfo UpdateQueue { get; init; }
 
         /// <summary>
         /// Gets the collection metadata if it is present or <c>CollectionMetadata.Empty</c> if it is not.
@@ -337,6 +345,33 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// Whether HNSW graph building for this payload field is enabled.
             /// </summary>
             public bool? EnableHnsw { init; get; }
+        }
+
+        /// <summary>
+        /// Represents the collection warning.
+        /// </summary>
+        public sealed class WarningUnit
+        {
+            /// <summary>
+            /// Warning message
+            /// </summary>
+            public string Message { get; set; }
+        }
+
+        /// <summary>
+        /// Represents a point update queue information.
+        /// </summary>
+        public sealed class UpdateQueueInfo
+        {
+            /// <summary>
+            /// Number of elements in the queue.
+            /// </summary>
+            public uint Length { get; set; }
+
+            /// <summary>
+            /// Number of points that are deferred (i.e hidden from search as they’re not yet optimized).
+            /// </summary>
+            public uint DeferredPoints { get; set; }
         }
     }
 }

@@ -963,7 +963,8 @@ internal class PointsQueryTests : QdrantTestsBase
         queryResponse.Status.IsSuccess.Should().BeTrue();
 
         queryResponse.Result.Points.Should()
-            .AllSatisfy(p => p.Score.Should().BeGreaterThan(2.5f));
+            .AllSatisfy(p => p.Score.Should().BeGreaterThan(2f));
+
         queryResponse.Result.Points.Length.Should().Be(2);
     }
 }

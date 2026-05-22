@@ -18,7 +18,7 @@ public partial interface IQdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="ordering">The upsert operation ordering settings.</param>
-    Task<PointsOperationResponse> UpsertPoints(
+    Task<DefaultAsyncOperationResponse> UpsertPoints(
         string collectionName,
         UpsertPointsRequest upsertPoints,
         CancellationToken cancellationToken,
@@ -34,7 +34,7 @@ public partial interface IQdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="ordering">The batch update operation ordering settings.</param>
-    Task<PointsOperationResponse> SetPointsPayload(
+    Task<DefaultAsyncOperationResponse> SetPointsPayload(
         string collectionName,
         SetPointsPayloadRequest setPointsPayload,
         CancellationToken cancellationToken,
@@ -49,13 +49,13 @@ public partial interface IQdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="ordering">The batch update operation ordering settings.</param>
-    Task<PointsOperationResponse> OverwritePointsPayload(
+    Task<DefaultAsyncOperationResponse> OverwritePointsPayload(
         string collectionName,
         OverwritePointsPayloadRequest overwritePointsPayload,
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
         OrderingType? ordering = null);
-    
+
     /// <summary>
     /// Delete points by specified ids.
     /// </summary>
@@ -65,7 +65,7 @@ public partial interface IQdrantHttpClient
     /// <param name="shardSelector">The shard selector. If set, performs operation only on specified shard(s).</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="ordering">The delete operation ordering settings.</param>
-    Task<PointsOperationResponse> DeletePoints(
+    Task<DefaultAsyncOperationResponse> DeletePoints(
         string collectionName,
         IEnumerable<PointId> pointIds,
         CancellationToken cancellationToken,
@@ -82,7 +82,7 @@ public partial interface IQdrantHttpClient
     /// <param name="shardSelector">The shard selector. If set, performs operation only on specified shard(s).</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="ordering">The delete operation ordering settings.</param>
-    Task<PointsOperationResponse> DeletePoints(
+    Task<DefaultAsyncOperationResponse> DeletePoints(
         string collectionName,
         QdrantFilter filter,
         CancellationToken cancellationToken,
@@ -98,7 +98,7 @@ public partial interface IQdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="ordering">The batch update operation ordering settings.</param>
-    Task<PointsOperationResponse> DeletePointsPayloadKeys(
+    Task<DefaultAsyncOperationResponse> DeletePointsPayloadKeys(
         string collectionName,
         DeletePointsPayloadKeysRequest deletePointsPayloadKeys,
         CancellationToken cancellationToken,
@@ -113,7 +113,7 @@ public partial interface IQdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="ordering">The batch update operation ordering settings.</param>
-    Task<PointsOperationResponse> ClearPointsPayload(
+    Task<DefaultAsyncOperationResponse> ClearPointsPayload(
         string collectionName,
         ClearPointsPayloadRequest clearPointsPayload,
         CancellationToken cancellationToken,
@@ -128,7 +128,7 @@ public partial interface IQdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="ordering">The batch update operation ordering settings.</param>
-    Task<PointsOperationResponse> UpdatePointsVectors(
+    Task<DefaultAsyncOperationResponse> UpdatePointsVectors(
         string collectionName,
         UpdatePointsVectorsRequest updatePointsVectors,
         CancellationToken cancellationToken,
@@ -143,7 +143,7 @@ public partial interface IQdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="ordering">The batch update operation ordering settings.</param>
-    Task<PointsOperationResponse> DeletePointsVectors(
+    Task<DefaultAsyncOperationResponse> DeletePointsVectors(
         string collectionName,
         DeletePointsVectorsRequest deletePointsVectors,
         CancellationToken cancellationToken,

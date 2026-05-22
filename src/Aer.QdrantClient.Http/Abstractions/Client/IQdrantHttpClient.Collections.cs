@@ -189,6 +189,97 @@ public partial interface IQdrantHttpClient
         CancellationToken cancellationToken);
 
     /// <summary>
+    /// Get the memory usage report for the specified collection.
+    /// </summary>
+    /// <param name="collectionName">The name of the collection to get the memory report for.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    Task<CollectionMemoryReportResponse> GetCollectionMemoryReport(
+        string collectionName,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Add a new dense named vector to an existing collection.
+    /// Existing points will not have values for the newly added vector until they are upserted again.
+    /// </summary>
+    /// <param name="collectionName">Name of the collection to add the vector to.</param>
+    /// <param name="vectorName">Name of the new vector.</param>
+    /// <param name="vectorSize">Size of teh new vector.</param>
+    /// <param name="vectorDistanceMetric">Distance function type used to compare vectors.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="vectorDataType">The new vector data type.</param>
+    /// <param name="multivectorConfiguration">Configuration for multi-vector points (e.g., ColBERT).</param>
+    /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
+    /// </param>
+    Task<DefaultAsyncOperationResponse> AddDenseNamedVector(
+        string collectionName,
+        string vectorName,
+        ulong vectorSize,
+        VectorDistanceMetric vectorDistanceMetric,
+        CancellationToken cancellationToken,
+        VectorDataType vectorDataType = VectorDataType.Float32,
+        MultivectorConfiguration multivectorConfiguration = null,
+        TimeSpan? timeout = null,
+        uint retryCount = 3,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null);
+
+    /// <summary>
+    /// Add a new sparse named vector to an existing collection.
+    /// Existing points will not have values for the newly added vector until they are upserted again.
+    /// </summary>
+    /// <param name="collectionName">Name of the collection to add the vector to.</param>
+    /// <param name="vectorName">Name of the new vector.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="vectorDataType">The new vector data type.</param>
+    /// <param name="modifier">Value modifier for sparse vectors (e.g., IDF).</param>
+    /// <param name="multivectorConfiguration">Configuration for multi-vector points (e.g., ColBERT).</param>
+    /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
+    /// </param>
+    Task<DefaultAsyncOperationResponse> AddSparseNamedVector(
+        string collectionName,
+        string vectorName,
+        CancellationToken cancellationToken,
+        SparseVectorModifier modifier = SparseVectorModifier.None,
+        VectorDataType vectorDataType = VectorDataType.Float32,
+        MultivectorConfiguration multivectorConfiguration = null,
+        TimeSpan? timeout = null,
+        uint retryCount = 3,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null);
+
+    /// <summary>
+    /// Delete a named vector from an existing collection.
+    /// </summary>
+    /// <param name="collectionName">Name of the collection to delete the vector from.</param>
+    /// <param name="vectorName">Name of the vector to delete.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="timeout">Wait for operation commit timeout. If timeout is reached - request will return with service error.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
+    /// </param>
+    Task<DefaultAsyncOperationResponse> DeleteNamedVector(
+        string collectionName,
+        string vectorName,
+        CancellationToken cancellationToken,
+        TimeSpan? timeout = null,
+        uint retryCount = 3,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null);
+
+    /// <summary>
     /// Get progress of ongoing and completed optimizations for a collection.
     /// </summary>
     /// <param name="collectionName">
