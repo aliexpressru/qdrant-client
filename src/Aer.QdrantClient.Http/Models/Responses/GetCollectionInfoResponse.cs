@@ -65,6 +65,9 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// </summary>
         public WarningUnit[] Warnings { get; init; }
 
+        /// <summary>
+        /// The queue of the point updates.
+        /// </summary>
         public UpdateQueueInfo UpdateQueue { get; init; }
 
         /// <summary>

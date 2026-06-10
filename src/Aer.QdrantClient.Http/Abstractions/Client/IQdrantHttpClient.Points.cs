@@ -23,7 +23,8 @@ public partial interface IQdrantHttpClient
         UpsertPointsRequest upsertPoints,
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
-        OrderingType? ordering = null);
+        OrderingType? ordering = null
+    );
 
     /// <summary>
     /// Set payload keys values for points.
@@ -39,7 +40,8 @@ public partial interface IQdrantHttpClient
         SetPointsPayloadRequest setPointsPayload,
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
-        OrderingType? ordering = null);
+        OrderingType? ordering = null
+    );
 
     /// <summary>
     /// Replace full payload of points with new one.
@@ -54,7 +56,8 @@ public partial interface IQdrantHttpClient
         OverwritePointsPayloadRequest overwritePointsPayload,
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
-        OrderingType? ordering = null);
+        OrderingType? ordering = null
+    );
 
     /// <summary>
     /// Delete points by specified ids.
@@ -71,7 +74,8 @@ public partial interface IQdrantHttpClient
         CancellationToken cancellationToken,
         ShardSelector shardSelector = null,
         bool isWaitForResult = true,
-        OrderingType? ordering = null);
+        OrderingType? ordering = null
+    );
 
     /// <summary>
     /// Delete points by specified filters.
@@ -88,7 +92,8 @@ public partial interface IQdrantHttpClient
         CancellationToken cancellationToken,
         ShardSelector shardSelector = null,
         bool isWaitForResult = true,
-        OrderingType? ordering = null);
+        OrderingType? ordering = null
+    );
 
     /// <summary>
     /// Delete specified payload keys for points.
@@ -103,7 +108,8 @@ public partial interface IQdrantHttpClient
         DeletePointsPayloadKeysRequest deletePointsPayloadKeys,
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
-        OrderingType? ordering = null);
+        OrderingType? ordering = null
+    );
 
     /// <summary>
     /// Delete specified payload keys for points.
@@ -118,7 +124,8 @@ public partial interface IQdrantHttpClient
         ClearPointsPayloadRequest clearPointsPayload,
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
-        OrderingType? ordering = null);
+        OrderingType? ordering = null
+    );
 
     /// <summary>
     /// Update specified named vectors on points, keep unspecified vectors intact.
@@ -133,7 +140,8 @@ public partial interface IQdrantHttpClient
         UpdatePointsVectorsRequest updatePointsVectors,
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
-        OrderingType? ordering = null);
+        OrderingType? ordering = null
+    );
 
     /// <summary>
     /// Delete named vectors from the given points.
@@ -148,7 +156,8 @@ public partial interface IQdrantHttpClient
         DeletePointsVectorsRequest deletePointsVectors,
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
-        OrderingType? ordering = null);
+        OrderingType? ordering = null
+    );
 
     /// <summary>
     /// Apply a series of update operations for points, vectors and payloads.
@@ -164,7 +173,8 @@ public partial interface IQdrantHttpClient
         BatchUpdatePointsRequest batchUpdatePointsRequest,
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
-        OrderingType? ordering = null);
+        OrderingType? ordering = null
+    );
 
     /// <summary>
     /// Retrieve full information of single point by id.
@@ -184,7 +194,8 @@ public partial interface IQdrantHttpClient
         CancellationToken cancellationToken,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Retrieve multiple points by specified ids.
@@ -215,7 +226,8 @@ public partial interface IQdrantHttpClient
         ShardSelector shardSelector = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Scroll request - paginate over all points which matches given filtering condition.
@@ -255,7 +267,8 @@ public partial interface IQdrantHttpClient
         OrderBySelector orderBySelector = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Count points which matches given filtering condition.
@@ -275,7 +288,8 @@ public partial interface IQdrantHttpClient
         CancellationToken cancellationToken,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Retrieves facets for the specified payload field.
@@ -299,7 +313,8 @@ public partial interface IQdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Retrieve the closest points based on vector similarity and given filtering conditions.
@@ -321,7 +336,8 @@ public partial interface IQdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Retrieve the closest points based on vector similarity and given filtering conditions.
@@ -343,7 +359,8 @@ public partial interface IQdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Retrieve the closest points based on vector similarity and given filtering conditions, grouped by a given payload field.
@@ -365,7 +382,8 @@ public partial interface IQdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Retrieves sparse matrix of pairwise distances between points sampled from the collection. Output is a list of pairs of points and their distances.
@@ -389,7 +407,8 @@ public partial interface IQdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Retrieves sparse matrix of pairwise distances between points sampled from the collection. Output is a form of row and column offsets and list of distances.
@@ -413,7 +432,8 @@ public partial interface IQdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Look for the points which are closer to stored positive examples and at the same time further to negative examples.
@@ -435,7 +455,8 @@ public partial interface IQdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Look for the points which are closer to stored positive examples and at the same time further to negative examples.
@@ -457,7 +478,8 @@ public partial interface IQdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Look for the points which are closer to stored positive examples
@@ -480,7 +502,8 @@ public partial interface IQdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Use context and a target to find the most similar points to the target, constrained by the context.
@@ -515,7 +538,8 @@ public partial interface IQdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Look for points based on target and/or positive and negative example pairs, in batch.
@@ -539,7 +563,8 @@ public partial interface IQdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Universally query points. This endpoint covers all capabilities of search, recommend, discover, filters.
@@ -564,7 +589,8 @@ public partial interface IQdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Universally query points in batch. This endpoint covers all capabilities of search, recommend, discover, filters.
@@ -589,7 +615,8 @@ public partial interface IQdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 
     /// <summary>
     /// Universally query points and group results by a specified payload field.
@@ -615,5 +642,6 @@ public partial interface IQdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null);
+        Action<Exception, TimeSpan, int, uint> onRetry = null
+    );
 }
