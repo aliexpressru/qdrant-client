@@ -725,7 +725,7 @@ public partial class QdrantHttpClient
                 clusterName
             );
 
-            var ret = shardReplicator.Calculate(clusterInfo, collectionInfo, collectionClusteringInfo, clusterTelemetry);
+            var ret = shardReplicator.Plan(clusterInfo, collectionInfo, collectionClusteringInfo, clusterTelemetry);
 
             sw.Stop();
 

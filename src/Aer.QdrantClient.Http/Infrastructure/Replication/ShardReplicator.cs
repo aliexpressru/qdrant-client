@@ -62,7 +62,7 @@ public class ShardReplicator
 
     // We call calculate with initial collection and cluster state. We assume that it won't change by any means apart from shard replicator itself.
     // On each replication step we check that this invariant is held true.
-    internal RestoreShardReplicationFactorResponse Calculate(
+    internal RestoreShardReplicationFactorResponse Plan(
         GetClusterInfoResponse.ClusterInfo clusterInfo,
         GetCollectionInfoResponse.CollectionInfo collectionInfo,
         GetCollectionClusteringInfoResponse.CollectionClusteringInfo collectionClusteringInfo,
@@ -657,7 +657,7 @@ public class ShardReplicator
     }
 
     /// <summary>
-    /// Asynchronously executed the next replication from a <see cref="ReplicationPlan"/> and returns its result.
+    /// Asynchronously executes the next replication from a <see cref="ReplicationPlan"/> and returns its result.
     /// </summary>
     /// <param name="cancellationToken">
     /// A cancellation token that can be used to cancel the asynchronous replication operation.
@@ -691,7 +691,7 @@ public class ShardReplicator
     }
 
     /// <summary>
-    /// Asynchronously replicates the specified shards to target peers.
+    /// Asynchronously executes the whole <see cref="ReplicationPlan"/>. Executes the next replication step on each iteration.
     /// </summary>
     /// <param name="cancellationToken">
     /// A cancellation token that can be used to cancel

@@ -36,94 +36,108 @@ internal class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
         await PrepareCollection(_qdrantHttpClientClusterNode1, TestCollectionName);
         await PrepareCollection(_qdrantHttpClientClusterNode1, TestCollectionName2);
 
-        var collection1Node1Clustering = (await _qdrantHttpClientClusterNode1.GetCollectionClusteringInfo(
-            TestCollectionName,
-            CancellationToken.None)).EnsureSuccess();
+        var collection1Node1Clustering = (
+            await _qdrantHttpClientClusterNode1.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None)
+        ).EnsureSuccess();
 
-        var collection1Node2Clustering = (await _qdrantHttpClientClusterNode2.GetCollectionClusteringInfo(
-            TestCollectionName,
-            CancellationToken.None)).EnsureSuccess();
+        var collection1Node2Clustering = (
+            await _qdrantHttpClientClusterNode2.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None)
+        ).EnsureSuccess();
 
         await _qdrantHttpClientClusterNode2.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None);
 
-        var collection2Node1Clustering = (await _qdrantHttpClientClusterNode1.GetCollectionClusteringInfo(
-            TestCollectionName2,
-            CancellationToken.None)).EnsureSuccess();
+        var collection2Node1Clustering = (
+            await _qdrantHttpClientClusterNode1.GetCollectionClusteringInfo(TestCollectionName2, CancellationToken.None)
+        ).EnsureSuccess();
 
-        var collection2Node2Clustering = (await _qdrantHttpClientClusterNode2.GetCollectionClusteringInfo(
-            TestCollectionName2,
-            CancellationToken.None)).EnsureSuccess();
+        var collection2Node2Clustering = (
+            await _qdrantHttpClientClusterNode2.GetCollectionClusteringInfo(TestCollectionName2, CancellationToken.None)
+        ).EnsureSuccess();
 
         // Shard snapshots on both nodes
 
-        var createShardSnapshotResult11 = (await _qdrantHttpClientClusterNode1.CreateShardSnapshot(
-            TestCollectionName,
-            collection1Node1Clustering.LocalShards[0].ShardId,
-            CancellationToken.None)).EnsureSuccess();
+        var createShardSnapshotResult11 = (
+            await _qdrantHttpClientClusterNode1.CreateShardSnapshot(
+                TestCollectionName,
+                collection1Node1Clustering.LocalShards[0].ShardId,
+                CancellationToken.None
+            )
+        ).EnsureSuccess();
 
-        var createShardSnapshotResult12 = (await _qdrantHttpClientClusterNode1.CreateShardSnapshot(
-            TestCollectionName2,
-            collection2Node1Clustering.LocalShards[0].ShardId,
-            CancellationToken.None)).EnsureSuccess();
+        var createShardSnapshotResult12 = (
+            await _qdrantHttpClientClusterNode1.CreateShardSnapshot(
+                TestCollectionName2,
+                collection2Node1Clustering.LocalShards[0].ShardId,
+                CancellationToken.None
+            )
+        ).EnsureSuccess();
 
-        var createShardSnapshotResult21 = (await _qdrantHttpClientClusterNode2.CreateShardSnapshot(
-            TestCollectionName,
-            collection1Node2Clustering.LocalShards[0].ShardId,
-            CancellationToken.None)).EnsureSuccess();
+        var createShardSnapshotResult21 = (
+            await _qdrantHttpClientClusterNode2.CreateShardSnapshot(
+                TestCollectionName,
+                collection1Node2Clustering.LocalShards[0].ShardId,
+                CancellationToken.None
+            )
+        ).EnsureSuccess();
 
-        var createShardSnapshotResult22 = (await _qdrantHttpClientClusterNode2.CreateShardSnapshot(
-            TestCollectionName2,
-            collection2Node2Clustering.LocalShards[0].ShardId,
-            CancellationToken.None)).EnsureSuccess();
+        var createShardSnapshotResult22 = (
+            await _qdrantHttpClientClusterNode2.CreateShardSnapshot(
+                TestCollectionName2,
+                collection2Node2Clustering.LocalShards[0].ShardId,
+                CancellationToken.None
+            )
+        ).EnsureSuccess();
 
         // Collection snapshots on both nodes
 
-        var createCollectionSnapshotResult11 =
-            (await _qdrantHttpClientClusterNode1.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None))
-            .EnsureSuccess();
+        var createCollectionSnapshotResult11 = (
+            await _qdrantHttpClientClusterNode1.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None)
+        ).EnsureSuccess();
 
-        var createCollectionSnapshotResult12 =
-            (await _qdrantHttpClientClusterNode1.CreateCollectionSnapshot(TestCollectionName2, CancellationToken.None))
-            .EnsureSuccess();
+        var createCollectionSnapshotResult12 = (
+            await _qdrantHttpClientClusterNode1.CreateCollectionSnapshot(TestCollectionName2, CancellationToken.None)
+        ).EnsureSuccess();
 
-        var createCollectionSnapshotResult21 =
-            (await _qdrantHttpClientClusterNode2.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None))
-            .EnsureSuccess();
+        var createCollectionSnapshotResult21 = (
+            await _qdrantHttpClientClusterNode2.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None)
+        ).EnsureSuccess();
 
-        var createCollectionSnapshotResult22 =
-            (await _qdrantHttpClientClusterNode2.CreateCollectionSnapshot(TestCollectionName2, CancellationToken.None))
-            .EnsureSuccess();
+        var createCollectionSnapshotResult22 = (
+            await _qdrantHttpClientClusterNode2.CreateCollectionSnapshot(TestCollectionName2, CancellationToken.None)
+        ).EnsureSuccess();
 
         // List snapshots on both nodes. We don't include storage snapshots since they are not supported for multi-node clusters
 
         var listAllSnapshotsResult1 = await _qdrantHttpClientClusterNode1.ListAllSnapshots(
             CancellationToken.None,
-            includeStorageSnapshots: false);
+            includeStorageSnapshots: false
+        );
 
         var listAllSnapshotsResult2 = await _qdrantHttpClientClusterNode2.ListAllSnapshots(
             CancellationToken.None,
-            includeStorageSnapshots: false);
+            includeStorageSnapshots: false
+        );
 
         AssertSnapshots(
             listAllSnapshotsResult1,
             createShardSnapshotResult11,
             createShardSnapshotResult12,
             createCollectionSnapshotResult11,
-            createCollectionSnapshotResult12);
+            createCollectionSnapshotResult12
+        );
 
         AssertSnapshots(
             listAllSnapshotsResult2,
             createShardSnapshotResult21,
             createShardSnapshotResult22,
             createCollectionSnapshotResult21,
-            createCollectionSnapshotResult22);
+            createCollectionSnapshotResult22
+        );
 
         static void AssertSnapshots(
             ListSnapshotsResponse listAllSnapshotsResult,
-
             SnapshotInfo collection1ShardSnapshot,
             SnapshotInfo collection2ShardSnapshot,
-
             SnapshotInfo collection1Snapshot,
             SnapshotInfo collection2Snapshot
         )
@@ -135,38 +149,38 @@ internal class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
 
             // check shard snapshots
 
-            var shardSnapshots =
-                listAllSnapshotsResult.Result.Where(s => s.SnapshotType == SnapshotType.Shard).ToList();
+            var shardSnapshots = listAllSnapshotsResult.Result.Where(s => s.SnapshotType == SnapshotType.Shard).ToList();
             shardSnapshots.Should().HaveCount(2);
 
-            shardSnapshots.Should().ContainSingle(s =>
-                s.Name == collection1ShardSnapshot.Name && s.Checksum == collection1ShardSnapshot.Checksum);
+            shardSnapshots
+                .Should()
+                .ContainSingle(s => s.Name == collection1ShardSnapshot.Name && s.Checksum == collection1ShardSnapshot.Checksum);
 
-            shardSnapshots.Should().ContainSingle(s =>
-                s.Name == collection2ShardSnapshot.Name && s.Checksum == collection2ShardSnapshot.Checksum);
+            shardSnapshots
+                .Should()
+                .ContainSingle(s => s.Name == collection2ShardSnapshot.Name && s.Checksum == collection2ShardSnapshot.Checksum);
 
             // check collection snapshots
 
-            var collectionSnapshots =
-                listAllSnapshotsResult.Result.Where(s => s.SnapshotType == SnapshotType.Collection).ToList();
+            var collectionSnapshots = listAllSnapshotsResult
+                .Result.Where(s => s.SnapshotType == SnapshotType.Collection)
+                .ToList();
             collectionSnapshots.Should().HaveCount(2);
 
-            collectionSnapshots.Should().ContainSingle(s =>
-                s.Name == collection1Snapshot.Name
-                && s.Checksum == collection1Snapshot.Checksum);
+            collectionSnapshots
+                .Should()
+                .ContainSingle(s => s.Name == collection1Snapshot.Name && s.Checksum == collection1Snapshot.Checksum);
 
-            collectionSnapshots.Should().ContainSingle(s =>
-                s.Name == collection2Snapshot.Name
-                && s.Checksum == collection2Snapshot.Checksum);
+            collectionSnapshots
+                .Should()
+                .ContainSingle(s => s.Name == collection2Snapshot.Name && s.Checksum == collection2Snapshot.Checksum);
         }
 
-        // Cleanup snapshots
+        // Cleanup snpashots
 
-        (await _qdrantHttpClientClusterNode1.DeleteAllCollectionShardSnapshots(
-            CancellationToken.None)).EnsureSuccess();
+        (await _qdrantHttpClientClusterNode1.DeleteAllCollectionShardSnapshots(CancellationToken.None)).EnsureSuccess();
 
-        (await _qdrantHttpClientClusterNode2.DeleteAllCollectionShardSnapshots(
-                CancellationToken.None)).EnsureSuccess();
+        (await _qdrantHttpClientClusterNode2.DeleteAllCollectionShardSnapshots(CancellationToken.None)).EnsureSuccess();
 
         (await _qdrantHttpClientClusterNode1.DeleteAllCollectionSnapshots(CancellationToken.None)).EnsureSuccess();
         (await _qdrantHttpClientClusterNode2.DeleteAllCollectionSnapshots(CancellationToken.None)).EnsureSuccess();
@@ -178,67 +192,85 @@ internal class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
         await PrepareCollection(_qdrantHttpClientClusterNode1, TestCollectionName);
         await PrepareCollection(_qdrantHttpClientClusterNode1, TestCollectionName2);
 
-        var collection1Node1Clustering = (await _qdrantHttpClientClusterNode1.GetCollectionClusteringInfo(
-            TestCollectionName,
-            CancellationToken.None)).EnsureSuccess();
+        var collection1Node1Clustering = (
+            await _qdrantHttpClientClusterNode1.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None)
+        ).EnsureSuccess();
 
-        var collection1Node2Clustering = (await _qdrantHttpClientClusterNode2.GetCollectionClusteringInfo(
-            TestCollectionName,
-            CancellationToken.None)).EnsureSuccess();
+        var collection1Node2Clustering = (
+            await _qdrantHttpClientClusterNode2.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None)
+        ).EnsureSuccess();
 
         await _qdrantHttpClientClusterNode2.GetCollectionClusteringInfo(TestCollectionName, CancellationToken.None);
 
-        var collection2Node1Clustering = (await _qdrantHttpClientClusterNode1.GetCollectionClusteringInfo(
-            TestCollectionName2,
-            CancellationToken.None)).EnsureSuccess();
+        var collection2Node1Clustering = (
+            await _qdrantHttpClientClusterNode1.GetCollectionClusteringInfo(TestCollectionName2, CancellationToken.None)
+        ).EnsureSuccess();
 
-        var collection2Node2Clustering = (await _qdrantHttpClientClusterNode2.GetCollectionClusteringInfo(
-            TestCollectionName2,
-            CancellationToken.None)).EnsureSuccess();
+        var collection2Node2Clustering = (
+            await _qdrantHttpClientClusterNode2.GetCollectionClusteringInfo(TestCollectionName2, CancellationToken.None)
+        ).EnsureSuccess();
 
         // Shard snapshots on both nodes
 
-        (await _qdrantHttpClientClusterNode1.CreateShardSnapshot(
-            TestCollectionName,
-            collection1Node1Clustering.LocalShards[0].ShardId,
-            CancellationToken.None)).EnsureSuccess();
+        (
+            await _qdrantHttpClientClusterNode1.CreateShardSnapshot(
+                TestCollectionName,
+                collection1Node1Clustering.LocalShards[0].ShardId,
+                CancellationToken.None
+            )
+        ).EnsureSuccess();
 
-        (await _qdrantHttpClientClusterNode1.CreateShardSnapshot(
-            TestCollectionName2,
-            collection2Node1Clustering.LocalShards[0].ShardId,
-            CancellationToken.None)).EnsureSuccess();
+        (
+            await _qdrantHttpClientClusterNode1.CreateShardSnapshot(
+                TestCollectionName2,
+                collection2Node1Clustering.LocalShards[0].ShardId,
+                CancellationToken.None
+            )
+        ).EnsureSuccess();
 
-        (await _qdrantHttpClientClusterNode2.CreateShardSnapshot(
-            TestCollectionName,
-            collection1Node2Clustering.LocalShards[0].ShardId,
-            CancellationToken.None)).EnsureSuccess();
+        (
+            await _qdrantHttpClientClusterNode2.CreateShardSnapshot(
+                TestCollectionName,
+                collection1Node2Clustering.LocalShards[0].ShardId,
+                CancellationToken.None
+            )
+        ).EnsureSuccess();
 
-        (await _qdrantHttpClientClusterNode2.CreateShardSnapshot(
-            TestCollectionName2,
-            collection2Node2Clustering.LocalShards[0].ShardId,
-            CancellationToken.None)).EnsureSuccess();
+        (
+            await _qdrantHttpClientClusterNode2.CreateShardSnapshot(
+                TestCollectionName2,
+                collection2Node2Clustering.LocalShards[0].ShardId,
+                CancellationToken.None
+            )
+        ).EnsureSuccess();
 
         // Collection snapshots on both nodes
 
-        (await _qdrantHttpClientClusterNode1.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None))
-        .EnsureSuccess();
+        (
+            await _qdrantHttpClientClusterNode1.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None)
+        ).EnsureSuccess();
 
-        (await _qdrantHttpClientClusterNode1.CreateCollectionSnapshot(TestCollectionName2, CancellationToken.None))
-        .EnsureSuccess();
+        (
+            await _qdrantHttpClientClusterNode1.CreateCollectionSnapshot(TestCollectionName2, CancellationToken.None)
+        ).EnsureSuccess();
 
-        (await _qdrantHttpClientClusterNode2.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None))
-        .EnsureSuccess();
+        (
+            await _qdrantHttpClientClusterNode2.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None)
+        ).EnsureSuccess();
 
-        (await _qdrantHttpClientClusterNode2.CreateCollectionSnapshot(TestCollectionName2, CancellationToken.None))
-        .EnsureSuccess();
+        (
+            await _qdrantHttpClientClusterNode2.CreateCollectionSnapshot(TestCollectionName2, CancellationToken.None)
+        ).EnsureSuccess();
 
         // delete shard snapshots
 
         var deleteFirstNodeShardSnapshotsResult = await _qdrantHttpClientClusterNode1.DeleteAllCollectionShardSnapshots(
-            CancellationToken.None);
+            CancellationToken.None
+        );
 
         var deleteSecondNodeShardSnapshotsResult = await _qdrantHttpClientClusterNode2.DeleteAllCollectionShardSnapshots(
-            CancellationToken.None);
+            CancellationToken.None
+        );
 
         deleteFirstNodeShardSnapshotsResult.Status.IsSuccess.Should().BeTrue();
         deleteFirstNodeShardSnapshotsResult.Result.Should().BeTrue();
@@ -248,34 +280,31 @@ internal class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
 
         await Task.Delay(TimeSpan.FromMilliseconds(500)); // wait for deletion to propagate
 
-        var listFirstNodeAllSnapshotsResult =
-            (await _qdrantHttpClientClusterNode1.ListAllSnapshots(CancellationToken.None)).EnsureSuccess();
+        var listFirstNodeAllSnapshotsResult = (
+            await _qdrantHttpClientClusterNode1.ListAllSnapshots(CancellationToken.None)
+        ).EnsureSuccess();
 
         listFirstNodeAllSnapshotsResult.Should().HaveCount(2); // 2 collection
-        listFirstNodeAllSnapshotsResult.Count(s => s.SnapshotType == SnapshotType.Storage)
-            .Should().Be(0);
-        listFirstNodeAllSnapshotsResult.Count(s => s.SnapshotType == SnapshotType.Shard)
-            .Should().Be(0);
+        listFirstNodeAllSnapshotsResult.Count(s => s.SnapshotType == SnapshotType.Storage).Should().Be(0);
+        listFirstNodeAllSnapshotsResult.Count(s => s.SnapshotType == SnapshotType.Shard).Should().Be(0);
 
-        var listSecondNodeAllSnapshotsResult =
-            (await _qdrantHttpClientClusterNode2.ListAllSnapshots(CancellationToken.None))
-            .EnsureSuccess();
+        var listSecondNodeAllSnapshotsResult = (
+            await _qdrantHttpClientClusterNode2.ListAllSnapshots(CancellationToken.None)
+        ).EnsureSuccess();
 
         listSecondNodeAllSnapshotsResult.Should().HaveCount(2); // 2 collection
-        listSecondNodeAllSnapshotsResult.Count(s => s.SnapshotType == SnapshotType.Storage)
-            .Should().Be(0);
-        listSecondNodeAllSnapshotsResult.Count(s => s.SnapshotType == SnapshotType.Shard)
-            .Should().Be(0);
+        listSecondNodeAllSnapshotsResult.Count(s => s.SnapshotType == SnapshotType.Storage).Should().Be(0);
+        listSecondNodeAllSnapshotsResult.Count(s => s.SnapshotType == SnapshotType.Shard).Should().Be(0);
 
         // delete collection snapshots
 
-        var deleteFirstNodeCollectionSnapshotsResult =
-            await _qdrantHttpClientClusterNode1.DeleteAllCollectionSnapshots(
-            CancellationToken.None);
+        var deleteFirstNodeCollectionSnapshotsResult = await _qdrantHttpClientClusterNode1.DeleteAllCollectionSnapshots(
+            CancellationToken.None
+        );
 
-        var deleteSecondNodeCollectionSnapshotsResult =
-            await _qdrantHttpClientClusterNode2.DeleteAllCollectionSnapshots(
-                CancellationToken.None);
+        var deleteSecondNodeCollectionSnapshotsResult = await _qdrantHttpClientClusterNode2.DeleteAllCollectionSnapshots(
+            CancellationToken.None
+        );
 
         deleteFirstNodeCollectionSnapshotsResult.Status.IsSuccess.Should().BeTrue();
         deleteFirstNodeCollectionSnapshotsResult.Result.Should().BeTrue();
@@ -287,14 +316,82 @@ internal class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
 
         // Check no snapshots left
 
-        listFirstNodeAllSnapshotsResult =
-            (await _qdrantHttpClientClusterNode1.ListAllSnapshots(CancellationToken.None)).EnsureSuccess();
+        listFirstNodeAllSnapshotsResult = (
+            await _qdrantHttpClientClusterNode1.ListAllSnapshots(CancellationToken.None)
+        ).EnsureSuccess();
 
-        listSecondNodeAllSnapshotsResult =
-            (await _qdrantHttpClientClusterNode2.ListAllSnapshots(CancellationToken.None))
-            .EnsureSuccess();
+        listSecondNodeAllSnapshotsResult = (
+            await _qdrantHttpClientClusterNode2.ListAllSnapshots(CancellationToken.None)
+        ).EnsureSuccess();
 
         listFirstNodeAllSnapshotsResult.Should().HaveCount(0);
         listSecondNodeAllSnapshotsResult.Should().HaveCount(0);
+    }
+
+    [Test]
+    public async Task RecoverCollectionFromSnapshots()
+    {
+        int vectorCount = 100;
+
+        await PrepareCollection(_qdrantHttpClientClusterNode1, TestCollectionName, vectorCount: vectorCount);
+
+        // Create collection snapshots
+
+        (
+            await _qdrantHttpClientClusterNode1.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None)
+        ).EnsureSuccess();
+
+        (
+            await _qdrantHttpClientClusterNode2.CreateCollectionSnapshot(TestCollectionName, CancellationToken.None)
+        ).EnsureSuccess();
+
+        var listAllSnapshotsNode1 = (
+            await _qdrantHttpClientClusterNode1.ListAllSnapshots(CancellationToken.None, includeStorageSnapshots: false)
+        ).EnsureSuccess();
+
+        var listAllSnapshotsNode2 = (
+            await _qdrantHttpClientClusterNode2.ListAllSnapshots(CancellationToken.None, includeStorageSnapshots: false)
+        ).EnsureSuccess();
+
+        string[] snapshotNames = [.. listAllSnapshotsNode1.Select(si => si.Name), .. listAllSnapshotsNode2.Select(si => si.Name)];
+
+        // Drop collection
+
+        (await _qdrantHttpClientClusterNode1.DeleteCollection(TestCollectionName, CancellationToken.None)).EnsureSuccess();
+
+        // Recover collection
+        var recoverCollectionFromSnapshotsResponse = await _qdrantHttpClientClusterNode1.RecoverCollectionFromSnapshots(
+            TestCollectionName,
+            [_qdrantHttpClientClusterNode1, _qdrantHttpClientClusterNode2],
+            snapshotNames,
+            cancellationToken: CancellationToken.None,
+            snapshotPriority: SnapshotPriority.NoSync
+        );
+
+        recoverCollectionFromSnapshotsResponse.Status.IsSuccess.Should().BeTrue();
+
+        recoverCollectionFromSnapshotsResponse.Result.RecoveryPlan.Count.Should().Be(2); // 2 nodes to recover
+
+        await foreach (
+            var recoveryResult in recoverCollectionFromSnapshotsResponse.Result.ExecuteRecoveries(
+                CancellationToken.None,
+                snapshotPriority: SnapshotPriority.NoSync,
+                isWaitForResult: true
+            )
+        )
+        {
+            recoveryResult.Status.IsSuccess.Should().BeTrue();
+            recoveryResult.Result.Should().BeTrue();
+        }
+
+        var collectionInfo = (
+            await _qdrantHttpClientClusterNode1.GetCollectionInfo(TestCollectionName, CancellationToken.None)
+        ).EnsureSuccess();
+
+        collectionInfo.PointsCount.Should().Be((uint)vectorCount);
+
+        // Cleanup snapshots
+        (await _qdrantHttpClientClusterNode1.DeleteAllCollectionSnapshots(CancellationToken.None)).EnsureSuccess();
+        (await _qdrantHttpClientClusterNode2.DeleteAllCollectionSnapshots(CancellationToken.None)).EnsureSuccess();
     }
 }

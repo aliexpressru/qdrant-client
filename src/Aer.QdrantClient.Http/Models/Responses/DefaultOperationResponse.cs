@@ -1,4 +1,5 @@
 using Aer.QdrantClient.Http.Models.Responses.Base;
+using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http.Models.Responses;
 
@@ -16,4 +17,15 @@ public sealed class DefaultOperationResponse : QdrantResponseBase<bool?>
 
     internal DefaultOperationResponse(QdrantResponseBase childResponse) : base(childResponse)
     { }
+
+    internal static DefaultOperationResponse Fail(
+        QdrantStatus status,
+        double time
+    ) =>
+        new()
+        {
+            Result = false,
+            Status = status,
+            Time = time,
+        };
 }

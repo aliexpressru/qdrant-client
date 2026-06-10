@@ -1,14 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
 using Aer.QdrantClient.Http.Diagnostics.Helpers;
 using Aer.QdrantClient.Http.Diagnostics.Tracing;
-
-#if  NETSTANDARD2_0
-using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
-#endif
-
 using Aer.QdrantClient.Http.Models.Requests;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
+#if  NETSTANDARD2_0
+using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
+#endif
 
 namespace Aer.QdrantClient.Http;
 
@@ -16,27 +14,26 @@ namespace Aer.QdrantClient.Http;
 public partial class QdrantHttpClient
 {
     /// <inheritdoc/>
-    public async Task<ListSnapshotsResponse> ListCollectionSnapshots(
-        string collectionName,
-        CancellationToken cancellationToken)
+    public async Task<ListSnapshotsResponse> ListCollectionSnapshots(string collectionName, CancellationToken cancellationToken)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
             nameof(ListCollectionSnapshots),
             _enableTracing,
-            Logger);
+            Logger
+        );
 
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(ListCollectionSnapshots), null);
 
-        var url =
-            $"/collections/{collectionName}/snapshots";
+        var url = $"/collections/{collectionName}/snapshots";
 
         var response = await ExecuteRequest<ListSnapshotsResponse>(
             url,
             HttpMethod.Get,
             collectionName,
             cancellationToken,
-            retryCount: 0);
+            retryCount: 0
+        );
 
         if (response.Result is { Count: > 0 })
         {
@@ -60,25 +57,27 @@ public partial class QdrantHttpClient
     public async Task<CreateSnapshotResponse> CreateCollectionSnapshot(
         string collectionName,
         CancellationToken cancellationToken,
-        bool isWaitForResult = true)
+        bool isWaitForResult = true
+    )
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
             nameof(CreateCollectionSnapshot),
             _enableTracing,
-            Logger);
+            Logger
+        );
 
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(CreateCollectionSnapshot), null);
 
-        var url =
-            $"/collections/{collectionName}/snapshots?wait={ToUrlQueryString(isWaitForResult)}";
+        var url = $"/collections/{collectionName}/snapshots?wait={ToUrlQueryString(isWaitForResult)}";
 
         var response = await ExecuteRequest<CreateSnapshotResponse>(
             url,
             HttpMethod.Post,
             collectionName,
             cancellationToken,
-            retryCount: 0);
+            retryCount: 0
+        );
 
         response.Result?.SnapshotType = SnapshotType.Collection;
 
@@ -99,11 +98,12 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
         SnapshotPriority? snapshotPriority = null,
-        string snapshotChecksum = null)
+        string snapshotChecksum = null
+    )
     {
         // We are calling another overload here so no diagnostic timer
 
-        var localSnapshotUri = new Uri($"file:///qdrant/snapshots/{collectionName}/{snapshotName}");
+        var localSnapshotUri = GetLocalSnapshotUriByName(collectionName: collectionName, snapshotName: snapshotName);
 
         var response = await RecoverCollectionFromSnapshot(
             collectionName,
@@ -111,7 +111,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             isWaitForResult,
             snapshotPriority,
-            snapshotChecksum);
+            snapshotChecksum
+        );
 
         return response;
     }
@@ -123,18 +124,19 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
         SnapshotPriority? snapshotPriority = null,
-        string snapshotChecksum = null)
+        string snapshotChecksum = null
+    )
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
             nameof(RecoverCollectionFromSnapshot),
             _enableTracing,
-            Logger);
+            Logger
+        );
 
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(RecoverCollectionFromSnapshot), null);
 
-        var url =
-            $"/collections/{collectionName}/snapshots/recover?wait={ToUrlQueryString(isWaitForResult)}";
+        var url = $"/collections/{collectionName}/snapshots/recover?wait={ToUrlQueryString(isWaitForResult)}";
 
         var request = new RecoverEntityFromSnapshotRequest(snapshotLocationUri, snapshotPriority, snapshotChecksum);
 
@@ -144,7 +146,8 @@ public partial class QdrantHttpClient
             request,
             collectionName,
             cancellationToken,
-            retryCount: 0);
+            retryCount: 0
+        );
 
         tracingScope.SetResult(response);
 
@@ -170,12 +173,12 @@ public partial class QdrantHttpClient
             _tracer,
             nameof(RecoverCollectionFromUploadedSnapshot),
             _enableTracing,
-            Logger);
+            Logger
+        );
 
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(RecoverCollectionFromUploadedSnapshot), null);
 
-        var url =
-            $"/collections/{collectionName}/snapshots/upload?wait={ToUrlQueryString(isWaitForResult)}";
+        var url = $"/collections/{collectionName}/snapshots/upload?wait={ToUrlQueryString(isWaitForResult)}";
 
         if (snapshotPriority.HasValue)
         {
@@ -187,11 +190,7 @@ public partial class QdrantHttpClient
             url += $"&checksum={snapshotChecksum}";
         }
 
-        var response = await RecoverFromUploadedSnapshot(
-            url,
-            collectionName,
-            snapshotContent,
-            cancellationToken);
+        var response = await RecoverFromUploadedSnapshot(url, collectionName, snapshotContent, cancellationToken);
 
         tracingScope.SetResult(response);
 
@@ -207,26 +206,23 @@ public partial class QdrantHttpClient
     public async Task<DownloadSnapshotResponse> DownloadCollectionSnapshot(
         string collectionName,
         string snapshotName,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
             nameof(DownloadCollectionSnapshot),
             _enableTracing,
-            Logger);
+            Logger
+        );
 
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DownloadCollectionSnapshot), null);
 
-        var url =
-            $"/collections/{collectionName}/snapshots/{snapshotName}";
+        var url = $"/collections/{collectionName}/snapshots/{snapshotName}";
 
         HttpRequestMessage message = new(HttpMethod.Get, url);
 
-        var response = await DownloadSnapshot(
-            collectionName,
-            snapshotName,
-            message,
-            cancellationToken);
+        var response = await DownloadSnapshot(collectionName, snapshotName, message, cancellationToken);
 
         response.Result?.SnapshotType = SnapshotType.Collection;
 
@@ -252,19 +248,20 @@ public partial class QdrantHttpClient
             _tracer,
             nameof(DeleteCollectionSnapshot),
             _enableTracing,
-            Logger);
+            Logger
+        );
 
         using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(DeleteCollectionSnapshot), null);
 
-        var url =
-            $"/collections/{collectionName}/snapshots/{snapshotName}?wait={ToUrlQueryString(isWaitForResult)}";
+        var url = $"/collections/{collectionName}/snapshots/{snapshotName}?wait={ToUrlQueryString(isWaitForResult)}";
 
         var response = await ExecuteRequest<DefaultOperationResponse>(
             url,
             HttpMethod.Delete,
             collectionName,
             cancellationToken,
-            retryCount: 0);
+            retryCount: 0
+        );
 
         tracingScope.SetResult(response);
 
@@ -275,4 +272,7 @@ public partial class QdrantHttpClient
 
         return response;
     }
+
+    private Uri GetLocalSnapshotUriByName(string collectionName, string snapshotName) =>
+        new($"file:///qdrant/snapshots/{collectionName}/{snapshotName}");
 }

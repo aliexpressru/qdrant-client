@@ -1,14 +1,17 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Aer.QdrantClient.Http.Abstractions;
 using Aer.QdrantClient.Http.Diagnostics.Helpers;
 using Aer.QdrantClient.Http.Diagnostics.Tracing;
-
+using Aer.QdrantClient.Http.Exceptions;
+using Aer.QdrantClient.Http.Infrastructure.Snapshots;
+using Aer.QdrantClient.Http.Models.Responses;
+using Aer.QdrantClient.Http.Models.Responses.CompoundOperations;
+using Aer.QdrantClient.Http.Models.Shared;
+using Microsoft.Extensions.Logging;
 #if NETSTANDARD2_0
 using Aer.QdrantClient.Http.Helpers.NetstandardPolyfill;
 #endif
-
-using Aer.QdrantClient.Http.Models.Responses;
-using Aer.QdrantClient.Http.Models.Shared;
 
 namespace Aer.QdrantClient.Http;
 
@@ -19,13 +22,15 @@ public partial class QdrantHttpClient
     public async Task<ListSnapshotsResponse> ListAllSnapshots(
         CancellationToken cancellationToken,
         bool includeStorageSnapshots = false,
-        string clusterName = null)
+        string clusterName = null
+    )
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
             nameof(ListAllSnapshots),
             _enableTracing,
-            Logger);
+            Logger
+        );
 
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(ListAllSnapshots), clusterName);
 
@@ -55,10 +60,7 @@ public partial class QdrantHttpClient
 
             if (!collectionClusteringInfo.Status.IsSuccess)
             {
-                var earlyRet = new ListSnapshotsResponse(collectionClusteringInfo)
-                {
-                    Result = null
-                };
+                var earlyRet = new ListSnapshotsResponse(collectionClusteringInfo) { Result = null };
 
                 tracingScope.SetResult(earlyRet);
 
@@ -87,10 +89,7 @@ public partial class QdrantHttpClient
 
                 if (!listShardSnapshotsResponse.Status.IsSuccess)
                 {
-                    var earlyRet = new ListSnapshotsResponse(listShardSnapshotsResponse)
-                    {
-                        Result = null
-                    };
+                    var earlyRet = new ListSnapshotsResponse(listShardSnapshotsResponse) { Result = null };
 
                     tracingScope.SetResult(earlyRet);
 
@@ -113,10 +112,7 @@ public partial class QdrantHttpClient
 
             if (!listStorageSnapshotsResponse.Status.IsSuccess)
             {
-                var earlyRet = new ListSnapshotsResponse(listStorageSnapshotsResponse)
-                {
-                    Result = null
-                };
+                var earlyRet = new ListSnapshotsResponse(listStorageSnapshotsResponse) { Result = null };
 
                 tracingScope.SetResult(earlyRet);
 
@@ -136,7 +132,7 @@ public partial class QdrantHttpClient
         {
             Result = allSnapshots,
             Status = QdrantStatus.Success(),
-            Time = sw.Elapsed.TotalSeconds
+            Time = sw.Elapsed.TotalSeconds,
         };
 
         tracingScope.SetResult(ret);
@@ -150,13 +146,15 @@ public partial class QdrantHttpClient
     public async Task<DefaultOperationResponse> DeleteAllStorageSnapshots(
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
-        string clusterName = null)
+        string clusterName = null
+    )
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
             nameof(DeleteAllStorageSnapshots),
             _enableTracing,
-            Logger);
+            Logger
+        );
 
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteAllStorageSnapshots), clusterName);
 
@@ -165,19 +163,12 @@ public partial class QdrantHttpClient
 
         foreach (var storageSnapshot in storageSnapshots.Result)
         {
-            var deleteSnapshotResult = await DeleteStorageSnapshot(
-                storageSnapshot.Name,
-                cancellationToken,
-                isWaitForResult);
+            var deleteSnapshotResult = await DeleteStorageSnapshot(storageSnapshot.Name, cancellationToken, isWaitForResult);
 
             deleteSnapshotResult.EnsureSuccess();
         }
 
-        var ret = new DefaultOperationResponse()
-        {
-            Result = true,
-            Status = new QdrantStatus(QdrantOperationStatusType.Ok)
-        };
+        var ret = new DefaultOperationResponse() { Result = true, Status = new QdrantStatus(QdrantOperationStatusType.Ok) };
 
         tracingScope.SetResult(ret);
 
@@ -190,13 +181,15 @@ public partial class QdrantHttpClient
     public async Task<DefaultOperationResponse> DeleteAllCollectionSnapshots(
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
-        string clusterName = null)
+        string clusterName = null
+    )
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
             nameof(DeleteAllCollectionSnapshots),
             _enableTracing,
-            Logger);
+            Logger
+        );
 
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteAllCollectionSnapshots), clusterName);
 
@@ -211,10 +204,7 @@ public partial class QdrantHttpClient
 
             if (!listCollectionSnapshotsResponse.Status.IsSuccess)
             {
-                var earlyRet = new DefaultOperationResponse(listCollectionSnapshotsResponse)
-                {
-                    Result = false
-                };
+                var earlyRet = new DefaultOperationResponse(listCollectionSnapshotsResponse) { Result = false };
 
                 tracingScope.SetResult(earlyRet);
 
@@ -223,19 +213,16 @@ public partial class QdrantHttpClient
 
             foreach (var collectionSnapshot in listCollectionSnapshotsResponse.Result)
             {
-                var deleteCollectionSnapshotResponse =
-                    await DeleteCollectionSnapshot(
-                        collectionName,
-                        collectionSnapshot.Name,
-                        cancellationToken,
-                        isWaitForResult);
+                var deleteCollectionSnapshotResponse = await DeleteCollectionSnapshot(
+                    collectionName,
+                    collectionSnapshot.Name,
+                    cancellationToken,
+                    isWaitForResult
+                );
 
                 if (!deleteCollectionSnapshotResponse.Status.IsSuccess)
                 {
-                    var earlyRet = new DefaultOperationResponse(deleteCollectionSnapshotResponse)
-                    {
-                        Result = false
-                    };
+                    var earlyRet = new DefaultOperationResponse(deleteCollectionSnapshotResponse) { Result = false };
 
                     tracingScope.SetResult(earlyRet);
 
@@ -244,11 +231,7 @@ public partial class QdrantHttpClient
             }
         }
 
-        var ret = new DefaultOperationResponse()
-        {
-            Result = true,
-            Status = new QdrantStatus(QdrantOperationStatusType.Ok)
-        };
+        var ret = new DefaultOperationResponse() { Result = true, Status = new QdrantStatus(QdrantOperationStatusType.Ok) };
 
         tracingScope.SetResult(ret);
 
@@ -261,13 +244,15 @@ public partial class QdrantHttpClient
     public async Task<DefaultOperationResponse> DeleteAllCollectionShardSnapshots(
         CancellationToken cancellationToken,
         bool isWaitForResult = true,
-        string clusterName = null)
+        string clusterName = null
+    )
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
             nameof(DeleteAllCollectionShardSnapshots),
             _enableTracing,
-            Logger);
+            Logger
+        );
 
         using var diagnostic = DiagnosticTimer.StartNew(null, nameof(DeleteAllCollectionShardSnapshots), clusterName);
 
@@ -282,10 +267,7 @@ public partial class QdrantHttpClient
 
             if (!collectionClusteringInfo.Status.IsSuccess)
             {
-                var earlyRet = new DefaultOperationResponse(collectionClusteringInfo)
-                {
-                    Result = false
-                };
+                var earlyRet = new DefaultOperationResponse(collectionClusteringInfo) { Result = false };
 
                 tracingScope.SetResult(earlyRet);
 
@@ -316,7 +298,7 @@ public partial class QdrantHttpClient
                     var earlyRet = new DefaultOperationResponse()
                     {
                         Result = false,
-                        Status = listCollectionSnapshotsResponse.Status
+                        Status = listCollectionSnapshotsResponse.Status,
                     };
 
                     tracingScope.SetResult(earlyRet);
@@ -326,20 +308,17 @@ public partial class QdrantHttpClient
 
                 foreach (var localShardSnapshot in listCollectionSnapshotsResponse.Result)
                 {
-                    var deleteCollectionShardSnapshotResponse =
-                        await DeleteShardSnapshot(
-                            collectionName,
-                            localShardId,
-                            localShardSnapshot.Name,
-                            cancellationToken,
-                            isWaitForResult);
+                    var deleteCollectionShardSnapshotResponse = await DeleteShardSnapshot(
+                        collectionName,
+                        localShardId,
+                        localShardSnapshot.Name,
+                        cancellationToken,
+                        isWaitForResult
+                    );
 
                     if (!deleteCollectionShardSnapshotResponse.Status.IsSuccess)
                     {
-                        var earlyRet = new DefaultOperationResponse(deleteCollectionShardSnapshotResponse)
-                        {
-                            Result = false
-                        };
+                        var earlyRet = new DefaultOperationResponse(deleteCollectionShardSnapshotResponse) { Result = false };
 
                         tracingScope.SetResult(earlyRet);
 
@@ -349,16 +328,138 @@ public partial class QdrantHttpClient
             }
         }
 
-        var ret = new DefaultOperationResponse()
-        {
-            Result = true,
-            Status = new QdrantStatus(QdrantOperationStatusType.Ok)
-        };
+        var ret = new DefaultOperationResponse() { Result = true, Status = new QdrantStatus(QdrantOperationStatusType.Ok) };
 
         tracingScope.SetResult(ret);
 
         diagnostic.SetSuccess();
 
         return ret;
+    }
+
+    /// <inheritdoc/>
+    public Task<RecoverCollectionFromSnapshotsResponse> RecoverCollectionFromSnapshots(
+        string collectionName,
+        IQdrantHttpClient[] peerClients,
+        string[] snapshotNames,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        SnapshotPriority? snapshotPriority = null,
+        string[] snapshotChecksums = null,
+        string clusterName = null
+    )
+    {
+        // Calling other overload so no diagnostics here
+        Uri[] snapshotUris = [.. snapshotNames.Select(snapshotName => GetLocalSnapshotUriByName(collectionName, snapshotName))];
+
+        return RecoverCollectionFromSnapshots(
+            collectionName,
+            peerClients,
+            snapshotUris,
+            cancellationToken,
+            logger,
+            snapshotPriority,
+            snapshotChecksums,
+            clusterName
+        );
+    }
+
+    /// <inheritdoc/>
+    public async Task<RecoverCollectionFromSnapshotsResponse> RecoverCollectionFromSnapshots(
+        string collectionName,
+        IQdrantHttpClient[] peerClients,
+        Uri[] snapshotLocationUris,
+        CancellationToken cancellationToken,
+        ILogger logger = null,
+        SnapshotPriority? snapshotPriority = null,
+        string[] snapshotChecksums = null,
+        string clusterName = null
+    )
+    {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(RecoverCollectionFromSnapshots),
+            _enableTracing,
+            Logger
+        );
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(RecoverCollectionFromSnapshots), null);
+
+        Stopwatch sw = Stopwatch.StartNew();
+
+        try
+        {
+            var existingCollections = (await ListCollections(cancellationToken, clusterName)).EnsureSuccess();
+
+            var exsitingCollectionNames = existingCollections.Collections.Select(c => c.Name).ToHashSet();
+
+            if (exsitingCollectionNames.Contains(collectionName))
+            {
+                return new RecoverCollectionFromSnapshotsResponse()
+                {
+                    Result = null,
+                    Status = QdrantStatus.Fail(
+                        $"Can't restore collection with the name {collectionName}. Collection with this name already exists"
+                    ),
+                    Time = sw.Elapsed.TotalSeconds,
+                };
+            }
+
+            GetClusterInfoResponse.ClusterInfo clusterInfo = (
+                await GetClusterInfo(cancellationToken, clusterName)
+            ).EnsureSuccess();
+
+            if (snapshotLocationUris.Length > peerClients.Length)
+            {
+                // We expect the number of snapshots to be less or equal to the number of target peers.
+                return new RecoverCollectionFromSnapshotsResponse()
+                {
+                    Result = null,
+                    Status = QdrantStatus.Fail(
+                        $"Can't restore collection with the name {collectionName}. Provided snapshots count {snapshotLocationUris.Length} is greater than the number of cluster peers {clusterInfo.Peers.Count}"
+                    ),
+                    Time = sw.Elapsed.TotalSeconds,
+                };
+            }
+
+            if (snapshotChecksums is { Length: > 0 } && snapshotChecksums.Length != snapshotLocationUris.Length)
+            {
+                // When the snapshot checksums are provided we expect them to be present for every snapshot uri
+                return new RecoverCollectionFromSnapshotsResponse()
+                {
+                    Result = null,
+                    Status = QdrantStatus.Fail(
+                        $"Can't restore collection with the name {collectionName}. Provided snapshot checksums count {snapshotChecksums.Length} is not equal to the provided snapshot uris count {snapshotLocationUris.Length}"
+                    ),
+                    Time = sw.Elapsed.TotalSeconds,
+                };
+            }
+
+            var collectionRecoverer = new CollectionRecoverer(collectionName);
+
+            var ret = collectionRecoverer.Plan(peerClients, snapshotLocationUris, snapshotChecksums);
+
+            sw.Stop();
+
+            ret.Time = sw.Elapsed.TotalSeconds;
+
+            tracingScope.SetResult(ret);
+            diagnostic.SetSuccess();
+
+            return ret;
+        }
+        catch (QdrantUnsuccessfulResponseStatusException qex)
+        {
+            sw.Stop();
+
+            tracingScope.SetError(qex);
+
+            return new RecoverCollectionFromSnapshotsResponse()
+            {
+                Result = null,
+                Status = QdrantStatus.Fail(qex.Message, qex),
+                Time = sw.Elapsed.TotalSeconds,
+            };
+        }
     }
 }
