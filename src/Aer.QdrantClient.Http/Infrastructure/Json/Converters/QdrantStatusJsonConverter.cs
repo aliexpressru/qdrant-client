@@ -15,9 +15,9 @@ internal sealed class QdrantStatusJsonConverter : JsonConverter<QdrantStatus>
             {
                 var statusStringValue = reader.GetString();
 
-                if (statusStringValue == QdrantStatus.OkStatusString)
+                if (QdrantStatus.IsOkStatus(statusStringValue))
                 {
-                    return new QdrantStatus(QdrantOperationStatusType.Ok);
+                    return new QdrantStatus(QdrantOperationStatusType.Ok) { RawStatusString = statusStringValue };
                 }
 
                 // means string with some unknown content

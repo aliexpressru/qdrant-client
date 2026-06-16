@@ -20,4 +20,3 @@ public enum QdrantOperationStatus
     /// </summary>
     Completed = 2
 }
-

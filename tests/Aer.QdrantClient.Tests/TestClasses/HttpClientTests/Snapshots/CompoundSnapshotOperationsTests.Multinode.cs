@@ -176,7 +176,7 @@ internal class CompoundSnapshotOperationsTestsMultiNode : QdrantTestsBase
                 .ContainSingle(s => s.Name == collection2Snapshot.Name && s.Checksum == collection2Snapshot.Checksum);
         }
 
-        // Cleanup snpashots
+        // Cleanup snapshots
 
         (await _qdrantHttpClientClusterNode1.DeleteAllCollectionShardSnapshots(CancellationToken.None)).EnsureSuccess();
 

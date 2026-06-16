@@ -8,10 +8,12 @@ namespace Aer.QdrantClient.Http.Models.Shared;
 [SuppressMessage("ReSharper", "MemberCanBeInternal")]
 public sealed class QdrantStatus
 {
-    /// <summary>
-    /// Gets the string indicating that qdrant response was successful.
-    /// </summary>
-    public static string OkStatusString => "ok";
+    private static readonly HashSet<string> _okStatuses = [
+        // indicates that qdrant response was successful
+        "ok",
+        // indicates that qdrant async response was successful
+        "accepted"
+    ];
 
     /// <summary>
     /// The qdrant status type.
@@ -21,7 +23,7 @@ public sealed class QdrantStatus
     /// <summary>
     /// <c>true</c> if status indicates success, <c>false</c> otherwise.
     /// </summary>
-    public bool IsSuccess => Type == QdrantOperationStatusType.Ok;
+    public bool IsSuccess => Type is QdrantOperationStatusType.Ok;
 
     /// <summary>
     /// Gets the qdrant operation error. This property has a value only if an error occurred.
@@ -74,4 +76,10 @@ public sealed class QdrantStatus
     /// </summary>
     public override string ToString() =>
         $"[{Type}]; IsSuccess: '{IsSuccess}'; Error: '{GetErrorMessage() ?? "NONE"}'; Exception: {Exception?.ToString() ?? "NONE"}";
+
+    /// <summary>
+    /// Determines whether the qdrant raw status string indicates success.
+    /// </summary>
+    /// <param name="rawStatusString">The raw status string to check.</param>
+    public static bool IsOkStatus(string rawStatusString) => _okStatuses.Contains(rawStatusString);
 }
