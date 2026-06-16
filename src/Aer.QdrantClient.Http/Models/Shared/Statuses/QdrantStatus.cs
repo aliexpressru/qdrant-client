@@ -57,7 +57,7 @@ public sealed class QdrantStatus
     /// <summary>
     /// Get qdrant status that indicates success.
     /// </summary>
-    public static QdrantStatus Success() => new(QdrantOperationStatusType.Ok);
+    public static QdrantStatus Success() => new(QdrantOperationStatusType.Ok) { RawStatusString = "ok" };
 
     /// <summary>
     /// Get qdrant status that indicates error.
