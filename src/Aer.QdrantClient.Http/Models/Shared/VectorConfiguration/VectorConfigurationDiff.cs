@@ -54,7 +54,7 @@ public abstract class VectorConfigurationDiff
         /// Initializes a new instance of <see cref="VectorConfigurationDiff.NamedVectorsConfigurationDiff"/> with specified named vectors configuration diffs.
         /// </summary>
         /// <param name="namedVectorsConfigurationDiff">The named vectors configuration diffs.</param>
-        [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
+        [SetsRequiredMembers]
         public NamedVectorsConfigurationDiff(Dictionary<string, SingleVectorConfigurationDiff> namedVectorsConfigurationDiff)
         {
             NamedVectors = namedVectorsConfigurationDiff;
@@ -67,6 +67,7 @@ public abstract class VectorConfigurationDiff
     /// <c>true</c> if this instance describes multiple vectors configuration diff.
     /// <c>false</c> if this instance describes single vector configuration diff.
     /// </summary>
+    [JsonIgnore]
     public bool IsMultipleVectorsConfiguration => this is NamedVectorsConfigurationDiff;
 
     /// <summary>

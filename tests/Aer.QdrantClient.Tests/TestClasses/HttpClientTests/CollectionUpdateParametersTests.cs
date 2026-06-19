@@ -447,11 +447,17 @@ internal class CollectionUpdateParametersTests : QdrantTestsBase
 
         // Change parameters for the named vectors
 
-        VectorConfigurationDiff vectorConfigDiff = new SingleVectorConfigurationDiff()
+        VectorConfigurationDiff vectorConfigDiff = new NamedVectorsConfigurationDiff()
         {
-            HnswConfig = new HnswConfigurationDiff()
+            NamedVectors = new Dictionary<string, SingleVectorConfigurationDiff>()
             {
-                M = 100
+                [namedVectorName] = new SingleVectorConfigurationDiff()
+                {
+                    HnswConfig = new HnswConfigurationDiff()
+                    {
+                        M = 100
+                    }
+                }
             }
         };
 

@@ -172,6 +172,7 @@ public abstract class VectorConfigurationBase
     /// <c>true</c> if this instance describes multiple vectors configuration.
     /// <c>false</c> if this instance describes single vector configuration.
     /// </summary>
+    [JsonIgnore]
     public bool IsMultipleVectorsConfiguration => this is NamedVectorsConfiguration;
 
     /// <summary>
