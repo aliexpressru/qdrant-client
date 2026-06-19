@@ -273,6 +273,6 @@ public partial class QdrantHttpClient
         return response;
     }
 
-    private Uri GetLocalSnapshotUriByName(string collectionName, string snapshotName) =>
+    private static Uri GetLocalSnapshotUriByName(string collectionName, string snapshotName) =>
         new($"file:///qdrant/snapshots/{collectionName}/{snapshotName}");
 }

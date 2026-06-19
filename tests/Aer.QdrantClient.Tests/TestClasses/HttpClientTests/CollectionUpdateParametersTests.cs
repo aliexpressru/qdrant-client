@@ -1,10 +1,12 @@
-using System.Collections.Concurrent;
 using Aer.QdrantClient.Http;
 using Aer.QdrantClient.Http.Exceptions;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Infrastructure;
+using System.Collections.Concurrent;
+using static Aer.QdrantClient.Http.Models.Shared.QuantizationConfiguration;
+using static Aer.QdrantClient.Http.Models.Shared.VectorConfigurationDiff;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
@@ -27,7 +29,8 @@ internal class CollectionUpdateParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CollectionDoesNotExist()
+    [Obsolete("Testing obsolete UpdateCollectionParameters method")]
+    public async Task CollectionDoesNotExist_Obsolete()
     {
         var updateNoCollectionParametersResult = await _qdrantHttpClient.UpdateCollectionParameters(
             TestCollectionName,
@@ -50,7 +53,31 @@ internal class CollectionUpdateParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task EmptyRequest()
+    public async Task CollectionDoesNotExist()
+    {
+        var updateNoCollectionParametersResult = await _qdrantHttpClient.UpdateCollectionParameters(
+            TestCollectionName,
+            new CollectionParametersDiffRequest()
+            {
+                OptimizersConfig = new()
+                {
+                    MaxSegmentSize = 10
+                }
+            },
+            CancellationToken.None);
+
+        updateNoCollectionParametersResult.Status.Type.Should().Be(QdrantOperationStatusType.Error);
+        updateNoCollectionParametersResult.Status.IsSuccess.Should().BeFalse();
+        updateNoCollectionParametersResult.Status.Error.Should()
+            .Contain(TestCollectionName).And
+            .Contain("doesn't exist");
+
+        updateNoCollectionParametersResult.Result.Should().BeNull();
+    }
+
+    [Test]
+    [Obsolete("Testing obsolete UpdateCollectionParameters method")]
+    public async Task EmptyRequest_Obsolete()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -161,7 +188,8 @@ internal class CollectionUpdateParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task UpdateCollectionParameters()
+    [Obsolete("Testing obsolete UpdateCollectionParameters method")]
+    public async Task UpdateCollectionParameters_Obsolete()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -230,7 +258,88 @@ internal class CollectionUpdateParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task UpdateCollectionParameters_Sparse()
+    public async Task UpdateCollectionParameters()
+    {
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = false,
+                OptimizersConfig = new OptimizersConfiguration()
+                {
+                    MaxOptimizationThreads = 1,
+                    IndexingThreshold = 1
+                },
+                HnswConfig = new HnswConfiguration()
+                {
+                    MaxIndexingThreads = 1
+                }
+            },
+            CancellationToken.None);
+
+        const int newMaxOptimizationThreads = 10;
+        const int newMaxIndexingThreads = 11;
+        const ulong newM = 10;
+
+        var updateCollectionParametersResult = await _qdrantHttpClient.UpdateCollectionParameters(
+            TestCollectionName,
+            new CollectionParametersDiffRequest()
+            {
+                Params = new()
+                {
+                    OnDiskPayload = true
+                },
+                OptimizersConfig = new()
+                {
+                    MaxOptimizationThreads = newMaxOptimizationThreads
+                },
+                HnswConfig = new HnswConfigurationDiff()
+                {
+                    MaxIndexingThreads = newMaxIndexingThreads,
+                    M = newM
+                },
+                QuantizationConfig = QuantizationConfigurationDiff.Turbo(isQuantizedVectorAlwaysInRam: true, TurboQuantizationEncoding.Bits1_5),
+                StrictModeConfig = new StrictModeConfiguration()
+                {
+                    Enabled = true,
+                    MaxPointsCount = 1000
+                }
+            },
+            CancellationToken.None);
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        updateCollectionParametersResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        updateCollectionParametersResult.Status.IsSuccess.Should().BeTrue();
+
+        updateCollectionParametersResult.Result.Should().NotBeNull();
+
+        var updatedCollectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        updatedCollectionInfo.Result.Status.Should().Be(QdrantCollectionStatus.Green);
+        updatedCollectionInfo.Result.OptimizerStatus.IsOk.Should().BeTrue();
+
+        updatedCollectionInfo.Result.Config.OptimizerConfig.IndexingThreshold.Should().Be(1); // should not change
+
+        updatedCollectionInfo.Result.Config.OptimizerConfig.MaxOptimizationThreads.Should().Be(newMaxOptimizationThreads);
+        updatedCollectionInfo.Result.Config.HnswConfig.MaxIndexingThreads.Should().Be(newMaxIndexingThreads);
+        updatedCollectionInfo.Result.Config.HnswConfig.M.Should().Be(newM);
+        updatedCollectionInfo.Result.Config.Params.OnDiskPayload.Should().BeTrue();
+
+        updatedCollectionInfo.Result.Config.StrictModeConfig.Enabled.Should().BeTrue();
+        updatedCollectionInfo.Result.Config.StrictModeConfig.MaxPointsCount.Should().Be(1000);
+
+        updatedCollectionInfo.Result.Config.QuantizationConfig.Method.Should().Be(QuantizationConfiguration.TurboQuantizationConfiguration.QuantizationMethodName);
+
+        var quantizationConfig = updatedCollectionInfo.Result.Config.QuantizationConfig.As<TurboQuantizationConfiguration>();
+
+        quantizationConfig.Bits.Should().Be(TurboQuantizationEncoding.Bits1_5);
+        quantizationConfig.AlwaysRam.Should().BeTrue();
+    }
+
+    [Test]
+    [Obsolete("Testing obsolete UpdateCollectionParameters method")]
+    public async Task UpdateCollectionParameters_Sparse_Obsolete()
     {
         var sparseVectorName = "test";
 
@@ -288,7 +397,94 @@ internal class CollectionUpdateParametersTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task WithRetry()
+    public async Task UpdateCollectionParameters_Sparse_Named()
+    {
+        var sparseVectorName = "test";
+        var namedVectorName = "test_named";
+
+        var sparseVectorsConfiguration = new Dictionary<string, SparseVectorConfiguration>()
+        {
+            [sparseVectorName] = new()
+            {
+                Index = new()
+                {
+                    OnDisk = false,
+                    FullScanThreshold = 5000,
+                    Datatype = VectorDataType.Float32
+                }
+            }
+        };
+
+        Dictionary<string, VectorConfigurationBase.SingleVectorConfiguration> namedVectorConfiguration = new()
+        {
+            [namedVectorName] = new(VectorDistanceMetric.Cosine, vectorSize: 10, isServeVectorsFromDisk: true)
+            {
+                HnswConfig = new()
+                {
+                    M = 10
+                }
+            }
+        };
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(
+                namedVectorsConfiguration: namedVectorConfiguration,
+                sparseVectorsConfiguration: sparseVectorsConfiguration)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.EnsureSuccess();
+
+        // Change parameters of the sparse vector index
+
+        sparseVectorsConfiguration[sparseVectorName].Index.OnDisk = true;
+        sparseVectorsConfiguration[sparseVectorName].Index.FullScanThreshold = 10;
+        sparseVectorsConfiguration[sparseVectorName].Index.Datatype = VectorDataType.Float16;
+        sparseVectorsConfiguration[sparseVectorName].Modifier = SparseVectorModifier.Idf;
+
+        // Change parameters for the named vectors
+
+        VectorConfigurationDiff vectorConfigDiff = new SingleVectorConfigurationDiff()
+        {
+            HnswConfig = new HnswConfigurationDiff()
+            {
+                M = 100
+            }
+        };
+
+        var updateCollectionParametersResult = await _qdrantHttpClient.UpdateCollectionParameters(
+            TestCollectionName,
+            new CollectionParametersDiffRequest()
+            {
+                SparseVectors = sparseVectorsConfiguration,
+                Vectors = vectorConfigDiff
+            },
+            CancellationToken.None);
+
+        updateCollectionParametersResult.Status.IsSuccess.Should().BeTrue();
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        var updatedCollectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        var indexParameters = updatedCollectionInfo.Result.Config.Params.SparseVectors[sparseVectorName].Index;
+
+        indexParameters.OnDisk.Should().BeTrue();
+        indexParameters.FullScanThreshold.Should().Be(10);
+        indexParameters.Datatype.Should().Be(VectorDataType.Float16);
+
+        updatedCollectionInfo.Result.Config.Params.SparseVectors[sparseVectorName].Modifier.Should().Be(SparseVectorModifier.Idf);
+
+        // Check named vectors
+        updatedCollectionInfo.Result.Config.Params.Vectors.AsMultipleVectorsConfiguration().NamedVectors[namedVectorName].HnswConfig.M.Should().Be(100);
+    }
+
+    [Test]
+    [Obsolete("Testing obsolete UpdateCollectionParameters method")]
+    public async Task WithRetry_Obsolete()
     {
         await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
@@ -320,6 +516,75 @@ internal class CollectionUpdateParametersTests : QdrantTestsBase
         var updateCollectionParametersResult = await throwingQdrantHttpClient.UpdateCollectionParameters(
             TestCollectionName,
             new UpdateCollectionParametersRequest()
+            {
+                OptimizersConfig = new()
+                {
+                    MaxOptimizationThreads = newOptimizationThreads,
+                }
+            },
+            CancellationToken.None,
+            retryCount: 3,
+            retryDelay: TimeSpan.FromMilliseconds(10),
+            onRetry: (ex, _, _, _) =>
+            {
+                Interlocked.Increment(ref retryCount);
+                exceptions.Add(ex);
+            }
+        );
+
+        retryCount.Should().Be(2);
+        exceptions.Count.Should().Be(2);
+
+        // 1 retry exception because when retrying bad request we don't actually have any real exception but a special one.
+        exceptions.Count(e => e is QdrantRequestRetryException).Should().Be(1);
+        exceptions.Count(e => e is HttpRequestException).Should().Be(1); // 1 exception for requested request failure
+
+        updateCollectionParametersResult.Status.IsSuccess.Should().BeTrue();
+        updateCollectionParametersResult.Result.Should().NotBeNull();
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        var updatedCollectionInfo =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        // Just check that thew request to update collection parameters actually worked
+        updatedCollectionInfo.Result.Config.OptimizerConfig.MaxOptimizationThreads.Should().Be(newOptimizationThreads);
+    }
+
+    [Test]
+
+    public async Task WithRetry()
+    {
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = false,
+                OptimizersConfig = new OptimizersConfiguration()
+                {
+                    MaxOptimizationThreads = 1,
+                    IndexingThreshold = 1
+                },
+                HnswConfig = new HnswConfiguration()
+                {
+                    MaxIndexingThreads = 1
+                }
+            },
+            CancellationToken.None);
+
+        const int newOptimizationThreads = 10;
+
+        var throwingQdrantHttpClient = new ThrowingQdrantHttpClient(await _qdrantHttpClient.GetApiClient(null));
+
+        throwingQdrantHttpClient.ThrowOnce();
+        throwingQdrantHttpClient.BadRequestOnce();
+
+        int retryCount = 0;
+        ConcurrentBag<Exception> exceptions = [];
+
+        var updateCollectionParametersResult = await throwingQdrantHttpClient.UpdateCollectionParameters(
+            TestCollectionName,
+            new CollectionParametersDiffRequest()
             {
                 OptimizersConfig = new()
                 {

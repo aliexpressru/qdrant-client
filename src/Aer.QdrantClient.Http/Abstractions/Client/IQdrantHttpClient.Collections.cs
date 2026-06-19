@@ -41,9 +41,33 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    [Obsolete($"This method does not strictly follow the qdrant API shape. Use the {nameof(UpdateCollectionParametersRequest)} overload with the {nameof(CollectionParametersDiffRequest)} parameter. This overload will be removed in the future.")]
     Task<DefaultOperationResponse> UpdateCollectionParameters(
         string collectionName,
         UpdateCollectionParametersRequest request,
+        CancellationToken cancellationToken,
+        TimeSpan? timeout = null,
+        uint retryCount = 3,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null);
+
+    /// <summary>
+    /// Update parameters of the existing collection using diff types.
+    /// Only specified fields will be updated. Unspecified fields remain unchanged.
+    /// </summary>
+    /// <param name="collectionName">Name of the collection to update.</param>
+    /// <param name="request">Collection parameters diff to update.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="timeout">Wait for operation commit timeout in seconds. If timeout is reached - request will return with service error.</param>
+    /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
+    /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
+    /// <param name="onRetry">
+    /// The action to be called on operation retry.
+    /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
+    /// </param>
+    Task<DefaultOperationResponse> UpdateCollectionParameters(
+        string collectionName,
+        CollectionParametersDiffRequest request,
         CancellationToken cancellationToken,
         TimeSpan? timeout = null,
         uint retryCount = 3,
