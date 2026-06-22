@@ -68,6 +68,7 @@ public partial class QdrantHttpClient
     }
 
     /// <inheritdoc/>
+    [Obsolete($"This method does not strictly follow the qdrant API shape. Use the {nameof(UpdateCollectionParametersRequest)} overload with the {nameof(CollectionParametersDiffRequest)} parameter. This overload will be removed in the future.")]
     public async Task<DefaultOperationResponse> UpdateCollectionParameters(
         string collectionName,
         UpdateCollectionParametersRequest request,
@@ -113,6 +114,55 @@ public partial class QdrantHttpClient
         }
 
         var response = await ExecuteRequest<UpdateCollectionParametersRequest, DefaultOperationResponse>(
+            url,
+            _patchHttpMethod,
+            request,
+            collectionName,
+            cancellationToken,
+            retryCount,
+            retryDelay,
+            onRetry);
+
+        tracingScope.SetResult(response);
+
+        if (response.Status.IsSuccess)
+        {
+            diagnostic.SetSuccess();
+        }
+
+        return response;
+    }
+
+    /// <inheritdoc/>
+    public async Task<DefaultOperationResponse> UpdateCollectionParameters(
+        string collectionName,
+        CollectionParametersDiffRequest request,
+        CancellationToken cancellationToken,
+        TimeSpan? timeout = null,
+        uint retryCount = DEFAULT_RETRY_COUNT,
+        TimeSpan? retryDelay = null,
+        Action<Exception, TimeSpan, int, uint> onRetry = null)
+    {
+        using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
+            _tracer,
+            nameof(UpdateCollectionParameters),
+            _enableTracing,
+            Logger);
+
+        using var diagnostic = DiagnosticTimer.StartNew(collectionName, nameof(UpdateCollectionParameters), null);
+
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        EnsureQdrantNameCorrect(collectionName, tracingScope);
+
+        var timeoutValue = GetTimeoutValueOrDefault(timeout);
+
+        var url = $"/collections/{collectionName}?timeout={timeoutValue}";
+
+        var response = await ExecuteRequest<CollectionParametersDiffRequest, DefaultOperationResponse>(
             url,
             _patchHttpMethod,
             request,

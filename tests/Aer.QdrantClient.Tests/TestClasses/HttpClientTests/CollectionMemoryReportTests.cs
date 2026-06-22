@@ -134,7 +134,7 @@ internal class CollectionMemoryReportTests : QdrantTestsBase
 
         AssertMemoryUsage(memoryReport.Total);
 
-        // Cehck dense vector memory usage
+        // Check dense vector memory usage
 
         memoryReport.Vectors.Should().HaveCount(1);
 

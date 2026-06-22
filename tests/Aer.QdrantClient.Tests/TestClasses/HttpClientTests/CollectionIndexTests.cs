@@ -203,7 +203,8 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateIndex_CheckVectorsNonZero()
+    [Obsolete("Testing obsolete UpdateCollectionParameters method")]
+    public async Task CreateIndex_CheckVectorsNonZero_Obsolete()
     {
         var vectorCount = 100;
         var vectorSize = 10U;
@@ -303,7 +304,108 @@ internal class CollectionIndexTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task CreateIndex_EnableHnsw()
+    public async Task CreateIndex_CheckVectorsNonZero()
+    {
+        var vectorCount = 100;
+        var vectorSize = 10U;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
+        for (int i = 0; i < vectorCount; i++)
+        {
+            upsertPoints.Add(
+                new(
+                    PointId.Integer((ulong)i),
+                    CreateTestVector(vectorSize),
+                    (TestPayload)i
+                )
+            );
+        }
+
+        var upsertPointsResult
+            = await _qdrantHttpClient.UpsertPoints(
+                TestCollectionName,
+                new UpsertPointsRequest()
+                {
+                    Points = upsertPoints
+                },
+                CancellationToken.None,
+                isWaitForResult: true,
+                ordering: OrderingType.Strong);
+
+        upsertPointsResult.Status.IsSuccess.Should().BeTrue();
+
+        // Enable HNSW index
+
+        var enableIndexResult = await _qdrantHttpClient.UpdateCollectionParameters(TestCollectionName,
+            new CollectionParametersDiffRequest()
+            {
+                OptimizersConfig = new()
+                {
+                    IndexingThreshold = 1
+                }
+            },
+            CancellationToken.None);
+
+        enableIndexResult.Status.IsSuccess.Should().BeTrue();
+
+        // Enable payload
+
+        var createCollectionIndexResult =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                "integer",
+                PayloadIndexedFieldType.Float,
+                CancellationToken.None,
+                isWaitForResult: true);
+
+        createCollectionIndexResult.Status.IsSuccess.Should().BeTrue();
+
+        // Just in case wait for index to be created
+        await Task.Delay(TimeSpan.FromMilliseconds(100));
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        var collectionInfo = (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None)).EnsureSuccess();
+        collectionInfo.IndexedVectorsCount.Should().Be((uint)vectorCount);
+
+        // Check that all vectors are non-zero
+
+        var readAllPoints = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            QdrantFilter.Empty,
+            PayloadPropertiesSelector.All,
+            limit: (uint)vectorCount,
+            withVector: true,
+            cancellationToken: CancellationToken.None);
+
+        readAllPoints.Status.IsSuccess.Should().BeTrue();
+        readAllPoints.Result.Points.Length.Should().Be(vectorCount);
+
+        foreach (var readPoint in readAllPoints.Result.Points)
+        {
+            readPoint.Vector.Should().NotBeNull();
+            var isWholeVectorZero = true;
+
+            foreach (var vectorComponent in readPoint.Vector.AsDenseVector().VectorValues)
+            {
+                isWholeVectorZero &= vectorComponent == 0;
+            }
+
+            isWholeVectorZero.Should().BeFalse();
+        }
+    }
+
+    [Test]
+    [Obsolete("Testing obsolete UpdateCollectionParameters method")]
+    public async Task CreateIndex_EnableHnsw_Obsolete()
     {
         OnlyIfVersionAfterOrEqual("1.17.0", "Enable HNSW flag is only supported since 1.17.0");
 
@@ -312,6 +414,117 @@ internal class CollectionIndexTests : QdrantTestsBase
         (
             await _qdrantHttpClient.UpdateCollectionParameters(TestCollectionName,
                 new UpdateCollectionParametersRequest()
+                {
+                    OptimizersConfig = new()
+                    {
+                        IndexingThreshold = 1
+                    }
+                },
+                CancellationToken.None)
+        ).EnsureSuccess();
+
+        // Create different indexes, both fulltext and not with enabled and not enabled HNSW
+
+        var fulltextIndexNoHnswResult =
+            await _qdrantHttpClient.CreateFullTextPayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                FullTextIndexTokenizerType.Prefix,
+                CancellationToken.None,
+
+                minimalTokenLength: 5,
+                maximalTokenLength: 10,
+
+                isHnswEnabled: false,
+
+                isWaitForResult: true,
+                onDisk: true);
+
+        var fulltextIndexWithHnswResult =
+            await _qdrantHttpClient.CreateFullTextPayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName2,
+                FullTextIndexTokenizerType.Prefix,
+                CancellationToken.None,
+
+                minimalTokenLength: 5,
+                maximalTokenLength: 10,
+
+                isHnswEnabled: true,
+
+                isWaitForResult: true,
+                onDisk: true);
+
+        var payloadIndexNoHnsw =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName3,
+                PayloadIndexedFieldType.Float,
+                CancellationToken.None,
+
+                isHnswEnabled: false,
+
+                isWaitForResult: true);
+
+        var payloadIndexWithHnsw =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName4,
+                PayloadIndexedFieldType.Float,
+                CancellationToken.None,
+
+                isHnswEnabled: true,
+
+                isWaitForResult: true);
+
+        AssertIndexCreationResult(fulltextIndexNoHnswResult);
+        AssertIndexCreationResult(fulltextIndexWithHnswResult);
+
+        AssertIndexCreationResult(payloadIndexNoHnsw);
+        AssertIndexCreationResult(payloadIndexWithHnsw);
+
+        var collectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionInfo.Status.IsSuccess.Should().BeTrue();
+
+        collectionInfo.Result.PayloadSchema.Count.Should().Be(4);
+
+        collectionInfo.Result.PayloadSchema.Should()
+            .ContainKeys(
+            TestPayloadFieldName, // no HNSW
+            TestPayloadFieldName2, // with HNSW
+            TestPayloadFieldName3, // no HNSW
+            TestPayloadFieldName4 // with HNSW
+        );
+
+        // Check fields with HNSW enabled
+
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.EnableHnsw.Should().BeFalse();
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName3].Params.EnableHnsw.Should().BeFalse();
+
+        // Check fields with HNSW disabled
+
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.EnableHnsw.Should().BeTrue();
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName4].Params.EnableHnsw.Should().BeTrue();
+
+        static void AssertIndexCreationResult(DefaultAsyncOperationResponse indexCreationResult)
+        {
+            indexCreationResult.Status.IsSuccess.Should().BeTrue();
+            indexCreationResult.Result.Should().NotBeNull();
+        }
+    }
+
+    [Test]
+    public async Task CreateIndex_EnableHnsw()
+    {
+        OnlyIfVersionAfterOrEqual("1.17.0", "Enable HNSW flag is only supported since 1.17.0");
+
+        await PrepareCollection(_qdrantHttpClient, TestCollectionName, vectorCount: 100);
+
+        (
+            await _qdrantHttpClient.UpdateCollectionParameters(TestCollectionName,
+                new CollectionParametersDiffRequest()
                 {
                     OptimizersConfig = new()
                     {

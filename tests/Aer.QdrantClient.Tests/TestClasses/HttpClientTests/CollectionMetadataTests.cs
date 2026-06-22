@@ -54,6 +54,69 @@ internal class CollectionMetadataTests : QdrantTestsBase
     }
 
     [Test]
+    [Obsolete("Testing obsolete UpdateCollectionParameters method")]
+    public async Task UpdateCollectionMetadata_Obsolete()
+    {
+        var metadata = new Dictionary<string, object>
+        {
+            ["test_string"] = "test",
+            ["test_int"] = 1,
+        };
+
+        (await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                Metadata = metadata
+            },
+            CancellationToken.None)
+        ).EnsureSuccess();
+
+        var initialCollectionInfo =
+            (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None))
+            .EnsureSuccess();
+
+        initialCollectionInfo.Config.Metadata.Should().NotBeNull();
+
+        initialCollectionInfo.Config.Metadata.Count.Should().Be(2);
+
+        initialCollectionInfo.GetMetadata().Keys.Should().BeEquivalentTo(metadata.Keys);
+
+        AssertMetadataValue(initialCollectionInfo, "test_string", "test");
+        AssertMetadataValue(initialCollectionInfo, "test_int", 1);
+
+        var metadataString = initialCollectionInfo.GetMetadata().ToString(isFormatJson: true);
+        metadataString.Should().Contain("test_string");
+        metadataString.Should().Contain("test_int");
+
+        var updateCollectionParametersResponse = await _qdrantHttpClient.UpdateCollectionParameters(TestCollectionName, new UpdateCollectionParametersRequest()
+        {
+            Metadata = new Dictionary<string, object>
+            {
+                ["test_string"] = "updated",
+                ["test_int"] = 42,
+            }
+        }, CancellationToken.None);
+
+        updateCollectionParametersResponse.Status.IsSuccess.Should().BeTrue();
+
+        var updatedCollectionInfo =
+            (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None))
+            .EnsureSuccess();
+
+        updatedCollectionInfo.Config.Metadata.Should().NotBeNull();
+
+        updatedCollectionInfo.Config.Metadata.Count.Should().Be(2);
+        updatedCollectionInfo.GetMetadata().Count.Should().Be(2);
+
+        updatedCollectionInfo.GetMetadata().Keys.Should().BeEquivalentTo(metadata.Keys);
+
+        AssertMetadataValue(updatedCollectionInfo, "test_string", "updated");
+        AssertMetadataValue(updatedCollectionInfo, "test_int", 42);
+    }
+
+    [Test]
     public async Task UpdateCollectionMetadata()
     {
         var metadata = new Dictionary<string, object>
@@ -89,7 +152,7 @@ internal class CollectionMetadataTests : QdrantTestsBase
         metadataString.Should().Contain("test_string");
         metadataString.Should().Contain("test_int");
 
-        var updateCollectionParametersResponse = await _qdrantHttpClient.UpdateCollectionParameters(TestCollectionName, new()
+        var updateCollectionParametersResponse = await _qdrantHttpClient.UpdateCollectionParameters(TestCollectionName, new CollectionParametersDiffRequest()
         {
             Metadata = new Dictionary<string, object>
             {
@@ -113,6 +176,87 @@ internal class CollectionMetadataTests : QdrantTestsBase
 
         AssertMetadataValue(updatedCollectionInfo, "test_string", "updated");
         AssertMetadataValue(updatedCollectionInfo, "test_int", 42);
+    }
+
+    [Test]
+    [Obsolete("Testing obsolete UpdateCollectionParameters method")]
+    public async Task DeleteCollectionMetadata_Obsolete()
+    {
+        var metadata = new Dictionary<string, object>
+        {
+            ["test_string"] = "test",
+            ["test_int"] = 1,
+        };
+
+        (await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                Metadata = metadata
+            },
+            CancellationToken.None)
+        ).EnsureSuccess();
+
+        var initialCollectionInfo =
+            (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None))
+            .EnsureSuccess();
+
+        initialCollectionInfo.Config.Metadata.Should().NotBeNull();
+        initialCollectionInfo.GetMetadata().Count.Should().Be(2);
+        initialCollectionInfo.Config.Metadata.Count.Should().Be(2);
+
+        // Delete first key
+
+        var updateCollectionParametersResponse1 = await _qdrantHttpClient.UpdateCollectionParameters(TestCollectionName, new UpdateCollectionParametersRequest()
+        {
+            Metadata = new Dictionary<string, object>
+            {
+                ["test_string"] = null,
+            }
+        }, CancellationToken.None);
+
+        updateCollectionParametersResponse1.Status.IsSuccess.Should().BeTrue();
+
+        var updatedCollectionInfo =
+           (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None))
+           .EnsureSuccess();
+
+        updatedCollectionInfo.Config.Metadata.Should().NotBeNull();
+        updatedCollectionInfo.GetMetadata().Count.Should().Be(1);
+        updatedCollectionInfo.Config.Metadata.Count.Should().Be(1);
+
+        updatedCollectionInfo.GetMetadata().Keys.Should().BeEquivalentTo(["test_int"]); // Only one key left
+
+        updatedCollectionInfo.Config.Metadata.ContainsKey("test_string").Should().BeFalse();
+        updatedCollectionInfo.ContainsMetadataKey("test_string").Should().BeFalse();
+        updatedCollectionInfo.ContainsMetadataKey("test_int").Should().BeTrue();
+
+        // Delete second key
+
+        var updateCollectionParametersResponse2 = await _qdrantHttpClient.UpdateCollectionParameters(TestCollectionName, new UpdateCollectionParametersRequest()
+        {
+            Metadata = new Dictionary<string, object>
+            {
+                ["test_int"] = null,
+            }
+        }, CancellationToken.None);
+
+        updateCollectionParametersResponse2.Status.IsSuccess.Should().BeTrue();
+
+        var finalCollectionInfo =
+           (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None))
+           .EnsureSuccess();
+
+        finalCollectionInfo.Config.Metadata.Should().NotBeNull();
+
+        finalCollectionInfo.GetMetadata().Count.Should().Be(0);
+        finalCollectionInfo.Config.Metadata.Count.Should().Be(0);
+
+        finalCollectionInfo.GetMetadata().Keys.Should().BeEmpty();
+
+        finalCollectionInfo.ContainsMetadataKey("test_string").Should().BeFalse();
+        finalCollectionInfo.ContainsMetadataKey("test_int").Should().BeFalse();
     }
 
     [Test]
@@ -144,7 +288,7 @@ internal class CollectionMetadataTests : QdrantTestsBase
 
         // Delete first key
 
-        var updateCollectionParametersResponse1 = await _qdrantHttpClient.UpdateCollectionParameters(TestCollectionName, new()
+        var updateCollectionParametersResponse1 = await _qdrantHttpClient.UpdateCollectionParameters(TestCollectionName, new CollectionParametersDiffRequest()
         {
             Metadata = new Dictionary<string, object>
             {
@@ -170,7 +314,7 @@ internal class CollectionMetadataTests : QdrantTestsBase
 
         // Delete second key
 
-        var updateCollectionParametersResponse2 = await _qdrantHttpClient.UpdateCollectionParameters(TestCollectionName, new()
+        var updateCollectionParametersResponse2 = await _qdrantHttpClient.UpdateCollectionParameters(TestCollectionName, new CollectionParametersDiffRequest()
         {
             Metadata = new Dictionary<string, object>
             {
