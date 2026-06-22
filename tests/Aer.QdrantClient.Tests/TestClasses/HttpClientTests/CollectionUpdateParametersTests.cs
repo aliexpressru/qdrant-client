@@ -298,7 +298,7 @@ internal class CollectionUpdateParametersTests : QdrantTestsBase
                     MaxIndexingThreads = newMaxIndexingThreads,
                     M = newM
                 },
-                QuantizationConfig = QuantizationConfigurationDiff.Turbo(isQuantizedVectorAlwaysInRam: true, TurboQuantizationEncoding.Bits1_5),
+                QuantizationConfig = QuantizationConfigurationDiff.Binary(isQuantizedVectorAlwaysInRam: true, BinaryQuantizationEncoding.TwoBits),
                 StrictModeConfig = new StrictModeConfiguration()
                 {
                     Enabled = true,
@@ -309,7 +309,7 @@ internal class CollectionUpdateParametersTests : QdrantTestsBase
 
         await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
 
-        updateCollectionParametersResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        updateCollectionParametersResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok, $"{updateCollectionParametersResult.Status.GetErrorMessage()}");
         updateCollectionParametersResult.Status.IsSuccess.Should().BeTrue();
 
         updateCollectionParametersResult.Result.Should().NotBeNull();
@@ -329,11 +329,11 @@ internal class CollectionUpdateParametersTests : QdrantTestsBase
         updatedCollectionInfo.Result.Config.StrictModeConfig.Enabled.Should().BeTrue();
         updatedCollectionInfo.Result.Config.StrictModeConfig.MaxPointsCount.Should().Be(1000);
 
-        updatedCollectionInfo.Result.Config.QuantizationConfig.Method.Should().Be(QuantizationConfiguration.TurboQuantizationConfiguration.QuantizationMethodName);
+        updatedCollectionInfo.Result.Config.QuantizationConfig.Method.Should().Be(QuantizationConfiguration.BinaryQuantizationConfiguration.QuantizationMethodName);
 
-        var quantizationConfig = updatedCollectionInfo.Result.Config.QuantizationConfig.As<TurboQuantizationConfiguration>();
+        var quantizationConfig = updatedCollectionInfo.Result.Config.QuantizationConfig.As<BinaryQuantizationConfiguration>();
 
-        quantizationConfig.Bits.Should().Be(TurboQuantizationEncoding.Bits1_5);
+        quantizationConfig.Encoding.Should().Be(BinaryQuantizationEncoding.TwoBits);
         quantizationConfig.AlwaysRam.Should().BeTrue();
     }
 
