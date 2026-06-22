@@ -119,11 +119,11 @@ public class ShardReplicator
 
                 if (peerState is not (ShardState.Active or ShardState.ActiveRead))
                 {
-                    // Means that the replica is not alive and active
+                    // Means that the replica is not active
                     inactiveShardReplicasToDrop.Add((shardId, peerId));
                     inactiveReplicaCount++;
                 }
-                else if (shardReplicaTelemetry is { NumVectors: 0 } or ({ PayloadsSizeBytes: 0 } and { VectorsSizeBytes: 0 }))
+                else if (shardReplicaTelemetry?.IsEmpty == true)
                 {
                     // Means that we have replica telemetry and it indicated that the replica is empty
                     inactiveShardReplicasToDrop.Add((shardId, peerId));

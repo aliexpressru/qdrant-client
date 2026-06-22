@@ -141,6 +141,11 @@ public sealed class GetClusterTelemetryResponse : QdrantResponseBase<ClusterTele
                 public PartialSnapshotInfo PartialSnapshot { get; set; }
 
                 /// <summary>
+                /// Returns <c>true</c> the replica is empty.
+                /// </summary>
+                public bool IsEmpty => NumVectors == 0 || (PayloadsSizeBytes == 0 && VectorsSizeBytes == 0);
+
+                /// <summary>
                 /// Snapshot creation and recovery activity for a single collection.
                 /// </summary>
                 public class PartialSnapshotInfo
