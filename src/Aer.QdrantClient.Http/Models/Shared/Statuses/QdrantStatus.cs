@@ -52,7 +52,7 @@ public sealed class QdrantStatus
     /// <summary>
     /// Tries to get error message from this qdrant status. If the status is <c>Ok</c> returns <c>null</c>.
     /// </summary>
-    public string GetErrorMessage() => Error ?? RawStatusString;
+    public string GetErrorMessage() => !IsSuccess ? Error ?? RawStatusString : null;
 
     /// <summary>
     /// Get qdrant status that indicates success.
