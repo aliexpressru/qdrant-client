@@ -13,8 +13,8 @@ jobs:
     test_qdrant_1_18_x:
         uses: ./.github/workflows/test_template.yml
         with:
-            qdrant_image: qdrant/qdrant:v1.18.1
-            qdrant_version: 1.18.1
+            qdrant_image: qdrant/qdrant:v1.18.2
+            qdrant_version: 1.18.2
 
     test_qdrant_1_17_x:
         uses: ./.github/workflows/test_template.yml
