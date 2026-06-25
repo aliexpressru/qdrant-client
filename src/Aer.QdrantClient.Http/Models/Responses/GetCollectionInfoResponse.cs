@@ -167,6 +167,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
         /// Collection metadata.
         /// </summary>
         [JsonConverter(typeof(CollectionMetadataJsonConverter))]
+        [Newtonsoft.Json.JsonConverter(typeof(CollectionMetadataNewtonsoftJsonConverter))]
         public CollectionMetadata Metadata { get; init; } = CollectionMetadata.Empty;
 
         /// <summary>
