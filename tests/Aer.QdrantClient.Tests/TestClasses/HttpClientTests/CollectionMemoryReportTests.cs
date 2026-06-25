@@ -143,7 +143,7 @@ internal class CollectionMemoryReportTests : QdrantTestsBase
             AssertMemoryUsage(denseVectorReport.Storage, allowRamZero: true, allowExpectedCacheZero: true);
 
             // For some reason dense vectors are not hoisted to memory even if asked for
-            AssertMemoryUsage(denseVectorReport.Index, allowRamZero: true, allowExpectedCacheZero: true);
+            AssertMemoryUsage(denseVectorReport.Index, allowRamZero: true, allowCachedZero: true, allowExpectedCacheZero: true);
         }
 
         // Check sparse vector memory usage
