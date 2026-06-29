@@ -1,8 +1,10 @@
 using Aer.QdrantClient.Http;
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
 using Aer.QdrantClient.Http.Models.Requests.Public;
 using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
+using Aer.QdrantClient.Tests.Helpers;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
@@ -176,6 +178,50 @@ internal class CollectionMetadataTests : QdrantTestsBase
 
         AssertMetadataValue(updatedCollectionInfo, "test_string", "updated");
         AssertMetadataValue(updatedCollectionInfo, "test_int", 42);
+    }
+
+    [Test]
+    public async Task CollectionMetadata_NewtonsoftSerializer()
+    {
+        var metadata = new Dictionary<string, object>
+        {
+            ["test_string"] = "test",
+            ["test_int"] = 1,
+            ["test_object"] = new
+            {
+                A = 1,
+                B = 2.4,
+                C = "AAA"
+            },
+            ["test_array"] = new long[] { long.MaxValue - 1, long.MinValue + 1, 0 }
+        };
+
+        (await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true,
+                Metadata = metadata
+            },
+            CancellationToken.None)
+        ).EnsureSuccess();
+
+        var collectionInfo =
+            (await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None))
+            .EnsureSuccess();
+
+        var collectionMetadata = collectionInfo.Config.Metadata;
+
+        var serializerSettings = new Newtonsoft.Json.JsonSerializerSettings()
+        {
+            Converters = { new CollectionMetadataNewtonsoftJsonConverter() }
+        };
+
+        var serialized = Newtonsoft.Json.JsonConvert.SerializeObject(collectionMetadata, serializerSettings);
+
+        var expected = Newtonsoft.Json.JsonConvert.SerializeObject(metadata, serializerSettings);
+
+        serialized.AssertSameString(expected);
     }
 
     [Test]

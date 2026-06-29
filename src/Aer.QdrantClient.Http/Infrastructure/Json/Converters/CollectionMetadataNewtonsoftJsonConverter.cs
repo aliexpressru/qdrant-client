@@ -11,10 +11,12 @@ internal class CollectionMetadataNewtonsoftJsonConverter : JsonConverter<Collect
         CollectionMetadata existingValue,
         bool hasExistingValue,
         JsonSerializer serializer
-    ) => throw new NotSupportedException($"Reading {nameof(CollectionMetadata)} instances via Newtonsoft.Json is not supported");
+    ) => throw new NotSupportedException($"Reading {nameof(CollectionMetadata)} instances via Newtonsoft.Json serializer is not supported");
 
     public override void WriteJson(JsonWriter writer, CollectionMetadata value, JsonSerializer serializer)
     {
-        serializer.Serialize(writer, value.RawMetadata ?? CollectionMetadata.Empty.RawMetadata);
+        var serializedMetadata = System.Text.Json.JsonSerializer.Serialize(value.RawMetadata ?? CollectionMetadata.Empty.RawMetadata, JsonSerializerConstants.DefaultSerializerOptions);
+
+        writer.WriteRaw(serializedMetadata);
     }
 }
