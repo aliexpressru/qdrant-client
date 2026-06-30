@@ -400,7 +400,7 @@ internal class RestoreShardReplicationFactorTests : QdrantTestsBase
     }
 
     [Test]
-    public async Task RestoreShardReplicationFactor_OneEmptyNodes()
+    public async Task RestoreShardReplicationFactor_EmptyNodes()
     {
         /*
        This is an example for replicationFactor = 2 and shardCount = 6.
