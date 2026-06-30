@@ -5,6 +5,7 @@ using Aer.QdrantClient.Http.Models.Responses;
 using Aer.QdrantClient.Http.Models.Shared;
 using Aer.QdrantClient.Tests.Base;
 using Aer.QdrantClient.Tests.Helpers;
+using Newtonsoft.Json.Serialization;
 
 namespace Aer.QdrantClient.Tests.TestClasses.HttpClientTests;
 
@@ -214,14 +215,20 @@ internal class CollectionMetadataTests : QdrantTestsBase
 
         var serializerSettings = new Newtonsoft.Json.JsonSerializerSettings()
         {
-            Converters = { new CollectionMetadataNewtonsoftJsonConverter() }
+            Converters = { new CollectionMetadataNewtonsoftJsonConverter() },
+            ContractResolver = new DefaultContractResolver()
+            {
+                NamingStrategy = new SnakeCaseNamingStrategy()
+            }
         };
 
-        var serialized = Newtonsoft.Json.JsonConvert.SerializeObject(collectionMetadata, serializerSettings);
+        var serializedCollectionInfo = Newtonsoft.Json.JsonConvert.SerializeObject(collectionInfo);
 
-        var expected = Newtonsoft.Json.JsonConvert.SerializeObject(metadata, serializerSettings);
+        var serializedMetadata = Newtonsoft.Json.JsonConvert.SerializeObject(collectionMetadata, serializerSettings);
+        var expectedMetadata = Newtonsoft.Json.JsonConvert.SerializeObject(metadata, serializerSettings);
 
-        serialized.AssertSameString(expected);
+        serializedMetadata.AssertSameString(expectedMetadata);
+        serializedCollectionInfo.AssertContainsString(expectedMetadata);
     }
 
     [Test]

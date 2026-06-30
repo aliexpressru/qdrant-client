@@ -20,6 +20,24 @@ internal static class StringHelper
         compactActualValue.Should().BeEquivalentTo(compactExpectedValue);
     }
 
+    public static void AssertContainsString(this string target, string expectedSubstring)
+    {
+        if (expectedSubstring is null)
+        {
+            target.Should().BeNull();
+        }
+
+        if (expectedSubstring is not null)
+        {
+            target.Should().NotBeNull();
+        }
+
+        var compactActualValue = target.Compact();
+        var compactExpectedValue = expectedSubstring.Compact();
+
+        compactActualValue.Should().Contain(compactExpectedValue);
+    }
+
     private static string Compact(this string target)
         =>
             target

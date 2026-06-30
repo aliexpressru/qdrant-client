@@ -17,6 +17,6 @@ internal class CollectionMetadataNewtonsoftJsonConverter : JsonConverter<Collect
     {
         var serializedMetadata = System.Text.Json.JsonSerializer.Serialize(value.RawMetadata ?? CollectionMetadata.Empty.RawMetadata, JsonSerializerConstants.DefaultSerializerOptions);
 
-        writer.WriteRaw(serializedMetadata);
+        writer.WriteRawValue(serializedMetadata);
     }
 }
