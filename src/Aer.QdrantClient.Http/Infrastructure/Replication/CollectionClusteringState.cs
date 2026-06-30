@@ -86,6 +86,14 @@ internal class CollectionClusteringState : IEquatable<CollectionClusteringState>
             ShardsByPeers.Add(peerId, [.. shards]);
         }
 
+        // Here if collection is not present on any of the peers at all it will be missing from ShardsByPeers.
+        // We need to add empty peers to ShardsByPeers as well
+
+        foreach (var emptyPeerId in knownPeers.Where(p => !ShardsByPeers.ContainsKey(p.Key)).Select(kv => kv.Key))
+        {
+            ShardsByPeers.Add(emptyPeerId, []);
+        }
+
         foreach (var peersByShard in collectionClusteringInfo.PeersByShards)
         {
             uint shardId = peersByShard.Key;

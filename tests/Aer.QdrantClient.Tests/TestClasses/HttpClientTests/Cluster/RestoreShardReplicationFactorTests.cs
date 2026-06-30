@@ -398,4 +398,140 @@ internal class RestoreShardReplicationFactorTests : QdrantTestsBase
             .Contain("Can't restore shard replication factor")
             .And.Contain("collection clustering was changed");
     }
+
+    [Test]
+    public async Task RestoreShardReplicationFactor_OneEmptyNodes()
+    {
+        /*
+       This is an example for replicationFactor = 2 and shardCount = 6.
+
+       This test checks whether the following transition happens when RestoreShardReplicationFactor is called:
+       Note that the shard numbers may differ since qdrant chooses shard placement at random
+
+       Node 1   Node 2   Node 3
+       S0       S1       S2
+       ------------------------- Move replicas until this state.
+       S0 S1             S2
+       ------------------------- Call RestoreShardReplicationFactor, the replication factor and 1 shard per node should be recovered
+       ------------------------- Note that the exact shard numbers might be mixed up but the 4 shards per node rule should hold
+       S0       S1       S2
+       */
+
+        await PrepareCollection(
+            _qdrantHttpClient1,
+            TestCollectionName,
+            replicationFactor: 1,
+            vectorCount: 100,
+            shardCount: 3
+        );
+
+        var node1Info = (await _qdrantHttpClient1.GetPeerInfo("qdrant-11", CancellationToken.None)).EnsureSuccess();
+
+        var node2Info = (await _qdrantHttpClient2.GetPeerInfo("qdrant-12", CancellationToken.None)).EnsureSuccess();
+
+        var node3Info = (await _qdrantHttpClient3.GetPeerInfo("qdrant-13", CancellationToken.None)).EnsureSuccess();
+
+        // Since obtained collection clustering info contains all shards by peers straight and reversed dictionaries we can use any peer info
+
+        var node1ShardState = (
+            await _qdrantHttpClient1.GetCollectionClusteringInfo(
+                TestCollectionName,
+                CancellationToken.None,
+                isTranslatePeerIdsToUris: true
+            )
+        ).EnsureSuccess();
+
+        // Move 1 shard away from one of the nodes
+
+        // Move one shard from node 2 to node 1
+
+        var shardToMoveFromShard2 = node1ShardState
+            .ShardsByPeers[node2Info.PeerId]
+            .Single();
+
+        (
+            await _qdrantHttpClient1.ReplicateShards(
+                sourcePeerId: node2Info.PeerId,
+                targetPeerId: node1Info.PeerId,
+                CancellationToken.None,
+                collectionNamesToReplicate: [TestCollectionName],
+                shardIdsToReplicate: [shardToMoveFromShard2],
+                isMoveShards: true
+            )
+        ).EnsureSuccess();
+
+        // Move one shard from node 3 to node 1
+
+        var shardToMoveFromShard3 = node1ShardState
+            .ShardsByPeers[node3Info.PeerId]
+            .Single();
+
+        (
+            await _qdrantHttpClient1.ReplicateShards(
+                sourcePeerId: node3Info.PeerId,
+                targetPeerId: node1Info.PeerId,
+                CancellationToken.None,
+                collectionNamesToReplicate: [TestCollectionName],
+                shardIdsToReplicate: [shardToMoveFromShard3],
+                isMoveShards: true
+            )
+        ).EnsureSuccess();
+
+        await _qdrantHttpClient1.EnsureCollectionReady(
+            TestCollectionName,
+            CancellationToken.None,
+            isCheckShardTransfersCompleted: true
+        );
+
+        await _qdrantHttpClient2.EnsureCollectionReady(
+            TestCollectionName,
+            CancellationToken.None,
+            isCheckShardTransfersCompleted: true
+        );
+
+        await _qdrantHttpClient3.EnsureCollectionReady(
+            TestCollectionName,
+            CancellationToken.None,
+            isCheckShardTransfersCompleted: true
+        );
+
+        // Restore replication factor
+
+        var restoreReplicationFactorResponse = await _qdrantHttpClient1.RestoreShardReplicationFactor(
+            TestCollectionName,
+            CancellationToken.None
+        );
+
+        restoreReplicationFactorResponse.Status.IsSuccess.Should().BeTrue();
+
+        var shardReplicator = restoreReplicationFactorResponse.Result;
+
+        shardReplicator.ShardsNeedReplication.Should().BeTrue();
+
+        shardReplicator.ReplicationPlan.Should().NotBeEmpty();
+
+        shardReplicator.ReplicationPlan.Count.Should().Be(2);
+
+        var firstReplicationResult = await shardReplicator.ExecuteNextReplication(CancellationToken.None);
+
+        firstReplicationResult.Status.IsSuccess.Should().BeTrue();
+
+        // Wait for replication to complete before moving to the next replication step
+        await _qdrantHttpClient1.EnsureCollectionReady(
+            TestCollectionName,
+            CancellationToken.None,
+            isCheckShardTransfersCompleted: true
+        );
+
+        var secondReplicationResult = await shardReplicator.ExecuteNextReplication(CancellationToken.None);
+
+        secondReplicationResult.Status.IsSuccess.Should().BeTrue();
+
+        // Wait for replication to complete
+        await _qdrantHttpClient1.EnsureCollectionReady(
+            TestCollectionName,
+            CancellationToken.None,
+            isCheckShardTransfersCompleted: true
+        );
+    }
 }
