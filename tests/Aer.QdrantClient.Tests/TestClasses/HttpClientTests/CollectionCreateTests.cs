@@ -106,6 +106,7 @@ internal class CollectionCreateTests : QdrantTestsBase
     [TestCase(VectorDataType.Float32)]
     [TestCase(VectorDataType.Uint8)]
     [TestCase(VectorDataType.Float16)]
+    [TestCase(VectorDataType.Turbo4)]
     public async Task CheckParameters(VectorDataType vectorDataType)
     {
         uint vectorSize = 10U;
@@ -336,6 +337,7 @@ internal class CollectionCreateTests : QdrantTestsBase
     [TestCase(VectorDataType.Float32)]
     [TestCase(VectorDataType.Uint8)]
     [TestCase(VectorDataType.Float16)]
+    [TestCase(VectorDataType.Turbo4)]
     public async Task NamedVectors_WithUpsertPoints_CheckParameters(VectorDataType vectorDataType)
     {
         uint vectorSize = 10U;
@@ -354,7 +356,7 @@ internal class CollectionCreateTests : QdrantTestsBase
             new Dictionary<string, SparseVectorConfiguration>()
             {
                 [VectorBase.DefaultVectorName] = new(
-                    vectorDataType: vectorDataType,
+                    vectorDataType: vectorDataType is VectorDataType.Turbo4 ? VectorDataType.Float32 : vectorDataType, // sparse vector does not support turbo4
                     onDisk: true,
                     fullScanThreshold: 100,
                     sparseVectorValueModifier: SparseVectorModifier.Idf)
@@ -404,7 +406,7 @@ internal class CollectionCreateTests : QdrantTestsBase
         var collectionInfo = createdCollectionInfoResponse.Result;
 
         collectionInfo.Config.Params.SparseVectors.Should().ContainKey(VectorBase.DefaultVectorName);
-        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].Index.Datatype.Should().Be(vectorDataType);
+        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].Index.Datatype.Should().Be(vectorDataType is VectorDataType.Turbo4 ? VectorDataType.Float32 : vectorDataType);
         collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].Index.OnDisk.Should().Be(true);
         collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].Index.FullScanThreshold.Should().Be(100);
         collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].Modifier.Should().Be(SparseVectorModifier.Idf);

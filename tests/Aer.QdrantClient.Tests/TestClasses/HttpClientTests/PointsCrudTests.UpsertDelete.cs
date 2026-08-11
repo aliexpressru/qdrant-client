@@ -25,6 +25,7 @@ internal partial class PointsCrudTests
     [TestCase(VectorDataType.Float32)]
     [TestCase(VectorDataType.Uint8)]
     [TestCase(VectorDataType.Float16)]
+    [TestCase(VectorDataType.Turbo4)]
     public async Task UpsertPoint(VectorDataType vectorDataType)
     {
         var vectorSize = 10U;
@@ -72,8 +73,15 @@ internal partial class PointsCrudTests
         readPointsResult.Result.Should().NotBeNull();
 
         readPointsResult.Result.Id.ObjectId.Should().Be(testPointId.ObjectId);
-        readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
-            .Should().BeEquivalentTo(testVector);
+
+        // If vector data type is turbo4, this vector is stored compressed, original vector is not stored
+        // Vector values are re-calculated from these compressed data for a returned point. That is why the result appears to be approximate 
+        if (vectorDataType is not VectorDataType.Turbo4)
+        {
+            readPointsResult.Result.Vector.Default.AsDenseVector().VectorValues
+                .Should().BeEquivalentTo(testVector);
+        }
+
         var readTestPayload = readPointsResult.Result.Payload.As<TestPayload>();
 
         readTestPayload.Integer.Should().Be(testPayload.Integer);
