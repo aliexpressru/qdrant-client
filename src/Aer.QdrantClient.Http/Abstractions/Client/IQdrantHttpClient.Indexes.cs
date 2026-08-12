@@ -58,7 +58,10 @@ public partial interface IQdrantHttpClient
     /// Enable HNSW graph building for this payload field.
     /// If <c>true</c>, builds additional HNSW links (Needs payload_m to be > 0). Default: <c>true</c>.
     /// </param>
-    /// 
+    /// <param name="isPrefixEnabled">
+    /// Enable the prefix option for keyword index for efficient prefix matching.
+    /// </param>
+    ///
     /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
     /// <param name="onRetry">
@@ -80,6 +83,8 @@ public partial interface IQdrantHttpClient
         bool? isRangeEnabled = null,
 
         bool? isHnswEnabled = null,
+        
+        bool? isPrefixEnabled = null,
 
         uint retryCount = 3,
         TimeSpan? retryDelay = null,

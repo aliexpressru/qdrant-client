@@ -1153,4 +1153,87 @@ internal class PointsScrollTests : QdrantTestsBase
 
         readPointsResult.Result.Points[0].Id.AsInteger().Should().Be(1000);
     }
+    
+    [Test]
+    public async Task FullText_MatchPrefix()
+    {
+        OnlyIfVersionAfterOrEqual("1.19.0", "Prefix match search available since 1.19");
+
+        var vectorSize = 10U;
+        var vectorCount = 5;
+
+        (await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None)).EnsureSuccess();
+
+        (await _qdrantHttpClient.CreatePayloadIndex(
+            TestCollectionName,
+            "text",
+            PayloadIndexedFieldType.Keyword,
+            CancellationToken.None,
+            
+            isPrefixEnabled: true,
+            
+            isWaitForResult: true,
+            onDisk: true)).EnsureSuccess();
+
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
+
+        // All these points will not match
+        for (int i = 0; i < vectorCount; i++)
+        {
+            upsertPoints.Add(
+                new(
+                    PointId.Integer((ulong)i),
+                    CreateTestVector(vectorSize),
+                    new TestPayload()
+                    {
+                        Text = $"text_{i} {i} test"
+                    }
+                )
+            );
+        }
+
+        upsertPoints.Add(
+            new(
+                    PointId.Integer((ulong)1000),
+                    CreateTestVector(vectorSize),
+                    new TestPayload()
+                    {
+                        Text = $"text_1000 1000 test"
+                    }
+                )
+            );
+
+        (await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest()
+            {
+                Points = upsertPoints
+            },
+            CancellationToken.None)).EnsureSuccess();
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        var readPointsResult = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            Q.Must(
+                // Two points should satisfy this condition
+                Q<TestPayload>.MatchPrefix(p => p.Text, "text_1")
+            ),
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: false,
+            retryCount: 0);
+
+        readPointsResult.Status.IsSuccess.Should().BeTrue();
+        readPointsResult.Result.Points.Length.Should().Be(2);
+
+        readPointsResult.Result.Points[0].Id.AsInteger().Should().Be(1);
+        readPointsResult.Result.Points[1].Id.AsInteger().Should().Be(1000);
+    }
 }

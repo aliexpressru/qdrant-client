@@ -202,6 +202,23 @@ public static class Q<TPayload>
             query,
             TextMatchType.Any);
     }
+    
+    /// <summary>
+    /// Check if payload has a text field which starts with a given prefix.
+    /// </summary>
+    /// <param name="payloadFieldSelectorExpression">The payload field selector expression.</param>
+    /// <param name="query">Value to substring match against.</param>
+    /// <remarks>
+    /// For efficient prefix matching, a keyword index with the prefix option enabled on the field must be created.
+    /// </remarks>
+    public static FilterConditionBase MatchPrefix(Expression<Func<TPayload, string>> payloadFieldSelectorExpression, string query)
+    {
+        var payloadFieldName = ReflectionHelper.GetPayloadFieldName(payloadFieldSelectorExpression);
+
+        return new FieldMatchPrefixCondition(
+            payloadFieldName,
+            query);
+    }
 
     /// <summary>
     /// Check if payload field value lies in a given range.

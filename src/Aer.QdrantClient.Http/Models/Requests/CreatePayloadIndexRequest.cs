@@ -19,7 +19,9 @@ internal sealed class CreatePayloadIndexRequest
         bool? isLookupEnabled,
         bool? isRangeEnabled,
 
-        bool? isHnswEnabled)
+        bool? isHnswEnabled,
+        
+        bool? isPrefixEnabled)
     {
         /// <summary>
         /// The type of the indexed payload field.
@@ -54,6 +56,11 @@ internal sealed class CreatePayloadIndexRequest
         /// If true, builds additional HNSW links (Need payload_m > 0). Default: true.
         /// </summary>
         public bool? EnableHnsw { get; } = isHnswEnabled;
+        
+        /// <summary>
+        /// If true - support the keyword index with the prefix option for efficient prefix match
+        /// </summary>
+        public bool? Prefix { get; } = isPrefixEnabled;
     }
 
     /// <summary>
@@ -87,6 +94,8 @@ internal sealed class CreatePayloadIndexRequest
     /// <param name="isHnswEnabled">Enable HNSW graph building for this payload field.
     /// If <c>true</c>, builds additional HNSW links (Needs payload_m to be > 0). Default: <c>true</c>.
     /// </param>
+    /// <param name="isPrefixEnabled">Enable the prefix option for keyword index for efficient prefix matching.
+    /// </param>
     public CreatePayloadIndexRequest(
         string payloadFieldName,
         PayloadIndexedFieldType payloadFieldType,
@@ -97,7 +106,9 @@ internal sealed class CreatePayloadIndexRequest
         bool? isLookupEnabled = null,
         bool? isRangeFilterEnabled = null,
 
-        bool? isHnswEnabled = null)
+        bool? isHnswEnabled = null,
+        
+        bool? isPrefixEnabled = null)
     {
         FieldName = payloadFieldName;
         FieldSchema = new FieldSchemaUnit(
@@ -110,7 +121,9 @@ internal sealed class CreatePayloadIndexRequest
             isLookupEnabled: isLookupEnabled,
             isRangeEnabled: isRangeFilterEnabled,
 
-            isHnswEnabled: isHnswEnabled
+            isHnswEnabled: isHnswEnabled,
+            
+            isPrefixEnabled: isPrefixEnabled
         );
     }
 }

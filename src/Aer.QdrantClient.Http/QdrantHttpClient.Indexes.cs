@@ -23,6 +23,12 @@ public partial class QdrantHttpClient
         PayloadIndexedFieldType.Float,
         PayloadIndexedFieldType.Datetime
     ];
+    
+    private readonly HashSet<PayloadIndexedFieldType> _allowedPayloadFieldTypesForPrefixIndex =
+    [
+        PayloadIndexedFieldType.Keyword
+    ];
+
 
     /// <inheritdoc/>
     public async Task<DefaultAsyncOperationResponse> CreatePayloadIndex(
@@ -40,6 +46,8 @@ public partial class QdrantHttpClient
         bool? isRangeEnabled = null,
 
         bool? isHnswEnabled = null,
+        
+        bool? isPrefixEnabled = null,
 
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
@@ -108,6 +116,18 @@ public partial class QdrantHttpClient
         {
             var ex = new InvalidOperationException(
                 $"Direct creation of the text type indexes (fulltext search indexes) is not supported. To create fulltext index please use {nameof(CreateFullTextPayloadIndex)} method");
+
+            tracingScope.SetError(ex);
+
+            throw ex;
+        }
+        
+        if (isPrefixEnabled.HasValue
+            && isPrefixEnabled.Value
+            && !_allowedPayloadFieldTypesForPrefixIndex.Contains(payloadFieldType))
+        {
+            var ex = new QdrantUnsupportedFieldSchemaForIndexConfiguration(
+                $"The prefix option is not supported for payload field {payloadFieldName} with type {payloadFieldType}. Supported types: [{string.Join(", ", _allowedPayloadFieldTypesForPrefixIndex)}]");
 
             tracingScope.SetError(ex);
 
