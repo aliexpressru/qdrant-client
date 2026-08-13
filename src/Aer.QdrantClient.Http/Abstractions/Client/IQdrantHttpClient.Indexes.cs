@@ -19,6 +19,7 @@ public partial interface IQdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="onDisk">
+    /// Obsolete. Use the memory parameter starting with version 1.19 instead.
     /// If set to <c>true</c> the payload will be stored on-disk instead of in-memory.
     /// On-disk payload index might affect cold requests latency, as it requires additional disk I/O operations.
     /// </param>
@@ -61,6 +62,9 @@ public partial interface IQdrantHttpClient
     /// <param name="isPrefixEnabled">
     /// Enable the prefix option for keyword index for efficient prefix matching.
     /// </param>
+    /// <param name="memory">
+    /// Controls how each payload index is cached in RAM: pinned permanently, warmed into a disk cache at startup, or left on disk until first accessed.
+    /// </param>
     ///
     /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
     /// <param name="retryDelay">Operation retry delay. Set to <c>null</c> to retry immediately.</param>
@@ -85,6 +89,8 @@ public partial interface IQdrantHttpClient
         bool? isHnswEnabled = null,
         
         bool? isPrefixEnabled = null,
+        
+        MemoryType? memory = null,
 
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
@@ -106,6 +112,7 @@ public partial interface IQdrantHttpClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="isLowercasePayloadTokens">If <c>true</c>, lowercase all tokens. Default: <c>true</c>.</param>
     /// <param name="onDisk">
+    /// Obsolete. Use the memory parameter starting with version 1.19 instead.
     /// If set to <c>true</c> the payload will be stored on-disk instead of in-memory.
     /// On-disk payload index might affect cold requests latency, as it requires additional disk I/O operations.
     /// </param>
@@ -119,6 +126,9 @@ public partial interface IQdrantHttpClient
     /// <param name="isHnswEnabled">
     /// Enable HNSW graph building for this payload field.
     /// If <c>true</c>, builds additional HNSW links (Needs payload_m to be > 0). Default: <c>true</c>.
+    /// </param>
+    /// <param name="memory">
+    /// Controls how each payload index is cached in RAM: pinned permanently, warmed into a disk cache at startup, or left on disk until first accessed.
     /// </param>
     /// <param name="isWaitForResult">If <c>true</c>, wait for changes to actually happen.</param>
     /// <param name="retryCount">Operation retry count. Set to <c>null</c> to disable retry.</param>
@@ -146,6 +156,8 @@ public partial interface IQdrantHttpClient
         bool? isAsciiFoldingEnabled = null,
 
         bool? isHnswEnabled = null,
+        
+        MemoryType? memory = null,
 
         bool isWaitForResult = false,
         uint retryCount = 3,

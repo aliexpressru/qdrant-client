@@ -48,6 +48,8 @@ public partial class QdrantHttpClient
         bool? isHnswEnabled = null,
         
         bool? isPrefixEnabled = null,
+        
+        MemoryType? memory = null,
 
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
@@ -134,10 +136,15 @@ public partial class QdrantHttpClient
             throw ex;
         }
 
+        if (onDisk && memory is null)
+        {
+            memory = MemoryType.Cold;
+        }
+
         var createIndexRequest = new CreatePayloadIndexRequest(
             payloadFieldName,
             payloadFieldType,
-            onDisk: onDisk,
+            memory: memory,
             isTenant: isTenant,
             isPrincipal: isPrincipal,
 
@@ -193,6 +200,8 @@ public partial class QdrantHttpClient
         bool? isAsciiFoldingEnabled = null,
 
         bool? isHnswEnabled = null,
+        
+        MemoryType? memory = null,
 
         bool isWaitForResult = false,
         uint retryCount = DEFAULT_RETRY_COUNT,
@@ -210,6 +219,11 @@ public partial class QdrantHttpClient
         EnsureQdrantNameCorrect(collectionName, tracingScope);
         EnsureQdrantNameCorrect(payloadTextFieldName, tracingScope);
 
+        if (onDisk && memory is null)
+        {
+            memory = MemoryType.Cold;
+        }
+
         var createIndexRequest = new CreateFullTextPayloadIndexRequest(
             payloadTextFieldName,
             new CreateFullTextPayloadIndexRequest.FullTextPayloadFieldSchema()
@@ -218,7 +232,7 @@ public partial class QdrantHttpClient
                 MinTokenLen = minimalTokenLength,
                 MaxTokenLen = maximalTokenLength,
                 Lowercase = isLowercasePayloadTokens,
-                OnDisk = onDisk,
+                Memory = memory?.ToString().ToLowerInvariant(),
                 PhraseMatching = enablePhraseMatching,
                 Stemmer = stemmer,
                 Stopwords = stopwords,

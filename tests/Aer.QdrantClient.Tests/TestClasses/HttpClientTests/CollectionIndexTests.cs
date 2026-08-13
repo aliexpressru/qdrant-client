@@ -45,7 +45,7 @@ internal class CollectionIndexTests : QdrantTestsBase
             .Should().Contain(TestCollectionName)
             .And.Contain("doesn't exist");
     }
-
+    
     [Test]
     public async Task CreateIndex()
     {
@@ -113,6 +113,87 @@ internal class CollectionIndexTests : QdrantTestsBase
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName3].DataType.Should().Be(PayloadIndexedFieldType.Integer);
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName3].Params.Lookup.Should().BeTrue();
         collectionInfo.Result.PayloadSchema[TestPayloadFieldName3].Params.Range.Should().BeTrue();
+    }
+    
+    [Test]
+    [TestCase(MemoryType.Cold)]
+    [TestCase(MemoryType.Cached)]
+    [TestCase(MemoryType.Pinned)]
+    public async Task CreateIndex_Set_Memory_Type(MemoryType memoryType)
+    {
+        OnlyIfVersionAfterOrEqual("1.19.0", "The memory parameter is only supported from v1.19");
+        
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var createCollectionIndexResult1 =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName,
+                PayloadIndexedFieldType.Integer,
+                CancellationToken.None,
+                isWaitForResult: true,
+                isLookupEnabled: false,
+                isRangeEnabled: true,
+                memory: memoryType
+                );
+
+        var createCollectionIndexResult2 =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName2,
+                PayloadIndexedFieldType.Keyword,
+                CancellationToken.None,
+                isWaitForResult: true,
+                memory: memoryType);
+
+        // Default lookup\range parameters integer index
+        var createCollectionIndexResult3 =
+            await _qdrantHttpClient.CreatePayloadIndex(
+                TestCollectionName,
+                TestPayloadFieldName3,
+                PayloadIndexedFieldType.Integer,
+                CancellationToken.None,
+                isWaitForResult: true,
+                memory: memoryType);
+
+        createCollectionIndexResult1.Status.IsSuccess.Should().BeTrue();
+        createCollectionIndexResult1.Result.Should().NotBeNull();
+
+        createCollectionIndexResult2.Status.IsSuccess.Should().BeTrue();
+        createCollectionIndexResult2.Result.Should().NotBeNull();
+
+        createCollectionIndexResult3.Status.IsSuccess.Should().BeTrue();
+        createCollectionIndexResult3.Result.Should().NotBeNull();
+
+        var collectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        collectionInfo.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionInfo.Status.IsSuccess.Should().BeTrue();
+
+        collectionInfo.Result.PayloadSchema.Count.Should().Be(3);
+        collectionInfo.Result.PayloadSchema.Should().ContainKeys(
+            TestPayloadFieldName,
+            TestPayloadFieldName2,
+            TestPayloadFieldName3);
+
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].DataType.Should().Be(PayloadIndexedFieldType.Integer);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Lookup.Should().BeFalse();
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Range.Should().BeTrue();
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName].Params.Memory.Should().Be(memoryType);
+
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].DataType.Should().Be(PayloadIndexedFieldType.Keyword);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName2].Params.Memory.Should().Be(memoryType);
+
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName3].DataType.Should().Be(PayloadIndexedFieldType.Integer);
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName3].Params.Lookup.Should().BeTrue();
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName3].Params.Range.Should().BeTrue();
+        collectionInfo.Result.PayloadSchema[TestPayloadFieldName3].Params.Memory.Should().Be(memoryType);
     }
 
     [Test]
