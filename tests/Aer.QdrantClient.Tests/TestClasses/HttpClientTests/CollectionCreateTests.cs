@@ -65,6 +65,10 @@ internal class CollectionCreateTests : QdrantTestsBase
                 HnswConfig = new HnswConfiguration
                 {
                     Memory = memoryType
+                },
+                QuantizationConfig = new QuantizationConfiguration.BinaryQuantizationConfiguration
+                {
+                    Memory = memoryType
                 }
             },
             CancellationToken.None);
@@ -82,6 +86,7 @@ internal class CollectionCreateTests : QdrantTestsBase
         createdCollectionInfoResponse.Result.Config.Params.Payload.Memory.Should().Be(memoryType is MemoryType.Pinned ? MemoryType.Cached : memoryType);
         createdCollectionInfoResponse.Result.Config.HnswConfig.Memory.Should().Be(memoryType);
         createdCollectionInfoResponse.Result.Config.Params.Vectors.AsSingleVectorConfiguration().Memory.Should().Be(memoryType is MemoryType.Pinned ? MemoryType.Cached : memoryType);
+        createdCollectionInfoResponse.Result.Config.QuantizationConfig.As<QuantizationConfiguration.BinaryQuantizationConfiguration>().Memory.Should().Be(memoryType);
     }
 
     [Test]

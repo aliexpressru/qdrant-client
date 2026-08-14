@@ -49,7 +49,15 @@ public abstract class QuantizationConfigurationDiff
         /// <summary>
         /// Whether to keep quantized vectors always cached in RAM or not.
         /// </summary>
+        [Obsolete("The always_ram parameter is deprecated. Use the memory parameter instead starting with version 1.19")]
         public bool? AlwaysRam { set; get; }
+        
+        /// <summary>
+        /// Memory placement of quantized vectors:
+        /// pinned permanently, warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).
+        /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<MemoryType>))]
+        public MemoryType? Memory { get; set; }
     }
 
     /// <summary>
@@ -72,7 +80,15 @@ public abstract class QuantizationConfigurationDiff
         /// <summary>
         /// Whether to keep quantized vectors always cached in RAM or not.
         /// </summary>
+        [Obsolete("The always_ram parameter is deprecated. Use the memory parameter instead starting with version 1.19")]
         public bool? AlwaysRam { set; get; }
+        
+        /// <summary>
+        /// Memory placement of quantized vectors:
+        /// pinned permanently, warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).
+        /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<MemoryType>))]
+        public MemoryType? Memory { get; set; }
     }
 
     /// <summary>
@@ -88,7 +104,15 @@ public abstract class QuantizationConfigurationDiff
         /// <summary>
         /// Whether to keep quantized vectors always cached in RAM or not.
         /// </summary>
+        [Obsolete("The always_ram parameter is deprecated. Use the memory parameter instead starting with version 1.19")]
         public bool? AlwaysRam { set; get; }
+        
+        /// <summary>
+        /// Memory placement of quantized vectors:
+        /// pinned permanently, warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).
+        /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<MemoryType>))]
+        public MemoryType? Memory { get; set; }
 
         /// <summary>
         /// The bit depth of the quantized vector components.
@@ -124,7 +148,15 @@ public abstract class QuantizationConfigurationDiff
         /// <summary>
         /// Whether to keep quantized vectors always cached in RAM or not.
         /// </summary>
+        [Obsolete("The always_ram parameter is deprecated. Use the memory parameter instead starting with version 1.19")]
         public bool? AlwaysRam { set; get; }
+        
+        /// <summary>
+        /// Memory placement of quantized vectors:
+        /// pinned permanently, warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).
+        /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<MemoryType>))]
+        public MemoryType? Memory { get; set; }
 
         /// <summary>
         /// The encoding bit depth. Defaults to <see cref="TurboQuantizationEncoding.Bits4"/>. Lower bit depths offer higher compression at the cost of accuracy.
@@ -151,22 +183,34 @@ public abstract class QuantizationConfigurationDiff
     /// </summary>
     /// <param name="quantile">The quantile of the quantized vector components.</param>
     /// <param name="isQuantizedVectorAlwaysInRam">Whether to keep quantized vectors always cached in RAM or not.</param>
-    public static QuantizationConfigurationDiff Scalar(float? quantile = null, bool isQuantizedVectorAlwaysInRam = false) =>
-        new ScalarQuantizationConfigurationDiff() { Quantile = quantile, AlwaysRam = isQuantizedVectorAlwaysInRam };
+    /// <param name="memory">The legacy parameter is always_ram. always_ram: true always resolves to pinned. Otherwise, quantized vectors inherit the original vectors’ placement: pinned if the vectors are in RAM, cold if they’re on disk.</param>
+    public static QuantizationConfigurationDiff Scalar(
+        float? quantile = null, 
+        bool? isQuantizedVectorAlwaysInRam = false,
+        MemoryType? memory = null) =>
+        new ScalarQuantizationConfigurationDiff()
+        {
+            Quantile = quantile, 
+            AlwaysRam = isQuantizedVectorAlwaysInRam,
+            Memory = memory ?? (isQuantizedVectorAlwaysInRam is true ? MemoryType.Pinned : null)
+        };
 
     /// <summary>
     /// Creates a product quantization configuration diff.
     /// </summary>
     /// <param name="quantizedVectorsCompressionRatio">Vector compression ratio.</param>
     /// <param name="isQuantizedVectorAlwaysInRam">Whether to keep quantized vectors always cached in RAM or not.</param>
+    /// <param name="memory">The legacy parameter is always_ram. always_ram: true always resolves to pinned. Otherwise, quantized vectors inherit the original vectors’ placement: pinned if the vectors are in RAM, cold if they’re on disk.</param>
     public static QuantizationConfigurationDiff Product(
         ProductQuantizationCompressionRatio quantizedVectorsCompressionRatio,
-        bool isQuantizedVectorAlwaysInRam = false
+        bool? isQuantizedVectorAlwaysInRam = false,
+        MemoryType? memory = null
     ) =>
         new ProductQuantizationConfigurationDiff()
         {
             Compression = quantizedVectorsCompressionRatio,
             AlwaysRam = isQuantizedVectorAlwaysInRam,
+            Memory = memory ?? (isQuantizedVectorAlwaysInRam is true ? MemoryType.Pinned : null)
         };
 
     /// <summary>
@@ -175,16 +219,19 @@ public abstract class QuantizationConfigurationDiff
     /// <param name="isQuantizedVectorAlwaysInRam">Whether to keep quantized vectors always cached in RAM or not.</param>
     /// <param name="encoding">The quantization bit depth.</param>
     /// <param name="queryEncoding">The asymmetric quantization configuration.</param>
+    /// <param name="memory">The legacy parameter is always_ram. always_ram: true always resolves to pinned. Otherwise, quantized vectors inherit the original vectors’ placement: pinned if the vectors are in RAM, cold if they’re on disk.</param>
     public static QuantizationConfigurationDiff Binary(
-        bool isQuantizedVectorAlwaysInRam = false,
+        bool? isQuantizedVectorAlwaysInRam = false,
         BinaryQuantizationEncoding? encoding = null,
-        BinaryQuantizationQueryEncoding? queryEncoding = null
+        BinaryQuantizationQueryEncoding? queryEncoding = null,
+        MemoryType? memory = null
     ) =>
         new BinaryQuantizationConfigurationDiff()
         {
             AlwaysRam = isQuantizedVectorAlwaysInRam,
             Encoding = encoding,
             QueryEncoding = queryEncoding,
+            Memory = memory ?? (isQuantizedVectorAlwaysInRam is true ? MemoryType.Pinned : null)
         };
 
     /// <summary>
@@ -192,10 +239,17 @@ public abstract class QuantizationConfigurationDiff
     /// </summary>
     /// <param name="isQuantizedVectorAlwaysInRam">Whether to keep quantized vectors always cached in RAM or not.</param>
     /// <param name="bits">The encoding bit depth.</param>
+    /// <param name="memory">The legacy parameter is always_ram. always_ram: true always resolves to pinned. Otherwise, quantized vectors inherit the original vectors’ placement: pinned if the vectors are in RAM, cold if they’re on disk.</param>
     public static QuantizationConfigurationDiff Turbo(
-        bool isQuantizedVectorAlwaysInRam = false,
-        TurboQuantizationEncoding? bits = null
-    ) => new TurboQuantizationConfigurationDiff() { AlwaysRam = isQuantizedVectorAlwaysInRam, Bits = bits };
+        bool? isQuantizedVectorAlwaysInRam = false,
+        TurboQuantizationEncoding? bits = null,
+        MemoryType? memory = null
+    ) => new TurboQuantizationConfigurationDiff()
+    {
+        AlwaysRam = isQuantizedVectorAlwaysInRam, 
+        Bits = bits,
+        Memory = memory ?? (isQuantizedVectorAlwaysInRam is true ? MemoryType.Pinned : null)
+    };
 
     /// <summary>
     /// Creates a disabled quantization configuration diff. Removes quantization from the collection.
