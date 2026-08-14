@@ -221,12 +221,18 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// <summary>
             /// Whether the payload is stored on disk or in memory.
             /// </summary>
+            [Obsolete("The on_disk_payload parameter is deprecated. See the payload.memory parameter instead starting with version 1.19")]
             public bool OnDiskPayload { init; get; }
 
             /// <summary>
             /// Represents sparse vectors configuration.
             /// </summary>
             public Dictionary<string, SparseVectorConfiguration> SparseVectors { get; init; }
+            
+            /// <summary>
+            /// Gets or sets the payload storage configuration.
+            /// </summary>
+            public PayloadStorageConfiguration Payload { get; init; }
         }
 
         /// <summary>

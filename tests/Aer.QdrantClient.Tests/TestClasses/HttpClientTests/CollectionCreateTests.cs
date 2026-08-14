@@ -44,6 +44,38 @@ internal class CollectionCreateTests : QdrantTestsBase
         collectionCreationResult.Should().NotBeNull();
         collectionCreationResult.Result.Should().BeTrue();
     }
+    
+    [Test]
+    [TestCase(MemoryType.Cold)]
+    [TestCase(MemoryType.Cached)]
+    //Pinned is not supported by payload values
+    public async Task CreateCollection_Set_Memory_Type(MemoryType memoryType)
+    {
+        OnlyIfVersionAfterOrEqual("1.19.0", "The memory parameter is only supported from v1.19");
+
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                Payload = new PayloadStorageConfiguration
+                {
+                    Memory = memoryType
+                }
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
+
+        collectionCreationResult.Should().NotBeNull();
+        collectionCreationResult.Result.Should().BeTrue();
+        
+        var createdCollectionInfoResponse =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        createdCollectionInfoResponse.Status.IsSuccess.Should().BeTrue();
+        createdCollectionInfoResponse.Result.Config.Params.Payload.Memory.Should().Be(memoryType);
+    }
 
     [Test]
     public async Task CreateCollection_VeryLongName()

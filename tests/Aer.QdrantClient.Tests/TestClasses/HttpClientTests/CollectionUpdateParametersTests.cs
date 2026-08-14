@@ -336,6 +336,97 @@ internal class CollectionUpdateParametersTests : QdrantTestsBase
         quantizationConfig.Encoding.Should().Be(BinaryQuantizationEncoding.TwoBits);
         quantizationConfig.AlwaysRam.Should().BeTrue();
     }
+    
+    [Test]
+    [TestCase(MemoryType.Cold)]
+    [TestCase(MemoryType.Cached)]
+    //Pinned is not supported by payload values
+    public async Task UpdateCollectionParameters_Set_Payload_Memory_Type(MemoryType memoryType)
+    {
+        OnlyIfVersionAfterOrEqual("1.19.0", "The memory parameter is only supported from v1.19");
+        
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            {
+                Payload = new PayloadStorageConfiguration
+                {
+                    Memory = MemoryType.Cold,
+                },
+                OptimizersConfig = new OptimizersConfiguration()
+                {
+                    MaxOptimizationThreads = 1,
+                    IndexingThreshold = 1
+                },
+                HnswConfig = new HnswConfiguration()
+                {
+                    MaxIndexingThreads = 1
+                }
+            },
+            CancellationToken.None);
+
+        const int newMaxOptimizationThreads = 10;
+        const int newMaxIndexingThreads = 11;
+        const ulong newM = 10;
+
+        var updateCollectionParametersResult = await _qdrantHttpClient.UpdateCollectionParameters(
+            TestCollectionName,
+            new CollectionParametersDiffRequest()
+            {
+                Params = new()
+                {
+                    Payload = new PayloadStorageConfiguration
+                    {
+                        Memory = memoryType
+                    }
+                },
+                OptimizersConfig = new()
+                {
+                    MaxOptimizationThreads = newMaxOptimizationThreads
+                },
+                HnswConfig = new HnswConfigurationDiff()
+                {
+                    MaxIndexingThreads = newMaxIndexingThreads,
+                    M = newM
+                },
+                QuantizationConfig = QuantizationConfigurationDiff.Binary(isQuantizedVectorAlwaysInRam: true, BinaryQuantizationEncoding.TwoBits),
+                StrictModeConfig = new StrictModeConfiguration()
+                {
+                    Enabled = true,
+                    MaxPointsCount = 1000
+                }
+            },
+            CancellationToken.None);
+
+        await _qdrantHttpClient.EnsureCollectionReady(TestCollectionName, CancellationToken.None);
+
+        updateCollectionParametersResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok, $"{updateCollectionParametersResult.Status.GetErrorMessage()}");
+        updateCollectionParametersResult.Status.IsSuccess.Should().BeTrue();
+
+        updateCollectionParametersResult.Result.Should().NotBeNull();
+
+        var updatedCollectionInfo = await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        updatedCollectionInfo.Result.Status.Should().Be(QdrantCollectionStatus.Green);
+        updatedCollectionInfo.Result.OptimizerStatus.IsOk.Should().BeTrue();
+
+        updatedCollectionInfo.Result.Config.OptimizerConfig.IndexingThreshold.Should().Be(1); // should not change
+
+        updatedCollectionInfo.Result.Config.OptimizerConfig.MaxOptimizationThreads.Should().Be(newMaxOptimizationThreads);
+        updatedCollectionInfo.Result.Config.HnswConfig.MaxIndexingThreads.Should().Be(newMaxIndexingThreads);
+        updatedCollectionInfo.Result.Config.HnswConfig.M.Should().Be(newM);
+        updatedCollectionInfo.Result.Config.Params.Payload.Memory.Should().Be(memoryType);
+
+        updatedCollectionInfo.Result.Config.StrictModeConfig.Enabled.Should().BeTrue();
+        updatedCollectionInfo.Result.Config.StrictModeConfig.MaxPointsCount.Should().Be(1000);
+
+        updatedCollectionInfo.Result.Config.QuantizationConfig.Method.Should().Be(QuantizationConfiguration.BinaryQuantizationConfiguration.QuantizationMethodName);
+
+        var quantizationConfig = updatedCollectionInfo.Result.Config.QuantizationConfig.As<BinaryQuantizationConfiguration>();
+
+        quantizationConfig.Encoding.Should().Be(BinaryQuantizationEncoding.TwoBits);
+        quantizationConfig.AlwaysRam.Should().BeTrue();
+    }
 
     [Test]
     [Obsolete("Testing obsolete UpdateCollectionParameters method")]

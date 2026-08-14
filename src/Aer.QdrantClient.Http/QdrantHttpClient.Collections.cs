@@ -42,6 +42,12 @@ public partial class QdrantHttpClient
         }
 
         EnsureQdrantNameCorrect(collectionName, tracingScope);
+        
+        if (request.OnDiskPayload.HasValue && request.Payload?.Memory is null)
+        {
+            request.Payload ??= new PayloadStorageConfiguration();
+            request.Payload.Memory = request.OnDiskPayload is true ? MemoryType.Cold : MemoryType.Cached;
+        }
 
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
 
@@ -112,6 +118,12 @@ public partial class QdrantHttpClient
 
             return triggerResult;
         }
+        
+        if (request.Params?.OnDiskPayload is not null && request.Params?.Payload?.Memory is null)
+        {
+            request.Params!.Payload ??= new PayloadStorageConfiguration();
+            request.Params.Payload.Memory = request.Params.OnDiskPayload is true ? MemoryType.Cold : MemoryType.Cached;
+        }
 
         var response = await ExecuteRequest<UpdateCollectionParametersRequest, DefaultOperationResponse>(
             url,
@@ -161,6 +173,12 @@ public partial class QdrantHttpClient
         var timeoutValue = GetTimeoutValueOrDefault(timeout);
 
         var url = $"/collections/{collectionName}?timeout={timeoutValue}";
+        
+        if (request.Params?.OnDiskPayload is not null && request.Params?.Payload?.Memory is null)
+        {
+            request.Params!.Payload ??= new PayloadStorageConfiguration();
+            request.Params.Payload.Memory = request.Params.OnDiskPayload is true ? MemoryType.Cold : MemoryType.Cached;
+        }
 
         var response = await ExecuteRequest<CollectionParametersDiffRequest, DefaultOperationResponse>(
             url,

@@ -47,7 +47,13 @@ public sealed class UpdateCollectionParametersRequest
         /// This setting saves RAM by (slightly) increasing the response time.
         /// Those payload values that are involved in filtering and are indexed - remain in RAM.
         /// </summary>
+        [Obsolete("The on_disk_payload parameter is deprecated. Use the payload.memory parameter instead starting with version 1.19")]
         public bool? OnDiskPayload { get; set; }
+        
+        /// <summary>
+        /// Payload storage configuration.
+        /// </summary>
+        public PayloadStorageConfiguration Payload { get; set; }
     }
 
     internal bool IsEmpty { private init; get; }

@@ -78,7 +78,13 @@ public sealed class CreateCollectionRequest
     /// This setting saves RAM by (slightly) increasing the response time.
     /// Those payload values that are involved in filtering and are indexed - remain in RAM.
     /// </summary>
+    [Obsolete("The on_disk_payload parameter is deprecated. Use the payload.memory parameter instead starting with version 1.19")]
     public bool? OnDiskPayload { get; set; }
+
+    /// <summary>
+    /// Gets or sets the payload storage configuration.
+    /// </summary>
+    public PayloadStorageConfiguration Payload { get; set; }
 
     /// <summary>
     /// Gets or sets the HNSW configuration.
