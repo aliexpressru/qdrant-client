@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using Aer.QdrantClient.Http.Infrastructure.Json.Converters;
+
 namespace Aer.QdrantClient.Http.Models.Shared;
 
 /// <summary>
@@ -39,6 +42,7 @@ public sealed class HnswConfiguration
     /// <summary>
     /// Store HNSW index on disk. If set to false, index will be stored in RAM. Default: false
     /// </summary>
+    [Obsolete("The on_disk parameter is deprecated. Use the memory parameter instead starting with version 1.19")]
     public bool? OnDisk { set; get; }
 
     /// <summary>
@@ -47,4 +51,11 @@ public sealed class HnswConfiguration
     /// seeks during the search. Requires quantized vectors to be enabled. Multi-vectors are not supported.
     /// </summary>
     public bool? InlineStorage { set; get; }
+    
+    /// <summary>
+    /// Memory placement of the HNSW index:
+    /// pinned permanently, warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).
+    /// </summary>
+    [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<MemoryType>))]
+    public MemoryType? Memory { get; set; }
 }

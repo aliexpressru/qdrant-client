@@ -48,16 +48,21 @@ internal class CollectionCreateTests : QdrantTestsBase
     [Test]
     [TestCase(MemoryType.Cold)]
     [TestCase(MemoryType.Cached)]
-    //Pinned is not supported by payload values
+    [TestCase(MemoryType.Pinned)]
     public async Task CreateCollection_Set_Memory_Type(MemoryType memoryType)
     {
         OnlyIfVersionAfterOrEqual("1.19.0", "The memory parameter is only supported from v1.19");
 
+        //Pinned is not supported for dense vector storage and payload storage
         var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
             TestCollectionName,
-            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, isServeVectorsFromDisk: true)
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, vectorMemoryType: memoryType is MemoryType.Pinned ? MemoryType.Cached : memoryType)
             {
                 Payload = new PayloadStorageConfiguration
+                {
+                    Memory = memoryType is MemoryType.Pinned ? MemoryType.Cached : memoryType
+                },
+                HnswConfig = new HnswConfiguration
                 {
                     Memory = memoryType
                 }
@@ -74,7 +79,9 @@ internal class CollectionCreateTests : QdrantTestsBase
             await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
 
         createdCollectionInfoResponse.Status.IsSuccess.Should().BeTrue();
-        createdCollectionInfoResponse.Result.Config.Params.Payload.Memory.Should().Be(memoryType);
+        createdCollectionInfoResponse.Result.Config.Params.Payload.Memory.Should().Be(memoryType is MemoryType.Pinned ? MemoryType.Cached : memoryType);
+        createdCollectionInfoResponse.Result.Config.HnswConfig.Memory.Should().Be(memoryType);
+        createdCollectionInfoResponse.Result.Config.Params.Vectors.AsSingleVectorConfiguration().Memory.Should().Be(memoryType is MemoryType.Pinned ? MemoryType.Cached : memoryType);
     }
 
     [Test]
