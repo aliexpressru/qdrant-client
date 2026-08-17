@@ -1236,4 +1236,85 @@ internal class PointsScrollTests : QdrantTestsBase
         readPointsResult.Result.Points[0].Id.AsInteger().Should().Be(1);
         readPointsResult.Result.Points[1].Id.AsInteger().Should().Be(1000);
     }
+    
+    [Test]
+    public async Task WithFilter_Slice_Condition()
+    {
+        OnlyIfVersionAfterOrEqual("1.19.0", "Slice condition is available since 1.19");
+
+        var vectorSize = 10U;
+        var vectorCount = 10;
+        var sliceCount = 2U;
+
+        await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, vectorSize, isServeVectorsFromDisk: true)
+            {
+                OnDiskPayload = true
+            },
+            CancellationToken.None);
+
+        var upsertPoints = new List<UpsertPointsRequest.UpsertPoint>();
+        List<int> valuesToMatchAgainst = new(vectorCount);
+
+        var startDateTime = DateTime.Parse("2020-01-01T00:00:00");
+
+        for (int i = 0; i < vectorCount; i++)
+        {
+            upsertPoints.Add(
+                new(
+                    PointId.Integer((ulong)i),
+                    CreateTestVector(vectorSize),
+                    new TestPayload()
+                    {
+                        Integer = i,
+                        DateTimeValue = startDateTime.AddDays(i)
+                    }
+                )
+            );
+
+            if (i % 2 == 0)
+            {
+                valuesToMatchAgainst.Add(i);
+            }
+        }
+
+        Dictionary<ulong, UpsertPointsRequest.UpsertPoint> upsertPointsByPointIds =
+            upsertPoints.ToDictionary(p => p.Id.AsInteger());
+
+        await _qdrantHttpClient.UpsertPoints(
+            TestCollectionName,
+            new UpsertPointsRequest()
+            {
+                Points = upsertPoints
+            },
+            CancellationToken.None);
+
+        var readPointsFirstSliceResult = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            Q.Must(
+                Q.Slice(sliceCount, 0), // search in the first slice (5 vectors)
+                Q<TestPayload>.MatchAny(p => p.Integer, valuesToMatchAgainst.ToArray())
+            ),
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true);
+
+        var readPointsSecondSliceResult = await _qdrantHttpClient.ScrollPoints(
+            TestCollectionName,
+            Q.Must(
+                Q.Slice(sliceCount, 1), // search in the second slice (other 5 vectors)
+                Q<TestPayload>.MatchAny(p => p.Integer, valuesToMatchAgainst.ToArray())
+            ),
+            PayloadPropertiesSelector.All,
+            CancellationToken.None,
+            withVector: true);
+
+        var totalResultPointsCount = readPointsFirstSliceResult.Result.Points.Length +
+                                     readPointsSecondSliceResult.Result.Points.Length;
+        
+        readPointsFirstSliceResult.Status.IsSuccess.Should().BeTrue();
+        readPointsSecondSliceResult.Status.IsSuccess.Should().BeTrue();
+        totalResultPointsCount.Should().Be(valuesToMatchAgainst.Count);
+    }
 }

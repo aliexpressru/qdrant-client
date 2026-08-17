@@ -14,7 +14,7 @@ internal sealed class FieldMatchPrefixCondition(
     string payloadFieldName,
     string query) : FilterConditionBase(payloadFieldName)
 {
-    protected internal override PayloadIndexedFieldType? PayloadFieldType { get; } = PayloadIndexedFieldType.Keyword;
+    protected internal override PayloadIndexedFieldType? PayloadFieldType => PayloadIndexedFieldType.Keyword;
 
     internal override void WriteConditionJson(Utf8JsonWriter jsonWriter)
     {
