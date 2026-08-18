@@ -443,7 +443,8 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
@@ -464,7 +465,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount,
             retryDelay,
-            onRetry);
+            onRetry,
+            routingToken);
 
         tracingScope.SetResult(response);
 
@@ -543,7 +545,8 @@ public partial class QdrantHttpClient
         OrderBySelector orderBySelector = null,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
@@ -576,7 +579,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount,
             retryDelay,
-            onRetry);
+            onRetry,
+            routingToken);
 
         tracingScope.SetResult(response);
 
@@ -595,7 +599,8 @@ public partial class QdrantHttpClient
         CancellationToken cancellationToken,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
@@ -615,7 +620,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount,
             retryDelay,
-            onRetry);
+            onRetry,
+            routingToken);
 
         tracingScope.SetResult(response);
 
@@ -684,7 +690,8 @@ public partial class QdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
@@ -706,7 +713,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount,
             retryDelay,
-            onRetry);
+            onRetry,
+            routingToken);
 
         tracingScope.SetResult(response);
 
@@ -726,7 +734,8 @@ public partial class QdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
@@ -748,7 +757,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount,
             retryDelay,
-            onRetry);
+            onRetry,
+            routingToken);
 
         tracingScope.SetResult(response);
 
@@ -768,7 +778,8 @@ public partial class QdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
@@ -790,7 +801,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount,
             retryDelay,
-            onRetry);
+            onRetry,
+            routingToken);
 
         tracingScope.SetResult(response);
 
@@ -811,7 +823,8 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
@@ -834,7 +847,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount,
             retryDelay,
-            onRetry);
+            onRetry,
+            routingToken);
 
         tracingScope.SetResult(response);
 
@@ -855,7 +869,8 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
@@ -879,7 +894,8 @@ public partial class QdrantHttpClient
                 cancellationToken,
                 retryCount,
                 retryDelay,
-                onRetry);
+                onRetry,
+                routingToken);
 
         tracingScope.SetResult(response);
 
@@ -899,7 +915,8 @@ public partial class QdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
@@ -921,7 +938,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount,
             retryDelay,
-            onRetry);
+            onRetry,
+            routingToken);
 
         tracingScope.SetResult(response);
 
@@ -941,7 +959,8 @@ public partial class QdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
@@ -963,7 +982,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount,
             retryDelay,
-            onRetry);
+            onRetry,
+            routingToken);
 
         tracingScope.SetResult(response);
 
@@ -983,7 +1003,8 @@ public partial class QdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
@@ -1005,7 +1026,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount,
             retryDelay,
-            onRetry);
+            onRetry,
+            routingToken);
 
         tracingScope.SetResult(response);
 
@@ -1026,7 +1048,8 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
@@ -1049,7 +1072,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount,
             retryDelay,
-            onRetry);
+            onRetry,
+            routingToken);
 
         tracingScope.SetResult(response);
 
@@ -1070,7 +1094,8 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
@@ -1093,7 +1118,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount,
             retryDelay,
-            onRetry);
+            onRetry,
+            routingToken);
 
         tracingScope.SetResult(response);
 
@@ -1114,7 +1140,8 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
@@ -1137,7 +1164,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount,
             retryDelay,
-            onRetry);
+            onRetry,
+            routingToken);
 
         tracingScope.SetResult(response);
 
@@ -1158,7 +1186,8 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
@@ -1181,7 +1210,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount,
             retryDelay,
-            onRetry);
+            onRetry,
+            routingToken);
 
         tracingScope.SetResult(response);
 
@@ -1202,7 +1232,8 @@ public partial class QdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
     {
         using var tracingScope = QdrantHttpClientTracing.CreateRequestScope(
             _tracer,
@@ -1225,7 +1256,8 @@ public partial class QdrantHttpClient
             cancellationToken,
             retryCount,
             retryDelay,
-            onRetry);
+            onRetry,
+            routingToken);
 
         tracingScope.SetResult(response);
 
