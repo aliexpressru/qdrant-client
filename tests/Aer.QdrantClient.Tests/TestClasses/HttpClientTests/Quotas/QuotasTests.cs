@@ -30,6 +30,8 @@ internal class QuotasTests : QdrantTestsBase
     [Test]
     public async Task SetQuotas()
     {
+        OnlyIfVersionAfterOrEqual("1.19.0", "Quotas API is only supported from v1.19");
+        
         var quotasResult = await _qdrantHttpClient.GetQuotas(CancellationToken.None);
         
         quotasResult.Status.IsSuccess.Should().BeTrue();
