@@ -222,6 +222,9 @@ public class QdrantTestsBase
             {
                 await DeleteCollectionsAndSnapshots(qdrantClient);
 
+                var qdrantHttpClient = qdrantClient ?? ServiceProvider.GetRequiredService<QdrantHttpClient>();
+                await qdrantHttpClient.SetQuotas(false, null, null, null, CancellationToken.None);
+
                 wasException = false;
             }
             catch (Exception e)
