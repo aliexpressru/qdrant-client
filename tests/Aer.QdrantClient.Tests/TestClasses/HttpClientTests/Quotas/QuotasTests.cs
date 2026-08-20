@@ -61,5 +61,7 @@ internal class QuotasTests : QdrantTestsBase
             peer.Value.DiskUsagePercent.Should().BeGreaterThan(0);
             peer.Value.ResidentMemoryPercent.Should().BeGreaterThan(0);
         }
+        
+        await _qdrantHttpClient.SetQuotas(false, null, null, null, CancellationToken.None);
     }
 }

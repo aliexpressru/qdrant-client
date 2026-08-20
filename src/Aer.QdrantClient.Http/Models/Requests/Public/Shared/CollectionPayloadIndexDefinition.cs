@@ -46,7 +46,7 @@ public sealed class CollectionPayloadIndexDefinition
     /// The per-structure memory parameter controls how each structure is cached in RAM:
     /// pinned permanently, warmed into a disk cache at startup, or left on disk until first accessed.
     /// </summary>
-    public MemoryType Memory { get; }
+    public MemoryType? Memory { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CollectionPayloadIndexDefinition"/> class.
@@ -72,7 +72,7 @@ public sealed class CollectionPayloadIndexDefinition
         bool onDisk = false,
         bool isTenant = false,
         bool isPrincipal = false,
-        MemoryType memory = MemoryType.Pinned)
+        MemoryType? memory = null)
     {
         PayloadIndexedFieldName = payloadIndexedFieldName;
         PayloadIndexedFieldSchema = payloadIndexedFieldSchema;

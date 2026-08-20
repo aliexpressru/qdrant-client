@@ -32,7 +32,7 @@ public sealed class SparseVectorConfiguration
         /// If set to <c>false</c>, the index will be stored in RAM. Default: false.
         /// </summary>
         [Obsolete("The on_disk parameter is deprecated. Use the memory parameter instead starting with version 1.19")]
-        public bool? OnDisk { set; get; }
+        public bool OnDisk { set; get; }
         
         /// <summary>
         /// Memory placement of the sparse vector index:
@@ -70,7 +70,7 @@ public sealed class SparseVectorConfiguration
     /// <param name="sparseVectorValueModifier">The sparse vector value modifier.</param>
     /// <param name="vectorIndexMemoryType">Memory placement of vectors: pinned permanently, warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).</param>
     public SparseVectorConfiguration(
-        bool? onDisk = false,
+        bool onDisk = false,
         ulong? fullScanThreshold = null,
         VectorDataType vectorDataType = VectorDataType.Float32,
         SparseVectorModifier sparseVectorValueModifier = SparseVectorModifier.None,
@@ -86,7 +86,7 @@ public sealed class SparseVectorConfiguration
             Memory = vectorIndexMemoryType
         };
 
-        if (onDisk is true && vectorIndexMemoryType is null)
+        if (onDisk && vectorIndexMemoryType is null)
         {
             Index.Memory = MemoryType.Cold;
         }
