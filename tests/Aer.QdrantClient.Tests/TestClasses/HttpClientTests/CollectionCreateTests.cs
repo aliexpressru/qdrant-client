@@ -153,6 +153,11 @@ internal class CollectionCreateTests : QdrantTestsBase
     [TestCase(VectorDataType.Turbo4)]
     public async Task CheckParameters(VectorDataType vectorDataType)
     {
+        if (vectorDataType is VectorDataType.Turbo4)
+        {
+            OnlyIfVersionAfterOrEqual("1.19.0", "Turbo4 is only supported from v1.19");
+        }
+        
         uint vectorSize = 10U;
 
         var createCollectionRequest = new CreateCollectionRequest(
@@ -384,6 +389,11 @@ internal class CollectionCreateTests : QdrantTestsBase
     [TestCase(VectorDataType.Turbo4)]
     public async Task NamedVectors_WithUpsertPoints_CheckParameters(VectorDataType vectorDataType)
     {
+        if (vectorDataType is VectorDataType.Turbo4)
+        {
+            OnlyIfVersionAfterOrEqual("1.19.0", "Turbo4 is only supported from v1.19");
+        }
+        
         uint vectorSize = 10U;
 
         var createCollectionRequest = new CreateCollectionRequest(

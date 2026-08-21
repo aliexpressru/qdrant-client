@@ -28,6 +28,11 @@ internal partial class PointsCrudTests
     [TestCase(VectorDataType.Turbo4)]
     public async Task UpsertPoint(VectorDataType vectorDataType)
     {
+        if (vectorDataType is VectorDataType.Turbo4)
+        {
+            OnlyIfVersionAfterOrEqual("1.19.0", "Turbo4 is available from Qdrant 1.19");
+        }
+
         var vectorSize = 10U;
 
         await _qdrantHttpClient.CreateCollection(
