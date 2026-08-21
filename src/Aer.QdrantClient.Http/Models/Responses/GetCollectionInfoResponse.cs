@@ -221,12 +221,18 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// <summary>
             /// Whether the payload is stored on disk or in memory.
             /// </summary>
+            [Obsolete("The on_disk_payload parameter is deprecated. See the payload.memory parameter instead starting with version 1.19")]
             public bool OnDiskPayload { init; get; }
 
             /// <summary>
             /// Represents sparse vectors configuration.
             /// </summary>
             public Dictionary<string, SparseVectorConfiguration> SparseVectors { get; init; }
+            
+            /// <summary>
+            /// Gets or sets the payload storage configuration.
+            /// </summary>
+            public PayloadStorageConfiguration Payload { get; init; }
         }
 
         /// <summary>
@@ -333,6 +339,7 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// <summary>
             /// Whether the payload index is stored on-disk instead of in-memory.
             /// </summary>
+            [Obsolete("The on_disk parameter is deprecated. See the memory parameter instead starting with version 1.19")]
             public bool? OnDisk { init; get; }
 
             /// <summary>
@@ -349,6 +356,13 @@ public sealed class GetCollectionInfoResponse : QdrantResponseBase<GetCollection
             /// Whether HNSW graph building for this payload field is enabled.
             /// </summary>
             public bool? EnableHnsw { init; get; }
+            
+            /// <summary>
+            /// The per-structure memory parameter controls how each structure is cached in RAM:
+            /// pinned permanently, warmed into a disk cache at startup, or left on disk until first accessed.
+            /// </summary>
+            [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<MemoryType>))]
+            public MemoryType? Memory { init; get; }
         }
 
         /// <summary>

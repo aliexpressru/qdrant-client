@@ -181,6 +181,19 @@ public static class Q
             payloadFieldName,
             query,
             TextMatchType.Any);
+    
+    /// <summary>
+    /// Check if payload has a text field which starts with a given prefix.
+    /// </summary>
+    /// <param name="payloadFieldName">Name of the payload field to apply this filter to.</param>
+    /// <param name="query">Value to substring match against.</param>
+    /// <remarks>
+    /// For efficient prefix matching, a keyword index with the prefix option enabled on the field must be created.
+    /// </remarks>
+    public static FilterConditionBase MatchPrefix(string payloadFieldName, string query) => 
+        new FieldMatchPrefixCondition(
+            payloadFieldName,
+            query);
 
     /// <summary>
     /// Check if payload field value lies in a given range.
@@ -443,5 +456,12 @@ public static class Q
     /// <param name="namedVectorName">Name of the named vector to check.</param>
     public static FilterConditionBase HasNamedVector(string namedVectorName)
         => new HasNamedVectorCondition(namedVectorName);
-
+    
+    /// <summary>
+    /// The slice condition divides a collection into a specific number of deterministic, disjoint subsets and matches all points in one of those subsets.
+    /// </summary>
+    /// <param name="total">Total number of disjoint slices the id space is split into.</param>
+    /// <param name="index">Which slice to select, must be in 0..total.</param>
+    public static FilterConditionBase Slice(uint total, uint index)
+        => new SliceCondition(total, index);
 }

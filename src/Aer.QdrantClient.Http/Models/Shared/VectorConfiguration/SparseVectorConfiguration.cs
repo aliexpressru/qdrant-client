@@ -31,7 +31,15 @@ public sealed class SparseVectorConfiguration
         /// Indicates whether to store sparse vector index on disk.
         /// If set to <c>false</c>, the index will be stored in RAM. Default: false.
         /// </summary>
+        [Obsolete("The on_disk parameter is deprecated. Use the memory parameter instead starting with version 1.19")]
         public bool OnDisk { set; get; }
+        
+        /// <summary>
+        /// Memory placement of the sparse vector index:
+        /// pinned permanently, warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).
+        /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<MemoryType>))]
+        public MemoryType? Memory { get; set; }
 
         /// <summary>
         /// Indicates that index full scan should be employed for queries inspecting
@@ -60,11 +68,13 @@ public sealed class SparseVectorConfiguration
     /// <param name="fullScanThreshold">Prefer a full scan search upto (excluding) this number of vectors</param>
     /// <param name="vectorDataType">The vector data type.</param>
     /// <param name="sparseVectorValueModifier">The sparse vector value modifier.</param>
+    /// <param name="vectorIndexMemoryType">Memory placement of vectors: pinned permanently, warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).</param>
     public SparseVectorConfiguration(
         bool onDisk = false,
         ulong? fullScanThreshold = null,
         VectorDataType vectorDataType = VectorDataType.Float32,
-        SparseVectorModifier sparseVectorValueModifier = SparseVectorModifier.None)
+        SparseVectorModifier sparseVectorValueModifier = SparseVectorModifier.None,
+        MemoryType? vectorIndexMemoryType = null)
     {
         Modifier = sparseVectorValueModifier;
 
@@ -72,7 +82,13 @@ public sealed class SparseVectorConfiguration
         {
             OnDisk = onDisk,
             FullScanThreshold = fullScanThreshold,
-            Datatype = vectorDataType
+            Datatype = vectorDataType,
+            Memory = vectorIndexMemoryType
         };
+
+        if (onDisk && vectorIndexMemoryType is null)
+        {
+            Index.Memory = MemoryType.Cold;
+        }
     }
 }

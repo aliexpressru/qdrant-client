@@ -221,7 +221,7 @@ public class QdrantTestsBase
             try
             {
                 await DeleteCollectionsAndSnapshots(qdrantClient);
-
+                
                 wasException = false;
             }
             catch (Exception e)
@@ -272,7 +272,7 @@ public class QdrantTestsBase
     {
         return vectorDataType switch
         {
-            VectorDataType.Float32 => CreateTestFloat32Vector(vectorLength),
+            VectorDataType.Float32 or VectorDataType.Turbo4 => CreateTestFloat32Vector(vectorLength),
             VectorDataType.Float16 => CreateTestFloat16Vector(vectorLength),
             VectorDataType.Uint8 => CreateTestByteVector(vectorLength),
             _ => throw new ArgumentOutOfRangeException(nameof(vectorDataType), vectorDataType, null)

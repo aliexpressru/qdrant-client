@@ -188,13 +188,17 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="routingToken">Add routing token for deterministic read routes.
+    /// Use a stable value, such as a user ID, session ID, or hashed API key.
+    /// </param>
     Task<GetPointResponse> GetPoint(
         string collectionName,
         PointId pointId,
         CancellationToken cancellationToken,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null
     );
 
     /// <summary>
@@ -254,6 +258,9 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="routingToken">Add routing token for deterministic read routes.
+    /// Use a stable value, such as a user ID, session ID, or hashed API key.
+    /// </param>
     Task<ScrollPointsResponse> ScrollPoints(
         string collectionName,
         QdrantFilter filter,
@@ -267,7 +274,8 @@ public partial interface IQdrantHttpClient
         OrderBySelector orderBySelector = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null
     );
 
     /// <summary>
@@ -282,13 +290,17 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="routingToken">Add routing token for deterministic read routes.
+    /// Use a stable value, such as a user ID, session ID, or hashed API key.
+    /// </param>
     Task<CountPointsResponse> CountPoints(
         string collectionName,
         CountPointsRequest countPointsRequest,
         CancellationToken cancellationToken,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null
     );
 
     /// <summary>
@@ -329,6 +341,9 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="routingToken">Add routing token for deterministic read routes.
+    /// Use a stable value, such as a user ID, session ID, or hashed API key.
+    /// </param>
     Task<SearchPointsResponse> SearchPoints(
         string collectionName,
         SearchPointsRequest searchPointsRequest,
@@ -336,7 +351,8 @@ public partial interface IQdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null
     );
 
     /// <summary>
@@ -352,6 +368,9 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="routingToken">Add routing token for deterministic read routes.
+    /// Use a stable value, such as a user ID, session ID, or hashed API key.
+    /// </param>
     Task<SearchPointsBatchedResponse> SearchPointsBatched(
         string collectionName,
         SearchPointsBatchedRequest searchPointsBatchedRequest,
@@ -359,7 +378,8 @@ public partial interface IQdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null
     );
 
     /// <summary>
@@ -375,6 +395,9 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="routingToken">Add routing token for deterministic read routes.
+    /// Use a stable value, such as a user ID, session ID, or hashed API key.
+    /// </param>
     Task<SearchPointsGroupedResponse> SearchPointsGrouped(
         string collectionName,
         SearchPointsGroupedRequest searchPointsGroupedRequest,
@@ -382,7 +405,8 @@ public partial interface IQdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null
     );
 
     /// <summary>
@@ -399,6 +423,9 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="routingToken">Add routing token for deterministic read routes.
+    /// Use a stable value, such as a user ID, session ID, or hashed API key.
+    /// </param>
     Task<SearchPointsDistanceMatrixPairsResponse> SearchPointsDistanceMatrixPairs(
         string collectionName,
         SearchPointsDistanceMatrixRequest searchPointsDistanceMatrixRequest,
@@ -407,7 +434,8 @@ public partial interface IQdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null
     );
 
     /// <summary>
@@ -424,6 +452,9 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="routingToken">Add routing token for deterministic read routes.
+    /// Use a stable value, such as a user ID, session ID, or hashed API key.
+    /// </param>
     Task<SearchPointsDistanceMatrixOffsetsResponse> SearchPointsDistanceMatrixOffsets(
         string collectionName,
         SearchPointsDistanceMatrixRequest searchPointsDistanceMatrixRequest,
@@ -432,7 +463,8 @@ public partial interface IQdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null
     );
 
     /// <summary>
@@ -448,6 +480,9 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="routingToken">Add routing token for deterministic read routes.
+    /// Use a stable value, such as a user ID, session ID, or hashed API key.
+    /// </param>
     Task<SearchPointsResponse> RecommendPoints(
         string collectionName,
         RecommendPointsRequest recommendPointsRequest,
@@ -455,7 +490,8 @@ public partial interface IQdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null
     );
 
     /// <summary>
@@ -471,6 +507,9 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="routingToken">Add routing token for deterministic read routes.
+    /// Use a stable value, such as a user ID, session ID, or hashed API key.
+    /// </param>
     Task<SearchPointsBatchedResponse> RecommendPointsBatched(
         string collectionName,
         RecommendPointsBatchedRequest recommendPointsBatchedRequest,
@@ -478,7 +517,8 @@ public partial interface IQdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null
     );
 
     /// <summary>
@@ -495,6 +535,9 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="routingToken">Add routing token for deterministic read routes.
+    /// Use a stable value, such as a user ID, session ID, or hashed API key.
+    /// </param>
     Task<SearchPointsGroupedResponse> RecommendPointsGrouped(
         string collectionName,
         RecommendPointsGroupedRequest recommendPointsGroupedRequest,
@@ -502,7 +545,8 @@ public partial interface IQdrantHttpClient
         ReadPointsConsistency consistency = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null
     );
 
     /// <summary>
@@ -530,6 +574,9 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="routingToken">Add routing token for deterministic read routes.
+    /// Use a stable value, such as a user ID, session ID, or hashed API key.
+    /// </param>
     Task<SearchPointsResponse> DiscoverPoints(
         string collectionName,
         DiscoverPointsRequest discoverPointsRequest,
@@ -538,7 +585,8 @@ public partial interface IQdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null
     );
 
     /// <summary>
@@ -555,6 +603,9 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="routingToken">Add routing token for deterministic read routes.
+    /// Use a stable value, such as a user ID, session ID, or hashed API key.
+    /// </param>
     Task<SearchPointsBatchedResponse> DiscoverPointsBatched(
         string collectionName,
         DiscoverPointsBatchedRequest discoverPointsBatchedRequest,
@@ -563,7 +614,8 @@ public partial interface IQdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null
     );
 
     /// <summary>
@@ -581,6 +633,9 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="routingToken">Add routing token for deterministic read routes.
+    /// Use a stable value, such as a user ID, session ID, or hashed API key.
+    /// </param>
     Task<QueryPointsResponse> QueryPoints(
         string collectionName,
         QueryPointsRequest queryPointsRequest,
@@ -589,7 +644,8 @@ public partial interface IQdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null
     );
 
     /// <summary>
@@ -607,6 +663,9 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="routingToken">Add routing token for deterministic read routes.
+    /// Use a stable value, such as a user ID, session ID, or hashed API key.
+    /// </param>
     Task<QueryPointsBatchedResponse> QueryPointsBatched(
         string collectionName,
         QueryPointsBatchedRequest queryPointsRequest,
@@ -615,7 +674,8 @@ public partial interface IQdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null
     );
 
     /// <summary>
@@ -634,6 +694,9 @@ public partial interface IQdrantHttpClient
     /// The action to be called on operation retry.
     /// Parameters : Exception that happened during operation execution, delay before the next retry, retry number and max retry count.
     /// </param>
+    /// <param name="routingToken">Add routing token for deterministic read routes.
+    /// Use a stable value, such as a user ID, session ID, or hashed API key.
+    /// </param>
     Task<SearchPointsGroupedResponse> QueryPointsGrouped(
         string collectionName,
         QueryPointsGroupedRequest queryPointsRequest,
@@ -642,6 +705,7 @@ public partial interface IQdrantHttpClient
         TimeSpan? timeout = null,
         uint retryCount = 3,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null
     );
 }

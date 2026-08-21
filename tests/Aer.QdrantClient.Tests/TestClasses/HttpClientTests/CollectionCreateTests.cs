@@ -44,6 +44,50 @@ internal class CollectionCreateTests : QdrantTestsBase
         collectionCreationResult.Should().NotBeNull();
         collectionCreationResult.Result.Should().BeTrue();
     }
+    
+    [Test]
+    [TestCase(MemoryType.Cold)]
+    [TestCase(MemoryType.Cached)]
+    [TestCase(MemoryType.Pinned)]
+    public async Task CreateCollection_Set_Memory_Type(MemoryType memoryType)
+    {
+        OnlyIfVersionAfterOrEqual("1.19.0", "The memory parameter is only supported from v1.19");
+
+        //Pinned is not supported for dense vector storage and payload storage
+        var collectionCreationResult = await _qdrantHttpClient.CreateCollection(
+            TestCollectionName,
+            new CreateCollectionRequest(VectorDistanceMetric.Dot, 100, vectorMemoryType: memoryType is MemoryType.Pinned ? MemoryType.Cached : memoryType)
+            {
+                Payload = new PayloadStorageConfiguration
+                {
+                    Memory = memoryType is MemoryType.Pinned ? MemoryType.Cached : memoryType
+                },
+                HnswConfig = new HnswConfiguration
+                {
+                    Memory = memoryType
+                },
+                QuantizationConfig = new QuantizationConfiguration.BinaryQuantizationConfiguration
+                {
+                    Memory = memoryType
+                }
+            },
+            CancellationToken.None);
+
+        collectionCreationResult.Status.Type.Should().Be(QdrantOperationStatusType.Ok);
+        collectionCreationResult.Status.IsSuccess.Should().BeTrue();
+
+        collectionCreationResult.Should().NotBeNull();
+        collectionCreationResult.Result.Should().BeTrue();
+        
+        var createdCollectionInfoResponse =
+            await _qdrantHttpClient.GetCollectionInfo(TestCollectionName, CancellationToken.None);
+
+        createdCollectionInfoResponse.Status.IsSuccess.Should().BeTrue();
+        createdCollectionInfoResponse.Result.Config.Params.Payload.Memory.Should().Be(memoryType is MemoryType.Pinned ? MemoryType.Cached : memoryType);
+        createdCollectionInfoResponse.Result.Config.HnswConfig.Memory.Should().Be(memoryType);
+        createdCollectionInfoResponse.Result.Config.Params.Vectors.AsSingleVectorConfiguration().Memory.Should().Be(memoryType is MemoryType.Pinned ? MemoryType.Cached : memoryType);
+        createdCollectionInfoResponse.Result.Config.QuantizationConfig.As<QuantizationConfiguration.BinaryQuantizationConfiguration>().Memory.Should().Be(memoryType);
+    }
 
     [Test]
     public async Task CreateCollection_VeryLongName()
@@ -106,8 +150,14 @@ internal class CollectionCreateTests : QdrantTestsBase
     [TestCase(VectorDataType.Float32)]
     [TestCase(VectorDataType.Uint8)]
     [TestCase(VectorDataType.Float16)]
+    [TestCase(VectorDataType.Turbo4)]
     public async Task CheckParameters(VectorDataType vectorDataType)
     {
+        if (vectorDataType is VectorDataType.Turbo4)
+        {
+            OnlyIfVersionAfterOrEqual("1.19.0", "Turbo4 is only supported from v1.19");
+        }
+        
         uint vectorSize = 10U;
 
         var createCollectionRequest = new CreateCollectionRequest(
@@ -336,8 +386,14 @@ internal class CollectionCreateTests : QdrantTestsBase
     [TestCase(VectorDataType.Float32)]
     [TestCase(VectorDataType.Uint8)]
     [TestCase(VectorDataType.Float16)]
+    [TestCase(VectorDataType.Turbo4)]
     public async Task NamedVectors_WithUpsertPoints_CheckParameters(VectorDataType vectorDataType)
     {
+        if (vectorDataType is VectorDataType.Turbo4)
+        {
+            OnlyIfVersionAfterOrEqual("1.19.0", "Turbo4 is only supported from v1.19");
+        }
+        
         uint vectorSize = 10U;
 
         var createCollectionRequest = new CreateCollectionRequest(
@@ -354,7 +410,7 @@ internal class CollectionCreateTests : QdrantTestsBase
             new Dictionary<string, SparseVectorConfiguration>()
             {
                 [VectorBase.DefaultVectorName] = new(
-                    vectorDataType: vectorDataType,
+                    vectorDataType: vectorDataType is VectorDataType.Turbo4 ? VectorDataType.Float32 : vectorDataType, // sparse vector does not support turbo4
                     onDisk: true,
                     fullScanThreshold: 100,
                     sparseVectorValueModifier: SparseVectorModifier.Idf)
@@ -404,7 +460,7 @@ internal class CollectionCreateTests : QdrantTestsBase
         var collectionInfo = createdCollectionInfoResponse.Result;
 
         collectionInfo.Config.Params.SparseVectors.Should().ContainKey(VectorBase.DefaultVectorName);
-        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].Index.Datatype.Should().Be(vectorDataType);
+        collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].Index.Datatype.Should().Be(vectorDataType is VectorDataType.Turbo4 ? VectorDataType.Float32 : vectorDataType);
         collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].Index.OnDisk.Should().Be(true);
         collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].Index.FullScanThreshold.Should().Be(100);
         collectionInfo.Config.Params.SparseVectors[VectorBase.DefaultVectorName].Modifier.Should().Be(SparseVectorModifier.Idf);

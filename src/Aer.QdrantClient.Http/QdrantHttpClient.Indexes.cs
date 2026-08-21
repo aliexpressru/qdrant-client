@@ -23,6 +23,12 @@ public partial class QdrantHttpClient
         PayloadIndexedFieldType.Float,
         PayloadIndexedFieldType.Datetime
     ];
+    
+    private readonly HashSet<PayloadIndexedFieldType> _allowedPayloadFieldTypesForPrefixIndex =
+    [
+        PayloadIndexedFieldType.Keyword
+    ];
+
 
     /// <inheritdoc/>
     public async Task<DefaultAsyncOperationResponse> CreatePayloadIndex(
@@ -40,6 +46,10 @@ public partial class QdrantHttpClient
         bool? isRangeEnabled = null,
 
         bool? isHnswEnabled = null,
+        
+        bool? isPrefixEnabled = null,
+        
+        MemoryType? memory = null,
 
         uint retryCount = DEFAULT_RETRY_COUNT,
         TimeSpan? retryDelay = null,
@@ -113,11 +123,28 @@ public partial class QdrantHttpClient
 
             throw ex;
         }
+        
+        if (isPrefixEnabled.HasValue
+            && isPrefixEnabled.Value
+            && !_allowedPayloadFieldTypesForPrefixIndex.Contains(payloadFieldType))
+        {
+            var ex = new QdrantUnsupportedFieldSchemaForIndexConfiguration(
+                $"The prefix option is not supported for payload field {payloadFieldName} with type {payloadFieldType}. Supported types: [{string.Join(", ", _allowedPayloadFieldTypesForPrefixIndex)}]");
+
+            tracingScope.SetError(ex);
+
+            throw ex;
+        }
+
+        if (onDisk && memory is null)
+        {
+            memory = MemoryType.Cold;
+        }
 
         var createIndexRequest = new CreatePayloadIndexRequest(
             payloadFieldName,
             payloadFieldType,
-            onDisk: onDisk,
+            memory: memory,
             isTenant: isTenant,
             isPrincipal: isPrincipal,
 
@@ -173,6 +200,8 @@ public partial class QdrantHttpClient
         bool? isAsciiFoldingEnabled = null,
 
         bool? isHnswEnabled = null,
+        
+        MemoryType? memory = null,
 
         bool isWaitForResult = false,
         uint retryCount = DEFAULT_RETRY_COUNT,
@@ -190,6 +219,11 @@ public partial class QdrantHttpClient
         EnsureQdrantNameCorrect(collectionName, tracingScope);
         EnsureQdrantNameCorrect(payloadTextFieldName, tracingScope);
 
+        if (onDisk && memory is null)
+        {
+            memory = MemoryType.Cold;
+        }
+
         var createIndexRequest = new CreateFullTextPayloadIndexRequest(
             payloadTextFieldName,
             new CreateFullTextPayloadIndexRequest.FullTextPayloadFieldSchema()
@@ -198,7 +232,7 @@ public partial class QdrantHttpClient
                 MinTokenLen = minimalTokenLength,
                 MaxTokenLen = maximalTokenLength,
                 Lowercase = isLowercasePayloadTokens,
-                OnDisk = onDisk,
+                Memory = memory?.ToString().ToLowerInvariant(),
                 PhraseMatching = enablePhraseMatching,
                 Stemmer = stemmer,
                 Stopwords = stopwords,

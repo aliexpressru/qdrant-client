@@ -153,6 +153,7 @@ public partial class QdrantHttpClient
                             payloadIndexDefinition.PayloadIndexedFieldSchema,
                             CancellationToken.None,
                             onDisk: payloadIndexDefinition.OnDisk,
+                            memory: payloadIndexDefinition.Memory,
                             isTenant: payloadIndexDefinition.IsTenant,
                             isPrincipal: payloadIndexDefinition.IsPrincipal,
                             isWaitForResult: false);

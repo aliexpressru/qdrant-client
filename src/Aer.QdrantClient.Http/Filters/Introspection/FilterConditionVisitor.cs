@@ -70,4 +70,10 @@ internal abstract class FilterConditionVisitor
 
     public virtual void VisitFieldMatchTextCondition(FieldMatchTextCondition fieldMatchTextCondition)
     { }
+    
+    public virtual void VisitFieldMatchPrefixCondition(FieldMatchPrefixCondition fieldMatchPrefixCondition)
+    { }
+
+    public virtual void VisitSliceCondition(SliceCondition sliceCondition)
+    { }
 }

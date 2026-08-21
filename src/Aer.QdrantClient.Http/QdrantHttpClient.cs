@@ -85,6 +85,8 @@ public partial class QdrantHttpClient : IQdrantHttpClient
     ];
 
     internal const string ApiKeyHeaderName = "api-key";
+    
+    internal const string RouteAffinityKeyHeaderName = "X-Qdrant-Route-Affinity";
 
     /// <summary>
     /// Gets the actual HTTP API client used to make calls to Qdrant API.
@@ -465,16 +467,30 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         CancellationToken cancellationToken,
         uint retryCount,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
         where TResponse : QdrantResponseBase
-        =>
-            ExecuteRequestCore<TResponse>(
-                () => new(method, url),
-                collectionOrClusterName,
-                cancellationToken,
-                retryCount,
-                retryDelay,
-                onRetry);
+    {
+        return ExecuteRequestCore<TResponse>(
+            CreateMessage,
+            collectionOrClusterName,
+            cancellationToken,
+            retryCount,
+            retryDelay,
+            onRetry);
+        
+        HttpRequestMessage CreateMessage()
+        {
+            HttpRequestMessage message = new(method, url);
+
+            if (!string.IsNullOrEmpty(routingToken))
+            {
+                message.Headers.Add(RouteAffinityKeyHeaderName, routingToken);
+            }
+
+            return message;
+        }
+    }
 
     private Task<TResponse> ExecuteRequest<TRequest, TResponse>(
         string url,
@@ -484,7 +500,8 @@ public partial class QdrantHttpClient : IQdrantHttpClient
         CancellationToken cancellationToken,
         uint retryCount,
         TimeSpan? retryDelay = null,
-        Action<Exception, TimeSpan, int, uint> onRetry = null)
+        Action<Exception, TimeSpan, int, uint> onRetry = null,
+        string routingToken = null)
         where TRequest : class
         where TResponse : QdrantResponseBase
     {
@@ -516,6 +533,11 @@ public partial class QdrantHttpClient : IQdrantHttpClient
             var requestData = new StringContent(contentJson, Encoding.UTF8, "application/json");
 
             message.Content = requestData;
+
+            if (!string.IsNullOrEmpty(routingToken))
+            {
+                message.Headers.Add(RouteAffinityKeyHeaderName, routingToken);
+            }
 
             return message;
         }

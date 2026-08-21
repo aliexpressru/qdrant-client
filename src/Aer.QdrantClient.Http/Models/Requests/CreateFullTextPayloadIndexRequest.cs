@@ -48,7 +48,8 @@ internal sealed class CreateFullTextPayloadIndexRequest
         /// <summary>
         /// If <c>true</c>, store the index on disk. Default: <c>false</c>.
         /// </summary>
-        public bool OnDisk { get; set; }
+        [Obsolete("The on_disk parameter is deprecated. Use the memory parameter instead starting with version 1.19")]
+        public bool OnDisk => string.Equals(Memory, nameof(MemoryType.Cold), StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// If <c>true</c>, enable phrase matching for the indexed field.
@@ -78,6 +79,12 @@ internal sealed class CreateFullTextPayloadIndexRequest
         /// If true, builds additional HNSW links (Need payload_m > 0). Default: true.
         /// </summary>
         public bool? EnableHnsw { get; set; }
+        
+        /// <summary>
+        /// The per-structure memory parameter controls how each structure is cached in RAM:
+        /// pinned permanently, warmed into a disk cache at startup, or left on disk until first accessed.
+        /// </summary>
+        public string Memory { get; set; }
     }
 
     /// <summary>

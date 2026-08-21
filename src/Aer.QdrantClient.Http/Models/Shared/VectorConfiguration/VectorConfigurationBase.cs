@@ -54,7 +54,17 @@ public abstract class VectorConfigurationBase
         /// <summary>
         /// If <c>true</c>, vectors are served from disk, improving RAM usage at the cost of latency.
         /// </summary>
-        public bool OnDisk { get; init; }
+        [Obsolete("The on_disk parameter is deprecated. Use the memory parameter instead starting with version 1.19")]
+        public bool? OnDisk { get; init; }
+        
+        /// <summary>
+        /// Memory placement of dense vectors:
+        /// warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).
+        /// Pinned is not supported.
+        /// Sparse vectors do not support this parameter since their values aren’t read during the index search step itself:
+        /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<MemoryType>))]
+        public MemoryType? Memory { get; init; }
 
         /// <summary>
         /// Defines which datatype should be used to represent vectors in the storage.
@@ -81,15 +91,17 @@ public abstract class VectorConfigurationBase
         /// <param name="vectorQuantizationConfiguration">Custom params for quantization. If none - values from collection configuration are used.</param>
         /// <param name="vectorDataType">The datatype that should be used to represent vectors in the storage.</param>
         /// <param name="multivectorConfiguration">The multivector configuration.</param>
+        /// <param name="memory">Memory placement of vectors: pinned permanently, warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).</param>>
         [SetsRequiredMembers]
         public SingleVectorConfiguration(
             VectorDistanceMetric vectorDistanceMetric,
             ulong vectorSize,
-            bool isServeVectorsFromDisk,
+            bool? isServeVectorsFromDisk = null,
             HnswConfiguration vectorHnswConfiguration = null,
             QuantizationConfiguration vectorQuantizationConfiguration = null,
             VectorDataType vectorDataType = VectorDataType.Float32,
-            MultivectorConfiguration multivectorConfiguration = null)
+            MultivectorConfiguration multivectorConfiguration = null,
+            MemoryType? memory = null)
         {
             Distance = vectorDistanceMetric.ToString();
             Size = vectorSize;
@@ -98,6 +110,7 @@ public abstract class VectorConfigurationBase
             QuantizationConfig = vectorQuantizationConfiguration;
             Datatype = vectorDataType;
             MultivectorConfig = multivectorConfiguration;
+            Memory = memory;
         }
     }
 
@@ -135,15 +148,17 @@ public abstract class VectorConfigurationBase
         /// <param name="vectorHnswConfiguration">Custom params for HNSW index. If none - values from collection configuration are used.</param>
         /// <param name="vectorQuantizationConfiguration">Custom params for quantization. If none - values from collection configuration are used.</param>
         /// <param name="vectorDataType">The datatype that should be used to represent vectors in the storage.</param>
+        /// <param name="memory">Memory placement of vectors: pinned permanently, warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).</param>
         [SetsRequiredMembers]
         public NamedVectorsConfiguration(
             VectorDistanceMetric vectorDistanceMetric,
             ulong vectorSize,
-            bool isServeVectorsFromDisk,
+            bool? isServeVectorsFromDisk,
             IEnumerable<string> namedVectorNames,
             HnswConfiguration vectorHnswConfiguration,
             QuantizationConfiguration vectorQuantizationConfiguration,
-            VectorDataType vectorDataType = VectorDataType.Float32)
+            VectorDataType vectorDataType = VectorDataType.Float32,
+            MemoryType? memory = null)
         {
             Dictionary<string, SingleVectorConfiguration> namedVectors = [];
 
@@ -157,7 +172,8 @@ public abstract class VectorConfigurationBase
                         isServeVectorsFromDisk,
                         vectorHnswConfiguration,
                         vectorQuantizationConfiguration,
-                        vectorDataType
+                        vectorDataType,
+                        memory: memory
                     )
                 );
             }

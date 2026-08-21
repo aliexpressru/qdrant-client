@@ -78,7 +78,13 @@ public sealed class CreateCollectionRequest
     /// This setting saves RAM by (slightly) increasing the response time.
     /// Those payload values that are involved in filtering and are indexed - remain in RAM.
     /// </summary>
+    [Obsolete("The on_disk_payload parameter is deprecated. Use the payload.memory parameter instead starting with version 1.19")]
     public bool? OnDiskPayload { get; set; }
+
+    /// <summary>
+    /// Gets or sets the payload storage configuration.
+    /// </summary>
+    public PayloadStorageConfiguration Payload { get; set; }
 
     /// <summary>
     /// Gets or sets the HNSW configuration.
@@ -127,16 +133,23 @@ public sealed class CreateCollectionRequest
     /// <param name="vectorQuantizationConfiguration">Custom params for quantization. If none - values from collection configuration are used.</param>
     /// <param name="vectorDataType">The datatype that should be used to represent vectors in the storage.</param>
     /// <param name="multivectorConfiguration">The multi-vector configuration.</param>
+    /// <param name="vectorMemoryType">Memory placement of vectors: pinned permanently, warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).</param>
     public CreateCollectionRequest(
         VectorDistanceMetric vectorDistanceMetric,
         ulong vectorSize,
-        bool isServeVectorsFromDisk,
+        bool? isServeVectorsFromDisk = null,
         IEnumerable<string> namedVectorNames = null,
         HnswConfiguration vectorHnswConfiguration = null,
         QuantizationConfiguration vectorQuantizationConfiguration = null,
         VectorDataType vectorDataType = VectorDataType.Float32,
-        MultivectorConfiguration multivectorConfiguration = null)
+        MultivectorConfiguration multivectorConfiguration = null,
+        MemoryType? vectorMemoryType = null)
     {
+        if (isServeVectorsFromDisk is true && vectorMemoryType is null)
+        {
+            vectorMemoryType = MemoryType.Cold;
+        }
+        
         if (namedVectorNames is null)
         {
             Vectors = new VectorConfigurationBase.SingleVectorConfiguration(
@@ -146,7 +159,8 @@ public sealed class CreateCollectionRequest
                 vectorHnswConfiguration,
                 vectorQuantizationConfiguration,
                 vectorDataType,
-                multivectorConfiguration);
+                multivectorConfiguration,
+                vectorMemoryType);
         }
         else
         {
@@ -162,7 +176,8 @@ public sealed class CreateCollectionRequest
                 namedVectorNames,
                 vectorHnswConfiguration,
                 vectorQuantizationConfiguration,
-                vectorDataType);
+                vectorDataType,
+                vectorMemoryType);
         }
     }
 

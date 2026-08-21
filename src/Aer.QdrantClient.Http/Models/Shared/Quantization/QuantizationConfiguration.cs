@@ -73,7 +73,15 @@ public abstract class QuantizationConfiguration
         /// </li>
         /// </ul>
         /// </remarks>
+        [Obsolete("The always_ram parameter is deprecated. Use the memory parameter instead starting with version 1.19")]
         public bool? AlwaysRam { set; get; }
+        
+        /// <summary>
+        /// Memory placement of quantized vectors:
+        /// pinned permanently, warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).
+        /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<MemoryType>))]
+        public MemoryType? Memory { get; set; }
     }
 
     /// <summary>
@@ -120,7 +128,15 @@ public abstract class QuantizationConfiguration
         /// </li>
         /// </ul>
         /// </remarks>
+        [Obsolete("The always_ram parameter is deprecated. Use the memory parameter instead starting with version 1.19")]
         public bool? AlwaysRam { set; get; }
+        
+        /// <summary>
+        /// Memory placement of quantized vectors:
+        /// pinned permanently, warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).
+        /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<MemoryType>))]
+        public MemoryType? Memory { get; set; }
     }
 
     /// <summary>
@@ -160,6 +176,7 @@ public abstract class QuantizationConfiguration
         /// </li>
         /// </ul>
         /// </remarks>
+        [Obsolete("The always_ram parameter is deprecated. Use the memory parameter instead starting with version 1.19")]
         public bool? AlwaysRam { set; get; }
 
         /// <summary>
@@ -175,6 +192,13 @@ public abstract class QuantizationConfiguration
         /// </summary>
         [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<BinaryQuantizationQueryEncoding>))]
         public BinaryQuantizationQueryEncoding? QueryEncoding { set; get; }
+        
+        /// <summary>
+        /// Memory placement of quantized vectors:
+        /// pinned permanently, warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).
+        /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<MemoryType>))]
+        public MemoryType? Memory { get; set; }
     }
 
     /// <summary>
@@ -221,6 +245,7 @@ public abstract class QuantizationConfiguration
         /// </li>
         /// </ul>
         /// </remarks>
+        [Obsolete("The always_ram parameter is deprecated. Use the memory parameter instead starting with version 1.19")]
         public bool? AlwaysRam { set; get; }
 
         /// <summary>
@@ -228,6 +253,13 @@ public abstract class QuantizationConfiguration
         /// </summary>
         [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<TurboQuantizationEncoding>))]
         public TurboQuantizationEncoding? Bits { set; get; }
+        
+        /// <summary>
+        /// Memory placement of quantized vectors:
+        /// pinned permanently, warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).
+        /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<MemoryType>))]
+        public MemoryType? Memory { get; set; }
     }
 
     #endregion
@@ -237,22 +269,34 @@ public abstract class QuantizationConfiguration
     /// </summary>
     /// <param name="quantile">The quantile of the quantized vector components.</param>
     /// <param name="isQuantizedVectorAlwaysInRam">Whether to keep quantized vectors always cached in RAM or not.</param>
-    public static QuantizationConfiguration Scalar(float? quantile = null, bool isQuantizedVectorAlwaysInRam = false) =>
-        new ScalarQuantizationConfiguration() { Quantile = quantile, AlwaysRam = isQuantizedVectorAlwaysInRam };
+    /// <param name="memory">The legacy parameter is always_ram. always_ram: true always resolves to pinned. Otherwise, quantized vectors inherit the original vectors’ placement: pinned if the vectors are in RAM, cold if they’re on disk.</param>
+    public static QuantizationConfiguration Scalar(
+        float? quantile = null,
+        bool? isQuantizedVectorAlwaysInRam = false,
+        MemoryType? memory = null) =>
+        new ScalarQuantizationConfiguration()
+        {
+            Quantile = quantile, 
+            AlwaysRam = isQuantizedVectorAlwaysInRam,
+            Memory = memory ?? (isQuantizedVectorAlwaysInRam is true ? MemoryType.Pinned : null)
+        };
 
     /// <summary>
     /// Creates a product quantization configuration.
     /// </summary>
     /// <param name="quantizedVectorsCompressionRatio">Vector compression ratio.</param>
     /// <param name="isQuantizedVectorAlwaysInRam">Whether to keep quantized vectors always cached in RAM or not.</param>
+    /// <param name="memory">The legacy parameter is always_ram. always_ram: true always resolves to pinned. Otherwise, quantized vectors inherit the original vectors’ placement: pinned if the vectors are in RAM, cold if they’re on disk.</param>
     public static QuantizationConfiguration Product(
         ProductQuantizationCompressionRatio quantizedVectorsCompressionRatio,
-        bool isQuantizedVectorAlwaysInRam = false
+        bool? isQuantizedVectorAlwaysInRam = false,
+        MemoryType? memory = null
     ) =>
         new ProductQuantizationConfiguration()
         {
             Compression = quantizedVectorsCompressionRatio,
             AlwaysRam = isQuantizedVectorAlwaysInRam,
+            Memory = memory ?? (isQuantizedVectorAlwaysInRam is true ? MemoryType.Pinned : null)
         };
 
     /// <summary>
@@ -261,16 +305,19 @@ public abstract class QuantizationConfiguration
     /// <param name="isQuantizedVectorAlwaysInRam">Whether to keep quantized vectors always cached in RAM or not.</param>
     /// <param name="encoding">The quantization bit depth.</param>
     /// <param name="queryEncoding">The asymmetric quantization configuration.</param>
+    /// <param name="memory">The legacy parameter is always_ram. always_ram: true always resolves to pinned. Otherwise, quantized vectors inherit the original vectors’ placement: pinned if the vectors are in RAM, cold if they’re on disk.</param>
     public static QuantizationConfiguration Binary(
-        bool isQuantizedVectorAlwaysInRam = false,
+        bool? isQuantizedVectorAlwaysInRam = false,
         BinaryQuantizationEncoding? encoding = null,
-        BinaryQuantizationQueryEncoding? queryEncoding = null
+        BinaryQuantizationQueryEncoding? queryEncoding = null,
+        MemoryType? memory = null
     ) =>
         new BinaryQuantizationConfiguration()
         {
             AlwaysRam = isQuantizedVectorAlwaysInRam,
             Encoding = encoding,
             QueryEncoding = queryEncoding,
+            Memory = memory ?? (isQuantizedVectorAlwaysInRam is true ? MemoryType.Pinned : null)
         };
 
     /// <summary>
@@ -278,8 +325,15 @@ public abstract class QuantizationConfiguration
     /// </summary>
     /// <param name="isQuantizedVectorAlwaysInRam">Whether to keep quantized vectors always cached in RAM or not.</param>
     /// <param name="bits">The encoding bit depth.</param>
+    /// <param name="memory">The legacy parameter is always_ram. always_ram: true always resolves to pinned. Otherwise, quantized vectors inherit the original vectors’ placement: pinned if the vectors are in RAM, cold if they’re on disk.</param>
     public static QuantizationConfiguration Turbo(
-        bool isQuantizedVectorAlwaysInRam = false,
-        TurboQuantizationEncoding? bits = null
-    ) => new TurboQuantizationConfiguration() { AlwaysRam = isQuantizedVectorAlwaysInRam, Bits = bits };
+        bool? isQuantizedVectorAlwaysInRam = false,
+        TurboQuantizationEncoding? bits = null,
+        MemoryType? memory = null
+    ) => new TurboQuantizationConfiguration()
+    {
+        AlwaysRam = isQuantizedVectorAlwaysInRam, 
+        Bits = bits,
+        Memory = memory ?? (isQuantizedVectorAlwaysInRam is true ? MemoryType.Pinned : null)
+    };
 }

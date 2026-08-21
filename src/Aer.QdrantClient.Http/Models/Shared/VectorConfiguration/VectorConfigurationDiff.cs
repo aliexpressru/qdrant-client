@@ -33,7 +33,15 @@ public abstract class VectorConfigurationDiff
         /// <summary>
         /// If <c>true</c>, vectors are served from disk, improving RAM usage at the cost of latency.
         /// </summary>
+        [Obsolete("The on_disk parameter is deprecated. Use the memory parameter instead starting with version 1.19")]
         public bool? OnDisk { get; set; }
+        
+        /// <summary>
+        /// Memory placement of vectors:
+        /// pinned permanently, warmed into a disk cache at startup (cached), or left on disk until first accessed (cold).
+        /// </summary>
+        [JsonConverter(typeof(JsonStringSnakeCaseLowerEnumConverter<MemoryType>))]
+        public MemoryType? Memory { get; init; }
     }
 
     /// <summary>

@@ -12,14 +12,16 @@ internal sealed class CreatePayloadIndexRequest
 {
     internal sealed class FieldSchemaUnit(
         string type,
-        bool onDisk,
+        string memory,
         bool? isTenant,
         bool? isPrincipal,
-
+        
         bool? isLookupEnabled,
         bool? isRangeEnabled,
-
-        bool? isHnswEnabled)
+        
+        bool? isHnswEnabled,
+        
+        bool? isPrefixEnabled)
     {
         /// <summary>
         /// The type of the indexed payload field.
@@ -29,7 +31,8 @@ internal sealed class CreatePayloadIndexRequest
         /// <summary>
         /// Set to <c>true</c> to store specified payload field index on-disk instead of in-memory.
         /// </summary>
-        public bool OnDisk { get; } = onDisk;
+        [Obsolete("The on_disk parameter is deprecated. Use the memory parameter instead starting with version 1.19")]
+        public bool OnDisk { get; } = string.Equals(memory, nameof(MemoryType.Cold), StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// Set to <c>true</c> to enable tenant index for specified payload field.
@@ -54,6 +57,17 @@ internal sealed class CreatePayloadIndexRequest
         /// If true, builds additional HNSW links (Need payload_m > 0). Default: true.
         /// </summary>
         public bool? EnableHnsw { get; } = isHnswEnabled;
+
+        /// <summary>
+        /// If true - support the keyword index with the prefix option for efficient prefix match
+        /// </summary>
+        public bool? Prefix { get; } = isPrefixEnabled;
+
+        /// <summary>
+        /// The per-structure memory parameter controls how each structure is cached in RAM:
+        /// pinned permanently, warmed into a disk cache at startup, or left on disk until first accessed.
+        /// </summary>
+        public string Memory { get; } = memory;
     }
 
     /// <summary>
@@ -66,12 +80,12 @@ internal sealed class CreatePayloadIndexRequest
     /// </summary>
     public FieldSchemaUnit FieldSchema { get; set; }
 
-    /// <summary>
+    // <summary>
     /// Initializes a new instance of the <see cref="CreatePayloadIndexRequest"/> class.
     /// </summary>
     /// <param name="payloadFieldName">The name of the indexed payload field.</param>
     /// <param name="payloadFieldType">The type of the indexed payload field.</param>
-    /// <param name="onDisk">Whether to store index on-disk instead of in-memory.</param>
+    /// <param name="memory">The per-structure memory parameter controls how each structure is cached in RAM: pinned permanently, warmed into a disk cache at startup, or left on disk until first accessed.</param>
     /// <param name="isTenant">Set to <c>true</c> to enable tenant index for specified payload field.</param>
     /// <param name="isPrincipal">
     /// Set to <c>true</c> to enable principal index for specified payload field.
@@ -87,30 +101,36 @@ internal sealed class CreatePayloadIndexRequest
     /// <param name="isHnswEnabled">Enable HNSW graph building for this payload field.
     /// If <c>true</c>, builds additional HNSW links (Needs payload_m to be > 0). Default: <c>true</c>.
     /// </param>
+    /// <param name="isPrefixEnabled">Enable the prefix option for keyword index for efficient prefix matching.
+    /// </param>
     public CreatePayloadIndexRequest(
         string payloadFieldName,
         PayloadIndexedFieldType payloadFieldType,
-        bool onDisk,
+        MemoryType? memory,
         bool? isTenant = null,
         bool? isPrincipal = null,
-
+        
         bool? isLookupEnabled = null,
         bool? isRangeFilterEnabled = null,
-
-        bool? isHnswEnabled = null)
+        
+        bool? isHnswEnabled = null,
+        
+        bool? isPrefixEnabled = null)
     {
         FieldName = payloadFieldName;
         FieldSchema = new FieldSchemaUnit(
             type: payloadFieldType.ToString().ToLowerInvariant(),
-            onDisk: onDisk,
-
+            memory: memory?.ToString().ToLowerInvariant(),
+            
             isTenant: isTenant,
             isPrincipal: isPrincipal,
-
+            
             isLookupEnabled: isLookupEnabled,
             isRangeEnabled: isRangeFilterEnabled,
-
-            isHnswEnabled: isHnswEnabled
+            
+            isHnswEnabled: isHnswEnabled,
+            
+            isPrefixEnabled: isPrefixEnabled
         );
     }
 }

@@ -18,5 +18,10 @@ public enum VectorDataType
     /// <summary>
     /// Vectors are stored as unsigned 8-bit integers, 1byte. Vector elements are expected to be in range [0, 255].
     /// </summary>
-    Uint8
+    Uint8,
+    
+    /// <summary>
+    /// Vectors are stored in compact 4-bit representation while original vector elements are expected to be floating point numbers.
+    /// </summary>
+    Turbo4
 }
